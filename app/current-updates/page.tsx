@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react'
 
-export const metadata = { title: 'Current Updates — Rotehuegels' }
 
 type Item = { title:string; link:string; pubDate:string; source:string }
 

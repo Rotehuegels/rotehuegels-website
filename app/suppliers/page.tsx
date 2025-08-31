@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react'
 
-export const metadata = { title: 'Suppliers — Rotehuegels' }
 
 export default function SuppliersPage(){
   const [submitted, setSubmitted] = useState(false)

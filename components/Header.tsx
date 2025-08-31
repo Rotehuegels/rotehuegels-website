@@ -19,9 +19,9 @@ export default function Header(){
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur">
       <div className="container flex items-center justify-between py-3">
         <Link href="/" className="flex items-center gap-3 no-underline">
-          {/* Swap /logo.png for /logo.svg if that’s what you uploaded */}
-          <Image src="/logo.png" alt="Rotehuegels logo" width={36} height={36} priority />
-          <span className="font-bold text-lg md:text-xl">Rotehuegels</span>
+          <Image src="/logo.png" alt="Rotehuegels logo" width={140} height={40} priority />
+          {/* If your logo image already includes text, you can remove this span */}
+          {/* <span className="font-bold text-lg md:text-xl">Rotehuegels</span> */}
         </Link>
 
         <button className="md:hidden p-2" onClick={()=>setOpen(!open)} aria-label="Menu">
@@ -36,5 +36,5 @@ export default function Header(){
         </nav>
       </div>
     </header>
-  )
+  );
 }

@@ -4,48 +4,71 @@ import { useEffect, useState } from 'react'
 type Item = { title: string; link: string; pubDate: string; source: string }
 
 const FEEDS = [
-  // Use reliable sources; you can add more
   'https://www.reuters.com/markets/commodities/rss',
   'https://www.kitco.com/rss/metals.xml',
   'https://economictimes.indiatimes.com/rssfeeds/1898055.cms',
-]
+];
 
-// Fetch a single RSS feed via public CORS proxy and parse on the client
-async function fetchFeed(url: string): Promise<Item[]> {
+/** Try Feed2JSON first (JSON from RSS/Atom), fallback to AllOrigins + DOMParser */
+async function fetchViaFeed2JSON(url: string): Promise<Item[]> {
+  const api = 'https://feed2json.org/convert?url=' + encodeURIComponent(url)
+  const res = await fetch(api, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`feed2json HTTP ${res.status}`)
+  const data = await res.json() as any
+  const items: Item[] = (data.items || []).slice(0, 6).map((it: any) => ({
+    title: (it.title || '').trim(),
+    link: (it.url || it.external_url || '').trim(),
+    pubDate: (it.date_published || it.date_modified || ''),
+    source: url,
+  }))
+  return items
+}
+
+async function fetchViaAllOrigins(url: string): Promise<Item[]> {
   const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url)
   const res = await fetch(proxy, { cache: 'no-store' })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  if (!res.ok) throw new Error(`allorigins HTTP ${res.status}`)
   const data = await res.json() as { contents: string }
   const xml = data.contents
-
   const doc = new DOMParser().parseFromString(xml, 'text/xml')
 
-  // Support both RSS 2.0 and Atom
+  const out: Item[] = []
   const rssItems = Array.from(doc.querySelectorAll('item'))
   const atomItems = Array.from(doc.querySelectorAll('entry'))
-  const items: Item[] = []
 
   if (rssItems.length) {
-    for (const it of rssItems.slice(0, 5)) {
-      const title = it.querySelector('title')?.textContent?.trim() || ''
-      const link = it.querySelector('link')?.textContent?.trim() || ''
-      const pub = it.querySelector('pubDate')?.textContent?.trim() || ''
-      items.push({ title, link, pubDate: pub, source: url })
+    for (const it of rssItems.slice(0, 6)) {
+      out.push({
+        title: it.querySelector('title')?.textContent?.trim() || '',
+        link: it.querySelector('link')?.textContent?.trim() || '',
+        pubDate: it.querySelector('pubDate')?.textContent?.trim() || '',
+        source: url,
+      })
     }
-  } else if (atomItems.length) {
-    for (const it of atomItems.slice(0, 5)) {
-      const title = it.querySelector('title')?.textContent?.trim() || ''
-      const link =
-        (it.querySelector('link')?.getAttribute('href') || '').trim()
-      const pub =
-        it.querySelector('updated')?.textContent?.trim() ||
-        it.querySelector('published')?.textContent?.trim() ||
-        ''
-      items.push({ title, link, pubDate: pub, source: url })
+  } else {
+    for (const it of atomItems.slice(0, 6)) {
+      out.push({
+        title: it.querySelector('title')?.textContent?.trim() || '',
+        link: (it.querySelector('link')?.getAttribute('href') || '').trim(),
+        pubDate: it.querySelector('updated')?.textContent?.trim()
+          || it.querySelector('published')?.textContent?.trim() || '',
+        source: url,
+      })
     }
   }
+  return out
+}
 
-  return items
+async function fetchFeed(url: string): Promise<Item[]> {
+  try {
+    return await fetchViaFeed2JSON(url)
+  } catch {
+    try {
+      return await fetchViaAllOrigins(url)
+    } catch {
+      return [{ title: `Error loading ${url}`, link: '', pubDate: new Date().toISOString(), source: url }]
+    }
+  }
 }
 
 export default function CurrentUpdates() {
@@ -57,14 +80,9 @@ export default function CurrentUpdates() {
       try {
         const all: Item[] = []
         for (const url of FEEDS) {
-          try {
-            const part = await fetchFeed(url)
-            all.push(...part)
-          } catch {
-            all.push({ title: `Error loading ${url}`, link: '', pubDate: new Date().toISOString(), source: url })
-          }
+          const part = await fetchFeed(url)
+          all.push(...part)
         }
-        // sort newest first if dates exist
         all.sort((a, b) => (new Date(b.pubDate).getTime() || 0) - (new Date(a.pubDate).getTime() || 0))
         setItems(all)
       } finally {

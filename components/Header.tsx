@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { Menu } from 'lucide-react';
 
@@ -17,9 +18,12 @@ export default function Header(){
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur">
       <div className="container flex items-center justify-between py-3">
-        <Link href="/" className="font-bold text-lg md:text-xl no-underline">
-          Rotehuegels
+        <Link href="/" className="flex items-center gap-3 no-underline">
+          {/* Swap /logo.png for /logo.svg if that’s what you uploaded */}
+          <Image src="/logo.png" alt="Rotehuegels logo" width={36} height={36} priority />
+          <span className="font-bold text-lg md:text-xl">Rotehuegels</span>
         </Link>
+
         <button className="md:hidden p-2" onClick={()=>setOpen(!open)} aria-label="Menu">
           <Menu />
         </button>

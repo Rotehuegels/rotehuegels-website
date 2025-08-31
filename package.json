@@ -10,19 +10,20 @@
     "postinstall": "tailwindcss -v >/dev/null 2>&1 || echo 'Tailwind will be run by Next during build'"
   },
   "dependencies": {
+    "lucide-react": "0.451.0",
     "next": "14.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "lucide-react": "0.451.0",
-    "xml2js": "0.6.2",
-    "react-markdown": "9.0.1"
+    "react-markdown": "9.0.1",
+    "xml2js": "0.6.2"
   },
   "devDependencies": {
-    "typescript": "5.5.4",
+    "@types/xml2js": "^0.4.14",
+    "autoprefixer": "10.4.20",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.5",
-    "tailwindcss": "3.4.10",
     "postcss": "8.4.47",
-    "autoprefixer": "10.4.20"
+    "tailwindcss": "3.4.10",
+    "typescript": "5.5.4"
   }
 }

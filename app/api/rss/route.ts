@@ -6,12 +6,9 @@ import { parseStringPromise } from 'xml2js'
  * You can add/remove sources as you like.
  */
 const FEEDS = [
+  'https://www.reuters.com/markets/commodities/rss',
+  'https://economictimes.indiatimes.com/rssfeeds/1898055.cms',
   'https://www.kitco.com/rss/metals.xml',
-  'https://www.investing.com/rss/commoditiesNews.rss',
-  'https://www.nasdaq.com/feed/rssoutbound?category=Commodities',
-  // If you want alternates, try:
-  // 'https://www.reuters.com/markets/commodities/rss',
-  // 'https://economictimes.indiatimes.com/rssfeeds/1898055.cms',
 ];
 
 export async function GET() {

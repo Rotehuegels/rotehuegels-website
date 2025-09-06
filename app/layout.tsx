@@ -2,28 +2,29 @@ import type { Metadata } from 'next'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import LiveTicker from '@/components/LiveTicker'
+import TickerBar from '@/components/TickerBar'
 
 export const metadata: Metadata = {
-  title: 'Rotehuegels — Where Research Meets Business Excellence',
-  description: 'Rotehuegel Research Business Consultancy Private Limited, Chennai, India. Research, Business, Consultancy in extractive metallurgy, critical minerals, and circular economy.',
-  metadataBase: new URL('https://www.rotehuegels.com'),
+  title: 'Rotehügels - Where Research Meets Business Excellence',
+  description: 'Rotehugel Research Business Consultancy Private Limited, Chennai, India. Research, Business, Consultancy in extractive metallurgy, critical minerals, and circular economy.',
   openGraph: {
-    title: 'Rotehuegels',
+    title: 'Rotehügels',
     description: 'Where Research Meets Business Excellence.',
     url: 'https://www.rotehuegels.com',
-    siteName: 'Rotehuegels',
+    siteName: 'Rotehügels',
     type: 'website',
   },
-  icons: { icon: '/favicon.ico' }
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
-export default function RootLayout({ children }:{children: React.ReactNode}){
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
         <Header />
-        <LiveTicker />
+        <TickerBar />
         <main>{children}</main>
         <Footer />
       </body>

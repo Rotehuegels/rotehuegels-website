@@ -60,7 +60,7 @@ export default function SuccessStoriesPage() {
               <p className="text-sm text-zinc-300">
                 Onsite reservoir for water security and a
                 thickener–clarifier system recycling{" "}
-                <span className="font-semibold">&gt;50% process water</span>.
+                <span className="font-semibold">&gt;50%</span> process water.
               </p>
               <p className="text-sm text-zinc-300">
                 Circular economy built into design from day one.

@@ -1,28 +1,27 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss";
 
 export default {
   content: [
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
-      container: { center: true, padding: '1rem' },
       colors: {
         brand: {
-          50: '#fff1f2',
-          100: '#ffe4e6',
-          200: '#fecdd3',
-          300: '#fda4af',
-          400: '#fb7185',
-          500: '#f43f5e', // primary accent (can tune)
-          600: '#e11d48',
-          700: '#be123c',
-          800: '#9f1239',
-          900: '#881337'
-        }
-      }
+          50:  "#f0fbf7",
+          100: "#d9f6ea",
+          200: "#b4ecd7",
+          300: "#84ddbF",
+          400: "#4cc9a5",
+          500: "#12a87f",
+          600: "#0e8f6b",
+          700: "#0b7658",
+          800: "#085e46",
+          900: "#064c39",
+        },
+      },
     },
   },
   plugins: [],
-} satisfies Config
+} satisfies Config;

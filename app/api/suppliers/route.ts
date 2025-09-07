@@ -1,10 +1,11 @@
-// app/api/suppliers/route.ts
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseServer";
 
-type SupplierPayload = {
+export const runtime = "edge"; // fast cold starts; remove if you prefer node
+
+type Payload = {
   company_name: string;
-  contact_name: string;
+  contact_name?: string;
   email: string;
   phone?: string;
   country?: string;
@@ -14,38 +15,59 @@ type SupplierPayload = {
   notes?: string;
 };
 
+function bad(msg: string, status = 400) {
+  return NextResponse.json({ ok: false, error: msg }, { status });
+}
+
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as Partial<SupplierPayload>;
+    const body = (await req.json()) as Partial<Payload>;
 
-    // Validate required fields
-    const required = ["company_name", "contact_name", "email", "product_service"] as const;
-    for (const k of required) {
-      if (!body[k] || String(body[k]).trim() === "") {
-        return NextResponse.json({ error: `Missing required field: ${k}` }, { status: 400 });
-      }
-    }
+    // Basic validation (ensure NOT NULL columns are present)
+    if (!body.company_name?.trim()) return bad("company_name is required");
+    if (!body.email?.trim()) return bad("email is required");
+    if (!body.product_service?.trim()) return bad("product_service is required");
 
-    const { error } = await supabaseAdmin.from("suppliers").insert({
-      company_name: body.company_name!.trim(),
-      contact_name: body.contact_name!.trim(),
-      email: body.email!.trim(),
-      phone: body.phone?.trim() || null,
-      country: body.country?.trim() || null,
-      product_service: body.product_service!.trim(),
-      certifications: body.certifications?.trim() || null,
-      website: body.website?.trim() || null,
-      notes: body.notes?.trim() || null,
-    });
+    // Insert
+    const { data, error } = await supabaseAdmin
+      .from("suppliers")
+      .insert([
+        {
+          company_name: body.company_name.trim(),
+          contact_name: body.contact_name?.trim() || null,
+          email: body.email.trim(),
+          phone: body.phone?.trim() || null,
+          country: body.country?.trim() || null,
+          product_service: body.product_service.trim(),
+          certifications: body.certifications?.trim() || null,
+          website: body.website?.trim() || null,
+          notes: body.notes?.trim() || null,
+        },
+      ])
+      .select()
+      .single();
 
     if (error) {
+      // This shows up in Vercel → Deployment → Functions logs
       console.error("Supabase insert error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return bad(`Supabase error: ${error.message}`, 500);
     }
 
-    return NextResponse.json({ ok: true }, { status: 201 });
-  } catch (err: any) {
-    console.error("API /suppliers error:", err);
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    return NextResponse.json({ ok: true, id: data.id });
+  } catch (e: any) {
+    console.error("API /suppliers error:", e);
+    return bad("Invalid JSON or server error", 500);
   }
+}
+
+// (Optional) Handle CORS preflight if you ever post from external origins
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
 }

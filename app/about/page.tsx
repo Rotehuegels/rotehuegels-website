@@ -18,7 +18,7 @@ export default function AboutPage() {
         subtitle="Three pillars. Many domains. One purpose — sustainable advantage."
       >
         <p className="text-lg text-zinc-300 max-w-3xl">
-          <span className="font-semibold">Rotehügels Research Business Consultancy Pvt. Ltd.</span>{" "}
+          <span className="font-semibold">Rotehügel Research Business Consultancy Private Limited</span>{" "}
           integrates scientific innovation with strategic advisory and operational execution.
           We partner globally to design circular flows, scale metallurgical processes, and
           deliver investor-ready outcomes—from lab benches to turnkey plants.

@@ -1,136 +1,91 @@
-// app/suppliers/page.tsx
-"use client";
+// app/api/suppliers/route.ts
+export const runtime = "nodejs";          // ✅ force Node runtime (required for nodemailer/supabase)
+export const dynamic = "force-dynamic";   // avoid caching the route
 
-import React, { useState } from "react";
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabaseServer";
+import { sendNewSupplierEmail } from "@/lib/mailer";
 
-export default function SuppliersPage() {
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<null | { ok: boolean; msg: string }>(null);
+type InBody = {
+  company_name?: string;
+  contact_person?: string;
+  email?: string;
+  phone?: string;
+  country?: string;
+  website?: string;
+  product_categories?: string;
+  product_service?: string;
+  certifications?: string | null;
+  notes?: string | null;
+};
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-    setStatus(null);
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    api: "suppliers",
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    },
+  });
+}
 
-    const form = e.currentTarget;
-    const data = Object.fromEntries(new FormData(form).entries());
+export async function POST(req: NextRequest) {
+  try {
+    const body = (await req.json()) as InBody;
 
-    try {
-      const res = await fetch("/api/suppliers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      const result = await res.json();
+    const product_categories =
+      (body.product_categories && body.product_categories.trim()) ||
+      (body.product_service && body.product_service.trim()) ||
+      "";
 
-      if (!res.ok || !result.ok) {
-        throw new Error(result.error || "Failed to submit");
-      }
+    const payload = {
+      company_name: (body.company_name || "").trim(),
+      contact_person: (body.contact_person || "").trim(),
+      email: (body.email || "").trim(),
+      phone: (body.phone || "").trim(),
+      country: (body.country || "").trim(),
+      website: (body.website || "").trim(),
+      product_categories,
+      certifications: (body.certifications ?? "").toString().trim() || null,
+      notes: (body.notes ?? "").toString().trim() || null,
+    };
 
-      setStatus({ ok: true, msg: "Thank you! Your supplier profile has been submitted." });
-      form.reset();
-    } catch (err: any) {
-      setStatus({ ok: false, msg: err.message || "Something went wrong" });
-    } finally {
-      setLoading(false);
+    const missing: string[] = [];
+    if (!payload.company_name) missing.push("company_name");
+    if (!payload.contact_person) missing.push("contact_person");
+    if (!payload.email) missing.push("email");
+    if (!payload.product_categories) missing.push("product_categories");
+    if (missing.length) {
+      return NextResponse.json(
+        { ok: false, error: `Missing: ${missing.join(", ")}` },
+        { status: 400 }
+      );
     }
+
+    const { data, error } = await supabaseAdmin
+      .from("suppliers")
+      .insert([payload])
+      .select("id")
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { ok: false, error: error.message },
+        { status: 500 }
+      );
+    }
+
+    // Don’t block success on email failure
+    sendNewSupplierEmail(payload).catch((e) =>
+      console.error("sendNewSupplierEmail failed:", e)
+    );
+
+    return NextResponse.json({ ok: true, id: data?.id });
+  } catch (e: any) {
+    return NextResponse.json(
+      { ok: false, error: e?.message || "Unexpected error" },
+      { status: 500 }
+    );
   }
-
-  const input =
-    "w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-rose-500";
-  const label = "text-sm text-zinc-300";
-
-  return (
-    <div className="space-y-10">
-      <header className="space-y-2">
-        <h1 className="text-3xl md:text-5xl font-bold">Supplier Registration</h1>
-        <p className="text-zinc-300 max-w-3xl">
-          Share your company details to be considered for partnerships in equipment, reagents,
-          lab & metrology, logistics, and services.
-        </p>
-      </header>
-
-      <form
-        onSubmit={onSubmit}
-        className="grid gap-6 rounded-2xl border border-white/10 bg-white/5 p-6"
-      >
-        {/* Company */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className={label}>Company Name *</label>
-            <input name="company_name" required className={input} placeholder="Your Company Pvt Ltd" />
-          </div>
-          <div>
-            <label className={label}>Website</label>
-            <input name="website" className={input} placeholder="https://example.com" />
-          </div>
-        </div>
-
-        {/* Contact */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
-            <label className={label}>Contact Person *</label>
-            <input name="contact_name" required className={input} placeholder="Full Name" />
-          </div>
-          <div>
-            <label className={label}>Email *</label>
-            <input type="email" name="email" required className={input} placeholder="name@company.com" />
-          </div>
-          <div>
-            <label className={label}>Phone</label>
-            <input name="phone" className={input} placeholder="+91 98765 43210" />
-          </div>
-        </div>
-
-        {/* Business */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className={label}>Country</label>
-            <input name="country" className={input} placeholder="India" />
-          </div>
-          <div>
-            <label className={label}>Certifications (ISO, etc.)</label>
-            <input name="certifications" className={input} placeholder="ISO 9001, ISO 14001" />
-          </div>
-        </div>
-
-        <div>
-          <label className={label}>Products / Services *</label>
-          <textarea
-            name="product_service"
-            required
-            rows={4}
-            className={input}
-            placeholder="e.g., SX/EW equipment, reagents, lab services..."
-          />
-        </div>
-
-        <div>
-          <label className={label}>Notes</label>
-          <textarea
-            name="notes"
-            rows={4}
-            className={input}
-            placeholder="Experience highlights, client references, sustainability initiatives..."
-          />
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary no-underline disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loading ? "Submitting…" : "Submit Supplier Profile"}
-          </button>
-
-          {status && (
-            <span className={status.ok ? "text-green-400 text-sm" : "text-rose-400 text-sm"}>
-              {status.msg}
-            </span>
-          )}
-        </div>
-      </form>
-    </div>
-  );
 }

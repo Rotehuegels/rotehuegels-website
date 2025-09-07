@@ -6,146 +6,189 @@ import WebLLMAssistant from "@/components/WebLLMAssistant";
 export const metadata = {
   title: "About Us — Rotehügels",
   description:
-    "Rotehügels bridges metallurgy research, sustainable technologies, and business consulting — delivering tomorrow’s solutions today.",
+    "Rotehügels bridges metallurgy research, sustainable technologies, EPC turnkey projects, and business consulting — delivering tomorrow’s solutions today.",
 };
 
 export default function AboutPage() {
   return (
     <div className="space-y-16">
-      {/* Intro */}
+      {/* HERO */}
       <Section
         title="About Rotehügels"
-        subtitle="Research. Innovation. Sustainable Business."
+        subtitle="Three pillars. Many domains. One purpose — sustainable advantage."
       >
-        <div className="prose prose-invert max-w-none">
-          <p>
-            <span className="font-semibold">Rotehügels Research Business Consultancy Pvt. Ltd.</span>{" "}
-            integrates scientific innovation with strategic business advisory.
-            We operate at the intersection of{" "}
-            <span className="text-rose-400">extractive metallurgy</span>,{" "}
-            <span className="text-rose-400">critical minerals</span>, and{" "}
-            <span className="text-rose-400">circular economy</span> to help
-            organizations achieve measurable, globally relevant outcomes.
-          </p>
-          <p>
-            From lab-scale R&D and pilot design to plant commissioning and
-            digital knowledge systems, our mission is simple:{" "}
-            <em>
-              to deliver sustainable growth by turning today’s challenges into
-              tomorrow’s opportunities.
-            </em>
-          </p>
+        <p className="text-lg text-zinc-300 max-w-3xl">
+          <span className="font-semibold">Rotehügels Research Business Consultancy Pvt. Ltd.</span>{" "}
+          integrates scientific innovation with strategic advisory and operational execution.
+          We partner globally to design circular flows, scale metallurgical processes, and
+          deliver investor-ready outcomes—from lab benches to turnkey plants.
+        </p>
+      </Section>
+
+      {/* PILLARS */}
+      <Section title="Our Three Pillars">
+        <div className="grid sm:grid-cols-3 gap-6">
+          {[
+            {
+              h: "Research",
+              p: "Hydrometallurgy R&D, pilot design, process modeling, analytical SOPs — turning lab innovation into scalable flowsheets.",
+            },
+            {
+              h: "Business",
+              p: "Techno-economic analysis, procurement collateral, market & policy intelligence — delivering investor-ready clarity.",
+            },
+            {
+              h: "Consultancy",
+              p: "Commissioning, ramp-up, troubleshooting, audits, sustainability & circularity roadmaps — ensuring long-term operational excellence.",
+            },
+          ].map((c, i) => (
+            <div key={i} className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
+              <h3 className="font-semibold mb-2">{c.h}</h3>
+              <p className="text-sm text-zinc-300">{c.p}</p>
+            </div>
+          ))}
         </div>
       </Section>
 
-      {/* What we do */}
-      <Section title="Our Expertise">
+      {/* EPC & TURNKEY */}
+      <Section title="EPC & Turnkey Projects">
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
+            <h3 className="font-semibold mb-2">Greenfield Plants (Turnkey)</h3>
+            <p className="text-sm text-zinc-300">
+              End-to-end delivery: FEED, detailed design, vendor/contractor integration,
+              construction management, commissioning, and handover with SOPs and training.
+            </p>
+          </div>
+          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
+            <h3 className="font-semibold mb-2">Custom & Brownfield Solutions</h3>
+            <p className="text-sm text-zinc-300">
+              Retrofits, debottlenecking, niche rigs, modular pilots — fast ROI and minimal downtime.
+            </p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-zinc-400">
+          Have an RFP or scope note? Email{" "}
+          <a className="text-rose-400 hover:underline" href="mailto:sales@rotehuegels.com">
+            sales@rotehuegels.com
+          </a>
+        </p>
+      </Section>
+
+      {/* DOMAINS */}
+      <Section title="Domains of Expertise">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
-            <h3 className="font-semibold mb-2">Metallurgy & Process R&D</h3>
-            <p className="text-sm text-zinc-300">
-              Copper, nickel, manganese, rare earths and beyond — hydrometallurgy,
-              pyro-processing, and hybrid flowsheets. We design, test, and
-              optimize processes for lean and complex ores.
-            </p>
-          </div>
-          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
-            <h3 className="font-semibold mb-2">Sustainability & Circular Economy</h3>
-            <p className="text-sm text-zinc-300">
-              Resource recovery, battery recycling, and zero-waste operations.
-              We enable compliance with ESG standards while unlocking new revenue streams.
-            </p>
-          </div>
-          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
-            <h3 className="font-semibold mb-2">Techno-Economic Advisory</h3>
-            <p className="text-sm text-zinc-300">
-              From feasibility studies and market intelligence to investor-ready
-              models — we bring clarity and confidence to strategic decisions.
-            </p>
-          </div>
-          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
-            <h3 className="font-semibold mb-2">Plant Commissioning & Operations</h3>
-            <p className="text-sm text-zinc-300">
-              Experience from large-scale greenfield plants. We help teams scale
-              from pilot to production with robust training, SOPs, and optimization.
-            </p>
-          </div>
-          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
-            <h3 className="font-semibold mb-2">Digital & AI Innovation</h3>
-            <p className="text-sm text-zinc-300">
-              Custom AI agents, LLMs, and digital twins for process modeling,
-              knowledge management, and decision support.
-            </p>
-          </div>
-          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
-            <h3 className="font-semibold mb-2">Global Partnerships</h3>
-            <p className="text-sm text-zinc-300">
-              We collaborate with academia, industry, and policy stakeholders
-              worldwide to build sustainable and future-ready solutions.
-            </p>
-          </div>
+          {[
+            { h: "Metallurgy & Process R&D", p: "Copper, nickel, manganese, REEs — lab → pilot → plant." },
+            { h: "Circular Economy & Recycling", p: "Battery metals, resource recovery, waste-to-value, ESG." },
+            { h: "Techno-Economic Advisory", p: "Feasibility, sensitivity, cost curves, investor collateral." },
+            { h: "Plant Commissioning & Ops", p: "Start-up playbooks, SOPs, throughput optimization." },
+            { h: "Market Intelligence & Strategy", p: "Supply chain, pricing, and policy insight for GTM." },
+            { h: "Business Development", p: "JV structuring, partnerships, and new geography entry." },
+            { h: "Research & Patents", p: "Prior-art search, claim drafting, patent strategy." },
+            { h: "Laboratory Chemistry", p: "AAS/ICP, titrations, solvent extraction, QA/QC." },
+            { h: "Eureka Engineering", p: "Novel separations, modular rigs, zero-to-one prototypes." },
+            { h: "Digital & AI Innovation", p: "LLMs, retrieval agents, digital twins, decision support." },
+            { h: "Global Policy & ESG", p: "Compliance frameworks and circularity by design." },
+          ].map((c, i) => (
+            <div key={i} className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6">
+              <h3 className="font-semibold mb-2">{c.h}</h3>
+              <p className="text-sm text-zinc-300">{c.p}</p>
+            </div>
+          ))}
         </div>
       </Section>
 
-      {/* Journey */}
+      {/* IMPACT METRICS */}
+      <Section title="Impact at a Glance">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { k: "1200+ TPD", v: "Greenfield plant experience" },
+            { k: "↑ Yield", v: "Process optimization & SOP discipline" },
+            { k: "↓ OPEX", v: "Circularity & waste-to-value integrations" },
+            { k: "Investor-ready", v: "Models, decks & diligence support" },
+          ].map((m, i) => (
+            <div key={i} className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-5">
+              <div className="text-2xl font-semibold">{m.k}</div>
+              <div className="text-sm text-zinc-400 mt-1">{m.v}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* JOURNEY */}
       <Section title="Our Journey">
         <ol className="relative border-s border-zinc-800">
-          <li className="mb-10 ms-4">
-            <div className="absolute w-3 h-3 bg-rose-500 rounded-full mt-1.5 -start-1.5 border border-zinc-900" />
-            <time className="mb-1 text-xs font-medium text-zinc-400">2023–24</time>
-            <h4 className="text-sm font-semibold">Hydrometallurgy Pilots</h4>
-            <p className="text-sm text-zinc-300 mt-1">
-              Delivered R&D, SOPs, and commissioning for copper and critical
-              metals from mixed and lean ores.
-            </p>
-          </li>
-          <li className="mb-10 ms-4">
-            <div className="absolute w-3 h-3 bg-rose-500 rounded-full mt-1.5 -start-1.5 border border-zinc-900" />
-            <time className="mb-1 text-xs font-medium text-zinc-400">2024</time>
-            <h4 className="text-sm font-semibold">Expansion into Digital Advisory</h4>
-            <p className="text-sm text-zinc-300 mt-1">
-              Strengthened our portfolio with supplier and investor engagement,
-              and launched digital tools to support client decisions.
-            </p>
-          </li>
-          <li className="mb-10 ms-4">
-            <div className="absolute w-3 h-3 bg-rose-500 rounded-full mt-1.5 -start-1.5 border border-zinc-900" />
-            <time className="mb-1 text-xs font-medium text-zinc-400">2025</time>
-            <h4 className="text-sm font-semibold">Next-gen Platforms</h4>
-            <p className="text-sm text-zinc-300 mt-1">
-              Rolling out supplier & employee portals with secure document exchange,
-              RFQs, and AI-assisted knowledge hubs.
-            </p>
-          </li>
+          {[
+            {
+              y: "2023–24",
+              t: "Hydrometallurgy Pilots",
+              d: "Delivered R&D, SOPs, and commissioning for copper and critical metals.",
+            },
+            {
+              y: "2024",
+              t: "Expansion into Digital Advisory",
+              d: "Launched digital tools, supplier & investor engagement.",
+            },
+            {
+              y: "2025",
+              t: "Next-gen Platforms",
+              d: "Supplier & employee portals, RFQs, AI-assisted knowledge hubs.",
+            },
+          ].map((j, i) => (
+            <li key={i} className="mb-10 ms-4">
+              <div className="absolute w-3 h-3 bg-rose-500 rounded-full mt-1.5 -start-1.5 border border-zinc-900" />
+              <time className="mb-1 text-xs font-medium text-zinc-400">{j.y}</time>
+              <h4 className="text-sm font-semibold">{j.t}</h4>
+              <p className="text-sm text-zinc-300 mt-1">{j.d}</p>
+            </li>
+          ))}
         </ol>
       </Section>
 
-      {/* In-browser AI */}
+      {/* VALUES */}
+      <Section title="What We Value">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            { h: "Evidence-first", p: "Data and validated models over opinions." },
+            { h: "Outcomes > Titles", p: "We ship, learn, and document so others can build on it." },
+            { h: "Sustainable Advantage", p: "Circularity designed in by default." },
+          ].map((c, i) => (
+            <div key={i} className="rounded-xl bg-zinc-900/40 border border-zinc-800 p-5">
+              <h3 className="font-semibold">{c.h}</h3>
+              <p className="text-sm text-zinc-300 mt-1">{c.p}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* AI ASSIST */}
       <Section
         title="Talk to Rotehügels Assist"
         subtitle="An AI knowledge companion — runs entirely in your browser with WebGPU."
       >
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
           <p className="text-sm text-zinc-300 mb-3">
-            Tip: first load downloads the model once and may take a minute
-            on slower networks. It’s cached after.
+            Tip: first load may take a minute, but it’s cached after.
           </p>
           <WebLLMAssistant />
         </div>
       </Section>
 
-      {/* Contact */}
-      <Section title="Contact">
-        <p className="text-sm text-zinc-300">
-          Write to{" "}
-          <a
-            className="text-rose-400 hover:underline"
-            href="mailto:sales@rotehuegels.com"
-          >
-            sales@rotehuegels.com
-          </a>{" "}
-          or use the floating chat bubble to connect with our AI assistant.
+      {/* CONTACT & CTA */}
+      <Section title="Work With Us">
+        <p className="text-sm text-zinc-300 mb-4">
+          Whether you’re scoping a greenfield plant, exploring recycling, or seeking advisory clarity —
+          Rotehügels can help. We work with corporates, entrepreneurs, investors, and institutions worldwide.
         </p>
+        <div className="flex gap-4">
+          <a href="mailto:sales@rotehuegels.com" className="btn-primary no-underline">
+            Start an Engagement
+          </a>
+          <a href="/careers" className="btn-ghost no-underline">
+            Explore Careers
+          </a>
+        </div>
       </Section>
     </div>
   );

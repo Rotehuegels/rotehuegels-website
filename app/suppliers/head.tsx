@@ -1,4 +1,3 @@
-// app/suppliers/head.tsx
 export default function Head() {
   return (
     <>

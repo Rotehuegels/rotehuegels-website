@@ -18,10 +18,74 @@ export default function AboutPage() {
         subtitle="Three pillars. Many domains. One purpose — sustainable advantage."
       >
         <p className="text-lg text-zinc-300 max-w-3xl">
-          <span className="font-semibold">Rotehügel Research Business Consultancy Private Limited</span>{" "}
+          <span className="font-semibold">Rotehügel Research Business Consultancy Private Limited (“Rotehügels”)</span>{" "}
           integrates scientific innovation with strategic advisory and operational execution.
           We partner globally to design circular flows, scale metallurgical processes, and
           deliver investor-ready outcomes—from lab benches to turnkey plants.
+        </p>
+      </Section>
+
+      {/* NEW: Company Write-up (from your brief) */}
+      <Section title="Who We Are">
+        <div className="space-y-6 text-zinc-300">
+          <p>
+            <strong>Rotehügel Research Business Consultancy Private Limited (“Rotehügels”)</strong>, founded on
+            <strong> 1st September 2024</strong> and incorporated on <strong>17th September 2025</strong>, is a
+            technology development company positioned at the intersection of research, engineering, and execution. We
+            focus on delivering innovative process technologies and also act as an EPC partner for greenfield and
+            brownfield projects in the domains of critical minerals, metallurgy, circular economy, and sustainable
+            industrial development.
+          </p>
+
+          <p>
+            Our innovation lies in designing and implementing advanced hydrometallurgical and recycling solutions to
+            extract copper, tin, lead, and other critical minerals from lean ores, secondary resources, and industrial
+            residues. By combining AI-driven modeling, FactSage simulations, and laboratory-scale validations, we
+            transform research into practical, scalable solutions that reduce energy consumption, improve recovery
+            yields, and minimize waste.
+          </p>
+
+          <p>
+            What sets Rotehügels apart is its integration of technology development with EPC execution capability.
+            Drawing from domestic and international industry experience, including large-scale concentrator projects in
+            Africa and recycling pilots in India, we help investors and industries choose the right approach,
+            technology, and investment model for plant development. As an EPC partner, we ensure that{" "}
+            <strong>safety, compliance, and sustainability</strong> are embedded at every stage—from design to
+            commissioning—thereby de-risking projects and enabling reliable long-term performance.
+          </p>
+        </div>
+      </Section>
+
+      <Section title="What We Deliver">
+        <ul className="list-disc pl-6 space-y-3 text-sm text-zinc-300">
+          <li>
+            <strong>Innovation &amp; Development:</strong> Creating next-generation processes for sustainable metal
+            extraction and recycling.
+          </li>
+          <li>
+            <strong>Technology-Driven EPC:</strong> Delivering turnkey plant solutions for both greenfield and
+            brownfield projects.
+          </li>
+          <li>
+            <strong>Safety &amp; Risk Management:</strong> Embedding safety into design and execution to meet global
+            standards.
+          </li>
+          <li>
+            <strong>Investor &amp; Industry Confidence:</strong> Techno-commercial advisory for CAPEX/OPEX optimization
+            and future-ready plant design.
+          </li>
+          <li>
+            <strong>Employment &amp; Wealth Creation:</strong> Generating skilled jobs in engineering, operations, and
+            R&amp;D while converting underutilized resources into valuable outputs.
+          </li>
+        </ul>
+      </Section>
+
+      <Section title="Vision">
+        <p className="text-sm text-zinc-300 max-w-4xl">
+          By combining technology innovation, EPC capability, and safety-driven execution, Rotehügels is positioned as a
+          catalyst for industrial transformation—contributing to India’s National Critical Minerals Mission and global
+          sustainability goals.
         </p>
       </Section>
 

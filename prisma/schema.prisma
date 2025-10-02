@@ -1,0 +1,133 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/**
+ * ---- Enums --------------------------------------------------------------
+ */
+
+enum Role {
+  POTENTIAL
+  EXISTING
+  ADMIN
+}
+
+enum RequestStatus {
+  OPEN
+  IN_REVIEW
+  QUOTED
+  WON
+  LOST
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum DocVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+/**
+ * ---- Models -------------------------------------------------------------
+ */
+
+/* Matches your existing Supabase table exactly */
+model suppliers {
+  id                 String   @id @db.Uuid
+  company_name       String?  @db.Text
+  contact_person     String?  @db.Text
+  email              String?  @db.Text
+  phone              String?  @db.Text
+  website            String?  @db.Text
+  product_categories String?  @db.Text
+  created_at         DateTime? @db.Timestamp(6)
+  certifications     String?  @db.Text
+  country            String?  @db.Text
+  notes              String?  @db.Text
+}
+
+model Profile {
+  id           String   @id // Supabase Auth user ID (UUID)
+  email        String   @unique
+  fullName     String?
+  companyName  String?
+  phone        String?
+  role         Role     @default(POTENTIAL)
+  customerCode String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  requests      Request[]
+  tickets       Ticket[]
+  TicketMessage TicketMessage[]
+  Document      Document[]
+}
+
+model Request {
+  id          String        @id @default(cuid())
+  userId      String
+  title       String
+  details     String
+  status      RequestStatus @default(OPEN)
+  attachments Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Ticket {
+  id        String         @id @default(cuid())
+  userId    String
+  subject   String
+  body      String
+  status    TicketStatus   @default(OPEN)
+  priority  TicketPriority @default(NORMAL)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @default(now())
+
+  user     Profile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages TicketMessage[]
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  authorId  String
+  body      String
+  files     Json?
+  createdAt DateTime @default(now())
+
+  ticket Ticket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author Profile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id         String        @id @default(cuid())
+  ownerId    String?
+  title      String
+  key        String
+  visibility DocVisibility @default(PRIVATE)
+  createdAt  DateTime      @default(now())
+
+  owner Profile? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+}

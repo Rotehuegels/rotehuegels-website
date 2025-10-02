@@ -19,6 +19,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // ✅ Added "The Rotehügels Story" here (slug: /rotehuegels-story)
   const nav = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About Us' },
@@ -26,6 +27,7 @@ export default function Header() {
     { href: '/success-stories', label: 'Success Stories' },
     { href: '/suppliers', label: 'Suppliers' },
     { href: '/current-updates', label: 'Current Updates' },
+    { href: '/rotehuegels-story', label: 'The Rotehügels Story' }, // <-- new
     { href: '/careers', label: 'Careers' },
   ];
 

@@ -1,13 +1,26 @@
 // lib/supabaseServer.ts
-import { createClient } from "@supabase/supabase-js";
+import { cookies } from 'next/headers';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+export function supabaseServer() {
+  const store = cookies();
 
-if (!url || !serviceKey) {
-  throw new Error("Supabase env vars are missing. Check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return store.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          // next/headers cookies are mutable in server actions/route handlers
+          try { store.set({ name, value, ...options }); } catch {}
+        },
+        remove(name: string, options: CookieOptions) {
+          try { store.set({ name, value: '', ...options }); } catch {}
+        },
+      },
+    }
+  );
 }
-
-export const supabaseAdmin = createClient(url, serviceKey, {
-  auth: { persistSession: false },
-});

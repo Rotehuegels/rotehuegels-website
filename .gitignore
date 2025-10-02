@@ -15,3 +15,6 @@ dist/
 
 # uploads/temp
 public/uploads/
+.vercel
+
+/generated/prisma

@@ -51,7 +51,7 @@ export default async function TicketDetail({ params }: Props) {
             <div className="whitespace-pre-wrap">{ticket.body}</div>
           </div>
 
-          {ticket.messages.map(m => (
+          {ticket.messages.map((m: typeof ticket.messages[number]) => (
             <div key={m.id} className="border border-gray-700 rounded p-3 bg-black">
               <div className="text-xs text-gray-400 mb-1">
                 {m.author?.email ?? 'User'} • {new Date(m.createdAt).toLocaleString()}

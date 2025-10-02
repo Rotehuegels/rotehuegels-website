@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "tailwindcss -v >/dev/null 2>&1 || echo 'Tailwind will be run by Next during build'"
+    "postinstall": "prisma generate && (tailwindcss -v >/dev/null 2>&1 || echo 'Tailwind will be run by Next during build')"
   },
   "dependencies": {
     "@mlc-ai/web-llm": "^0.2.79",

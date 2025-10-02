@@ -234,8 +234,11 @@ export default function AboutPage() {
         </div>
         <p className="mt-4 text-sm text-zinc-400">
           Have an RFP or scope note? Email{" "}
-          <a className="text-rose-400 hover:underline" href="mailto:sivakumar@rotehuegels.com">
-            sivakumar@rotehuegels.com
+          <a
+            className="text-rose-400 hover:underline"
+            href="mailto:sales@rotehuegels.com"
+          >
+            sales@rotehuegels.com
           </a>
         </p>
       </Section>
@@ -284,7 +287,7 @@ export default function AboutPage() {
           corporates, entrepreneurs, investors, and institutions worldwide.
         </p>
         <div className="flex gap-4">
-          <a href="mailto:sivakumar@rotehuegels.com" className="btn-primary no-underline">
+          <a href="mailto:sales@rotehuegels.com" className="btn-primary no-underline">
             Start an Engagement
           </a>
           <a href="/careers" className="btn-ghost no-underline">
@@ -314,7 +317,7 @@ export default function AboutPage() {
             contactPoint: [
               {
                 "@type": "ContactPoint",
-                email: "sivakumar@rotehuegels.com",
+                email: "sales@rotehuegels.com",
                 contactType: "sales",
                 areaServed: "IN",
                 availableLanguage: ["en"],

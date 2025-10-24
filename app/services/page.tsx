@@ -63,12 +63,35 @@ export default function ServicesPage() {
           >
             Book a discovery call
           </Link>
-          <Link
-            href="/success-stories"
+          {/* Supplier email CTA (replaces /suppliers link) */}
+          <a
+            href={
+              "mailto:procurements@rotehuegels.com" +
+              "?subject=" +
+              encodeURIComponent("Supplier Onboarding / Vendor Registration") +
+              "&body=" +
+              encodeURIComponent(
+                [
+                  "Hello Rotehügels Procurement Team,",
+                  "",
+                  "We would like to register as a supplier. Please find our details below:",
+                  "",
+                  "• Company name:",
+                  "• Website:",
+                  "• Contact person & phone:",
+                  "• Categories / materials supplied:",
+                  "• Certifications (ISO, etc.):",
+                  "",
+                  "Thank you.",
+                ].join("\n")
+              )
+            }
             className="rounded-xl border border-zinc-700 px-4 py-2.5 text-sm font-medium text-zinc-200 hover:border-zinc-600"
+            aria-label="Email Rotehügels Procurement"
+            title="Alias of info@rotehuegels.com"
           >
-            View success stories
-          </Link>
+            Become a supplier
+          </a>
         </div>
       </header>
 
@@ -187,12 +210,35 @@ export default function ServicesPage() {
           >
             Talk to an expert
           </Link>
-          <Link
-            href="/suppliers"
+          {/* Supplier email CTA (replaces /suppliers link) */}
+          <a
+            href={
+              "mailto:procurements@rotehuegels.com" +
+              "?subject=" +
+              encodeURIComponent("Supplier Onboarding / Vendor Registration") +
+              "&body=" +
+              encodeURIComponent(
+                [
+                  "Hello Rotehügels Procurement Team,",
+                  "",
+                  "We would like to register as a supplier. Please find our details below:",
+                  "",
+                  "• Company name:",
+                  "• Website:",
+                  "• Contact person & phone:",
+                  "• Categories / materials supplied:",
+                  "• Certifications (ISO, etc.):",
+                  "",
+                  "Thank you.",
+                ].join("\n")
+              )
+            }
             className="rounded-xl border border-zinc-700 px-4 py-2.5 text-sm font-medium text-zinc-200 hover:border-zinc-600"
+            aria-label="Email Rotehügels Procurement"
+            title="Alias of info@rotehuegels.com"
           >
             Become a supplier
-          </Link>
+          </a>
         </div>
       </div>
     </section>

@@ -21,7 +21,7 @@ export default function ContactPage() {
         aria-label="Regional contacts"
         className="mx-auto mt-8 grid max-w-6xl auto-rows-fr gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
       >
-        {/* APAC — Chennai */}
+        {/* APAC — Chennai (address removed to avoid footer duplication) */}
         <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all duration-300">
           <h3 className="text-xl font-semibold text-rose-300">Asia–Pacific (APAC) — Chennai, India</h3>
           <p className="mt-1 text-xs text-white/70">IST (UTC+5:30) • 08:00–18:00</p>
@@ -36,28 +36,6 @@ export default function ContactPage() {
             <Copyable label="📱" value="+91 90044 91275" href="tel:+919004491275" ariaLabel="Call APAC phone" />
           </div>
 
-          <div className="mt-4 text-sm">
-            <p className="font-medium">Rotehügels Headquarters</p>
-            <address className="not-italic mt-1 opacity-90">
-              No. 1/584, 7th Street, Jothi Nagar, Padianallur,
-              <br />
-              Near Gangaiamman Kovil, Redhills, Chennai – 600052
-              <br />
-              Tamil Nadu, India
-            </address>
-            <p className="mt-3">
-              <a
-                className="flex items-center gap-2 underline-offset-4 hover:underline"
-                href="https://www.rotehuegels.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Visit rotehuegels.com"
-              >
-                <span aria-hidden="true">🌐</span> www.rotehuegels.com
-              </a>
-            </p>
-          </div>
-
           <div className="mt-4 text-sm opacity-90">
             <p className="font-medium">Functions</p>
             <p>Corporate HQ · R&amp;D · Engineering · EPC · Asia-Pacific Client Engagement</p>
@@ -67,7 +45,7 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* EMEA — Zambia (LinkedIn removed here) */}
+        {/* EMEA — Zambia (no LinkedIn here) */}
         <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all duration-300">
           <h3 className="text-xl font-semibold text-rose-300">Europe, Middle East &amp; Africa (EMEA) — Zambia</h3>
           <p className="mt-1 text-xs text-white/70">CAT (UTC+2) • 08:00–18:00</p>
@@ -209,15 +187,6 @@ export default function ContactPage() {
                 availableLanguage: ["en"],
               },
             ],
-            address: {
-              "@type": "PostalAddress",
-              streetAddress:
-                "No. 1/584, 7th Street, Jothi Nagar, Padianallur, Near Gangaiamman Kovil, Redhills",
-              addressLocality: "Chennai",
-              postalCode: "600052",
-              addressRegion: "Tamil Nadu",
-              addressCountry: "IN",
-            },
           }),
         }}
       />

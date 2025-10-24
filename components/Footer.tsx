@@ -18,7 +18,7 @@ export default function Footer() {
             <MapPin className="h-4 w-4 mt-0.5 text-rose-400" />
             <span>
               <a
-                href="https://www.google.com/maps/place/No.+1%2F584,+7th+Street,+Jothi+Nagar,+Padianallur,+Redhills,+Chennai,+Tamil+Nadu+600052"
+                href="https://maps.app.goo.gl/6ubSNGzomScS4gaV7"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline"
@@ -105,6 +105,91 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Google Business / Organization JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "@id": "https://www.rotehuegels.com/#organization",
+            "name": "Rotehuegel Research Business Consultancy Private Limited",
+            "url": "https://www.rotehuegels.com",
+            "logo": "https://www.rotehuegels.com/favicon.ico",
+            "tagline": "Where Research Meets Business Excellence",
+            "founder": {
+              "@type": "Person",
+              "name": "Sivakumar Shanmugam",
+              "jobTitle": "Founder & CEO",
+              "sameAs": "https://www.linkedin.com/in/sivakumarshanmugam/"
+            },
+            "foundingDate": "2025-09-17",
+            "sameAs": [
+              "https://www.linkedin.com/company/rotehuegels",
+              "https://www.linkedin.com/in/sivakumarshanmugam/"
+            ],
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "No. 1/584, 7th Street, Jothi Nagar, Padianallur, Near Gangaiamman Kovil, Redhills",
+              "addressLocality": "Chennai",
+              "addressRegion": "Tamil Nadu",
+              "postalCode": "600052",
+              "addressCountry": "IN"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 13.1709652,
+              "longitude": 80.1783202
+            },
+            "hasMap": "https://maps.app.goo.gl/6ubSNGzomScS4gaV7",
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "contactType": "General Communications",
+                "email": "info@rotehuegels.com",
+                "areaServed": "Worldwide",
+                "availableLanguage": ["en"]
+              },
+              {
+                "@type": "ContactPoint",
+                "contactType": "RFPs / Sales Inquiries",
+                "email": "sales@rotehuegels.com",
+                "areaServed": "Worldwide",
+                "availableLanguage": ["en"]
+              },
+              {
+                "@type": "ContactPoint",
+                "contactType": "Investor Relations",
+                "email": "ir@rotehuegels.com",
+                "areaServed": "Worldwide",
+                "availableLanguage": ["en"]
+              },
+              {
+                "@type": "ContactPoint",
+                "contactType": "Customer service",
+                "areaServed": "APAC",
+                "telephone": "+91-8939120320",
+                "availableLanguage": ["en"]
+              },
+              {
+                "@type": "ContactPoint",
+                "contactType": "Customer service",
+                "areaServed": "EMEA",
+                "telephone": "+260-773540064",
+                "availableLanguage": ["en"]
+              },
+              {
+                "@type": "ContactPoint",
+                "contactType": "Customer service",
+                "areaServed": "Americas",
+                "telephone": "+1-847-778-7595",
+                "availableLanguage": ["en"]
+              }
+            ]
+          })
+        }}
+      />
 
       {/* Bottom Bar */}
       <div className="border-t border-white/10 py-4 text-center text-xs text-zinc-500">

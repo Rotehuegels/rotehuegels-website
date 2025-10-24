@@ -1,73 +1,7 @@
 // app/contact/page.tsx
-"use client";
-
-import { useState } from "react";
+import { Copyable } from "./Copyable";
 
 export const metadata = { title: "Contact Us — Rotehuegels" };
-
-// Small helper for click-to-copy lines
-function Copyable({
-  label,
-  value,
-  href,
-  ariaLabel,
-}: {
-  label: string; // emoji or icon
-  value: string; // display text
-  href?: string; // tel: or mailto:
-  ariaLabel?: string;
-}) {
-  const [copied, setCopied] = useState(false);
-
-  const onCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(value.replace(/\s+/g, " "));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
-    } catch {
-      // no-op
-    }
-  };
-
-  const line = (
-    <span className="underline-offset-4 hover:underline">
-      {value}
-    </span>
-  );
-
-  return (
-    <p className="flex items-center gap-2">
-      <span aria-hidden="true">{label}</span>
-      {href ? (
-        <a
-          href={href}
-          aria-label={ariaLabel || value}
-          className="focus:outline-none focus:ring-2 focus:ring-rose-400 rounded"
-        >
-          {line}
-        </a>
-      ) : (
-        line
-      )}
-      <button
-        type="button"
-        onClick={onCopy}
-        className="ml-2 rounded px-2 py-0.5 text-xs text-white/80 bg-white/10 hover:bg-white/15 transition"
-        aria-label={`Copy ${value}`}
-        title="Copy"
-      >
-        Copy
-      </button>
-      <span
-        role="status"
-        aria-live="polite"
-        className={`ml-2 text-xs ${copied ? "opacity-100" : "opacity-0"} transition`}
-      >
-        Copied!
-      </span>
-    </p>
-  );
-}
 
 export default function ContactPage() {
   return (
@@ -99,12 +33,7 @@ export default function ContactPage() {
               href="mailto:apac@rotehuegels.com?subject=%5BAPAC%5D%20Enquiry"
               ariaLabel="Email APAC"
             />
-            <Copyable
-              label="📱"
-              value="+91 90044 91275"
-              href="tel:+919004491275"
-              ariaLabel="Call APAC phone"
-            />
+            <Copyable label="📱" value="+91 90044 91275" href="tel:+919004491275" ariaLabel="Call APAC phone" />
           </div>
 
           <div className="mt-4 text-sm">
@@ -138,11 +67,9 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* EMEA — Zambia (no LinkedIn here) */}
+        {/* EMEA — Zambia (LinkedIn removed here) */}
         <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all duration-300">
-          <h3 className="text-xl font-semibold text-rose-300">
-            Europe, Middle East &amp; Africa (EMEA) — Zambia
-          </h3>
+          <h3 className="text-xl font-semibold text-rose-300">Europe, Middle East &amp; Africa (EMEA) — Zambia</h3>
           <p className="mt-1 text-xs text-white/70">CAT (UTC+2) • 08:00–18:00</p>
 
           <div className="mt-3 space-y-1">
@@ -152,12 +79,7 @@ export default function ContactPage() {
               href="mailto:emea@rotehuegels.com?subject=%5BEMEA%5D%20Enquiry"
               ariaLabel="Email EMEA"
             />
-            <Copyable
-              label="📱"
-              value="+260 77354 0064"
-              href="tel:+260773540064"
-              ariaLabel="Call EMEA phone"
-            />
+            <Copyable label="📱" value="+260 77354 0064" href="tel:+260773540064" ariaLabel="Call EMEA phone" />
           </div>
 
           <div className="mt-4 text-sm opacity-90">
@@ -181,12 +103,7 @@ export default function ContactPage() {
               href="mailto:americas@rotehuegels.com?subject=%5BAmericas%5D%20Enquiry"
               ariaLabel="Email Americas"
             />
-            <Copyable
-              label="📱"
-              value="+1 847 778 7595"
-              href="tel:+18477787595"
-              ariaLabel="Call Americas phone"
-            />
+            <Copyable label="📱" value="+1 847 778 7595" href="tel:+18477787595" ariaLabel="Call Americas phone" />
           </div>
 
           <div className="mt-4 text-sm opacity-90">
@@ -228,9 +145,7 @@ export default function ContactPage() {
           </div>
           <div className="rounded-xl bg-gradient-to-br from-rose-950/30 to-rose-900/10 p-4 shadow-inner">
             <p className="font-medium text-rose-200">EMEA &amp; Americas</p>
-            <p className="opacity-90">
-              All African &amp; European countries; North, Central &amp; South America
-            </p>
+            <p className="opacity-90">All African &amp; European countries; North, Central &amp; South America</p>
             <p className="mt-1">
               <span className="font-medium">Lead:</span> Ms. Vaishnavi Elumalai — Sales &amp; Marketing (Technical)
             </p>
@@ -255,15 +170,12 @@ export default function ContactPage() {
             </a>
           </p>
         </div>
-        <p className="mt-6 text-xs text-white/60">
-          We do not share client details. NDAs available on request.
-        </p>
+        <p className="mt-6 text-xs text-white/60">We do not share client details. NDAs available on request.</p>
       </section>
 
       {/* JSON-LD for SEO */}
       <script
         type="application/ld+json"
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD injection for SEO
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",

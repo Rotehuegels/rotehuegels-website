@@ -19,15 +19,14 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // ✅ Added "The Rotehügels Story" here (slug: /rotehuegels-story)
+  // ✅ Suppliers removed
   const nav = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About Us' },
     { href: '/services', label: 'Services' },
     { href: '/success-stories', label: 'Success Stories' },
-    { href: '/suppliers', label: 'Suppliers' },
     { href: '/current-updates', label: 'Current Updates' },
-    { href: '/rotehuegels-story', label: 'The Rotehügels Story' }, // <-- new
+    { href: '/rotehuegels-story', label: 'The Rotehügels Story' }, // <-- kept
     { href: '/careers', label: 'Careers' },
   ];
 
@@ -66,7 +65,7 @@ export default function Header() {
             </Link>
           ))}
 
-          {/* Primary CTA */}
+        {/* Primary CTA */}
           <Link
             href="/contact"
             className="ml-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"

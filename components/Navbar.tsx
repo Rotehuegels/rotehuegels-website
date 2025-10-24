@@ -20,11 +20,10 @@ export default function Navbar() {
         <Link href="/" className="no-underline hover:underline">Home</Link>
         <Link href="/about" className="no-underline hover:underline">About Us</Link>
         <Link href="/services" className="no-underline hover:underline">Services</Link>
-        <Link href="/suppliers" className="no-underline hover:underline">Suppliers</Link>
         <Link href="/current-updates" className="no-underline hover:underline">Updates</Link>
         <Link href="/rotehugels-story" className="no-underline hover:underline">
           The Rotehügels Story
-        </Link> {/* ✅ New menu item */}
+        </Link>
         <Link href="/contact" className="no-underline hover:underline">Contact</Link>
         <Link href="/careers" className="no-underline hover:underline">Careers</Link>
       </div>

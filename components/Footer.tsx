@@ -1,4 +1,4 @@
-import { Linkedin, Globe, Mail } from "lucide-react";
+import { Linkedin, Globe, Mail, MapPin } from "lucide-react";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -11,10 +11,16 @@ export default function Footer() {
           <p className="font-semibold text-white text-base">
             Rotehuegel Research Business Consultancy Private Limited
           </p>
-          <p className="mt-2 max-w-xs opacity-90">
-            A global research-driven engineering and consulting company
-            specializing in critical minerals, EPC solutions, and
-            sustainable process innovations.
+          <p className="italic text-rose-300 text-sm">
+            “Where Research Meets Business Excellence”
+          </p>
+          <p className="mt-3 flex items-start gap-2 opacity-90 leading-relaxed">
+            <MapPin className="h-4 w-4 mt-0.5 text-rose-400" />
+            <span>
+              No. 1/584, 7th Street, Jothi Nagar, Padianallur,  
+              Near Gangaiamman Kovil, Redhills, Chennai – 600052,  
+              Tamil Nadu, India
+            </span>
           </p>
         </div>
 
@@ -39,12 +45,14 @@ export default function Footer() {
               <a href="mailto:info@rotehuegels.com" className="hover:underline">
                 info@rotehuegels.com
               </a>
+              <span className="text-zinc-500"> · General Communications</span>
             </li>
             <li>
               <Mail className="inline h-4 w-4 mr-1 text-rose-400" />
               <a href="mailto:sales@rotehuegels.com" className="hover:underline">
                 sales@rotehuegels.com
               </a>
+              <span className="text-zinc-500"> · RFPs / Sales Inquiries</span>
             </li>
             <li>
               <Mail className="inline h-4 w-4 mr-1 text-rose-400" />

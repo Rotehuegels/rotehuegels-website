@@ -21,9 +21,13 @@ export default function ContactPage() {
         aria-label="Regional contacts"
         className="mx-auto mt-8 grid max-w-6xl auto-rows-fr gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
       >
-        {/* APAC — Chennai (address removed to avoid footer duplication) */}
+        {/* APAC — Chennai */}
         <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all duration-300">
-          <h3 className="text-xl font-semibold text-rose-300">Asia–Pacific (APAC) — Chennai, India</h3>
+          <h3 className="text-xl font-semibold text-rose-300">
+            Asia–Pacific (APAC)
+            <br />
+            <span className="text-white/80 text-base">Chennai, India</span>
+          </h3>
           <p className="mt-1 text-xs text-white/70">IST (UTC+5:30) • 08:00–18:00</p>
 
           <div className="mt-3 space-y-1">
@@ -45,9 +49,13 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* EMEA — Zambia (no LinkedIn here) */}
+        {/* EMEA — Kitwe */}
         <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all duration-300">
-          <h3 className="text-xl font-semibold text-rose-300">Europe, Middle East &amp; Africa (EMEA) — Zambia</h3>
+          <h3 className="text-xl font-semibold text-rose-300">
+            Europe, Middle East &amp; Africa (EMEA)
+            <br />
+            <span className="text-white/80 text-base">Kitwe, Zambia</span>
+          </h3>
           <p className="mt-1 text-xs text-white/70">CAT (UTC+2) • 08:00–18:00</p>
 
           <div className="mt-3 space-y-1">
@@ -69,9 +77,13 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Americas — Dallas (LinkedIn kept here) */}
+        {/* Americas — Dallas */}
         <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all duration-300">
-          <h3 className="text-xl font-semibold text-rose-300">Americas — Dallas, USA</h3>
+          <h3 className="text-xl font-semibold text-rose-300">
+            North, Central &amp; South America
+            <br />
+            <span className="text-white/80 text-base">Dallas, USA</span>
+          </h3>
           <p className="mt-1 text-xs text-white/70">CST (UTC−6) • 08:00–18:00</p>
 
           <div className="mt-3 space-y-1">
@@ -150,46 +162,6 @@ export default function ContactPage() {
         </div>
         <p className="mt-6 text-xs text-white/60">We do not share client details. NDAs available on request.</p>
       </section>
-
-      {/* JSON-LD for SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "Rotehügel Research Business Consultancy Pvt. Ltd.",
-            url: "https://www.rotehuegels.com",
-            logo: "https://www.rotehuegels.com/favicon.ico",
-            contactPoint: [
-              {
-                "@type": "ContactPoint",
-                areaServed: "APAC",
-                contactType: "customer service",
-                email: "apac@rotehuegels.com",
-                telephone: "+91-90044-91275",
-                availableLanguage: ["en"],
-              },
-              {
-                "@type": "ContactPoint",
-                areaServed: "EMEA",
-                contactType: "customer service",
-                email: "emea@rotehuegels.com",
-                telephone: "+260-773540064",
-                availableLanguage: ["en"],
-              },
-              {
-                "@type": "ContactPoint",
-                areaServed: "Americas",
-                contactType: "customer service",
-                email: "americas@rotehuegels.com",
-                telephone: "+1-847-778-7595",
-                availableLanguage: ["en"],
-              },
-            ],
-          }),
-        }}
-      />
     </main>
   );
 }

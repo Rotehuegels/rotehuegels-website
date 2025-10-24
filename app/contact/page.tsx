@@ -37,7 +37,12 @@ export default function ContactPage() {
               href="mailto:apac@rotehuegels.com?subject=%5BAPAC%5D%20Enquiry"
               ariaLabel="Email APAC"
             />
-            <Copyable label="📱" value="+91 90044 91275" href="tel:+919004491275" ariaLabel="Call APAC phone" />
+            <Copyable
+              label="📱"
+              value="🇮🇳 +91 89391 20320"
+              href="tel:+918939120320"
+              ariaLabel="Call APAC phone"
+            />
           </div>
 
           <div className="mt-4 text-sm opacity-90">
@@ -65,7 +70,12 @@ export default function ContactPage() {
               href="mailto:emea@rotehuegels.com?subject=%5BEMEA%5D%20Enquiry"
               ariaLabel="Email EMEA"
             />
-            <Copyable label="📱" value="+260 77354 0064" href="tel:+260773540064" ariaLabel="Call EMEA phone" />
+            <Copyable
+              label="📱"
+              value="🇿🇲 +260 77354 0064"
+              href="tel:+260773540064"
+              ariaLabel="Call EMEA phone"
+            />
           </div>
 
           <div className="mt-4 text-sm opacity-90">
@@ -93,7 +103,12 @@ export default function ContactPage() {
               href="mailto:americas@rotehuegels.com?subject=%5BAmericas%5D%20Enquiry"
               ariaLabel="Email Americas"
             />
-            <Copyable label="📱" value="+1 847 778 7595" href="tel:+18477787595" ariaLabel="Call Americas phone" />
+            <Copyable
+              label="📱"
+              value="🇺🇸 +1 847 778 7595"
+              href="tel:+18477787595"
+              ariaLabel="Call Americas phone"
+            />
           </div>
 
           <div className="mt-4 text-sm opacity-90">
@@ -162,6 +177,46 @@ export default function ContactPage() {
         </div>
         <p className="mt-6 text-xs text-white/60">We do not share client details. NDAs available on request.</p>
       </section>
+
+      {/* JSON-LD for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Rotehügel Research Business Consultancy Pvt. Ltd.",
+            url: "https://www.rotehuegels.com",
+            logo: "https://www.rotehuegels.com/favicon.ico",
+            contactPoint: [
+              {
+                "@type": "ContactPoint",
+                areaServed: "APAC",
+                contactType: "customer service",
+                email: "apac@rotehuegels.com",
+                telephone: "+91-8939120320",
+                availableLanguage: ["en"],
+              },
+              {
+                "@type": "ContactPoint",
+                areaServed: "EMEA",
+                contactType: "customer service",
+                email: "emea@rotehuegels.com",
+                telephone: "+260-773540064",
+                availableLanguage: ["en"],
+              },
+              {
+                "@type": "ContactPoint",
+                areaServed: "Americas",
+                contactType: "customer service",
+                email: "americas@rotehuegels.com",
+                telephone: "+1-847-778-7595",
+                availableLanguage: ["en"],
+              },
+            ],
+          }),
+        }}
+      />
     </main>
   );
 }

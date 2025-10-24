@@ -14,12 +14,19 @@ export default function Footer() {
           <p className="italic text-rose-300 text-sm">
             “Where Research Meets Business Excellence”
           </p>
-          <p className="mt-3 flex items-start gap-2 opacity-90 leading-relaxed">
+          <p className="mt-3 flex items-start gap-2 leading-relaxed opacity-90">
             <MapPin className="h-4 w-4 mt-0.5 text-rose-400" />
             <span>
-              No. 1/584, 7th Street, Jothi Nagar, Padianallur,  
-              Near Gangaiamman Kovil, Redhills, Chennai – 600052,  
-              Tamil Nadu, India
+              <a
+                href="https://www.google.com/maps/place/No.+1%2F584,+7th+Street,+Jothi+Nagar,+Padianallur,+Redhills,+Chennai,+Tamil+Nadu+600052"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                No. 1/584, 7th Street, Jothi Nagar, Padianallur,<br />
+                Near Gangaiamman Kovil, Redhills, Chennai – 600052,<br />
+                Tamil Nadu, India
+              </a>
             </span>
           </p>
         </div>

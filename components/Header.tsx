@@ -11,7 +11,6 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Solidify header on scroll for readability
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     onScroll();
@@ -19,7 +18,6 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -29,7 +27,6 @@ export default function Header() {
     };
   }, [open]);
 
-  // ✅ Suppliers removed
   const nav = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About Us' },
@@ -51,35 +48,21 @@ export default function Header() {
   return (
     <header
       className={[
-        // raise header above tickers etc.
         'sticky top-0 z-[90] border-b border-white/10 backdrop-blur transition-colors duration-300',
         scrolled ? 'bg-black/80' : 'bg-black/40',
       ].join(' ')}
     >
-      <div
-        className="container mx-auto flex items-center justify-between py-3 px-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]"
-        style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
-      >
-        {/* Logo */}
+      <div className="container mx-auto flex items-center justify-between py-3 px-4 md:px-6">
         <Link href="/" className="flex items-center gap-3 no-underline">
-          <Image
-            src="/logo.png"
-            alt="Rotehügels logo"
-            width={140}
-            height={40}
-            priority
-          />
+          <Image src="/logo.png" alt="Rotehügels logo" width={140} height={40} priority />
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-8">
           {nav.map((n) => (
             <Link key={n.href} href={n.href} className={linkClasses(n.href)}>
               {n.label}
             </Link>
           ))}
-
-          {/* Primary CTA */}
           <Link
             href="/contact"
             className="ml-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
@@ -88,34 +71,26 @@ export default function Header() {
           </Link>
         </nav>
 
-        {/* Mobile menu button */}
         <button
           className="md:hidden p-2 rounded hover:bg-white/5"
           onClick={() => setOpen(true)}
           aria-label="Open menu"
-          aria-expanded={open}
-          aria-controls="mobile-menu"
         >
           <Menu />
         </button>
       </div>
 
-      {/* Mobile full-screen overlay menu */}
+      {/* Mobile Menu Full Screen */}
       <div
         id="mobile-menu"
-        className={[
-          'fixed inset-0 z-[100] md:hidden',
-          'bg-black/95 backdrop-blur-md border-l border-white/10',
-          'transform transition-transform duration-200',
-          open ? 'translate-x-0' : 'translate-x-full',
-          'overflow-y-auto', // scroll menu content if needed
-        ].join(' ')}
+        className={`fixed inset-0 z-[100] bg-black/95 backdrop-blur-lg transition-transform duration-300 ${
+          open ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+        } md:hidden`}
         role="dialog"
         aria-modal="true"
       >
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+          <Link href="/" onClick={() => setOpen(false)}>
             <Image src="/logo.png" alt="Rotehügels logo" width={120} height={34} />
           </Link>
           <button
@@ -127,19 +102,18 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Menu list */}
-        <nav className="flex flex-col gap-1 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {/* Centered navigation list */}
+        <nav className="flex flex-col items-center justify-center h-[calc(100vh-5rem)] space-y-4 px-6 text-center overflow-y-auto">
           {nav.map((n) => (
             <Link
               key={n.href}
               href={n.href}
               onClick={() => setOpen(false)}
-              className={[
-                'rounded-md px-4 py-4 text-base',
+              className={`text-lg py-2 font-medium transition-all ${
                 pathname === n.href
-                  ? 'text-red-400 font-semibold bg-white/5'
-                  : 'text-zinc-200 hover:bg-white/5 hover:text-red-300',
-              ].join(' ')}
+                  ? 'text-red-400 font-semibold'
+                  : 'text-zinc-200 hover:text-red-300'
+              }`}
             >
               {n.label}
             </Link>
@@ -147,14 +121,13 @@ export default function Header() {
           <Link
             href="/contact"
             onClick={() => setOpen(false)}
-            className="mt-2 rounded-lg bg-red-600 px-4 py-4 text-base font-semibold text-white text-center hover:bg-red-500 transition-colors"
+            className="mt-6 inline-block rounded-lg bg-red-600 px-6 py-3 text-base font-semibold text-white hover:bg-red-500 transition-colors"
           >
             Get in Touch
           </Link>
         </nav>
       </div>
 
-      {/* Scrim behind menu (click to close) */}
       {open && (
         <button
           aria-hidden="true"

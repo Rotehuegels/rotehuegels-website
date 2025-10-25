@@ -13,10 +13,8 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // detect mount for portals
   useEffect(() => setMounted(true), []);
 
-  // Solidify header on scroll for readability
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     onScroll();
@@ -24,16 +22,16 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
+  // Lock body scroll when menu is open
   useEffect(() => {
     if (!open) return;
     const prevOverflow = document.body.style.overflow;
-    const prevTouchAction = document.body.style.touchAction as string;
+    const prevTouch = document.body.style.touchAction as string;
     document.body.style.overflow = 'hidden';
     document.body.style.touchAction = 'none';
     return () => {
       document.body.style.overflow = prevOverflow;
-      document.body.style.touchAction = prevTouchAction || '';
+      document.body.style.touchAction = prevTouch || '';
     };
   }, [open]);
 
@@ -59,17 +57,16 @@ export default function Header() {
     <>
       <header
         className={[
-          'sticky top-0 z-[90] border-b border-white/10 backdrop-blur transition-colors duration-300',
+          // ↑ raise header so hamburger is always tappable
+          'sticky top-0 z-[500] border-b border-white/10 backdrop-blur transition-colors duration-300',
           scrolled ? 'bg-black/80' : 'bg-black/40',
         ].join(' ')}
       >
         <div className="container mx-auto flex items-center justify-between py-3 px-4 md:px-6">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-3 no-underline">
             <Image src="/logo.png" alt="Rotehügels logo" width={140} height={40} priority />
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8">
             {nav.map((n) => (
               <Link key={n.href} href={n.href} className={linkClasses(n.href)}>
@@ -84,7 +81,6 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Mobile menu button */}
           <button
             className="md:hidden p-2 rounded hover:bg-white/5"
             onClick={() => setOpen(true)}
@@ -97,74 +93,70 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile FULL-SCREEN MENU via PORTAL with watermark */}
+      {/* Mobile FULL-SCREEN menu via PORTAL with watermark */}
       {mounted &&
         createPortal(
-          <>
-            <div
-              id="mobile-menu"
-              className={[
-                'fixed inset-0 z-[9999] md:hidden',
-                'bg-black', // solid background
-                'transform transition-transform duration-200',
-                open ? 'translate-x-0' : 'translate-x-full',
-                'flex flex-col relative overflow-hidden',
-              ].join(' ')}
-              role="dialog"
-              aria-modal="true"
-            >
-              {/* Watermark */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <Image
-                  src="/logo.png"
-                  alt="Watermark Logo"
-                  width={300}
-                  height={100}
-                  className="opacity-5"
-                  priority
-                />
-              </div>
-
-              {/* Top bar */}
-              <div className="flex items-center justify-between px-4 py-4 border-b border-white/10 relative z-10">
-                <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3">
-                  <Image src="/logo.png" alt="Rotehügels logo" width={120} height={34} />
-                </Link>
-                <button
-                  className="p-2 rounded hover:bg-white/5"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close menu"
-                >
-                  <X />
-                </button>
-              </div>
-
-              {/* Menu items */}
-              <nav className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center relative z-10">
-                {nav.map((n) => (
-                  <Link
-                    key={n.href}
-                    href={n.href}
-                    onClick={() => setOpen(false)}
-                    className={`text-lg py-2 font-medium transition-colors ${
-                      pathname === n.href
-                        ? 'text-red-400 font-semibold'
-                        : 'text-zinc-200 hover:text-red-300'
-                    }`}
-                  >
-                    {n.label}
-                  </Link>
-                ))}
-                <Link
-                  href="/contact"
-                  onClick={() => setOpen(false)}
-                  className="mt-6 inline-block rounded-lg bg-red-600 px-6 py-3 text-base font-semibold text-white hover:bg-red-500 transition-colors"
-                >
-                  Get in Touch
-                </Link>
-              </nav>
+          <div
+            id="mobile-menu"
+            className={[
+              'fixed inset-0 z-[9999] md:hidden flex flex-col relative overflow-hidden',
+              'bg-black', // solid, opaque
+              'transform transition-transform duration-200',
+              // KEY FIX: don't capture taps when closed
+              open ? 'translate-x-0 pointer-events-auto' : 'translate-x-full pointer-events-none',
+            ].join(' ')}
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Watermark */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <Image
+                src="/logo.png"
+                alt="Watermark Logo"
+                width={300}
+                height={100}
+                className="opacity-5"
+                priority
+              />
             </div>
-          </>,
+
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-white/10 relative z-10">
+              <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3">
+                <Image src="/logo.png" alt="Rotehügels logo" width={120} height={34} />
+              </Link>
+              <button
+                className="p-2 rounded hover:bg-white/5"
+                onClick={() => setOpen(false)}
+                aria-label="Close menu"
+              >
+                <X />
+              </button>
+            </div>
+
+            {/* Menu items */}
+            <nav className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center relative z-10">
+              {nav.map((n) => (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  onClick={() => setOpen(false)}
+                  className={`text-lg py-2 font-medium transition-colors ${
+                    pathname === n.href ? 'text-red-400 font-semibold' : 'text-zinc-200 hover:text-red-300'
+                  }`}
+                >
+                  {n.label}
+                </Link>
+              ))}
+              <Link
+                href="/contact"
+                onClick={() => setOpen(false)}
+                className="mt-6 inline-block rounded-lg bg-red-600 px-6 py-3 text-base font-semibold text-white hover:bg-red-500 transition-colors"
+              >
+                Get in Touch
+              </Link>
+            </nav>
+          </div>,
           document.body
         )}
     </>

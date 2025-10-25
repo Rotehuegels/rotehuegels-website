@@ -19,6 +19,16 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
   // ✅ Suppliers removed
   const nav = [
     { href: '/', label: 'Home' },
@@ -26,7 +36,7 @@ export default function Header() {
     { href: '/services', label: 'Services' },
     { href: '/success-stories', label: 'Success Stories' },
     { href: '/current-updates', label: 'Current Updates' },
-    { href: '/rotehuegels-story', label: 'The Rotehügels Story' }, // <-- kept
+    { href: '/rotehuegels-story', label: 'The Rotehügels Story' },
     { href: '/careers', label: 'Careers' },
   ];
 
@@ -41,11 +51,15 @@ export default function Header() {
   return (
     <header
       className={[
-        'sticky top-0 z-50 border-b border-white/10 backdrop-blur transition-colors duration-300',
+        // raise header above tickers etc.
+        'sticky top-0 z-[90] border-b border-white/10 backdrop-blur transition-colors duration-300',
         scrolled ? 'bg-black/80' : 'bg-black/40',
       ].join(' ')}
     >
-      <div className="container mx-auto flex items-center justify-between py-3 px-4 md:px-6">
+      <div
+        className="container mx-auto flex items-center justify-between py-3 px-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]"
+        style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
+      >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 no-underline">
           <Image
@@ -65,7 +79,7 @@ export default function Header() {
             </Link>
           ))}
 
-        {/* Primary CTA */}
+          {/* Primary CTA */}
           <Link
             href="/contact"
             className="ml-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors"
@@ -86,16 +100,20 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Mobile drawer */}
+      {/* Mobile full-screen overlay menu */}
       <div
         id="mobile-menu"
         className={[
-          'fixed inset-y-0 right-0 z-[60] w-72 max-w-full bg-black/95 backdrop-blur-sm border-l border-white/10 transform transition-transform duration-200 md:hidden',
+          'fixed inset-0 z-[100] md:hidden',
+          'bg-black/95 backdrop-blur-md border-l border-white/10',
+          'transform transition-transform duration-200',
           open ? 'translate-x-0' : 'translate-x-full',
+          'overflow-y-auto', // scroll menu content if needed
         ].join(' ')}
         role="dialog"
         aria-modal="true"
       >
+        {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3">
             <Image src="/logo.png" alt="Rotehügels logo" width={120} height={34} />
@@ -109,17 +127,18 @@ export default function Header() {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1 p-3">
+        {/* Menu list */}
+        <nav className="flex flex-col gap-1 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {nav.map((n) => (
             <Link
               key={n.href}
               href={n.href}
               onClick={() => setOpen(false)}
               className={[
-                'rounded-md px-3 py-3 text-base',
+                'rounded-md px-4 py-4 text-base',
                 pathname === n.href
-                  ? 'text-red-500 font-semibold bg-white/5'
-                  : 'text-zinc-200 hover:bg-white/5 hover:text-red-400',
+                  ? 'text-red-400 font-semibold bg-white/5'
+                  : 'text-zinc-200 hover:bg-white/5 hover:text-red-300',
               ].join(' ')}
             >
               {n.label}
@@ -128,19 +147,19 @@ export default function Header() {
           <Link
             href="/contact"
             onClick={() => setOpen(false)}
-            className="mt-2 rounded-lg bg-red-600 px-3 py-3 text-base font-semibold text-white text-center hover:bg-red-500 transition-colors"
+            className="mt-2 rounded-lg bg-red-600 px-4 py-4 text-base font-semibold text-white text-center hover:bg-red-500 transition-colors"
           >
             Get in Touch
           </Link>
         </nav>
       </div>
 
-      {/* Scrim behind mobile drawer */}
+      {/* Scrim behind menu (click to close) */}
       {open && (
         <button
           aria-hidden="true"
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-50 bg-black/50 md:hidden"
+          className="fixed inset-0 z-[95] bg-black/40 md:hidden"
         />
       )}
     </header>

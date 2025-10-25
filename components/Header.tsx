@@ -37,7 +37,6 @@ export default function Header() {
     };
   }, [open]);
 
-  // Navigation (suppliers removed)
   const nav = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About Us' },
@@ -98,24 +97,36 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile FULL-SCREEN, OPAQUE menu rendered via PORTAL */}
+      {/* Mobile FULL-SCREEN MENU via PORTAL with watermark */}
       {mounted &&
         createPortal(
           <>
             <div
               id="mobile-menu"
               className={[
-                'fixed inset-0 z-[9999] md:hidden', // super high z-index
-                'bg-black', // fully opaque
+                'fixed inset-0 z-[9999] md:hidden',
+                'bg-black', // solid background
                 'transform transition-transform duration-200',
                 open ? 'translate-x-0' : 'translate-x-full',
-                'flex flex-col', // column layout
+                'flex flex-col relative overflow-hidden',
               ].join(' ')}
               role="dialog"
               aria-modal="true"
             >
+              {/* Watermark */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <Image
+                  src="/logo.png"
+                  alt="Watermark Logo"
+                  width={300}
+                  height={100}
+                  className="opacity-5"
+                  priority
+                />
+              </div>
+
               {/* Top bar */}
-              <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+              <div className="flex items-center justify-between px-4 py-4 border-b border-white/10 relative z-10">
                 <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3">
                   <Image src="/logo.png" alt="Rotehügels logo" width={120} height={34} />
                 </Link>
@@ -128,8 +139,8 @@ export default function Header() {
                 </button>
               </div>
 
-              {/* Centered navigation list */}
-              <nav className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center overflow-y-auto">
+              {/* Menu items */}
+              <nav className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center relative z-10">
                 {nav.map((n) => (
                   <Link
                     key={n.href}
@@ -153,15 +164,6 @@ export default function Header() {
                 </Link>
               </nav>
             </div>
-
-            {/* Optional scrim (below menu); can be left out but harmless */}
-            {open && (
-              <button
-                aria-hidden="true"
-                onClick={() => setOpen(false)}
-                className="fixed inset-0 z-[9998] md:hidden bg-black/40"
-              />
-            )}
           </>,
           document.body
         )}

@@ -44,7 +44,9 @@ export default function ContactPage() {
           <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20">
             <p className="text-xl font-semibold text-white">Mr. Sivakumar Shanmugam</p>
             <p className="text-sm text-white/70">Founder &amp; CEO</p>
-            <p className="mt-1 text-xs text-white/60">📍 Chennai, Tamil Nadu, India</p>
+            <p className="mt-1 text-xs text-white/60">
+              🇮🇳 Chennai, Tamil Nadu, India
+            </p>
 
             <div className="mt-3 space-y-1">
               <Copyable
@@ -79,7 +81,9 @@ export default function ContactPage() {
             <p className="text-sm text-white/70">
               Global CFO &amp; Business Investment Strategist
             </p>
-            <p className="mt-1 text-xs text-white/60">📍 Singapore</p>
+            <p className="mt-1 text-xs text-white/60">
+              🇸🇬 Singapore
+            </p>
 
             <div className="mt-3 space-y-1">
               <Copyable
@@ -108,24 +112,30 @@ export default function ContactPage() {
             </p>
           </div>
 
-          {/* Sales */}
+          {/* CMO */}
           <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20">
             <p className="text-xl font-semibold text-white">Ms. Vaishnavi Elumalai</p>
-            <p className="text-sm text-white/70">Sales &amp; Marketing (Technical)</p>
-            <p className="mt-1 text-xs text-white/60">📍 Irving, Texas, USA</p>
+            <p className="text-sm text-white/70">
+              Chief Marketing Officer (CMO)
+              <br />
+              Global Sales, Marketing &amp; Client Partnerships
+            </p>
+            <p className="mt-1 text-xs text-white/60">
+              🇺🇸 Irving, Texas, USA
+            </p>
 
             <div className="mt-3 space-y-1">
               <Copyable
                 label="📧"
                 value="vaishnavi@rotehuegels.com"
                 href="mailto:vaishnavi@rotehuegels.com?subject=%5BSales%5D%20Enquiry"
-                ariaLabel="Email Sales"
+                ariaLabel="Email CMO"
               />
               <Copyable
                 label="📱"
                 value="+1 847 778 7595"
                 href="tel:+18477787595"
-                ariaLabel="Call Sales"
+                ariaLabel="Call CMO"
               />
             </div>
 
@@ -143,7 +153,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Global emails */}
+      {/* Global email shortcuts */}
       <section className="mx-auto mt-12 max-w-3xl text-center">
         <p className="text-white/80">Prefer email? Choose the right address:</p>
         <div className="mt-3 space-y-1">

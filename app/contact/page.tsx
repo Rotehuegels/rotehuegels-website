@@ -135,17 +135,17 @@ export default function ContactPage() {
       {/* Key Contacts */}
       <section className="mx-auto mt-10 max-w-6xl" aria-label="Key contacts">
         <h3 className="text-lg font-semibold text-center md:text-left">Key Contacts</h3>
-        <div className="mt-4 grid gap-6 sm:grid-cols-2">
-          {/* CEO */}
+        <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Founder & CEO */}
           <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20">
             <p className="text-xl font-semibold text-white">Mr. Sivakumar Shanmugam</p>
             <p className="text-sm text-white/70">Founder &amp; CEO</p>
             <div className="mt-3 space-y-1">
               <Copyable
                 label="📧"
-                value="ceo@rotehuegels.com"
-                href="mailto:ceo@rotehuegels.com?subject=%5BCEO%5D%20Enquiry"
-                ariaLabel="Email CEO"
+                value="sivakumar@rotehuegels.com"
+                href="mailto:sivakumar@rotehuegels.com?subject=%5BFounder%20%26%20CEO%5D%20Enquiry"
+                ariaLabel="Email Sivakumar"
               />
             </div>
             <p className="mt-2">
@@ -156,6 +156,36 @@ export default function ContactPage() {
                 rel="noopener noreferrer"
               >
                 <span aria-hidden="true">🔗</span> LinkedIn — Sivakumar Shanmugam
+              </a>
+            </p>
+          </div>
+
+          {/* Global CFO */}
+          <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20">
+            <p className="text-xl font-semibold text-white">Ms. Aishwarya Govindharajan</p>
+            <p className="text-sm text-white/70">Global CFO &amp; Business Investment Strategist</p>
+            <div className="mt-3 space-y-1">
+              <Copyable
+                label="📧"
+                value="aishwarya@rotehuegels.com"
+                href="mailto:aishwarya@rotehuegels.com?subject=%5BGlobal%20CFO%5D%20Enquiry"
+                ariaLabel="Email Aishwarya"
+              />
+              <Copyable
+                label="📱"
+                value="🇸🇬 +65 8225 8403"
+                href="tel:+6582258403"
+                ariaLabel="Call CFO phone"
+              />
+            </div>
+            <p className="mt-2">
+              <a
+                className="inline-flex items-center gap-2 underline-offset-4 hover:underline"
+                href="https://www.linkedin.com/in/aishwarya-govindharajan-b519981b/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span aria-hidden="true">🔗</span> LinkedIn — Aishwarya Govindharajan
               </a>
             </p>
           </div>

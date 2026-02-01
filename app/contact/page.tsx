@@ -1,4 +1,3 @@
-// app/contact/page.tsx
 import { Copyable } from "./Copyable";
 
 export const metadata = { title: "Contact Us — Rotehügels" };
@@ -13,163 +12,200 @@ export default function ContactPage() {
       </h1>
 
       <p className="mx-auto mt-4 max-w-3xl text-center text-sm text-white/80">
-        Our regional teams operate across three strategic time zones to ensure seamless 24-hour global engagement.
+        Our regional teams operate across three strategic time zones to ensure seamless
+        24-hour global engagement.
       </p>
 
-      {/* Territory Allocation */}
-      <section className="mx-auto mt-10 max-w-6xl">
-        <h3 className="text-lg font-semibold text-center md:text-left">Territory Allocation</h3>
-        <div className="mt-3 grid gap-3 text-sm md:grid-cols-2">
-          <div className="rounded-xl bg-gradient-to-br from-rose-950/30 to-rose-900/10 p-4 shadow-inner">
-            <p className="font-medium text-rose-200">APAC</p>
-            <p className="opacity-90">
-              India, South Asia, Southeast Asia, East Asia, Central Asia, Middle East, Oceania
-            </p>
+      {/* Regions */}
+      <section
+        aria-label="Regional contacts"
+        className="mx-auto mt-8 grid max-w-6xl auto-rows-fr gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+      >
+        {/* APAC */}
+        <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all">
+          <h3 className="text-xl font-semibold text-rose-300">
+            Asia–Pacific (APAC)
+            <br />
+            <span className="text-white/80 text-base">Chennai, India</span>
+          </h3>
+          <p className="mt-1 text-xs text-white/70">IST (UTC+5:30) • 08:00–18:00</p>
+
+          <div className="mt-3 space-y-1">
+            <Copyable
+              label="📧"
+              value="apac@rotehuegels.com"
+              href="mailto:apac@rotehuegels.com"
+            />
+            <Copyable
+              label="📱"
+              value="🇮🇳 +91 89391 20320"
+              href="tel:+918939120320"
+            />
           </div>
-          <div className="rounded-xl bg-gradient-to-br from-rose-950/30 to-rose-900/10 p-4 shadow-inner">
-            <p className="font-medium text-rose-200">EMEA &amp; Americas</p>
-            <p className="opacity-90">
-              All African &amp; European countries; North, Central &amp; South America
-            </p>
+
+          <p className="mt-4 text-sm opacity-90">
+            Corporate HQ · R&D · Engineering · EPC · Asia-Pacific Client Engagement
+          </p>
+        </div>
+
+        {/* EMEA */}
+        <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all">
+          <h3 className="text-xl font-semibold text-rose-300">
+            Europe, Middle East & Africa (EMEA)
+            <br />
+            <span className="text-white/80 text-base">Kitwe, Zambia</span>
+          </h3>
+          <p className="mt-1 text-xs text-white/70">CAT (UTC+2) • 08:00–18:00</p>
+
+          <div className="mt-3 space-y-1">
+            <Copyable
+              label="📧"
+              value="emea@rotehuegels.com"
+              href="mailto:emea@rotehuegels.com"
+            />
+            <Copyable
+              label="📱"
+              value="🇿🇲 +260 77354 0064"
+              href="tel:+260773540064"
+            />
           </div>
+
+          <p className="mt-4 text-sm opacity-90">
+            Sales & Marketing support across Africa and Europe, coordinated globally.
+          </p>
+        </div>
+
+        {/* Americas */}
+        <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all">
+          <h3 className="text-xl font-semibold text-rose-300">
+            North, Central & South America
+            <br />
+            <span className="text-white/80 text-base">Dallas, USA</span>
+          </h3>
+          <p className="mt-1 text-xs text-white/70">CST (UTC−6) • 08:00–18:00</p>
+
+          <div className="mt-3 space-y-1">
+            <Copyable
+              label="📧"
+              value="americas@rotehuegels.com"
+              href="mailto:americas@rotehuegels.com"
+            />
+            <Copyable
+              label="📱"
+              value="🇺🇸 +1 847 778 7595"
+              href="tel:+18477787595"
+            />
+          </div>
+
+          <p className="mt-4 text-sm opacity-90">
+            Client acquisition · Partnerships · Investor relations across the Americas.
+          </p>
         </div>
       </section>
 
-      {/* Key Contacts */}
-      <section className="mx-auto mt-10 max-w-6xl" aria-label="Key contacts">
-        <h3 className="text-lg font-semibold text-center md:text-left">Key Contacts</h3>
+      {/* Divider */}
+      <hr className="mx-auto my-10 max-w-6xl border-white/10" />
 
-        <div className="mt-4 grid gap-6 md:grid-cols-3">
+      {/* Key Contacts */}
+      <section className="mx-auto max-w-6xl" aria-label="Key contacts">
+        <h3 className="text-lg font-semibold">Key Contacts</h3>
+
+        <div className="mt-6 grid gap-6 sm:grid-cols-3">
           {/* CEO */}
-          <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20">
-            <p className="text-xl font-semibold text-white">Mr. Sivakumar Shanmugam</p>
-            <p className="text-sm text-white/70">Founder &amp; CEO</p>
+          <div className="rounded-2xl bg-white/5 p-6">
+            <p className="text-xl font-semibold">Mr. Sivakumar Shanmugam</p>
+            <p className="text-sm text-white/70">Founder & CEO</p>
             <p className="mt-1 text-xs text-white/60">
-              🇮🇳 Chennai, Tamil Nadu, India
+              Strategic leadership, technology direction, and global execution oversight.
             </p>
+            <p className="mt-2 text-xs text-white/60">🇮🇳 Chennai, Tamil Nadu, India</p>
 
             <div className="mt-3 space-y-1">
-              <Copyable
-                label="📧"
-                value="sivakumar@rotehuegels.com"
-                href="mailto:sivakumar@rotehuegels.com?subject=%5BCEO%5D%20Enquiry"
-                ariaLabel="Email CEO"
-              />
-              <Copyable
-                label="📱"
-                value="+91 89391 20320"
-                href="tel:+918939120320"
-                ariaLabel="Call CEO"
-              />
+              <Copyable label="📧" value="sivakumar@rotehuegels.com" href="mailto:sivakumar@rotehuegels.com" />
+              <Copyable label="📱" value="+91 89391 20320" href="tel:+918939120320" />
             </div>
 
-            <p className="mt-2">
-              <a
-                className="inline-flex items-center gap-2 underline-offset-4 hover:underline"
-                href="https://www.linkedin.com/in/sivakumarshanmugam"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                🔗 LinkedIn — Sivakumar Shanmugam
-              </a>
-            </p>
+            <a
+              className="mt-2 inline-block underline-offset-4 hover:underline"
+              href="https://www.linkedin.com/in/sivakumarshanmugam"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🔗 LinkedIn — Sivakumar Shanmugam
+            </a>
           </div>
 
           {/* CFO */}
-          <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20">
-            <p className="text-xl font-semibold text-white">Ms. Aishwarya Govindharajan</p>
+          <div className="rounded-2xl bg-white/5 p-6">
+            <p className="text-xl font-semibold">Ms. Aishwarya Govindharajan</p>
             <p className="text-sm text-white/70">
-              Global CFO &amp; Business Investment Strategist
+              Global CFO & Business Investment Strategist
             </p>
             <p className="mt-1 text-xs text-white/60">
-              🇸🇬 Singapore
+              Capital strategy, financial governance, and global investment structuring.
             </p>
+            <p className="mt-2 text-xs text-white/60">🇸🇬 Singapore</p>
 
             <div className="mt-3 space-y-1">
-              <Copyable
-                label="📧"
-                value="aishwarya@rotehuegels.com"
-                href="mailto:aishwarya@rotehuegels.com?subject=%5BCFO%5D%20Enquiry"
-                ariaLabel="Email CFO"
-              />
-              <Copyable
-                label="📱"
-                value="+65 8225 8403"
-                href="tel:+6582258403"
-                ariaLabel="Call CFO"
-              />
+              <Copyable label="📧" value="aishwarya@rotehuegels.com" href="mailto:aishwarya@rotehuegels.com" />
+              <Copyable label="📱" value="+65 8225 8403" href="tel:+6582258403" />
             </div>
 
-            <p className="mt-2">
-              <a
-                className="inline-flex items-center gap-2 underline-offset-4 hover:underline"
-                href="https://www.linkedin.com/in/aishwarya-govindharajan-b519981b/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                🔗 LinkedIn — Aishwarya Govindharajan
-              </a>
-            </p>
+            <a
+              className="mt-2 inline-block underline-offset-4 hover:underline"
+              href="https://www.linkedin.com/in/aishwarya-govindharajan-b519981b/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🔗 LinkedIn — Aishwarya Govindharajan
+            </a>
           </div>
 
           {/* CMO */}
-          <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20">
-            <p className="text-xl font-semibold text-white">Ms. Vaishnavi Elumalai</p>
+          <div className="rounded-2xl bg-white/5 p-6">
+            <p className="text-xl font-semibold">Ms. Vaishnavi Elumalai</p>
             <p className="text-sm text-white/70">
               Chief Marketing Officer (CMO)
-              <br />
-              Global Sales, Marketing &amp; Client Partnerships
             </p>
             <p className="mt-1 text-xs text-white/60">
-              🇺🇸 Irving, Texas, USA
+              Global Sales, Marketing & Client Partnerships.
             </p>
+            <p className="mt-2 text-xs text-white/60">🇺🇸 Irving, Texas, USA</p>
 
             <div className="mt-3 space-y-1">
-              <Copyable
-                label="📧"
-                value="vaishnavi@rotehuegels.com"
-                href="mailto:vaishnavi@rotehuegels.com?subject=%5BSales%5D%20Enquiry"
-                ariaLabel="Email CMO"
-              />
-              <Copyable
-                label="📱"
-                value="+1 847 778 7595"
-                href="tel:+18477787595"
-                ariaLabel="Call CMO"
-              />
+              <Copyable label="📧" value="vaishnavi@rotehuegels.com" href="mailto:vaishnavi@rotehuegels.com" />
+              <Copyable label="📱" value="+1 847 778 7595" href="tel:+18477787595" />
             </div>
 
-            <p className="mt-2">
-              <a
-                className="inline-flex items-center gap-2 underline-offset-4 hover:underline"
-                href="https://www.linkedin.com/in/vaishnavi-elumalai-7b5562245/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                🔗 LinkedIn — Vaishnavi Elumalai
-              </a>
-            </p>
+            <a
+              className="mt-2 inline-block underline-offset-4 hover:underline"
+              href="https://www.linkedin.com/in/vaishnavi-elumalai-7b5562245/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🔗 LinkedIn — Vaishnavi Elumalai
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Global email shortcuts */}
-      <section className="mx-auto mt-12 max-w-3xl text-center">
+      {/* Global Emails */}
+      <section className="mx-auto mt-10 max-w-3xl text-center">
         <p className="text-white/80">Prefer email? Choose the right address:</p>
-        <div className="mt-3 space-y-1">
+        <div className="mt-3 space-y-1 text-sm">
           <p>
             General Enquiries:{" "}
             <a className="text-rose-300 hover:underline" href="mailto:info@rotehuegels.com">
               info@rotehuegels.com
             </a>{" "}
-            <span className="text-white/60">· General Communications</span>
+            · General Communications
           </p>
           <p>
             RFPs / Scope Notes:{" "}
             <a className="text-rose-300 hover:underline" href="mailto:sales@rotehuegels.com">
               sales@rotehuegels.com
             </a>{" "}
-            <span className="text-white/60">· Sales Inquiries</span>
+            · Sales Inquiries
           </p>
           <p>
             Investor Relations:{" "}
@@ -179,8 +215,12 @@ export default function ContactPage() {
           </p>
         </div>
 
-        <p className="mt-6 text-xs text-white/60">
-          We do not share client details. NDAs available on request.
+        <p className="mt-6 text-xs text-white/60 leading-relaxed">
+          <strong className="text-white/70">Confidentiality & IP Protection:</strong>{" "}
+          Rotehügels follows strict confidentiality and data-protection practices to
+          safeguard client intellectual property, proprietary processes, and technology
+          know-how. All engagements are governed by confidentiality obligations, with NDAs
+          executed wherever required.
         </p>
       </section>
     </main>

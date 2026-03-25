@@ -1,0 +1,62 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONSULTANT
+  CONTRACT
+}
+
+model Employee {
+  id               String   @id @default(cuid())
+  employeeId       String   @unique
+  fullName         String
+  employmentType   EmploymentType
+  designation      String
+  department       String?
+  reportingManager String?
+
+  phone            String?
+  email            String?
+  address          String?
+
+  nationalId       String?
+  bankName         String?
+  bankAccount      String?
+  bankIfsc         String?
+
+  emergencyName    String?
+  emergencyPhone   String?
+
+  basicSalary      Float?
+  hra              Float?
+  allowance        Float?
+  bonus            Float?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  payslips         Payslip[]
+}
+
+model Payslip {
+  id         String   @id @default(cuid())
+  employeeId String
+  month      Int
+  year       Int
+  grossPay   Float
+  deductions Float
+  netPay     Float
+  createdAt  DateTime @default(now())
+
+  employee   Employee @relation(fields: [employeeId], references: [id])
+}

@@ -5,9 +5,12 @@ export const dynamic = "force-dynamic";
 export default async function AdminSuppliersPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const key = (searchParams?.key || "").toString();
+  // ✅ Next.js 15 fix
+  const params = await searchParams;
+
+  const key = (params?.key || "").toString();
   const adminKey = process.env.ADMIN_ACCESS_KEY || "";
 
   if (!adminKey || key !== adminKey) {
@@ -15,7 +18,8 @@ export default async function AdminSuppliersPage({
       <div className="container mx-auto px-6 py-16">
         <h1 className="text-2xl font-bold mb-4">403 — Forbidden</h1>
         <p className="text-zinc-300">
-          Invalid or missing access key. Append <code>?key=YOUR_ADMIN_ACCESS_KEY</code> to the URL.
+          Invalid or missing access key. Append{" "}
+          <code>?key=YOUR_ADMIN_ACCESS_KEY</code> to the URL.
         </p>
       </div>
     );
@@ -39,6 +43,7 @@ export default async function AdminSuppliersPage({
   return (
     <div className="container mx-auto px-6 py-12">
       <h1 className="text-3xl font-bold mb-6">Suppliers (latest)</h1>
+
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-zinc-900/70 border-b border-zinc-800">
@@ -54,18 +59,23 @@ export default async function AdminSuppliersPage({
               <th className="text-left p-3">Notes</th>
             </tr>
           </thead>
+
           <tbody>
             {(data || []).map((row: any) => (
               <tr key={row.id} className="border-b border-zinc-800/60">
                 <td className="p-3 whitespace-nowrap">
-                  {row.created_at ? new Date(row.created_at).toLocaleString() : "-"}
+                  {row.created_at
+                    ? new Date(row.created_at).toLocaleString()
+                    : "-"}
                 </td>
                 <td className="p-3">{row.company_name || "-"}</td>
                 <td className="p-3">{row.contact_person || "-"}</td>
                 <td className="p-3">{row.email || "-"}</td>
                 <td className="p-3">{row.phone || "-"}</td>
                 <td className="p-3">{row.country || "-"}</td>
-                <td className="p-3">{row.product_service || row.product_categories || "-"}</td>
+                <td className="p-3">
+                  {row.product_service || row.product_categories || "-"}
+                </td>
                 <td className="p-3">{row.certifications || "-"}</td>
                 <td className="p-3">{row.notes || "-"}</td>
               </tr>
@@ -73,6 +83,7 @@ export default async function AdminSuppliersPage({
           </tbody>
         </table>
       </div>
+
       <p className="text-xs text-zinc-400 mt-3">
         Showing up to 200 latest records.
       </p>

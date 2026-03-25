@@ -9,33 +9,70 @@ const CreateRequest = z.object({
 });
 
 export async function GET() {
-  const supabase = supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    // ✅ FIX: await supabaseServer()
+    const supabase = await supabaseServer();
 
-  const items = await prisma.request.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'desc' },
-  });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  return NextResponse.json({ items });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const items = await prisma.request.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json({ items });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || 'Something went wrong' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {
-  const supabase = supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    // ✅ FIX: await supabaseServer()
+    const supabase = await supabaseServer();
 
-  const body = await req.json();
-  const parsed = CreateRequest.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const parsed = CreateRequest.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const { title, details } = parsed.data;
+
+    const created = await prisma.request.create({
+      data: {
+        userId: user.id,
+        title,
+        details,
+      },
+    });
+
+    return NextResponse.json({ created }, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || 'Something went wrong' },
+      { status: 500 }
+    );
   }
-
-  const { title, details } = parsed.data;
-  const created = await prisma.request.create({
-    data: { userId: user.id, title, details },
-  });
-
-  return NextResponse.json({ created }, { status: 201 });
 }

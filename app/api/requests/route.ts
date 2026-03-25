@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseServer } from '@/lib/supabaseServer';
-import { prisma } from '@/lib/prisma';
 
 const CreateRequest = z.object({
   title: z.string().min(3, 'Title too short'),
@@ -10,7 +9,6 @@ const CreateRequest = z.object({
 
 export async function GET() {
   try {
-    // ✅ FIX: await supabaseServer()
     const supabase = await supabaseServer();
 
     const {
@@ -21,12 +19,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const items = await prisma.request.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return NextResponse.json({ items });
+    // ✅ TEMP: no DB dependency
+    return NextResponse.json({ items: [] });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Something went wrong' },
@@ -37,7 +31,6 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    // ✅ FIX: await supabaseServer()
     const supabase = await supabaseServer();
 
     const {
@@ -60,15 +53,18 @@ export async function POST(req: Request) {
 
     const { title, details } = parsed.data;
 
-    const created = await prisma.request.create({
-      data: {
-        userId: user.id,
-        title,
-        details,
+    // ✅ TEMP: simulate response
+    return NextResponse.json(
+      {
+        created: {
+          id: 'temp-id',
+          userId: user.id,
+          title,
+          details,
+        },
       },
-    });
-
-    return NextResponse.json({ created }, { status: 201 });
+      { status: 201 }
+    );
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Something went wrong' },

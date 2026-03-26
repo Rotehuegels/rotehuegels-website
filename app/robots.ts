@@ -4,17 +4,18 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        userAgent: "*",
-        allow: "/",
+        userAgent: '*',
+        allow: '/',
         disallow: [
-          "/api/",
-          "/admin/",
-          "/dashboard/",
-          "/tickets/",
-          "/requests/",
+          '/api/',
+          '/admin/',
+          '/dashboard/',
+          '/tickets/',
+          '/requests/',
         ],
       },
     ],
-    sitemap: "https://www.rotehuegels.com/sitemap.xml",
+    sitemap: 'https://www.rotehuegels.com/sitemap.xml',
+    host: 'https://www.rotehuegels.com',
   }
 }

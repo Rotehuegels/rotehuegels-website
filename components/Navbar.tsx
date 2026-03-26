@@ -17,7 +17,7 @@ export default function Navbar() {
       </Link>
 
       {/* Right side: Menu */}
-      <div className="flex gap-6">
+      <div className="flex items-center gap-6">
         <Link href="/" className="no-underline hover:underline">Home</Link>
         
         <Link href="/about" className="no-underline hover:underline">
@@ -28,9 +28,16 @@ export default function Navbar() {
           Services
         </Link>
 
-        {/* ✅ NEW TAB */}
         <Link href="/digital-solutions" className="no-underline hover:underline">
           Digital Solutions
+        </Link>
+
+        {/* 🔥 REX PRIMARY CTA */}
+        <Link
+          href="/rex"
+          className="px-4 py-2 bg-black text-white rounded-lg font-semibold shadow-sm hover:opacity-90 transition"
+        >
+          Join REX
         </Link>
 
         <Link href="/current-updates" className="no-underline hover:underline">

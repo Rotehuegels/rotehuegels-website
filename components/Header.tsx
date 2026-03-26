@@ -13,7 +13,9 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -24,13 +26,16 @@ export default function Header() {
 
   useEffect(() => {
     if (!open) return;
+
     const prevOverflow = document.body.style.overflow;
-    const prevTouch = document.body.style.touchAction as string;
+    const prevTouchAction = document.body.style.touchAction;
+
     document.body.style.overflow = 'hidden';
     document.body.style.touchAction = 'none';
+
     return () => {
       document.body.style.overflow = prevOverflow;
-      document.body.style.touchAction = prevTouch || '';
+      document.body.style.touchAction = prevTouchAction;
     };
   }, [open]);
 
@@ -38,10 +43,7 @@ export default function Header() {
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About Us' },
     { href: '/services', label: 'Services' },
-
-    // ✅ NEW TAB ADDED HERE
     { href: '/digital-solutions', label: 'Digital Solutions' },
-
     { href: '/success-stories', label: 'Success Stories' },
     { href: '/current-updates', label: 'Current Updates' },
     { href: '/rotehuegels-story', label: 'The Rotehügels Story' },
@@ -60,12 +62,12 @@ export default function Header() {
     <>
       <header
         className={[
-          'sticky top-0 z-[500] border-b border-white/10 backdrop-blur transition-colors duration-300',
+          'sticky top-0 z-[1000] border-b border-white/10 backdrop-blur transition-colors duration-300',
           scrolled ? 'bg-black/80' : 'bg-black/40',
         ].join(' ')}
       >
         <div className="container mx-auto flex items-center justify-between py-3 px-4 md:px-6">
-          <Link href="/" className="flex items-center gap-3 no-underline">
+          <Link href="/" className="flex items-center gap-3 no-underline relative z-[1001]">
             <Image src="/logo.png" alt="Rotehügels logo" width={140} height={40} priority />
           </Link>
 
@@ -85,27 +87,27 @@ export default function Header() {
           </nav>
 
           <button
-            className="md:hidden p-2 rounded hover:bg-white/5"
-            onClick={() => setOpen(true)}
+            type="button"
+            className="md:hidden relative z-[1001] p-2 rounded hover:bg-white/5 active:scale-95 transition"
+            onClick={() => {
+              console.log('MENU CLICKED');
+              setOpen(true);
+            }}
             aria-label="Open menu"
           >
-            <Menu />
+            <Menu className="h-7 w-7 text-white" />
           </button>
         </div>
       </header>
 
-      {/* Mobile Menu */}
       {mounted &&
         createPortal(
           <div
             className={[
-              'fixed inset-0 z-[9999] md:hidden flex flex-col relative overflow-hidden',
-              'bg-black',
-              'transform transition-transform duration-200',
+              'fixed inset-0 z-[9999] md:hidden flex flex-col overflow-hidden bg-black transition-transform duration-300 ease-in-out',
               open ? 'translate-x-0 pointer-events-auto' : 'translate-x-full pointer-events-none',
             ].join(' ')}
           >
-            {/* Watermark */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <Image
                 src="/logo.png"
@@ -117,31 +119,33 @@ export default function Header() {
               />
             </div>
 
-            {/* Top bar */}
-            <div className="flex items-center justify-between px-4 py-4 border-b border-white/10 relative z-10">
+            <div className="relative z-10 flex items-center justify-between px-4 py-4 border-b border-white/10">
               <Link href="/" onClick={() => setOpen(false)}>
                 <Image src="/logo.png" alt="Rotehügels logo" width={120} height={34} />
               </Link>
+
               <button
-                className="p-2 rounded hover:bg-white/5"
+                type="button"
+                className="p-2 rounded hover:bg-white/5 active:scale-95 transition"
                 onClick={() => setOpen(false)}
+                aria-label="Close menu"
               >
-                <X />
+                <X className="h-7 w-7 text-white" />
               </button>
             </div>
 
-            {/* Menu items */}
-            <nav className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center relative z-10">
+            <nav className="relative z-10 flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
               {nav.map((n) => (
                 <Link
                   key={n.href}
                   href={n.href}
                   onClick={() => setOpen(false)}
-                  className={`text-lg py-2 font-medium transition-colors ${
+                  className={[
+                    'text-lg py-2 font-medium transition-colors',
                     pathname === n.href
                       ? 'text-red-400 font-semibold'
-                      : 'text-zinc-200 hover:text-red-300'
-                  }`}
+                      : 'text-zinc-200 hover:text-red-300',
+                  ].join(' ')}
                 >
                   {n.label}
                 </Link>

@@ -12,27 +12,16 @@ const KEYWORDS = [
   'Carbon Neutral', 'ESG', 'Resource Recovery', 'Critical Metals',
 ];
 
-// Characters from multiple global scripts
 const CHAR_SETS = [
-  // Latin + digits + symbols
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&',
-  // Japanese Katakana
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*+-=<>',
   'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン',
-  // Arabic
   'ابتثجحخدذرزسشصضطظعغفقكلمنهوي',
-  // Devanagari (Hindi)
   'अआइईउऊएऐओऔकखगघचछजझटठडढणतथदधनपफबभमयरलवशषसह',
-  // Greek
   'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψω',
-  // Korean Hangul
   '가나다라마바사아자차카타파하갈날달랄말발살알잘찰칼탈팔할',
-  // Tamil
   'அஆஇஈஉஊஎஏஐஒஓஔகங சஞடணதநபமயரலவழளறனஸ',
-  // Cyrillic
   'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя',
-  // Chinese (simplified subset)
-  '金属回收循环经济可持续发展技术工程研究创新绿色能源矿物提取',
-  // Hebrew
+  '金属回收循环经济可持续发展技术工程研究创新绿色能源矿物提取冶炼电解精炼',
   'אבגדהוזחטיכלמנסעפצקרשת',
 ];
 
@@ -48,7 +37,6 @@ interface Drop {
   speed: number;
   chars: string[];
   length: number;
-  opacity: number;
 }
 
 interface FloatingWord {
@@ -70,14 +58,14 @@ export default function MatrixBackground() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const COL_W = 18;
-    const FONT_SIZE = 13;
-    const DROP_SPEED_MIN = 0.3;
-    const DROP_SPEED_MAX = 1.2;
+    // Tight matrix columns — true Matrix look
+    const COL_W = 14;
+    const FONT_SIZE = 14;
 
     let drops: Drop[] = [];
     let words: FloatingWord[] = [];
     let animId: number;
+    let frame = 0;
 
     function resize() {
       canvas!.width = canvas!.offsetWidth;
@@ -88,67 +76,76 @@ export default function MatrixBackground() {
     function initDrops() {
       const cols = Math.floor(canvas!.width / COL_W);
       drops = Array.from({ length: cols }, (_, i) => ({
-        x: i * COL_W,
-        y: Math.random() * -canvas!.height,
-        speed: DROP_SPEED_MIN + Math.random() * (DROP_SPEED_MAX - DROP_SPEED_MIN),
-        chars: Array.from({ length: 20 + Math.floor(Math.random() * 20) }, randomChar),
-        length: 12 + Math.floor(Math.random() * 20),
-        opacity: 0.08 + Math.random() * 0.12,
+        x: i * COL_W + 2,
+        y: Math.random() * -canvas!.height * 1.5,
+        speed: 1.5 + Math.random() * 3.5,   // faster — true matrix
+        chars: Array.from({ length: 30 + Math.floor(Math.random() * 20) }, randomChar),
+        length: 15 + Math.floor(Math.random() * 25), // longer trails
       }));
     }
 
     function initWords() {
       words = KEYWORDS.map((text) => ({
         text,
-        x: Math.random() * canvas!.width,
-        y: Math.random() * canvas!.height,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        opacity: 0.12 + Math.random() * 0.15,
-        fontSize: 11 + Math.floor(Math.random() * 8),
+        x: Math.random() * canvas!.width * 0.8,
+        y: 20 + Math.random() * (canvas!.height - 40),
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        opacity: 0.18 + Math.random() * 0.18,
+        fontSize: 12 + Math.floor(Math.random() * 7),
       }));
     }
 
     function draw() {
-      // Fade trail
-      ctx!.fillStyle = 'rgba(0,0,0,0.06)';
+      frame++;
+
+      // Dark fade — controls trail persistence (lower = longer ghost)
+      ctx!.fillStyle = 'rgba(0,0,0,0.075)';
       ctx!.fillRect(0, 0, canvas!.width, canvas!.height);
 
-      ctx!.font = `${FONT_SIZE}px monospace`;
+      // ── Matrix drops ──
+      ctx!.font = `bold ${FONT_SIZE}px monospace`;
 
-      // Draw matrix drops
       for (const drop of drops) {
         for (let i = 0; i < drop.length; i++) {
           const charY = drop.y - i * FONT_SIZE;
-          if (charY < 0 || charY > canvas!.height) continue;
+          if (charY < -FONT_SIZE || charY > canvas!.height + FONT_SIZE) continue;
 
-          // Randomise char occasionally
-          if (Math.random() < 0.02) {
+          // Mutate chars at head frequently — classic Matrix glitch
+          if (i === 0 && Math.random() < 0.4) {
+            drop.chars[0] = randomChar();
+          } else if (Math.random() < 0.01) {
             drop.chars[i % drop.chars.length] = randomChar();
           }
 
           const frac = 1 - i / drop.length;
-          // Head = bright rose, trail fades to emerald/green
+
           if (i === 0) {
-            ctx!.fillStyle = `rgba(255,255,255,${drop.opacity * 2.5})`;
-          } else if (i < 3) {
-            ctx!.fillStyle = `rgba(244,63,94,${drop.opacity * frac * 1.8})`;
+            // Brightest white head
+            ctx!.fillStyle = `rgba(255,255,255,0.95)`;
+          } else if (i === 1) {
+            ctx!.fillStyle = `rgba(255,200,200,0.85)`;
+          } else if (i < 5) {
+            // Rose near-head
+            ctx!.fillStyle = `rgba(244,63,94,${0.7 * frac})`;
           } else {
-            ctx!.fillStyle = `rgba(52,211,153,${drop.opacity * frac})`;
+            // Emerald trail fading out
+            const alpha = 0.55 * frac;
+            ctx!.fillStyle = `rgba(52,211,153,${alpha})`;
           }
 
           ctx!.fillText(drop.chars[i % drop.chars.length], drop.x, charY);
         }
 
         drop.y += drop.speed;
+
         if (drop.y - drop.length * FONT_SIZE > canvas!.height) {
-          drop.y = -FONT_SIZE * 5;
-          drop.speed = DROP_SPEED_MIN + Math.random() * (DROP_SPEED_MAX - DROP_SPEED_MIN);
-          drop.opacity = 0.08 + Math.random() * 0.12;
+          drop.y = -FONT_SIZE * (5 + Math.random() * 20);
+          drop.speed = 1.5 + Math.random() * 3.5;
         }
       }
 
-      // Draw floating keywords
+      // ── Floating keywords ──
       for (const word of words) {
         ctx!.font = `${word.fontSize}px sans-serif`;
         ctx!.fillStyle = `rgba(244,63,94,${word.opacity})`;
@@ -157,10 +154,11 @@ export default function MatrixBackground() {
         word.x += word.vx;
         word.y += word.vy;
 
-        // Bounce off edges
         const w = ctx!.measureText(word.text).width;
-        if (word.x < 0 || word.x + w > canvas!.width) word.vx *= -1;
-        if (word.y < word.fontSize || word.y > canvas!.height) word.vy *= -1;
+        if (word.x < 0) { word.x = 0; word.vx = Math.abs(word.vx); }
+        if (word.x + w > canvas!.width) { word.x = canvas!.width - w; word.vx = -Math.abs(word.vx); }
+        if (word.y < word.fontSize) { word.y = word.fontSize; word.vy = Math.abs(word.vy); }
+        if (word.y > canvas!.height) { word.y = canvas!.height; word.vy = -Math.abs(word.vy); }
       }
 
       animId = requestAnimationFrame(draw);
@@ -181,7 +179,7 @@ export default function MatrixBackground() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 w-full h-full pointer-events-none"
-      style={{ zIndex: 0, opacity: 1 }}
+      style={{ zIndex: 0 }}
       aria-hidden="true"
     />
   );

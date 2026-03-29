@@ -126,6 +126,22 @@ export default function CareersPage() {
       q: "Remote or on-site?",
       a: "Hybrid. Lab and pilot work are on-site; analysis, software, and writing can be remote depending on project needs.",
     },
+    {
+      q: "How is compensation determined?",
+      a: "Compensation at Rotehügels is tied to the scope, complexity, and duration of the project or engagement — not a fixed pay band. Every role is discussed individually so that what we offer reflects the real value of your contribution.",
+    },
+    {
+      q: "Do you work with fresh graduates or only experienced professionals?",
+      a: "Both. We welcome final-year students and fresh graduates for research and lab roles, and experienced professionals for commissioning, EPC, and consulting engagements. What matters is your ability to own outcomes, not just your years of experience.",
+    },
+    {
+      q: "What does the hiring process look like?",
+      a: "Send your application to hr@rotehuegels.com. If there’s a fit, we’ll schedule a brief discovery call, followed by a short domain-specific conversation with our technical team. No lengthy rounds — we move fast.",
+    },
+    {
+      q: "Will I get to work across geographies?",
+      a: "Potentially yes. Our projects span India, Africa, and Southeast Asia. Commissioning and field roles involve travel. Remote-first roles are available for research, software, and advisory work.",
+    },
   ];
 
   return (
@@ -309,6 +325,49 @@ export default function CareersPage() {
               </motion.div>
             )
           )}
+        </div>
+      </section>
+
+      {/* What we offer */}
+      <section className="max-w-6xl mx-auto px-6 py-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-slate-100 mb-6">
+          What we offer
+        </h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[
+            {
+              title: "Project-based compensation",
+              body: "Pay is scoped to the project — what you deliver and the complexity of the problem you solve. We discuss openly and align on value before any engagement begins.",
+            },
+            {
+              title: "Real ownership",
+              body: "No micromanagement. You own your domain — from design decisions to delivery. We trust you to ship, and we back you with the resources to do it.",
+            },
+            {
+              title: "Cross-geography exposure",
+              body: "Work on projects spanning India, Africa, and Southeast Asia. Build a portfolio that spans continents, not just companies.",
+            },
+            {
+              title: "Learning-first culture",
+              body: "Access to industry tools, technical resources, and a team that documents and shares knowledge. We grow together — experiments are celebrated, not penalised.",
+            },
+            {
+              title: "AutoREX & digital access",
+              body: "Work alongside our proprietary AutoREX™ automation platform. Be part of building and deploying technology that goes live on real industrial plants.",
+            },
+            {
+              title: "Mission that matters",
+              body: "Every project contributes to the circular economy — recovering critical metals, reducing industrial waste, and building a more sustainable materials supply chain.",
+            },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow"
+            >
+              <div className="font-semibold text-slate-100 mb-2">{item.title}</div>
+              <p className="text-sm text-slate-300">{item.body}</p>
+            </div>
+          ))}
         </div>
       </section>
 

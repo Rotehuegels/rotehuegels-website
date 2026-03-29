@@ -92,7 +92,7 @@ export default function DigitalSolutionsPage() {
             className="flex justify-center mb-8"
           >
             <div className="bg-black/50 border border-white/10 p-6 rounded-2xl shadow-2xl">
-              <Image src="/autorex-logo.png" alt="AutoREX" width={140} height={140} />
+              <Image src="/autorex-logo.jpg" alt="AutoREX" width={140} height={140} />
             </div>
           </motion.div>
 

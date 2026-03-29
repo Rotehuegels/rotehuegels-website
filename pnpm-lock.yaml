@@ -63,6 +63,9 @@ importers:
         specifier: ^4.1.11
         version: 4.3.6
     devDependencies:
+      '@types/node':
+        specifier: 25.5.0
+        version: 25.5.0
       '@types/nodemailer':
         specifier: ^7.0.1
         version: 7.0.11

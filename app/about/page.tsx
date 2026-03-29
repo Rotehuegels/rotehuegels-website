@@ -1,5 +1,6 @@
 // app/about/page.tsx
 import type { ReactElement } from "react";
+import Image from "next/image";
 import Section from "@/components/Section";
 import WebLLMAssistant from "@/components/WebLLMAssistant";
 import {
@@ -9,6 +10,7 @@ import {
   LineChart,
   Users2,
   Linkedin,
+  MapPin,
 } from "lucide-react";
 
 export const metadata = {
@@ -117,6 +119,81 @@ export default function AboutPage() {
               <li>• Compliance & ESG built-in</li>
             </ul>
           </aside>
+        </div>
+      </Section>
+
+      {/* FOUNDER */}
+      <Section title="Leadership">
+        <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/40 overflow-hidden">
+          <div className="flex flex-col sm:flex-row gap-0">
+            {/* Photo */}
+            <div className="relative shrink-0 w-full sm:w-56 h-64 sm:h-auto">
+              <Image
+                src="/sivakumar.jpg"
+                alt="Sivakumar Shanmugam — Founder & CEO, Rotehügels"
+                fill
+                className="object-cover object-top"
+                sizes="(max-width: 640px) 100vw, 224px"
+                priority
+              />
+            </div>
+
+            {/* Bio */}
+            <div className="p-6 sm:p-8 flex flex-col justify-center">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <h3 className="text-xl font-bold text-white">Sivakumar Shanmugam</h3>
+                  <p className="text-rose-400 font-medium text-sm mt-0.5">Founder & CEO</p>
+                  <p className="flex items-center gap-1 text-xs text-zinc-400 mt-1">
+                    <MapPin className="h-3 w-3" /> Chennai, Tamil Nadu, India
+                  </p>
+                </div>
+                <a
+                  href="https://www.linkedin.com/in/sivakumarshanmugam/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Sivakumar Shanmugam on LinkedIn"
+                  className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-1.5 text-xs text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors"
+                >
+                  <Linkedin className="h-3.5 w-3.5 text-rose-400" />
+                  LinkedIn
+                </a>
+              </div>
+
+              <div className="mt-4 space-y-3 text-sm text-zinc-300 leading-relaxed">
+                <p>
+                  Sivakumar Shanmugam founded Rotehügels with a singular conviction: that the gap between
+                  laboratory science and industrial-scale execution is where critical minerals projects fail.
+                  He built Rotehügels to close that gap — combining rigorous process research with hands-on
+                  EPC delivery across Africa, India, and Southeast Asia.
+                </p>
+                <p>
+                  With deep expertise in hydrometallurgy, process simulation, and project commissioning,
+                  Sivakumar has guided large-scale concentrators in Zambia and recycling pilots in India.
+                  He leads the company's technology direction, global client strategy, and ensures every
+                  project is grounded in safety, sustainability, and commercial viability.
+                </p>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                {[
+                  "Hydrometallurgy",
+                  "EPC Project Delivery",
+                  "Critical Minerals",
+                  "Process Simulation",
+                  "Circular Economy",
+                  "AI-Driven Modelling",
+                ].map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-zinc-700 bg-zinc-800/60 px-3 py-0.5 text-xs text-zinc-300"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </Section>
 

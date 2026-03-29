@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 const CreateRequest = z.object({
   title: z.string().min(3, 'Title too short'),
@@ -30,6 +31,18 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const { allowed, resetAt } = rateLimit(ip, 10, 10 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(Math.ceil((resetAt - Date.now()) / 1000)) },
+      }
+    );
+  }
+
   try {
     const supabase = await supabaseServer();
 

@@ -1,4 +1,5 @@
 import { Copyable } from "./Copyable";
+import { ContactForm } from "./ContactForm";
 
 export const metadata = { title: "Contact Us — Rotehügels" };
 
@@ -15,6 +16,24 @@ export default function ContactPage() {
         Our regional teams operate across three strategic time zones to ensure seamless
         24-hour global engagement.
       </p>
+
+      {/* Contact Form */}
+      <section
+        aria-label="Send us a message"
+        className="mx-auto mt-12 max-w-2xl rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl shadow-black/30"
+      >
+        <h2 className="mb-1 text-xl font-semibold">Send us a message</h2>
+        <p className="mb-6 text-sm text-white/50">
+          Fill in the form and the right team will get back to you within one business day.
+        </p>
+        <ContactForm />
+      </section>
+
+      <div className="mx-auto mt-12 max-w-6xl">
+        <p className="mb-6 text-center text-sm text-white/50 uppercase tracking-widest font-medium">
+          Or reach us directly
+        </p>
+      </div>
 
       {/* Regions */}
       <section

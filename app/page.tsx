@@ -12,10 +12,10 @@ export const metadata = {
 
 export default function HomePage() {
   return (
-    <div className="space-y-16">
+    <div className="space-y-0">
 
       {/* HERO (first screen) */}
-      <section className="relative overflow-hidden py-24">
+      <section className="relative py-24">
         <div className="container mx-auto px-6 lg:px-12 relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white max-w-4xl">
             Building Sustainable Advantage in{" "}
@@ -55,24 +55,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Decorative glow */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/30" />
-          <svg
-            className="absolute top-0 left-0 w-full h-full opacity-10"
-            xmlns="http://www.w3.org/2000/svg"
-            preserveAspectRatio="none"
-            viewBox="0 0 800 800"
-          >
-            <circle cx="400" cy="400" r="400" fill="url(#grad1)" />
-            <defs>
-              <radialGradient id="grad1">
-                <stop offset="0%" stopColor="#e11d48" />
-                <stop offset="100%" stopColor="transparent" />
-              </radialGradient>
-            </defs>
-          </svg>
-        </div>
       </section>
 
       {/* What we do – three pillars */}

@@ -1,7 +1,12 @@
 'use client';
+
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { supabaseBrowser } from '@/lib/supabaseClient';
+import { Lock } from 'lucide-react';
+
+const inputCls = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/30';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -17,15 +22,12 @@ function LoginForm() {
     setError('');
     setLoading(true);
 
-    const { error } = await supabaseBrowser().auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabaseBrowser().auth.signInWithPassword({ email, password });
 
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      setError('Invalid email or password.');
       return;
     }
 
@@ -33,57 +35,54 @@ function LoginForm() {
   };
 
   return (
-    <main className="min-h-screen grid place-items-center p-6">
-      <form
-        onSubmit={onSubmit}
-        className="w-full max-w-sm space-y-4 border border-gray-700 p-6 rounded-xl bg-black"
-      >
-        <h1 className="text-xl font-semibold text-white">Sign in</h1>
+    <main className="min-h-screen flex items-center justify-center px-6 py-12">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <Image src="/logo.png" alt="Rotehügels" width={150} height={42} className="mx-auto" priority />
+          <p className="mt-3 text-xs text-zinc-500 uppercase tracking-widest">Internal Portal</p>
+        </div>
 
-        {error && (
-          <p className="text-sm text-red-400 bg-red-950 border border-red-800 rounded px-3 py-2">
-            {error}
-          </p>
-        )}
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm p-8">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="rounded-lg bg-rose-500/10 p-1.5">
+              <Lock className="h-4 w-4 text-rose-400" />
+            </div>
+            <h1 className="text-base font-semibold text-white">Sign in</h1>
+          </div>
 
-        <input
-          type="email"
-          required
-          className="w-full border border-gray-600 p-2 rounded bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+          {error && (
+            <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              {error}
+            </div>
+          )}
 
-        <input
-          type="password"
-          required
-          className="w-full border border-gray-600 p-2 rounded bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Email</label>
+              <input type="email" required className={inputCls} placeholder="you@rotehuegels.com"
+                value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Password</label>
+              <input type="password" required className={inputCls} placeholder="••••••••"
+                value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+            <button type="submit" disabled={loading}
+              className="w-full rounded-xl bg-rose-600 py-3 text-sm font-semibold text-white hover:bg-rose-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2">
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full p-2 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Signing in…' : 'Sign in'}
-        </button>
-
-        <a
-          href="/register"
-          className="block text-sm text-gray-300 underline text-center"
-        >
-          Create an account
-        </a>
-      </form>
+        <p className="mt-6 text-center text-xs text-zinc-600">
+          Rotehügels internal use only. Unauthorised access is prohibited.
+        </p>
+      </div>
     </main>
   );
 }
 
-export default function Login() {
+export default function LoginPage() {
   return (
     <Suspense>
       <LoginForm />

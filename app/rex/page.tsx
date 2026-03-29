@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Users, Award, Globe, Leaf, Cpu, FlaskConical } from 'lucide-react';
+import MatrixBackground from './MatrixBackground';
 
 export const metadata = {
   title: 'REX — Rotehügels Expert Network',
@@ -43,7 +44,11 @@ const FOCUS_AREAS = [
 
 export default function RexPage() {
   return (
-    <main className="space-y-16 pb-20">
+    <main className="relative space-y-16 pb-20">
+      <MatrixBackground />
+      {/* All content above canvas */}
+      <div className="relative z-10">
+
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1000px_500px_at_50%_-10%,rgba(244,63,94,0.08),transparent_60%)]" />
@@ -190,6 +195,7 @@ export default function RexPage() {
           </Link>
         </div>
       </section>
+      </div>{/* end z-10 wrapper */}
     </main>
   );
 }

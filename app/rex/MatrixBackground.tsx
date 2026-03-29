@@ -87,12 +87,15 @@ export default function MatrixBackground() {
     function initWords() {
       words = KEYWORDS.map((text) => ({
         text,
-        x: Math.random() * canvas!.width * 0.8,
+        // Bias words toward screen edges — away from centre card area
+        x: Math.random() < 0.5
+          ? Math.random() * canvas!.width * 0.22          // left edge zone
+          : canvas!.width * 0.78 + Math.random() * canvas!.width * 0.2, // right edge zone
         y: 20 + Math.random() * (canvas!.height - 40),
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        opacity: 0.18 + Math.random() * 0.18,
-        fontSize: 12 + Math.floor(Math.random() * 7),
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        opacity: 0.13 + Math.random() * 0.12, // softer — less competition with card text
+        fontSize: 11 + Math.floor(Math.random() * 6),
       }));
     }
 

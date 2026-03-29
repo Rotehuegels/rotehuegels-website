@@ -42,8 +42,8 @@ const FOCUS_AREAS = [
   'Environmental Compliance & Policy',
 ];
 
-// Reusable glass card class — dark enough to read over matrix
-const glass = 'rounded-2xl border border-zinc-700/60 bg-black/70 backdrop-blur-sm';
+// Reusable glass card class — solid enough to read over matrix
+const glass = 'rounded-2xl border border-zinc-700/60 bg-black/90 backdrop-blur-md';
 
 export default function RexPage() {
   return (
@@ -78,7 +78,7 @@ export default function RexPage() {
             </Link>
             <a
               href="#how-it-works"
-              className="rounded-xl border border-zinc-600 bg-black/60 backdrop-blur-sm px-6 py-3 text-sm font-semibold text-zinc-200 hover:border-zinc-400 transition-colors"
+              className="rounded-xl border border-zinc-600 bg-black/85 backdrop-blur-md px-6 py-3 text-sm font-semibold text-zinc-200 hover:border-zinc-400 transition-colors"
             >
               How it works
             </a>
@@ -180,7 +180,7 @@ export default function RexPage() {
 
         {/* CTA */}
         <section className="mx-auto max-w-5xl px-6 text-center">
-          <div className="rounded-2xl border border-rose-500/30 bg-black/75 backdrop-blur-sm p-10">
+          <div className="rounded-2xl border border-rose-500/30 bg-black/90 backdrop-blur-md p-10">
             <h2 className="text-2xl font-bold text-white">Ready to join the network?</h2>
             <p className="mt-2 text-zinc-400 max-w-xl mx-auto">
               Registration takes less than 2 minutes. Your REX ID will be emailed to you instantly.

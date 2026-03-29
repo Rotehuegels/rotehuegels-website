@@ -10,6 +10,8 @@ import {
   Network,
   Package,
   ChevronDown,
+  Briefcase,
+  ClipboardList,
 } from 'lucide-react';
 import { useState } from 'react';
 import LogoutButton from './LogoutButton';
@@ -30,6 +32,15 @@ const NAV = [
     children: [
       { label: 'Employees', href: '/dashboard/hr/employees', icon: Users },
       { label: 'Add Employee', href: '/dashboard/hr/add', icon: UserPlus },
+    ],
+  },
+  {
+    label: 'ATS',
+    icon: Briefcase,
+    children: [
+      { label: 'Overview', href: '/dashboard/ats', icon: ClipboardList },
+      { label: 'Job Postings', href: '/dashboard/ats/jobs', icon: Briefcase },
+      { label: 'Post a Job', href: '/dashboard/ats/jobs/new', icon: UserPlus },
     ],
   },
   {

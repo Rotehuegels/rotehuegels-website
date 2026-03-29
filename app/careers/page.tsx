@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   FlaskConical,
   Cog,
@@ -17,8 +18,23 @@ import {
   Rocket,
 } from "lucide-react";
 
+type Job = { id: string; title: string; department: string | null; location: string; employment_type: string };
+
+const TYPE_LABEL: Record<string, string> = {
+  full_time: 'Full-time', part_time: 'Part-time',
+  consultant: 'Consultant', contract: 'Contract',
+};
+
 export default function CareersPage() {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [jobs, setJobs] = useState<Job[]>([]);
+
+  useEffect(() => {
+    fetch('/api/ats/jobs/public')
+      .then(r => r.json())
+      .then(d => setJobs(d.data ?? []))
+      .catch(() => {});
+  }, []);
 
   const domains = [
     {
@@ -182,6 +198,29 @@ export default function CareersPage() {
           </div>
         </div>
       </section>
+
+      {/* Live job openings */}
+      {jobs.length > 0 && (
+        <section className="max-w-6xl mx-auto px-6 pb-8">
+          <h2 className="text-2xl font-bold text-slate-100 mb-4">Open Positions</h2>
+          <div className="space-y-3">
+            {jobs.map(job => (
+              <div key={job.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-4">
+                <div>
+                  <p className="font-semibold text-slate-100">{job.title}</p>
+                  <p className="text-sm text-slate-400 mt-0.5">
+                    {job.department && `${job.department} · `}{job.location} · {TYPE_LABEL[job.employment_type] ?? job.employment_type}
+                  </p>
+                </div>
+                <Link href={`/careers/${job.id}/apply`}
+                  className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 transition-colors no-underline">
+                  Apply now
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Values */}
       <section className="max-w-6xl mx-auto px-6 py-8">

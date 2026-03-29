@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Users, Award, Globe, Leaf, Cpu, FlaskConical } from 'lucide-react';
-import MatrixBackground from './MatrixBackground';
 
 export const metadata = {
   title: 'REX — Rotehügels Expert Network',
@@ -42,24 +41,20 @@ const FOCUS_AREAS = [
   'Environmental Compliance & Policy',
 ];
 
-// Reusable glass card class — solid enough to read over matrix
-const glass = 'rounded-2xl border border-zinc-700/60 bg-black/90 backdrop-blur-md';
+const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40';
 
 export default function RexPage() {
   return (
     <main className="relative space-y-16 pb-20">
-      <MatrixBackground />
-
-      {/* All content above canvas */}
-      <div className="relative z-10">
+      <div>
 
         {/* Hero — no card needed, large text is readable */}
         <section className="mx-auto max-w-5xl px-6 pt-14 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/40 bg-black/60 backdrop-blur-sm px-4 py-1.5 text-xs font-medium text-rose-400 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-400 mb-6">
             <Users className="h-3.5 w-3.5" />
             Rotehügels Expert Network
           </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white drop-shadow-lg">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
             Join{' '}
             <span className="bg-gradient-to-r from-rose-400 to-rose-300 bg-clip-text text-transparent">
               REX
@@ -78,7 +73,7 @@ export default function RexPage() {
             </Link>
             <a
               href="#how-it-works"
-              className="rounded-xl border border-zinc-600 bg-black/85 backdrop-blur-md px-6 py-3 text-sm font-semibold text-zinc-200 hover:border-zinc-400 transition-colors"
+              className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-3 text-sm font-semibold text-zinc-200 hover:border-zinc-600 transition-colors"
             >
               How it works
             </a>
@@ -180,7 +175,7 @@ export default function RexPage() {
 
         {/* CTA */}
         <section className="mx-auto max-w-5xl px-6 text-center">
-          <div className="rounded-2xl border border-rose-500/30 bg-black/90 backdrop-blur-md p-10">
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.06] p-10">
             <h2 className="text-2xl font-bold text-white">Ready to join the network?</h2>
             <p className="mt-2 text-zinc-400 max-w-xl mx-auto">
               Registration takes less than 2 minutes. Your REX ID will be emailed to you instantly.

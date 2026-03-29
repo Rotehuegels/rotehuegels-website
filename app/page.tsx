@@ -15,7 +15,7 @@ export default function HomePage() {
     <div className="space-y-16">
 
       {/* HERO (first screen) */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-zinc-950 via-black to-zinc-900 py-24">
+      <section className="relative overflow-hidden py-24">
         <div className="container mx-auto px-6 lg:px-12 relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white max-w-4xl">
             Building Sustainable Advantage in{" "}
@@ -57,7 +57,7 @@ export default function HomePage() {
 
         {/* Decorative glow */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/30" />
           <svg
             className="absolute top-0 left-0 w-full h-full opacity-10"
             xmlns="http://www.w3.org/2000/svg"

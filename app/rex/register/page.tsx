@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import AuraBackground from '../AuraBackground';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
@@ -68,8 +67,7 @@ export default function RexRegisterPage() {
 
   if (status === 'success') {
     return (
-      <main className="relative min-h-[70vh] flex items-center justify-center px-6 py-12">
-        <AuraBackground />
+      <main className="min-h-[70vh] flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-lg text-center">
           <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-10">
             <p className="text-4xl font-black text-emerald-400 mb-1">Welcome!</p>
@@ -106,8 +104,7 @@ export default function RexRegisterPage() {
   }
 
   return (
-    <main className="relative mx-auto max-w-2xl px-6 py-12">
-      <AuraBackground />
+    <main className="mx-auto max-w-2xl px-6 py-12">
       {/* Back link */}
       <Link href="/rex" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
         ← Back to REX Network

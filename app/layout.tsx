@@ -3,6 +3,7 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import TickerBar from '@/components/TickerBar'
+import AuraBackground from '@/components/AuraBackground'
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.rotehuegels.com"),
@@ -82,6 +83,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning>
+        <AuraBackground />
         <Header />
         <TickerBar />
         <main>{children}</main>

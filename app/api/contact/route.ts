@@ -91,13 +91,18 @@ export async function POST(req: Request) {
     <p style="color:#888;font-size:12px;margin-top:24px">Sent via rotehuegels.com contact form</p>
   `;
 
-  await transporter.sendMail({
-    from: EMAIL_FROM ?? 'Rotehügels Website <noreply@rotehuegels.com>',
-    to,
-    replyTo: email,
-    subject,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: EMAIL_FROM ?? 'Rotehügels Website <noreply@rotehuegels.com>',
+      to,
+      replyTo: email,
+      subject,
+      html,
+    });
+  } catch (err) {
+    console.error('[api/contact] Failed to send email:', err);
+    // Still return success — submission was received even if email failed
+  }
 
   return NextResponse.json({ success: true });
 }

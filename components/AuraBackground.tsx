@@ -6,30 +6,24 @@ export default function AuraBackground() {
       <style>{`
         @keyframes aura-drift-1 {
           0%   { transform: translate(0px, 0px) scale(1); }
-          33%  { transform: translate(70px, -50px) scale(1.12); }
-          66%  { transform: translate(-40px, 80px) scale(0.92); }
+          33%  { transform: translate(80px, -60px) scale(1.1); }
+          66%  { transform: translate(-50px, 90px) scale(0.93); }
           100% { transform: translate(0px, 0px) scale(1); }
         }
         @keyframes aura-drift-2 {
           0%   { transform: translate(0px, 0px) scale(1); }
-          33%  { transform: translate(-90px, 70px) scale(1.18); }
-          66%  { transform: translate(60px, -60px) scale(0.88); }
+          33%  { transform: translate(-100px, 80px) scale(1.15); }
+          66%  { transform: translate(70px, -70px) scale(0.88); }
           100% { transform: translate(0px, 0px) scale(1); }
         }
         @keyframes aura-drift-3 {
           0%   { transform: translate(0px, 0px) scale(1); }
-          50%  { transform: translate(50px, 90px) scale(1.1); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        @keyframes aura-drift-4 {
-          0%   { transform: translate(0px, 0px) scale(1); }
-          40%  { transform: translate(-60px, -80px) scale(1.14); }
-          80%  { transform: translate(80px, 40px) scale(0.9); }
+          50%  { transform: translate(60px, 100px) scale(1.08); }
           100% { transform: translate(0px, 0px) scale(1); }
         }
         @keyframes aura-pulse {
           0%, 100% { opacity: 1; }
-          50%       { opacity: 0.6; }
+          50%       { opacity: 0.65; }
         }
       `}</style>
 
@@ -38,73 +32,73 @@ export default function AuraBackground() {
         style={{ zIndex: 0 }}
         aria-hidden="true"
       >
-        {/* Top-left — large warm rose bloom */}
+        {/* Top-left — large primary bloom */}
         <div style={{
           position: 'absolute',
-          top: '-20%',
-          left: '-15%',
+          top: '-30%',
+          left: '-20%',
+          width: '110vw',
+          height: '110vw',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(225,29,72,0.28) 0%, rgba(225,29,72,0.10) 40%, transparent 68%)',
+          filter: 'blur(80px)',
+          animation: 'aura-drift-1 30s ease-in-out infinite, aura-pulse 15s ease-in-out infinite',
+        }} />
+
+        {/* Bottom-right — crimson anchor */}
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          right: '-20%',
+          width: '110vw',
+          height: '110vw',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(190,18,60,0.24) 0%, rgba(190,18,60,0.08) 40%, transparent 68%)',
+          filter: 'blur(90px)',
+          animation: 'aura-drift-2 36s ease-in-out infinite, aura-pulse 18s ease-in-out infinite',
+          animationDelay: '0s, -7s',
+        }} />
+
+        {/* Centre — fills the middle void */}
+        <div style={{
+          position: 'absolute',
+          top: '15%',
+          left: '10%',
+          width: '80vw',
+          height: '80vw',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(244,63,94,0.16) 0%, transparent 65%)',
+          filter: 'blur(100px)',
+          animation: 'aura-drift-3 42s ease-in-out infinite, aura-pulse 22s ease-in-out infinite',
+          animationDelay: '-10s, -5s',
+        }} />
+
+        {/* Top-right — secondary rose */}
+        <div style={{
+          position: 'absolute',
+          top: '-10%',
+          right: '-15%',
+          width: '80vw',
+          height: '80vw',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(251,113,133,0.18) 0%, transparent 65%)',
+          filter: 'blur(80px)',
+          animation: 'aura-drift-1 26s ease-in-out infinite reverse, aura-pulse 17s ease-in-out infinite',
+          animationDelay: '-6s, -12s',
+        }} />
+
+        {/* Bottom-left — teal whisper */}
+        <div style={{
+          position: 'absolute',
+          bottom: '-10%',
+          left: '-10%',
           width: '70vw',
           height: '70vw',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(225,29,72,0.22) 0%, rgba(225,29,72,0.06) 50%, transparent 72%)',
-          filter: 'blur(72px)',
-          animation: 'aura-drift-1 28s ease-in-out infinite, aura-pulse 14s ease-in-out infinite',
-        }} />
-
-        {/* Bottom-right — deep crimson */}
-        <div style={{
-          position: 'absolute',
-          bottom: '-20%',
-          right: '-15%',
-          width: '75vw',
-          height: '75vw',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(190,18,60,0.18) 0%, rgba(190,18,60,0.05) 50%, transparent 72%)',
+          background: 'radial-gradient(circle, rgba(20,184,166,0.09) 0%, transparent 65%)',
           filter: 'blur(90px)',
-          animation: 'aura-drift-2 34s ease-in-out infinite, aura-pulse 18s ease-in-out infinite',
-          animationDelay: '0s, -6s',
-        }} />
-
-        {/* Centre — soft mid-rose glow */}
-        <div style={{
-          position: 'absolute',
-          top: '25%',
-          left: '25%',
-          width: '50vw',
-          height: '50vw',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(244,63,94,0.11) 0%, transparent 68%)',
-          filter: 'blur(100px)',
-          animation: 'aura-drift-3 40s ease-in-out infinite, aura-pulse 20s ease-in-out infinite',
-          animationDelay: '-8s, -4s',
-        }} />
-
-        {/* Bottom-left — teal counter-accent, very faint */}
-        <div style={{
-          position: 'absolute',
-          bottom: '5%',
-          left: '-5%',
-          width: '45vw',
-          height: '45vw',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(20,184,166,0.07) 0%, transparent 68%)',
-          filter: 'blur(80px)',
-          animation: 'aura-drift-4 32s ease-in-out infinite',
-          animationDelay: '-12s',
-        }} />
-
-        {/* Top-right — accent rose dot */}
-        <div style={{
-          position: 'absolute',
-          top: '8%',
-          right: '-8%',
-          width: '40vw',
-          height: '40vw',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(251,113,133,0.10) 0%, transparent 68%)',
-          filter: 'blur(70px)',
-          animation: 'aura-drift-1 22s ease-in-out infinite reverse, aura-pulse 16s ease-in-out infinite',
-          animationDelay: '-5s, -10s',
+          animation: 'aura-drift-2 38s ease-in-out infinite reverse',
+          animationDelay: '-14s',
         }} />
       </div>
     </>

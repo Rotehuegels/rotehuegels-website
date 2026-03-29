@@ -48,6 +48,7 @@ export default function Header() {
     { href: '/current-updates', label: 'Current Updates' },
     { href: '/rotehuegels-story', label: 'The Rotehügels Story' },
     { href: '/careers', label: 'Careers' },
+    { href: '/rex', label: 'REX Network', highlight: true },
   ];
 
   const linkClasses = (href: string) =>
@@ -57,6 +58,8 @@ export default function Header() {
         ? 'text-red-500 font-semibold border-b-2 border-red-500'
         : 'text-zinc-200 hover:text-red-400',
     ].join(' ');
+
+  type NavItem = { href: string; label: string; highlight?: boolean };
 
   return (
     <>
@@ -72,10 +75,19 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
-            {nav.map((n) => (
-              <Link key={n.href} href={n.href} className={linkClasses(n.href)}>
-                {n.label}
-              </Link>
+            {nav.map((n: NavItem) => (
+              n.highlight ? (
+                <Link key={n.href} href={n.href}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-rose-500/40 bg-rose-500/10 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition-colors"
+                >
+                  {n.label}
+                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400 animate-pulse" />
+                </Link>
+              ) : (
+                <Link key={n.href} href={n.href} className={linkClasses(n.href)}>
+                  {n.label}
+                </Link>
+              )
             ))}
 
             <Link
@@ -135,19 +147,22 @@ export default function Header() {
             </div>
 
             <nav className="relative z-10 flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
-              {nav.map((n) => (
+              {nav.map((n: NavItem) => (
                 <Link
                   key={n.href}
                   href={n.href}
                   onClick={() => setOpen(false)}
                   className={[
                     'text-lg py-2 font-medium transition-colors',
-                    pathname === n.href
+                    n.highlight
+                      ? 'text-rose-400 font-semibold'
+                      : pathname === n.href
                       ? 'text-red-400 font-semibold'
                       : 'text-zinc-200 hover:text-red-300',
                   ].join(' ')}
                 >
                   {n.label}
+                  {n.highlight && <span className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-rose-400 animate-pulse align-middle" />}
                 </Link>
               ))}
 

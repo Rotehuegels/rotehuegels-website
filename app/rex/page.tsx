@@ -1,331 +1,195 @@
-// app/about/page.tsx
-import type { ReactElement } from "react";
-import Section from "@/components/Section";
-import WebLLMAssistant from "@/components/WebLLMAssistant";
-import {
-  ShieldCheck,
-  FlaskConical,
-  Cog,
-  LineChart,
-  Users2,
-  Linkedin,
-} from "lucide-react";
+import Link from 'next/link';
+import { Users, Award, Globe, Leaf, Cpu, FlaskConical } from 'lucide-react';
 
 export const metadata = {
-  title: "About Rotehügels | Research • EPC • Critical Minerals",
+  title: 'REX — Rotehügels Expert Network',
   description:
-    "Rotehügels unites research, engineering, and execution—delivering innovative process technologies and EPC solutions for critical minerals, metallurgy, circularity, and sustainable industrial development.",
-  openGraph: {
-    title: "About Rotehügels",
-    description:
-      "Research. Engineering. Execution. Innovative process technologies and EPC solutions for critical minerals.",
-    url: "https://www.rotehuegels.com/about",
-    type: "website",
-    images: [{ url: "/og-about.png", width: 1200, height: 630, alt: "Rotehügels — Research • EPC" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    images: ["/og-about.png"],
-  },
+    'Join REX — the Rotehügels Expert Network. A growing global community of students, professionals, academics, and enthusiasts in sustainability, recycling, and plant automation.',
 };
 
-const Bullet = ({
-  icon: Icon,
-  title,
-  text,
-}: {
-  icon: typeof ShieldCheck;
-  title: string;
-  text: string;
-}): ReactElement => (
-  <li className="flex gap-3 rounded-xl border border-zinc-800/70 bg-zinc-900/40 p-4">
-    <div className="shrink-0 rounded-lg border border-zinc-800/70 bg-zinc-900/80 p-2">
-      <Icon className="h-5 w-5 text-rose-400" />
-    </div>
-    <div>
-      <div className="font-medium">{title}</div>
-      <p className="text-sm text-zinc-300 mt-1">{text}</p>
-    </div>
-  </li>
-);
+const WHO_CAN_JOIN = [
+  {
+    icon: FlaskConical,
+    label: 'Students',
+    desc: 'Final-year and postgraduate students in metallurgy, chemistry, chemical engineering, environmental science, or related fields.',
+  },
+  {
+    icon: Award,
+    label: 'Professionals',
+    desc: 'Industry practitioners in mining, metals processing, recycling, EPC, plant operations, and industrial automation.',
+  },
+  {
+    icon: Globe,
+    label: 'Academics',
+    desc: 'Researchers, faculty, and scientists working in materials science, process engineering, sustainability, or circular economy.',
+  },
+  {
+    icon: Leaf,
+    label: 'Enthusiasts',
+    desc: 'Individuals passionate about sustainability, clean technology, resource recovery, and the future of industrial systems.',
+  },
+];
 
-export default function AboutPage() {
+const FOCUS_AREAS = [
+  'Hydrometallurgy & Extractive Metallurgy',
+  'Battery Recycling & Critical Minerals',
+  'Circular Economy & Waste-to-Value',
+  'Plant Automation & Process Control',
+  'EPC & Industrial Project Delivery',
+  'Sustainability & ESG',
+  'AI & Digital Twins for Industry',
+  'Environmental Compliance & Policy',
+];
+
+export default function RexPage() {
   return (
-    <main className="space-y-20">
-      {/* HERO */}
+    <main className="space-y-16 pb-20">
+      {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1200px_600px_at_20%_-20%,rgba(244,63,94,0.07),transparent_60%)]" />
-        <div className="mx-auto max-w-5xl px-6 pt-12">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-zinc-100 to-zinc-300 bg-clip-text text-transparent">
-              About Rotehügels
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1000px_500px_at_50%_-10%,rgba(244,63,94,0.08),transparent_60%)]" />
+        <div className="mx-auto max-w-5xl px-6 pt-14 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-400 mb-6">
+            <Users className="h-3.5 w-3.5" />
+            Rotehügels Expert Network
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
+            Join{' '}
+            <span className="bg-gradient-to-r from-rose-400 to-rose-300 bg-clip-text text-transparent">
+              REX
             </span>
           </h1>
-          <p className="mt-2 text-zinc-400">
-            Three pillars. Many domains. One purpose — sustainable advantage.
+          <p className="mt-4 mx-auto max-w-2xl text-zinc-300 text-lg">
+            A growing global community of experts, practitioners, and passionate individuals
+            advancing sustainability, recycling, and plant automation.
           </p>
-
-          <div className="mt-6 rounded-2xl border border-zinc-800/70 bg-zinc-900/40 p-6">
-            <p className="text-lg text-zinc-200">
-              <span className="font-semibold">
-                Rotehügel Research Business Consultancy Private Limited (“Rotehügels”)
-              </span>{" "}
-              integrates scientific innovation with strategic advisory and operational execution. We design circular
-              flows, scale metallurgical processes, and deliver investor-ready outcomes—from lab benches to turnkey plants.
-            </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <Link
+              href="/rex/register"
+              className="rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-500 transition-colors"
+            >
+              Register for free
+            </Link>
+            <a
+              href="#how-it-works"
+              className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-3 text-sm font-semibold text-zinc-200 hover:border-zinc-600 transition-colors"
+            >
+              How it works
+            </a>
           </div>
         </div>
       </section>
 
-      {/* WHO WE ARE */}
-      <Section title="Who We Are">
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
-            <p className="text-zinc-300">
-              <strong>Rotehügels</strong>, founded on <strong>1st September 2024</strong> and incorporated on{" "}
-              <strong>17th September 2025</strong>, is a technology development company at the intersection of research,
-              engineering, and execution. We deliver innovative process technologies and act as an EPC partner for
-              greenfield and brownfield projects across critical minerals, metallurgy, circular economy, and sustainable
-              industrial development.
-            </p>
-            <p className="text-zinc-300">
-              We design and implement advanced <strong>hydrometallurgical</strong> and recycling solutions to extract
-              copper, tin, lead, and other critical minerals from lean ores, secondary resources, and industrial residues.
-              Using <strong>AI-driven modeling</strong>, <strong>FactSage simulations</strong>, and lab-scale validation,
-              we convert research into scalable solutions that reduce energy use, improve recovery yields, and minimize waste.
-            </p>
-            <p className="text-zinc-300">
-              What sets us apart is our integration of <strong>technology development</strong> with{" "}
-              <strong>EPC execution</strong>. With experience spanning large-scale concentrators in Africa and recycling
-              pilots in India, we help investors and industries choose the right approach, technology, and investment model.
-              As an EPC partner, we embed <strong>safety, compliance, and sustainability</strong> at every stage—from design
-              to commissioning—de-risking projects and ensuring reliable long-term performance.
-            </p>
-          </div>
-
-          {/* Right rail callout */}
-          <aside className="h-fit rounded-2xl border border-rose-500/20 bg-rose-500/[0.06] p-5">
-            <div className="text-sm font-medium text-rose-300">Our Promise</div>
-            <p className="mt-2 text-sm text-rose-100/90">
-              Tech that ships. Plants that perform. Safety by design.
-              Decisions backed by models, validated in the lab, and hardened in the field.
-            </p>
-            <div className="mt-4 h-px bg-gradient-to-r from-rose-500/40 to-transparent" />
-            <ul className="mt-4 space-y-2 text-sm text-rose-100/90">
-              <li>• Research → Pilot → Plant</li>
-              <li>• CAPEX/OPEX clarity</li>
-              <li>• Compliance & ESG built-in</li>
-            </ul>
-          </aside>
-        </div>
-      </Section>
-
-      {/* WHAT WE DELIVER */}
-      <Section title="What We Deliver">
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Bullet
-            icon={FlaskConical}
-            title="Innovation & Development"
-            text="Next-gen processes for sustainable metal extraction and recycling."
-          />
-          <Bullet
-            icon={Cog}
-            title="Technology-Driven EPC"
-            text="Turnkey plants for greenfield and brownfield deployments."
-          />
-          <Bullet
-            icon={ShieldCheck}
-            title="Safety & Risk Management"
-            text="Safety engineered into design and execution to meet global standards."
-          />
-          <Bullet
-            icon={LineChart}
-            title="Investor & Industry Confidence"
-            text="Techno-commercial advisory for CAPEX/OPEX optimization and future-ready design."
-          />
-          <Bullet
-            icon={Users2}
-            title="Employment & Wealth Creation"
-            text="Skilled jobs in engineering, operations, and R&D; waste-to-value outcomes."
-          />
-        </ul>
-      </Section>
-
-      {/* VISION */}
-      <Section title="Vision">
-        <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/40 p-6">
-          <p className="text-zinc-300">
-            By combining technology innovation, EPC capability, and safety-driven execution, Rotehügels is a catalyst
-            for industrial transformation—contributing to India’s National Critical Minerals Mission and advancing
-            global sustainability goals.
-          </p>
-        </div>
-      </Section>
-
-      {/* CONNECT */}
-      <Section title="Connect With Us">
-        <div className="flex flex-wrap gap-4">
-          <a
-            href="https://www.linkedin.com/company/rotehuegels"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-800/70 bg-zinc-900/40 px-4 py-2 text-zinc-200 hover:border-zinc-700"
-            aria-label="Rotehügels on LinkedIn"
-          >
-            <Linkedin className="h-5 w-5 text-rose-400" />
-            Company LinkedIn
-          </a>
-          <a
-            href="https://www.linkedin.com/in/sivakumarshanmugam/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-800/70 bg-zinc-900/40 px-4 py-2 text-zinc-200 hover:border-zinc-700"
-            aria-label="Sivakumar Shanmugam on LinkedIn"
-          >
-            <Linkedin className="h-5 w-5 text-rose-400" />
-            Sivakumar Shanmugam (Founder/CEO)
-          </a>
-        </div>
-      </Section>
-
-      {/* EXISTING SECTIONS (kept, visually tightened) */}
-      <Section title="Our Three Pillars">
-        <div className="grid sm:grid-cols-3 gap-6">
+      {/* Stats */}
+      <section className="mx-auto max-w-5xl px-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            {
-              h: "Research",
-              p: "Hydrometallurgy R&D, pilot design, process modeling, analytical SOPs — turning lab innovation into scalable flowsheets.",
-            },
-            {
-              h: "Business",
-              p: "Techno-economic analysis, procurement collateral, market & policy intelligence — investor-ready clarity.",
-            },
-            {
-              h: "Consultancy",
-              p: "Commissioning, ramp-up, troubleshooting, audits, sustainability & circularity roadmaps — operational excellence.",
-            },
-          ].map((c, i) => (
-            <div
-              key={i}
-              className="rounded-xl bg-zinc-900/40 border border-zinc-800/70 p-6 hover:border-zinc-700 transition-colors"
-            >
-              <h3 className="font-semibold mb-2">{c.h}</h3>
-              <p className="text-sm text-zinc-300">{c.p}</p>
+            { value: 'Free', label: 'Lifelong membership' },
+            { value: 'Global', label: 'Open to all geographies' },
+            { value: 'REX ID', label: 'Unique identifier for life' },
+            { value: 'No-obligation', label: 'Voluntary community' },
+          ].map((s) => (
+            <div key={s.label} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 text-center">
+              <p className="text-xl font-bold text-rose-400">{s.value}</p>
+              <p className="mt-1 text-xs text-zinc-400">{s.label}</p>
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
-      <Section title="EPC & Turnkey Projects">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800/70 p-6">
-            <h3 className="font-semibold mb-2">Greenfield Plants (Turnkey)</h3>
-            <p className="text-sm text-zinc-300">
-              End-to-end delivery: FEED, detailed design, vendor/contractor integration, construction management,
-              commissioning, and handover with SOPs and training.
-            </p>
-          </div>
-          <div className="rounded-xl bg-zinc-900/40 border border-zinc-800/70 p-6">
-            <h3 className="font-semibold mb-2">Custom & Brownfield Solutions</h3>
-            <p className="text-sm text-zinc-300">
-              Retrofits, debottlenecking, niche rigs, modular pilots — fast ROI and minimal downtime.
-            </p>
-          </div>
-        </div>
-        <p className="mt-4 text-sm text-zinc-400">
-          Have an RFP or scope note? Email{" "}
-          <a
-            className="text-rose-400 hover:underline"
-            href="mailto:sales@rotehuegels.com"
-          >
-            sales@rotehuegels.com
-          </a>
-        </p>
-      </Section>
-
-      <Section title="Domains of Expertise">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { h: "Metallurgy & Process R&D", p: "Copper, nickel, manganese, REEs — lab → pilot → plant." },
-            { h: "Circular Economy & Recycling", p: "Battery metals, resource recovery, waste-to-value, ESG." },
-            { h: "Techno-Economic Advisory", p: "Feasibility, sensitivity, cost curves, investor collateral." },
-            { h: "Plant Commissioning & Ops", p: "Start-up playbooks, SOPs, throughput optimization." },
-            { h: "Market Intelligence & Strategy", p: "Supply chain, pricing, and policy insight for GTM." },
-            { h: "Business Development", p: "JV structuring, partnerships, new geography entry." },
-            { h: "Research & Patents", p: "Prior-art search, claim drafting, patent strategy." },
-            { h: "Laboratory Chemistry", p: "AAS/ICP, titrations, solvent extraction, QA/QC." },
-            { h: "Eureka Engineering", p: "Novel separations, modular rigs, zero-to-one prototypes." },
-            { h: "Digital & AI Innovation", p: "LLMs, retrieval agents, digital twins, decision support." },
-            { h: "Global Policy & ESG", p: "Compliance frameworks and circularity by design." },
-          ].map((c, i) => (
-            <div
-              key={i}
-              className="rounded-xl bg-zinc-900/40 border border-zinc-800/70 p-6 hover:border-zinc-700 transition-colors"
-            >
-              <h3 className="font-semibold mb-2">{c.h}</h3>
-              <p className="text-sm text-zinc-300">{c.p}</p>
+      {/* Who can join */}
+      <section className="mx-auto max-w-5xl px-6">
+        <h2 className="text-2xl font-bold text-white mb-6">Who can join</h2>
+        <div className="grid sm:grid-cols-2 gap-5">
+          {WHO_CAN_JOIN.map(({ icon: Icon, label, desc }) => (
+            <div key={label} className="flex gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
+              <div className="shrink-0 rounded-xl border border-zinc-700 bg-zinc-800/60 p-2.5">
+                <Icon className="h-5 w-5 text-rose-400" />
+              </div>
+              <div>
+                <p className="font-semibold text-white">{label}</p>
+                <p className="mt-1 text-sm text-zinc-400">{desc}</p>
+              </div>
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
-      <Section
-        title="Talk to Rotehügels Assist"
-        subtitle="An AI knowledge companion — runs entirely in your browser with WebGPU."
-      >
-        <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/40 p-5">
-          <p className="text-sm text-zinc-300 mb-3">
-            Tip: first load may take a minute, but it’s cached after.
+      {/* Focus areas */}
+      <section className="mx-auto max-w-5xl px-6">
+        <h2 className="text-2xl font-bold text-white mb-6">Focus areas</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {FOCUS_AREAS.map((area) => (
+            <div
+              key={area}
+              className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 text-sm text-zinc-300"
+            >
+              <Cpu className="h-3.5 w-3.5 text-rose-400 mb-1.5" />
+              {area}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="how-it-works" className="mx-auto max-w-5xl px-6">
+        <h2 className="text-2xl font-bold text-white mb-6">How it works</h2>
+        <div className="grid sm:grid-cols-3 gap-5">
+          {[
+            {
+              step: '01',
+              title: 'Register',
+              desc: 'Fill in a simple form with your name, date of birth, email, LinkedIn profile, and area of interest. Completely free.',
+            },
+            {
+              step: '02',
+              title: 'Get your REX ID',
+              desc: 'A unique REX ID is instantly assigned and emailed to you. Format: REXYYYYMMDD + sequence. This is your lifelong membership identifier.',
+            },
+            {
+              step: '03',
+              title: 'Stay connected',
+              desc: 'You may be reached out by Rotehügels based on your profile for project opportunities, collaborations, or engagements — at any time.',
+            },
+          ].map(({ step, title, desc }) => (
+            <div key={step} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
+              <p className="text-3xl font-black text-rose-500/30">{step}</p>
+              <p className="mt-2 font-semibold text-white">{title}</p>
+              <p className="mt-2 text-sm text-zinc-400">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Disclaimer */}
+      <section className="mx-auto max-w-5xl px-6">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/20 p-6">
+          <h3 className="text-sm font-semibold text-zinc-300 mb-2">Important — Please read</h3>
+          <ul className="space-y-2 text-sm text-zinc-500">
+            <li>• REX membership is <strong className="text-zinc-400">voluntary and complimentary</strong>. There is no fee at any stage.</li>
+            <li>• Joining REX does <strong className="text-zinc-400">not guarantee</strong> any immediate assignment, project engagement, or compensation.</li>
+            <li>• You may be contacted by Rotehügels based on your profile and our project requirements, in line with company policy at that time.</li>
+            <li>• <strong className="text-zinc-400">Duplicate registrations are not permitted.</strong> One registration per person, verified by email address.</li>
+            <li>• Your REX ID and membership are <strong className="text-zinc-400">lifelong</strong> with no renewal needed.</li>
+            <li>• Your personal data is stored securely and will not be shared with third parties without consent.</li>
+          </ul>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="mx-auto max-w-5xl px-6 text-center">
+        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.06] p-10">
+          <h2 className="text-2xl font-bold text-white">Ready to join the network?</h2>
+          <p className="mt-2 text-zinc-400 max-w-xl mx-auto">
+            Registration takes less than 2 minutes. Your REX ID will be emailed to you instantly.
           </p>
-          <WebLLMAssistant />
+          <Link
+            href="/rex/register"
+            className="mt-6 inline-block rounded-xl bg-rose-600 px-8 py-3 text-sm font-semibold text-white hover:bg-rose-500 transition-colors"
+          >
+            Register now — it&apos;s free
+          </Link>
         </div>
-      </Section>
-
-      <Section title="Work With Us">
-        <p className="text-sm text-zinc-300 mb-4">
-          Whether you’re scoping a greenfield plant, exploring recycling, or seeking advisory clarity — we work with
-          corporates, entrepreneurs, investors, and institutions worldwide.
-        </p>
-        <div className="flex gap-4">
-          <a href="mailto:sales@rotehuegels.com" className="btn-primary no-underline">
-            Start an Engagement
-          </a>
-          <a href="/careers" className="btn-ghost no-underline">
-            Explore Careers
-          </a>
-        </div>
-      </Section>
-
-      {/* SEO: Organization JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "Rotehügel Research Business Consultancy Private Limited",
-            alternateName: "Rotehügels",
-            url: "https://www.rotehuegels.com",
-            logo: "https://www.rotehuegels.com/logo.png",
-            sameAs: [
-              "https://www.linkedin.com/company/rotehuegels",
-              "https://www.linkedin.com/in/sivakumarshanmugam/",
-            ],
-            foundingDate: "2024-09-01",
-            description:
-              "Technology development and EPC partner for critical minerals, metallurgy, circular economy, and sustainable industrial development.",
-            contactPoint: [
-              {
-                "@type": "ContactPoint",
-                email: "sales@rotehuegels.com",
-                contactType: "sales",
-                areaServed: "IN",
-                availableLanguage: ["en"],
-              },
-            ],
-          }),
-        }}
-      />
+      </section>
     </main>
   );
 }

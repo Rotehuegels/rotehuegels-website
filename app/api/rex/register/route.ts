@@ -171,14 +171,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Registration failed. Please try again.' }, { status: 500 });
   }
 
-  // Send welcome email (non-blocking)
-  sendWelcomeEmail({
-    to: data.email,
-    title: data.title,
-    full_name: data.full_name,
-    rex_id,
-    member_type: data.member_type,
-  }).catch((err) => console.error('[rex/register] Email error:', err));
+  // Send welcome email — must await before returning (Vercel terminates on response)
+  try {
+    await sendWelcomeEmail({
+      to: data.email,
+      title: data.title,
+      full_name: data.full_name,
+      rex_id,
+      member_type: data.member_type,
+    });
+  } catch (err) {
+    console.error('[rex/register] Email error:', err);
+    // Registration succeeded even if email fails
+  }
 
   return NextResponse.json({ success: true, rex_id }, { status: 201 });
 }

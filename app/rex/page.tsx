@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Users, Award, Globe, Leaf, Cpu, FlaskConical } from 'lucide-react';
+import AuraBackground from './AuraBackground';
 
 export const metadata = {
   title: 'REX — Rotehügels Expert Network',
@@ -46,6 +47,7 @@ const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40';
 export default function RexPage() {
   return (
     <main className="relative space-y-16 pb-20">
+      <AuraBackground />
       <div>
 
         {/* Hero — no card needed, large text is readable */}

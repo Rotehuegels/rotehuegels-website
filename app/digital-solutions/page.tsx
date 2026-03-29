@@ -25,7 +25,7 @@ export default function DigitalSolutionsPage() {
   const router = useRouter()
 
   return (
-    <main className="bg-black text-white min-h-screen">
+    <main className="text-white min-h-screen">
 
       {/* HERO */}
       <section className="text-center py-32 px-6 relative overflow-hidden">

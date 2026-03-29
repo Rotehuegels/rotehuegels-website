@@ -66,7 +66,7 @@ export default function Header() {
       <header
         className={[
           'sticky top-0 z-[1000] border-b border-white/10 backdrop-blur transition-colors duration-300',
-          scrolled ? 'bg-black/80' : 'bg-black/40',
+          scrolled ? 'bg-black/50' : 'bg-black/20',
         ].join(' ')}
       >
         <div className="container mx-auto flex items-center justify-between py-3 px-4 md:px-6">

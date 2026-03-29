@@ -103,7 +103,7 @@ export default function TickerBar() {
   );
 
   return (
-    <div className="w-full border-b border-zinc-800 bg-black/60 backdrop-blur supports-[backdrop-filter]:bg-black/40">
+    <div className="w-full border-b border-zinc-800/50 bg-black/20 backdrop-blur supports-[backdrop-filter]:bg-black/15">
       {/* Row 1: right -> left (Gold + LME Copper + Aluminium) */}
       <div className="overflow-hidden">
         <div

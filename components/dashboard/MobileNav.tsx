@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ChevronDown, LayoutDashboard, Users, UserPlus, Network, Package, Briefcase, ClipboardList, LogOut } from 'lucide-react';
+import { Menu, X, ChevronDown, LayoutDashboard, Users, UserPlus, Network, Package, Briefcase, ClipboardList, LogOut, IndianRupee, ReceiptText, ShoppingBag } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
@@ -23,6 +23,16 @@ const NAV = [
       { label: 'Overview', href: '/dashboard/ats', icon: ClipboardList },
       { label: 'Job Postings', href: '/dashboard/ats/jobs', icon: Briefcase },
       { label: 'Post a Job', href: '/dashboard/ats/jobs/new', icon: UserPlus },
+    ],
+  },
+  {
+    label: 'Accounts', icon: IndianRupee,
+    children: [
+      { label: 'Overview', href: '/dashboard/accounts', icon: IndianRupee },
+      { label: 'Orders', href: '/dashboard/accounts/orders', icon: ReceiptText },
+      { label: 'New Order', href: '/dashboard/accounts/orders/new', icon: ShoppingBag },
+      { label: 'Expenses', href: '/dashboard/accounts/expenses', icon: ClipboardList },
+      { label: 'Stock', href: '/dashboard/accounts/stock', icon: Package },
     ],
   },
   { label: 'REX Members', href: '/dashboard/rex', icon: Network },

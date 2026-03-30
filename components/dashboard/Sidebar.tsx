@@ -12,6 +12,9 @@ import {
   ChevronDown,
   Briefcase,
   ClipboardList,
+  IndianRupee,
+  ReceiptText,
+  ShoppingBag,
 } from 'lucide-react';
 import { useState } from 'react';
 import LogoutButton from './LogoutButton';
@@ -41,6 +44,17 @@ const NAV = [
       { label: 'Overview', href: '/dashboard/ats', icon: ClipboardList },
       { label: 'Job Postings', href: '/dashboard/ats/jobs', icon: Briefcase },
       { label: 'Post a Job', href: '/dashboard/ats/jobs/new', icon: UserPlus },
+    ],
+  },
+  {
+    label: 'Accounts',
+    icon: IndianRupee,
+    children: [
+      { label: 'Overview', href: '/dashboard/accounts', icon: IndianRupee },
+      { label: 'Orders', href: '/dashboard/accounts/orders', icon: ReceiptText },
+      { label: 'New Order', href: '/dashboard/accounts/orders/new', icon: ShoppingBag },
+      { label: 'Expenses', href: '/dashboard/accounts/expenses', icon: ClipboardList },
+      { label: 'Stock', href: '/dashboard/accounts/stock', icon: Package },
     ],
   },
   {

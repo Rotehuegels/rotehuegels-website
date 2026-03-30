@@ -92,7 +92,7 @@ END $$;
 -- Received: 31 Jan 2026 (Sat evening) | Entered: 2 Feb 2026
 -- Total: ₹8,38,440.05 incl GST (18%)
 -- Base: ₹7,10,542.42 | GST: ₹1,27,897.63
--- Advance: ₹71,000 on 31 Jan 2026 | Balance: pending
+-- Advance: ₹7,10,000 on 31 Jan 2026 | Balance: ₹1,28,440.05
 -- ──────────────────────────────────────────────────────────
 DO $$
 DECLARE
@@ -122,7 +122,7 @@ BEGIN
     trigger_condition, status
   ) VALUES (
     gds1_id, 1, 'Advance Payment', NULL,
-    71000.00, 0.00, 0.00, 0.00, 71000.00,
+    710000.00, 0.00, 0.00, 0.00, 710000.00,
     'At the time of order confirmation', 'paid'
   ) RETURNING id INTO s1_id;
 
@@ -133,7 +133,7 @@ BEGIN
     trigger_condition, status
   ) VALUES (
     gds1_id, 2, 'Balance on Delivery', NULL,
-    767440.05, 0.00, 0.00, 0.00, 767440.05,
+    128440.05, 0.00, 0.00, 0.00, 128440.05,
     'On delivery / as agreed', 'pending'
   ) RETURNING id INTO s2_id;
 
@@ -143,7 +143,7 @@ BEGIN
     amount_received, tds_deducted, net_received, notes
   ) VALUES (
     gds1_id, s1_id, '2026-01-31',
-    71000.00, 0.00, 71000.00,
+    710000.00, 0.00, 710000.00,
     'Advance received on 31 Jan 2026 at order confirmation'
   );
 END $$;

@@ -24,6 +24,7 @@ interface Order {
   tds_deducted_total: number | null;
   status: string;
   notes: string | null;
+  hsn_sac_code: string | null;
 }
 
 export default function EditOrderForm({ order }: { order: Order }) {
@@ -50,6 +51,7 @@ export default function EditOrderForm({ order }: { order: Order }) {
     tds_deducted_total: String(order.tds_deducted_total ?? 0),
     status: order.status,
     notes: order.notes ?? '',
+    hsn_sac_code: order.hsn_sac_code ?? '',
   });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
@@ -100,6 +102,7 @@ export default function EditOrderForm({ order }: { order: Order }) {
       tds_deducted_total: form.tds_deducted_total ? parseFloat(form.tds_deducted_total) : 0,
       status: form.status,
       notes: form.notes || null,
+      hsn_sac_code: form.hsn_sac_code || null,
     };
 
     try {
@@ -160,6 +163,14 @@ export default function EditOrderForm({ order }: { order: Order }) {
             <label className={label}>Client PAN</label>
             <input type="text" name="client_pan" value={form.client_pan} onChange={handleChange}
               placeholder="AAAAA0000A" className={input} />
+          </div>
+          <div>
+            <label className={label}>HSN / SAC Code</label>
+            <input type="text" name="hsn_sac_code" value={form.hsn_sac_code} onChange={handleChange}
+              placeholder="e.g. 9983 or 78011010"
+              maxLength={8}
+              className={`${input} font-mono`} />
+            <p className="mt-1 text-xs text-zinc-600">4-digit or 8-digit code. Services → SAC (9983…). Goods → HSN (7801, 9027…)</p>
           </div>
           <div className="sm:col-span-2">
             <label className={label}>Description</label>

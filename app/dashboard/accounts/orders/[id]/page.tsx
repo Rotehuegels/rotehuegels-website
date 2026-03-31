@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ShoppingBag, Wrench, Pencil } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Wrench, Pencil, FileText } from 'lucide-react';
 import RecordPaymentForm from './RecordPaymentForm';
 import StageStatusButton from './StageStatusButton';
 
@@ -69,10 +69,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {order.client_pan && <p className="text-xs text-zinc-500 font-mono">PAN: {order.client_pan}</p>}
         </div>
         <div className="flex flex-col items-end gap-3 shrink-0">
-          <Link href={`/dashboard/accounts/orders/${id}/edit`}
-            className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-amber-600 hover:text-amber-400 transition-colors">
-            <Pencil className="h-3.5 w-3.5" /> Edit Order
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href={`/dashboard/accounts/orders/${id}/invoice`}
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-amber-500 hover:text-amber-400 transition-colors">
+              <FileText className="h-3.5 w-3.5" /> Generate Invoice
+            </Link>
+            <Link href={`/dashboard/accounts/orders/${id}/edit`}
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-amber-600 hover:text-amber-400 transition-colors">
+              <Pencil className="h-3.5 w-3.5" /> Edit Order
+            </Link>
+          </div>
           <div className="text-right">
           <p className="text-xs text-zinc-500">Order Date</p>
           <p className="text-sm font-medium text-zinc-300">{fmtDate(order.order_date)}</p>

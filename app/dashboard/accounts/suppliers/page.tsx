@@ -22,7 +22,7 @@ export default async function SuppliersPage() {
             {list.length} registered supplier{list.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Link href="/dashboard/suppliers/new"
+        <Link href="/dashboard/accounts/suppliers/new"
           className="flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
           <Plus className="h-4 w-4" /> Add Supplier
         </Link>
@@ -32,9 +32,9 @@ export default async function SuppliersPage() {
       {!list.length ? (
         <div className={`${glass} p-12 text-center`}>
           <Building2 className="h-10 w-10 text-zinc-700 mx-auto mb-3" />
-          <p className="text-zinc-400 text-sm font-medium">No suppliers registered yet.</p>
-          <p className="text-zinc-600 text-xs mt-1">Enter a GSTIN to auto-fetch company details from the GST portal.</p>
-          <Link href="/dashboard/suppliers/new"
+          <p className="text-zinc-500 text-sm">No suppliers yet.</p>
+          <p className="text-zinc-600 text-xs mt-1">Add a supplier with their GSTIN to auto-fetch their details.</p>
+          <Link href="/dashboard/accounts/suppliers/new"
             className="inline-flex items-center gap-2 mt-5 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition-colors">
             <Plus className="h-4 w-4" /> Add First Supplier
           </Link>
@@ -42,9 +42,10 @@ export default async function SuppliersPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {list.map(s => (
-            <Link key={s.id} href={`/dashboard/suppliers/${s.id}`}
+            <Link key={s.id} href={`/dashboard/accounts/suppliers/${s.id}`}
               className={`${glass} p-5 hover:border-zinc-700 transition-colors block`}>
 
+              {/* Name + status */}
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-white leading-snug truncate">{s.legal_name}</p>
@@ -60,12 +61,14 @@ export default async function SuppliersPage() {
                   }`}>
                     {s.gst_status === 'Active'
                       ? <BadgeCheck className="h-3 w-3" />
-                      : <BadgeX className="h-3 w-3" />}
+                      : <BadgeX className="h-3 w-3" />
+                    }
                     {s.gst_status}
                   </span>
                 )}
               </div>
 
+              {/* GSTIN */}
               {s.gstin && (
                 <div className="flex items-center gap-1.5 mb-2">
                   <Hash className="h-3.5 w-3.5 text-zinc-600 shrink-0" />
@@ -73,6 +76,7 @@ export default async function SuppliersPage() {
                 </div>
               )}
 
+              {/* Address */}
               {(s.address || s.state) && (
                 <div className="flex items-start gap-1.5">
                   <MapPin className="h-3.5 w-3.5 text-zinc-600 shrink-0 mt-0.5" />
@@ -82,6 +86,7 @@ export default async function SuppliersPage() {
                 </div>
               )}
 
+              {/* Entity type */}
               {s.entity_type && (
                 <p className="text-[10px] text-zinc-600 mt-2">{s.entity_type}</p>
               )}

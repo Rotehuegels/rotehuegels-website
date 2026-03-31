@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Upload, Loader2 } from 'lucide-react';
-import { parseSBI, type ParsedStatement } from '@/lib/parseSBI';
+import { parseSBI, parseXLS, type ParsedStatement } from '@/lib/parseSBI';
 
 interface Props {
   onSuccess: () => void;
@@ -30,22 +30,27 @@ export default function BankUploader({ onSuccess }: Props) {
     setParseErr(null);
     setImportMsg(null);
 
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const isXLS = ext === 'xls' || ext === 'xlsx';
+
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const text = ev.target?.result as string;
       try {
-        const result = parseSBI(text);
+        const result = isXLS
+          ? parseXLS(ev.target?.result as ArrayBuffer)
+          : parseSBI(ev.target?.result as string);
         if (result.transactions.length === 0) {
           setParseErr('No transactions found in this file.');
         } else {
           setParsed(result);
         }
       } catch (err) {
-        setParseErr(err instanceof Error ? err.message : 'Failed to parse CSV.');
+        setParseErr(err instanceof Error ? err.message : 'Failed to parse file.');
       }
     };
     reader.onerror = () => setParseErr('Could not read the file.');
-    reader.readAsText(file);
+    if (isXLS) reader.readAsArrayBuffer(file);
+    else reader.readAsText(file);
   }
 
   async function handleImport() {
@@ -81,12 +86,12 @@ export default function BankUploader({ onSuccess }: Props) {
       <label className="flex items-center gap-2 cursor-pointer w-fit">
         <span className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/60 hover:text-white transition-colors">
           <Upload className="h-4 w-4 text-amber-400" />
-          Choose SBI CSV
+          Choose SBI Statement
         </span>
         <input
           ref={inputRef}
           type="file"
-          accept=".csv,.txt"
+          accept=".xls,.xlsx,.txt,.csv"
           className="sr-only"
           onChange={handleFile}
         />

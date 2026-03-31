@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Loader2, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { lookupGstin as fetchGstinData } from '@/lib/gstinLookup';
@@ -17,6 +17,14 @@ export default function AddSupplierForm() {
   const [lookupState, setLookupState] = useState<'idle' | 'loading' | 'found' | 'error'>('idle');
   const [lookupMsg, setLookupMsg]   = useState('');
   const [submitError, setSubmitError] = useState('');
+  const [credits, setCredits] = useState<{ remaining: number; expiry: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/gstin?credits=1')
+      .then(r => r.json())
+      .then(d => setCredits({ remaining: d.remaining, expiry: d.expiry }))
+      .catch(() => null);
+  }, []);
 
   const [form, setForm] = useState({
     gstin:       '',
@@ -68,6 +76,9 @@ export default function AddSupplierForm() {
         reg_date:    data.reg_date    || f.reg_date,
         pan:         f.pan || gstin.slice(2, 12),
       }));
+      if ('credits_remaining' in data && 'credits_expiry' in data) {
+        setCredits({ remaining: data.credits_remaining as number, expiry: data.credits_expiry as string });
+      }
       setLookupState('found');
       setLookupMsg(`Found: ${data.legal_name} — ${data.gst_status}`);
     } catch (err) {
@@ -169,6 +180,17 @@ export default function AddSupplierForm() {
             }
           </button>
         </div>
+
+        {/* API credit counter */}
+        {credits !== null && (
+          <p className="text-[11px] -mt-3 flex items-center gap-1.5">
+            <span className={`font-semibold ${credits.remaining <= 5 ? 'text-amber-400' : 'text-emerald-400'}`}>
+              {credits.remaining} credit{credits.remaining !== 1 ? 's' : ''} remaining
+            </span>
+            <span className="text-zinc-600">·</span>
+            <span className="text-zinc-500">expires {new Date(credits.expiry).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          </p>
+        )}
 
         {/* Lookup result banner */}
         {lookupState === 'found' && (

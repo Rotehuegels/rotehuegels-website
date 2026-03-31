@@ -10,6 +10,8 @@ export interface GstinData {
   pincode: string;
   address: string;
   reg_date: string | null;
+  credits_remaining?: number;
+  credits_expiry?: string;
 }
 
 function buildAddress(adr: Record<string, string>): string {

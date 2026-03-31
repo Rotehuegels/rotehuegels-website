@@ -18,6 +18,7 @@ import {
   FileText,
   BadgePercent,
   Landmark,
+  TrendingUp,
 } from 'lucide-react';
 import { useState } from 'react';
 import LogoutButton from './LogoutButton';
@@ -62,6 +63,11 @@ const NAV = [
       { label: 'GST Report', href: '/dashboard/accounts/gst', icon: BadgePercent },
       { label: 'P&L Statement', href: '/dashboard/accounts/pl', icon: FileText },
     ],
+  },
+  {
+    label: 'Investments',
+    href: '/dashboard/investments',
+    icon: TrendingUp,
   },
   {
     label: 'REX Members',

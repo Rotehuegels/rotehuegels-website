@@ -33,10 +33,11 @@ export function parseSBIDate(s: string): string | null {
     return `${p[2]}-${MONTHS[p[1]]}-${p[0].padStart(2, '0')}`;
   }
 
-  // "10/8/2025" or "10/08/2025" (SheetJS default for dates)
+  // "10/8/2025" or "10/8/25" (SheetJS M/D/YY or M/D/YYYY)
   const slash = clean.split('/');
-  if (slash.length === 3 && slash[2].length === 4) {
-    const [m, d, y] = slash;
+  if (slash.length === 3) {
+    const [m, d, rawY] = slash;
+    const y = rawY.length === 2 ? `20${rawY}` : rawY;
     return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
   }
 

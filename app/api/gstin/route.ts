@@ -1,13 +1,12 @@
 export const runtime = 'edge';
 
-// ── GSTIN Lookup via GSP (Masters India free tier)
+// ── GSTIN Lookup via GSTINCheck API
 //
 // Setup (one-time):
-//   1. Register free at https://www.mastersindia.co/gst-api/
+//   1. Register free at https://gstincheck.co.in/
 //   2. Get your API key from the dashboard
 //   3. Add to Vercel → Settings → Environment Variables:
-//        MASTERS_INDIA_API_KEY = <your key>
-//        MASTERS_INDIA_GSTIN   = 33AAPCR0554G1ZE   (your own GSTIN — required by their API)
+//        GSTINCHECK_API_KEY = <your key>
 //   4. Redeploy — lookups will work automatically
 
 import { NextResponse } from 'next/server';
@@ -20,32 +19,6 @@ function buildAddress(adr: Record<string, string>): string {
     .join(', ');
 }
 
-function parseGstResponse(d: Record<string, unknown>, gstin: string) {
-  const pradr = d.pradr as Record<string, unknown> | undefined;
-  const adrObj = (
-    pradr?.addr ?? pradr?.adr ??
-    ((d.adadr as unknown[])?.[0] as Record<string, unknown>)?.addr ?? {}
-  ) as Record<string, string>;
-
-  let reg_date: string | null = null;
-  if (d.rgdt) {
-    const [dd, mm, yyyy] = String(d.rgdt).split('/');
-    if (dd && mm && yyyy) reg_date = `${yyyy}-${mm}-${dd}`;
-  }
-
-  return {
-    gstin,
-    legal_name:  String(d.lgnm     ?? d.legal_name     ?? ''),
-    trade_name:  String(d.tradeNam ?? d.trade_name     ?? ''),
-    gst_status:  String(d.sts      ?? d.status         ?? ''),
-    entity_type: String(d.ctb      ?? d.constitution   ?? ''),
-    state:       String(adrObj.stcd ?? d.state          ?? ''),
-    pincode:     String(adrObj.pncd ?? d.pincode        ?? ''),
-    address:     buildAddress(adrObj),
-    reg_date,
-  };
-}
-
 export async function GET(req: Request) {
   const gstin = new URL(req.url).searchParams.get('gstin')?.trim().toUpperCase() ?? '';
 
@@ -53,42 +26,57 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Invalid GSTIN format.' }, { status: 400 });
   }
 
-  const apiKey      = process.env.MASTERS_INDIA_API_KEY ?? '';
-  const yourGstin   = process.env.MASTERS_INDIA_GSTIN   ?? '33AAPCR0554G1ZE';
+  const apiKey = process.env.GSTINCHECK_API_KEY ?? '';
 
   if (!apiKey) {
     return NextResponse.json(
-      { error: 'GSTIN_API_KEY not configured. Add MASTERS_INDIA_API_KEY to Vercel environment variables.' },
+      { error: 'GSTINCHECK_API_KEY not configured. Add it to Vercel environment variables.' },
       { status: 503 }
     );
   }
 
   try {
-    // Masters India GSTIN Verification API
-    // Docs: https://developer.mastersindia.co/docs/gstin
-    const url = `https://api.mastersindia.co/mastersindia/v1/search/gstin/${gstin}?user_gstin=${yourGstin}`;
+    const url = `https://sheet.gstincheck.co.in/check/${apiKey}/${gstin}`;
 
     const res = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: { 'Accept': 'application/json' },
       signal: AbortSignal.timeout(10000),
     });
 
     const json = await res.json() as Record<string, unknown>;
 
-    if (!res.ok || json.success === false || json.error) {
-      const msg = String(json.message ?? json.error ?? 'Lookup failed');
-      return NextResponse.json({ error: msg }, { status: res.ok ? 400 : res.status });
+    if (!res.ok || json.flag === false || json.flag === 'N') {
+      const msg = String(json.message ?? json.error ?? 'GSTIN not found.');
+      return NextResponse.json({ error: msg }, { status: 400 });
     }
 
-    // Masters India wraps response in .data
+    // GSTINCheck returns data directly (no wrapper)
     const d = (json.data ?? json) as Record<string, unknown>;
 
-    return NextResponse.json(parseGstResponse(d, gstin));
+    const pradr = d.pradr as Record<string, unknown> | undefined;
+    const adrObj = (
+      pradr?.addr ?? pradr?.adr ??
+      ((d.adadr as unknown[])?.[0] as Record<string, unknown>)?.addr ?? {}
+    ) as Record<string, string>;
+
+    let reg_date: string | null = null;
+    if (d.rgdt) {
+      const [dd, mm, yyyy] = String(d.rgdt).split('/');
+      if (dd && mm && yyyy) reg_date = `${yyyy}-${mm}-${dd}`;
+    }
+
+    return NextResponse.json({
+      gstin,
+      legal_name:  String(d.lgnm     ?? d.legal_name  ?? ''),
+      trade_name:  String(d.tradeNam ?? d.trade_name  ?? ''),
+      gst_status:  String(d.sts      ?? d.status      ?? ''),
+      entity_type: String(d.ctb      ?? d.constitution ?? ''),
+      state:       String(adrObj.stcd ?? d.state       ?? ''),
+      pincode:     String(adrObj.pncd ?? d.pincode     ?? ''),
+      address:     buildAddress(adrObj),
+      reg_date,
+    });
 
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error';

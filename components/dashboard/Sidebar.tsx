@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   FileText,
   BadgePercent,
+  Landmark,
 } from 'lucide-react';
 import { useState } from 'react';
 import LogoutButton from './LogoutButton';
@@ -57,6 +58,7 @@ const NAV = [
       { label: 'New Order', href: '/dashboard/accounts/orders/new', icon: ShoppingBag },
       { label: 'Expenses', href: '/dashboard/accounts/expenses', icon: ClipboardList },
       { label: 'Stock', href: '/dashboard/accounts/stock', icon: Package },
+      { label: 'Bank Statement', href: '/dashboard/accounts/bank', icon: Landmark },
       { label: 'GST Report', href: '/dashboard/accounts/gst', icon: BadgePercent },
       { label: 'P&L Statement', href: '/dashboard/accounts/pl', icon: FileText },
     ],

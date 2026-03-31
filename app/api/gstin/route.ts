@@ -1,9 +1,7 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabaseServer';
 
-// GSTIN format: 2-digit state + 10-char PAN + entity number + Z + check digit
 const GSTIN_RE = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
 function buildAddress(adr: Record<string, string>): string {
@@ -12,81 +10,76 @@ function buildAddress(adr: Record<string, string>): string {
     .join(', ');
 }
 
-export async function GET(req: Request) {
-  // Auth check
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+// Try multiple known GST portal endpoints
+const ENDPOINTS = (gstin: string) => [
+  `https://api.gst.gov.in/commonapi/search?action=TP&gstin=${gstin}`,
+  `https://api.gst.gov.in/commonapi/v1.0/search?action=TP&gstin=${gstin}`,
+];
 
+const HEADERS = {
+  'Accept': 'application/json, text/plain, */*',
+  'Accept-Language': 'en-IN,en-US;q=0.9,en;q=0.8',
+  'Origin': 'https://www.gst.gov.in',
+  'Referer': 'https://www.gst.gov.in/',
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+};
+
+export async function GET(req: Request) {
   const gstin = new URL(req.url).searchParams.get('gstin')?.trim().toUpperCase() ?? '';
 
   if (!GSTIN_RE.test(gstin)) {
     return NextResponse.json({ error: 'Invalid GSTIN format.' }, { status: 400 });
   }
 
-  try {
-    const res = await fetch(
-      `https://api.gst.gov.in/commonapi/search?action=TP&gstin=${gstin}`,
-      {
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Accept-Language': 'en-IN,en-US;q=0.9,en;q=0.8',
-          'Origin': 'https://www.gst.gov.in',
-          'Referer': 'https://www.gst.gov.in/',
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-          'sec-fetch-dest': 'empty',
-          'sec-fetch-mode': 'cors',
-          'sec-fetch-site': 'same-site',
-        },
+  let lastError = '';
+
+  for (const url of ENDPOINTS(gstin)) {
+    try {
+      const res = await fetch(url, {
+        headers: HEADERS,
         signal: AbortSignal.timeout(10000),
+      });
+
+      if (!res.ok) { lastError = `HTTP ${res.status}`; continue; }
+
+      const json = await res.json() as Record<string, unknown>;
+
+      if (json.flag === 'N' || json.errorCode) {
+        return NextResponse.json({ error: 'GSTIN not found on GST portal.' }, { status: 404 });
       }
-    );
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: 'GST portal did not respond. Enter details manually.' },
-        { status: 502 }
-      );
+      const d = (json.data ?? json) as Record<string, unknown>;
+      const pradr = d.pradr as Record<string, unknown> | undefined;
+      const adrObj = (
+        pradr?.addr ?? pradr?.adr ??
+        ((d.adadr as unknown[])?.[0] as Record<string, unknown>)?.addr ?? {}
+      ) as Record<string, string>;
+
+      let reg_date: string | null = null;
+      if (d.rgdt) {
+        const [dd, mm, yyyy] = String(d.rgdt).split('/');
+        if (dd && mm && yyyy) reg_date = `${yyyy}-${mm}-${dd}`;
+      }
+
+      return NextResponse.json({
+        gstin,
+        legal_name:  String(d.lgnm     ?? ''),
+        trade_name:  String(d.tradeNam ?? ''),
+        gst_status:  String(d.sts      ?? ''),
+        entity_type: String(d.ctb      ?? ''),
+        state:       adrObj.stcd ?? '',
+        pincode:     adrObj.pncd ?? '',
+        address:     buildAddress(adrObj),
+        reg_date,
+      });
+
+    } catch (e) {
+      lastError = e instanceof Error ? e.message : 'fetch failed';
     }
-
-    const json = await res.json();
-
-    // Handle error flag from GST portal
-    if (json.flag === 'N' || json.errorCode || json.message?.toLowerCase().includes('invalid')) {
-      return NextResponse.json({ error: 'GSTIN not found on GST portal.' }, { status: 404 });
-    }
-
-    const d = json.data ?? json; // some responses wrap in .data, some don't
-
-    // Build address from principal address
-    const adrObj =
-      d.pradr?.addr ?? d.pradr?.adr ?? d.adadr?.[0]?.addr ?? {};
-    const address = buildAddress(adrObj as Record<string, string>);
-
-    // Parse registration date
-    let regDate: string | null = null;
-    if (d.rgdt) {
-      const [dd, mm, yyyy] = String(d.rgdt).split('/');
-      if (dd && mm && yyyy) regDate = `${yyyy}-${mm}-${dd}`;
-    }
-
-    return NextResponse.json({
-      gstin,
-      legal_name:  d.lgnm  ?? d.LegalName ?? '',
-      trade_name:  d.tradeNam ?? d.TradeName ?? '',
-      gst_status:  d.sts   ?? d.Status ?? '',
-      entity_type: d.ctb   ?? d.EntityType ?? '',
-      state:       adrObj.stcd ?? '',
-      pincode:     adrObj.pncd ?? '',
-      address,
-      reg_date:    regDate,
-    });
-
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json(
-      { error: `Could not reach GST portal: ${msg}. Enter details manually.` },
-      { status: 502 }
-    );
   }
+
+  return NextResponse.json(
+    { error: `GST portal unreachable: ${lastError}` },
+    { status: 502 }
+  );
 }

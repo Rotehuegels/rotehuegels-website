@@ -29,10 +29,16 @@ export async function GET(req: Request) {
       `https://api.gst.gov.in/commonapi/search?action=TP&gstin=${gstin}`,
       {
         headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0',
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'en-IN,en-US;q=0.9,en;q=0.8',
+          'Origin': 'https://www.gst.gov.in',
+          'Referer': 'https://www.gst.gov.in/',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+          'sec-fetch-dest': 'empty',
+          'sec-fetch-mode': 'cors',
+          'sec-fetch-site': 'same-site',
         },
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(10000),
       }
     );
 

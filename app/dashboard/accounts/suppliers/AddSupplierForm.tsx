@@ -3,22 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Loader2, CheckCircle, AlertCircle, X } from 'lucide-react';
+import { lookupGstin as fetchGstinData } from '@/lib/gstinLookup';
 
 const input   = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none transition-colors';
 const label   = 'block text-xs font-medium text-zinc-400 mb-1.5';
 const glass   = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm p-6 space-y-5';
-
-interface GstinResult {
-  gstin: string;
-  legal_name: string;
-  trade_name: string;
-  gst_status: string;
-  entity_type: string;
-  state: string;
-  pincode: string;
-  address: string;
-  reg_date: string | null;
-}
 
 const GSTIN_RE = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
@@ -65,15 +54,7 @@ export default function AddSupplierForm() {
     setLookupMsg('');
 
     try {
-      const res  = await fetch(`/api/gstin?gstin=${gstin}`);
-      const data: GstinResult & { error?: string } = await res.json();
-
-      if (!res.ok || data.error) {
-        setLookupState('error');
-        setLookupMsg(data.error ?? 'Lookup failed. Enter details manually.');
-        return;
-      }
-
+      const data = await fetchGstinData(gstin);
       setForm(f => ({
         ...f,
         gstin:       data.gstin,
@@ -85,15 +66,13 @@ export default function AddSupplierForm() {
         pincode:     data.pincode     || f.pincode,
         address:     data.address     || f.address,
         reg_date:    data.reg_date    || f.reg_date,
-        // Derive PAN from GSTIN positions 3–12
-        pan: f.pan || gstin.slice(2, 12),
+        pan:         f.pan || gstin.slice(2, 12),
       }));
-
       setLookupState('found');
       setLookupMsg(`Found: ${data.legal_name} — ${data.gst_status}`);
-    } catch {
+    } catch (err) {
       setLookupState('error');
-      setLookupMsg('Network error. Check connection or enter details manually.');
+      setLookupMsg(err instanceof Error ? err.message : 'Lookup failed. Enter details manually.');
     }
   }
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Loader2, CheckCircle, AlertCircle, X, Trash2 } from 'lucide-react';
+import { lookupGstin as fetchGstinData } from '@/lib/gstinLookup';
 
 const inp   = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none transition-colors';
 const lbl   = 'block text-xs font-medium text-zinc-400 mb-1.5';
@@ -70,13 +71,7 @@ export default function SupplierEditForm({ supplier }: { supplier: Supplier }) {
     setLookupMsg('');
 
     try {
-      const res  = await fetch(`/api/gstin?gstin=${gstin}`);
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        setLookupState('error');
-        setLookupMsg(data.error ?? 'Lookup failed. Enter details manually.');
-        return;
-      }
+      const data = await fetchGstinData(gstin);
       setForm(f => ({
         ...f,
         gstin:       data.gstin       || f.gstin,
@@ -92,9 +87,9 @@ export default function SupplierEditForm({ supplier }: { supplier: Supplier }) {
       }));
       setLookupState('found');
       setLookupMsg(`Found: ${data.legal_name} — ${data.gst_status}`);
-    } catch {
+    } catch (err) {
       setLookupState('error');
-      setLookupMsg('Network error. Enter details manually.');
+      setLookupMsg(err instanceof Error ? err.message : 'Lookup failed. Enter details manually.');
     }
   }
 

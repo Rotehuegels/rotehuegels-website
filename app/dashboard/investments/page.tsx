@@ -28,8 +28,10 @@ interface EnrichedHolding extends Holding {
 }
 
 async function fetchLivePrices(yahooSymbols: string[]): Promise<Record<string, { price: number; dayChangePct: number }>> {
+  const validSymbols = yahooSymbols.filter(Boolean);
+  if (!validSymbols.length) return {};
   try {
-    const symbols = yahooSymbols.join(',');
+    const symbols = validSymbols.join(',');
     const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChangePercent`;
     const res = await fetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
@@ -50,6 +52,24 @@ async function fetchLivePrices(yahooSymbols: string[]): Promise<Record<string, {
   }
 }
 
+async function fetchGoldPriceINR(): Promise<number | null> {
+  try {
+    // GOLDBEES is a gold ETF on NSE (~1g gold per unit), good proxy for gold price in INR
+    const url = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=GOLDBEES.NS&fields=regularMarketPrice';
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const price = json.quoteResponse?.result?.[0]?.regularMarketPrice;
+    // GOLDBEES ≈ 1/100th of gold price per gram (each unit ~ 1/100 gram), scale accordingly
+    return price ? price * 100 : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function InvestmentsPage() {
   const { data: holdings } = await supabaseAdmin
     .from('demat_holdings')
@@ -57,15 +77,27 @@ export default async function InvestmentsPage() {
     .order('total_invested', { ascending: false });
 
   const rows: Holding[] = holdings ?? [];
-  const priceMap = await fetchLivePrices(rows.map((h) => h.yahoo_symbol));
+  const [priceMap, goldPrice] = await Promise.all([
+    fetchLivePrices(rows.map((h) => h.yahoo_symbol).filter(Boolean)),
+    fetchGoldPriceINR(),
+  ]);
 
   const enriched: EnrichedHolding[] = rows.map((h) => {
-    const live = priceMap[h.yahoo_symbol];
-    const currentPrice = live?.price ?? null;
+    let currentPrice: number | null = null;
+    let dayChangePct: number | null = null;
+
+    if (h.symbol === 'SGB-DIRECT') {
+      currentPrice = goldPrice;
+    } else {
+      const live = priceMap[h.yahoo_symbol];
+      currentPrice = live?.price ?? null;
+      dayChangePct = live?.dayChangePct ?? null;
+    }
+
     const currentValue = currentPrice !== null ? currentPrice * h.quantity : null;
     const pnl = currentValue !== null ? currentValue - h.total_invested : null;
     const pnlPct = pnl !== null ? (pnl / h.total_invested) * 100 : null;
-    return { ...h, currentPrice, currentValue, pnl, pnlPct, dayChangePct: live?.dayChangePct ?? null };
+    return { ...h, currentPrice, currentValue, pnl, pnlPct, dayChangePct };
   });
 
   const totalInvested = enriched.reduce((s, h) => s + h.total_invested, 0);

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Upload, Loader2 } from 'lucide-react';
-import { parseSBI, parseXLS, type ParsedStatement } from '@/lib/parseSBI';
+import { parseSBI, type ParsedStatement } from '@/lib/parseSBI';
 
 interface Props {
   onSuccess: () => void;
@@ -23,7 +23,7 @@ export default function BankUploader({ onSuccess }: Props) {
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<string | null>(null);
 
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setParsed(null);
@@ -33,12 +33,24 @@ export default function BankUploader({ onSuccess }: Props) {
     const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
     const isXLS = ext === 'xls' || ext === 'xlsx';
 
+    if (isXLS) {
+      // Parse on the server — xlsx uses Node.js APIs not safe in the browser bundle
+      const formBuffer = await file.arrayBuffer();
+      const res = await fetch('/api/accounts/bank-statement/parse', {
+        method: 'POST',
+        body: formBuffer,
+      });
+      const json = await res.json();
+      if (!res.ok) { setParseErr(json.error ?? 'Failed to parse XLS.'); return; }
+      if (json.transactions.length === 0) { setParseErr('No transactions found.'); return; }
+      setParsed(json as ParsedStatement);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const result = isXLS
-          ? parseXLS(ev.target?.result as ArrayBuffer)
-          : parseSBI(ev.target?.result as string);
+        const result = parseSBI(ev.target?.result as string);
         if (result.transactions.length === 0) {
           setParseErr('No transactions found in this file.');
         } else {
@@ -49,8 +61,7 @@ export default function BankUploader({ onSuccess }: Props) {
       }
     };
     reader.onerror = () => setParseErr('Could not read the file.');
-    if (isXLS) reader.readAsArrayBuffer(file);
-    else reader.readAsText(file);
+    reader.readAsText(file);
   }
 
   async function handleImport() {

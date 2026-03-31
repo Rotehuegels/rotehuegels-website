@@ -1,5 +1,3 @@
-import * as XLSX from 'xlsx';
-
 export interface ParsedTxn {
   txn_date:    string;
   value_date:  string;
@@ -206,58 +204,6 @@ function parseFixedWidth(lines: string[]): ParsedStatement {
       ref_no:      (parts[1] ?? '').trim(),
       branch_code: (parts[2] ?? '').trim(),
       debit, credit, balance,
-    });
-  }
-
-  return { account_no, period_from, period_to, transactions };
-}
-
-// ── XLS parser ──────────────────────────────────────────────
-
-export function parseXLS(buffer: ArrayBuffer): ParsedStatement {
-  const wb = XLSX.read(buffer, { type: 'array', cellDates: false });
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json<(string | number)[]>(ws, {
-    header: 1, raw: false, defval: '',
-  });
-
-  let account_no  = '';
-  let period_from = '';
-  let period_to   = '';
-  let headerIdx   = -1;
-
-  for (let i = 0; i < rows.length; i++) {
-    const row  = rows[i];
-    const key  = String(row[0] ?? '').toLowerCase();
-    if (key.includes('account number') && row[1])
-      account_no = maskAccNo(String(row[1]));
-    if (key.includes('start date') && row[1])
-      period_from = parseSBIDate(String(row[1])) ?? '';
-    if (key.includes('end date') && row[1])
-      period_to = parseSBIDate(String(row[1])) ?? '';
-    if (key.trim() === 'txn date') {
-      headerIdx = i; break;
-    }
-  }
-
-  if (headerIdx === -1) throw new Error('Could not find "Txn Date" header in XLS.');
-
-  const transactions: ParsedTxn[] = [];
-
-  for (let i = headerIdx + 1; i < rows.length; i++) {
-    const row        = rows[i];
-    const txn_date   = parseSBIDate(String(row[0] ?? ''));
-    const value_date = parseSBIDate(String(row[1] ?? ''));
-    if (!txn_date || !value_date) continue;
-
-    transactions.push({
-      txn_date, value_date,
-      description: String(row[2] ?? '').trim(),
-      ref_no:      String(row[3] ?? '').trim(),
-      branch_code: String(row[4] ?? '').trim(),
-      debit:       parseAmt(String(row[5] ?? '')),
-      credit:      parseAmt(String(row[6] ?? '')),
-      balance:     parseAmt(String(row[7] ?? '')),
     });
   }
 

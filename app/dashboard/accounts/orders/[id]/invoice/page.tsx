@@ -133,7 +133,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
           {/* ── Header ─────────────────────────────────────────────────── */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '10px', marginBottom: '12px' }}>
-            <div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px', flexShrink: 0 }} />
+              <div>
               <div style={{ fontSize: '15px', fontWeight: 900, lineHeight: 1.2, color: '#111', textTransform: 'uppercase' }}>
                 Rotehuegel Research Business
               </div>
@@ -146,6 +149,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <div style={{ marginTop: '3px' }}>
                   ✉ {CO.email} &nbsp;|&nbsp; 📞 {CO.phone} &nbsp;|&nbsp; 🌐 {CO.web}
                 </div>
+              </div>
               </div>
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: '12px' }}>

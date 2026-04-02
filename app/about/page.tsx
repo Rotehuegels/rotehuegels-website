@@ -348,12 +348,9 @@ export default function AboutPage() {
 
       <Section
         title="Talk to Rotehügels Assist"
-        subtitle="An AI knowledge companion — runs entirely in your browser with WebGPU."
+        subtitle="Ask anything about our services, products, or capabilities — available 24/7."
       >
         <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/40 p-5">
-          <p className="text-sm text-zinc-300 mb-3">
-            Tip: first load may take a minute, but it’s cached after.
-          </p>
           <WebLLMAssistant />
         </div>
       </Section>

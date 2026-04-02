@@ -91,6 +91,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const tdsNet      = order.tds_applicable
     ? order.total_value_incl_gst - (order.base_value ?? 0) * (order.tds_rate / 100)
     : null;
+  const placeOfSupply = order.place_of_supply ?? 'Tamil Nadu (33)';
 
   // colspan for footer row
   const descColspan = isIntra ? 3 : 3;
@@ -191,7 +192,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                     ['Invoice Date',  invoiceDate],
                     ['Order Date',    fmtDate(order.order_date)],
                     ['Order Ref.',    order.order_no],
-                    ['Place of Supply', 'Tamil Nadu (33)'],
+                    ['Place of Supply', placeOfSupply],
                     ['Supply Type',   isIntra ? 'Intra-State' : 'Inter-State'],
                   ].map(([label, value]) => (
                     <tr key={String(label)}>
@@ -284,6 +285,13 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               </div>
             )}
           </div>
+
+          {/* ── Advance adjustment note (inter-state partial orders) ─────── */}
+          {order.advance_note && (
+            <div style={{ border: '1px dashed #ccc', borderRadius: '4px', padding: '7px 10px', marginBottom: '12px', fontSize: '8.5px', color: '#555', lineHeight: 1.6 }}>
+              <strong style={{ color: '#333' }}>Advance Reference: </strong>{order.advance_note}
+            </div>
+          )}
 
           {/* ── Bank details + Declaration + Signature ───────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>

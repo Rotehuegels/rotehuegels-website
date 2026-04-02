@@ -111,15 +111,16 @@ export default async function InvestmentsPage() {
 
   const rows: Holding[] = holdings ?? [];
 
-  // Fetch prices from NSE — equity symbols only (SGB-DIRECT priced via gold proxy)
-  const equitySymbols = rows.filter((h) => h.symbol !== 'SGB-DIRECT').map((h) => h.symbol);
+  // SGBs (both NSE-traded and direct) are priced via GOLDBEES gold proxy
+  const SGB_SYMBOLS = new Set(['SGB-DIRECT', 'SGBT65']);
+  const equitySymbols = rows.filter((h) => !SGB_SYMBOLS.has(h.symbol)).map((h) => h.symbol);
   const { priceMap, goldPrice } = await fetchNSEPrices(equitySymbols);
 
   const enriched: EnrichedHolding[] = rows.map((h) => {
     let currentPrice: number | null = null;
     let dayChangePct: number | null = null;
 
-    if (h.symbol === 'SGB-DIRECT') {
+    if (SGB_SYMBOLS.has(h.symbol)) {
       currentPrice = goldPrice;
     } else {
       const live = priceMap[h.symbol];

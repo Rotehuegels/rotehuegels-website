@@ -344,7 +344,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <div style={{ fontSize: '9px', fontWeight: 700, color: '#444', lineHeight: 1.5, textTransform: 'uppercase' }}>
                   For Rotehuegel Research Business<br />Consultancy Private Limited
                 </div>
-                <div style={{ borderBottom: '1px solid #bbb', marginTop: '28px', marginBottom: '4px' }}></div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/assets/signature.jpg" alt="Signature" style={{ height: '48px', width: 'auto', objectFit: 'contain', marginTop: '6px', opacity: 0.9 }} />
+                <div style={{ borderBottom: '1px solid #bbb', marginBottom: '4px' }}></div>
                 <div style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Sivakumar Shanmugam</div>
                 <div style={{ fontSize: '8.5px', color: '#555' }}>CEO, Rotehügels</div>
                 <div style={{ fontSize: '8px', color: '#999', marginTop: '1px' }}>Authorised Signatory</div>

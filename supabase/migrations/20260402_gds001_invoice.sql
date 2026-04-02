@@ -3,7 +3,7 @@
 -- Invoice date: 31 Mar 2026 | Delivery: 31 Mar 2026
 -- Client: M/s India Zinc Inc (33BZWPS7278C2ZN) — intra-state
 -- Total: ₹8,38,440.05 | Advance: ₹7,10,000 | Balance: ₹1,28,440.05
--- HSN: Pb Anodes 78041110 (IZP0003 V05) | Al Cathode 76061110 (IZP0002 V04)
+-- HSN: Pb Anodes 78041110 (ZDP0003 V05) | Al Cathode 76061110 (ZDP0002 V04)
 -- ============================================================
 
 UPDATE orders SET
@@ -18,7 +18,7 @@ UPDATE orders SET
   description     = 'Manufacture and Supply of High Purity Lead Anodes and High Purity Aluminium Cathode (Custom Fabricated) — as per customer specification',
   items           = $$[
     {
-      "description": "High Purity Aluminium Cathode (Custom Fabricated)\nRef. Drawing: IZP0002 V04 (27 Nov 2025)\nSpec: 520 mm (W) \u00d7 1100 mm (H) \u00d7 5 mm (T), Al header 1100 mm (L) \u00d7 50 mm (W), Cu tips 20 \u00d7 60 mm, horizontal configuration, PVC strips at both ends for easy zinc stripping\nIncludes: \"Rotehuegels\" branding on headers/tags; heavy-duty packing and free delivery to site",
+      "description": "High Purity Aluminium Cathode (Custom Fabricated)\nRef. Drawing: ZDP0002 V04 (27 Nov 2025)\nSpec: 520 mm (W) \u00d7 1100 mm (H) \u00d7 5 mm (T), Al header 1100 mm (L) \u00d7 50 mm (W), Cu tips 20 \u00d7 60 mm, horizontal configuration, PVC strips at both ends for easy zinc stripping\nIncludes: \"Rotehuegels\" branding on headers/tags; heavy-duty packing and free delivery to site",
       "qty": "12 Nos",
       "hsn": "76061110",
       "base": 296610.17,
@@ -28,7 +28,7 @@ UPDATE orders SET
       "total": 350000.00
     },
     {
-      "description": "High Purity Lead Anodes (Custom Fabricated)\nRef. Drawing: IZP0003 V05 (27 Nov 2025) — Rev. updated from V04: bus bar 40 mm \u00d7 16 mm used vs. customer-approved 35 mm \u00d7 15 mm (heavier cross-section)\nSpec: 520 mm (W) \u00d7 1100 mm (H) \u00d7 6 mm (T), Cu bus bar 40 mm (T) \u00d7 16 mm (W) \u00d7 1000 mm (L) with 5 mm Pb overlay, Cu tips 20 \u00d7 60 mm, Pb removed on one side at bottom for electrical contact",
+      "description": "High Purity Lead Anodes (Custom Fabricated)\nRef. Drawing: ZDP0003 V05 (13 Mar 2026) — Rev. updated from V04: bus bar 40 mm \u00d7 16 mm used vs. customer-approved 35 mm \u00d7 15 mm (heavier cross-section)\nSpec: 520 mm (W) \u00d7 1100 mm (H) \u00d7 6 mm (T), Cu bus bar 40 mm (T) \u00d7 16 mm (W) \u00d7 1000 mm (L) with 5 mm Pb overlay, Cu tips 30 \u00d7 60 mm, Pb removed on one side at bottom for electrical contact",
       "qty": "12 Nos",
       "hsn": "78041110",
       "base": 413932.25,

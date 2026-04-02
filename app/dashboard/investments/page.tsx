@@ -111,16 +111,22 @@ export default async function InvestmentsPage() {
 
   const rows: Holding[] = holdings ?? [];
 
-  // SGBs (both NSE-traded and direct) are priced via GOLDBEES gold proxy
-  const SGB_SYMBOLS = new Set(['SGB-DIRECT', 'SGBT65']);
-  const equitySymbols = rows.filter((h) => !SGB_SYMBOLS.has(h.symbol)).map((h) => h.symbol);
+  // SGBT65 is listed on NSE as SGBSEP31II (equity segment); SGB-DIRECT uses gold proxy
+  const NSE_SYMBOL_MAP: Record<string, string> = { SGBT65: 'SGBSEP31II' };
+  const equitySymbols = rows.filter((h) => h.symbol !== 'SGB-DIRECT').map((h) => NSE_SYMBOL_MAP[h.symbol] ?? h.symbol);
   const { priceMap, goldPrice } = await fetchNSEPrices(equitySymbols);
+
+  // Re-map API symbols back to DB symbols so enrichment lookup works
+  if (priceMap['SGBSEP31II']) {
+    priceMap['SGBT65'] = priceMap['SGBSEP31II'];
+    delete priceMap['SGBSEP31II'];
+  }
 
   const enriched: EnrichedHolding[] = rows.map((h) => {
     let currentPrice: number | null = null;
     let dayChangePct: number | null = null;
 
-    if (SGB_SYMBOLS.has(h.symbol)) {
+    if (h.symbol === 'SGB-DIRECT') {
       currentPrice = goldPrice;
     } else {
       const live = priceMap[h.symbol];

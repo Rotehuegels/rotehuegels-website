@@ -85,6 +85,12 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
   const order  = orderRes.data;
   const stages = stagesRes.data ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawItems = (order as any).items;
+  const items: Array<{
+    description: string; qty?: string; hsn: string;
+    base: number; cgst: number; sgst: number; igst: number; total: number;
+  }> = Array.isArray(rawItems) ? rawItems : [];
 
   const fy          = getFY(order.invoice_date ?? order.order_date);
   const invoiceNo   = `RH/${fy}/${order.order_no}`;
@@ -101,8 +107,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     : null;
   const placeOfSupply = order.place_of_supply ?? 'Tamil Nadu (33)';
 
-  // colspan for footer row
-  const descColspan = isIntra ? 3 : 3;
+  // colspan for footer row: # + Description + (Qty if multi-item) + HSN
+  const descColspan = items.length > 0 ? 4 : 3;
 
   return (
     <>
@@ -230,6 +236,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <tr style={{ background: '#1a1a1a', color: 'white' }}>
                 <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'left', width: '20px' }}>#</th>
                 <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'left' }}>Description of Goods / Services</th>
+                {items.length > 0 && (
+                  <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'center', width: '45px' }}>Qty</th>
+                )}
                 <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'center', width: '50px' }}>SAC / HSN</th>
                 <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'right', width: '90px' }}>Taxable Value</th>
                 {isIntra ? (
@@ -244,33 +253,54 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>1</td>
-                <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>
-                  <div style={{ fontWeight: 700, color: '#111', marginBottom: '3px', whiteSpace: 'pre-line' }}>{order.description}</div>
-                  {stages.length > 1 && (
-                    <div style={{ marginTop: '4px', paddingLeft: '8px' }}>
-                      {stages.map(s => (
-                        <div key={s.id} style={{ fontSize: '8.5px', color: '#666', marginBottom: '2px' }}>
-                          • {s.stage_name}: {fmt(s.amount_due)} base + {fmt(s.gst_on_stage ?? 0)} GST
-                          {s.tds_amount ? ` – TDS ${fmt(s.tds_amount)}` : ''}
-                        </div>
-                      ))}
-                    </div>
+              {items.length > 0 ? items.map((item, idx) => (
+                <tr key={idx}>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>{idx + 1}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>
+                    <div style={{ fontWeight: 700, color: '#111', whiteSpace: 'pre-line', lineHeight: 1.5 }}>{item.description}</div>
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', verticalAlign: 'top' }}>{item.qty ?? '—'}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 700, verticalAlign: 'top' }}>{item.hsn}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(item.base)}</td>
+                  {isIntra ? (
+                    <>
+                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(item.cgst)}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(item.sgst)}</td>
+                    </>
+                  ) : (
+                    <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(item.igst)}</td>
                   )}
-                </td>
-                <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 700 }}>{sacHsn}</td>
-                <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.base_value ?? 0)}</td>
-                {isIntra ? (
-                  <>
-                    <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.cgst_amount ?? 0)}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.sgst_amount ?? 0)}</td>
-                  </>
-                ) : (
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.igst_amount ?? 0)}</td>
-                )}
-                <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right', fontWeight: 700 }}>{fmt(order.total_value_incl_gst)}</td>
-              </tr>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right', fontWeight: 700 }}>{fmt(item.total)}</td>
+                </tr>
+              )) : (
+                <tr>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>1</td>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>
+                    <div style={{ fontWeight: 700, color: '#111', marginBottom: '3px', whiteSpace: 'pre-line' }}>{order.description}</div>
+                    {stages.length > 1 && (
+                      <div style={{ marginTop: '4px', paddingLeft: '8px' }}>
+                        {stages.map(s => (
+                          <div key={s.id} style={{ fontSize: '8.5px', color: '#666', marginBottom: '2px' }}>
+                            • {s.stage_name}: {fmt(s.amount_due)} base + {fmt(s.gst_on_stage ?? 0)} GST
+                            {s.tds_amount ? ` – TDS ${fmt(s.tds_amount)}` : ''}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 700 }}>{sacHsn}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.base_value ?? 0)}</td>
+                  {isIntra ? (
+                    <>
+                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.cgst_amount ?? 0)}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.sgst_amount ?? 0)}</td>
+                    </>
+                  ) : (
+                    <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.igst_amount ?? 0)}</td>
+                  )}
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right', fontWeight: 700 }}>{fmt(order.total_value_incl_gst)}</td>
+                </tr>
+              )}
             </tbody>
             <tfoot>
               <tr style={{ background: '#f5f5f5' }}>

@@ -354,7 +354,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 </div>
                 {sigBase64 && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={sigBase64} alt="" style={{ height: '48px', width: 'auto', objectFit: 'contain', marginTop: '6px', opacity: 0.9 }} />
+                  <img src={sigBase64} alt="" style={{ display: 'block', height: '52px', width: 'auto', objectFit: 'contain', marginLeft: 'auto', marginTop: '8px', mixBlendMode: 'multiply' }} />
                 )}
                 <div style={{ borderBottom: '1px solid #bbb', marginBottom: '4px' }}></div>
                 <div style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Sivakumar Shanmugam</div>

@@ -171,11 +171,17 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             {/* Bill To */}
             <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '8px 10px' }}>
               <div style={{ fontSize: '8px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '5px' }}>
-                Bill To
+                Bill To / Ship To
               </div>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: '#111', marginBottom: '3px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: '#111', marginBottom: '2px' }}>
                 {order.client_name}
               </div>
+              {order.client_contact && (
+                <div style={{ fontSize: '8.5px', color: '#555', marginBottom: '2px' }}>{order.client_contact}</div>
+              )}
+              {order.client_address && (
+                <div style={{ fontSize: '8.5px', color: '#555', lineHeight: 1.5, marginBottom: '3px' }}>{order.client_address}</div>
+              )}
               {order.client_gstin && (
                 <div style={{ fontSize: '9px', color: '#555', fontFamily: 'monospace' }}>GSTIN: {order.client_gstin}</div>
               )}
@@ -195,6 +201,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                     ['Invoice No.',   <span style={{ fontFamily: 'monospace', fontWeight: 800 }} key="inv">{invoiceNo}</span>],
                     ['Invoice Date',  invoiceDate],
                     ['Order Date',    fmtDate(order.order_date)],
+                    ...(order.delivery_date ? [['Delivery Date', fmtDate(order.delivery_date)]] : []),
                     ['Order Ref.',    order.order_no],
                     ['Place of Supply', placeOfSupply],
                     ['Supply Type',   isIntra ? 'Intra-State' : 'Inter-State'],

@@ -111,8 +111,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   // colspan for footer row: # + Description + (Qty if multi-item) + HSN
   const descColspan = items.length > 0 ? 4 : 3;
 
-  // UPI payment QR — no fixed amount so customer enters balance due
-  const upiString = `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel Research Business Consultancy Pvt Ltd&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNo)}`;
+  // Balance due = total invoice − sum of already-paid stages
+  const totalPaid = stages
+    .filter(s => s.status === 'paid')
+    .reduce((sum, s) => sum + (s.amount_due ?? 0) + (s.gst_on_stage ?? 0), 0);
+  const balanceDue = Math.max(0, order.total_value_incl_gst - totalPaid);
+
+  // UPI payment QR with balance amount pre-filled
+  const upiString = `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel Research Business Consultancy Pvt Ltd&am=${balanceDue.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNo)}`;
   const upiQr = await QRCode.toDataURL(upiString, { width: 90, margin: 1, color: { dark: '#111111', light: '#ffffff' } });
 
   return (

@@ -78,9 +78,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const order  = orderRes.data;
   const stages = stagesRes.data ?? [];
 
-  const fy          = getFY(order.order_date);
+  const fy          = getFY(order.invoice_date ?? order.order_date);
   const invoiceNo   = `RH/${fy}/${order.order_no}`;
-  const invoiceDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  const invoiceDate = order.invoice_date
+    ? fmtDate(order.invoice_date)
+    : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   const isIntra     = (order.igst_amount ?? 0) === 0 && (order.cgst_amount ?? 0) > 0;
   const gstRate     = Number(order.gst_rate ?? 18);
   const halfRate    = gstRate / 2;

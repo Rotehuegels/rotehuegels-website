@@ -21,9 +21,12 @@ Rotehuegel Research Business Consultancy Private Limited is a Chennai-based engi
 1. **Electrochemical Plant Commissioning** — End-to-end design and commissioning of zinc, lead, and copper electroplating/refining plants, including plumbing, electrical, and water treatment systems.
 2. **Custom Electrode Fabrication** — High-purity lead anodes and aluminium cathodes manufactured to exact customer drawings and specifications.
 3. **AutoREX Automation Platform** — Proprietary real-time monitoring and control system for electrochemical processes (sensors, transmitters, data acquisition).
-4. **Industrial Consulting** — Process design, feasibility studies, and technical advisory for greenfield and brownfield metal processing projects.
-5. **International Advisory** — Technical guidance and consultation for global zinc, lead, and copper processing projects.
-6. **Sensor & Instrumentation Supply** — Supply of process instruments (pressure sensors, temperature transmitters, IR guns) for industrial monitoring.
+4. **Battery Recycling & Black Mass** — Design and commissioning of Li-ion battery recycling plants covering all major chemistries (NMC, LCO, LFP). End-to-end scope from cell dismantling and black mass manufacturing through to hydrometallurgical (hydromet) processing for recovery of base metals, salts, and high-purity materials as per project scope.
+5. **Hydromet Plant Design** — Hydrometallurgical process plant design and scale-up for recovery of lithium, cobalt, nickel, manganese, and other metals from black mass and other feed materials.
+6. **Novel & Emerging Technology Scale-Up** — Rotehügels works with innovators and technology owners to scale up novel process technologies under NDA. Our core expertise is in the design and scale-up of process systems — we bring lab/pilot-scale concepts to industrial reality.
+7. **Industrial Consulting** — Process design, feasibility studies, and technical advisory for greenfield and brownfield metal processing projects.
+8. **International Advisory** — Technical guidance and consultation for global projects in electrochemical, recycling, and metals processing.
+9. **Sensor & Instrumentation Supply** — Supply of process instruments (pressure sensors, temperature transmitters, IR guns) for industrial monitoring.
 
 ## Products
 - **High Purity Lead Anodes** — Custom fabricated, copper bus bar header with lead overlay, to customer drawing specifications.
@@ -35,8 +38,15 @@ Rotehuegel Research Business Consultancy Private Limited is a Chennai-based engi
 - Zinc electroplating and hydrometallurgical refining
 - Lead-acid and electrochemical cell systems
 - Copper refining and electrowinning
+- Li-ion battery recycling (NMC, LCO, LFP and other chemistries)
+- Black mass manufacturing and hydromet processing
+- Recovery of lithium, cobalt, nickel, manganese from battery materials
 - Metal recycling and recovery
+- Novel and emerging process technology scale-up (under NDA)
 - Industrial automation for process plants
+
+## Core Expertise
+Rotehügels' fundamental strength is in **process system design and scale-up** — taking a process concept (whether established or novel) and designing, engineering, and commissioning the full plant system. This spans electrochemical, hydrometallurgical, and hybrid process routes across metals and battery materials.
 
 ## How to Engage
 - **Email:** sales@rotehuegels.com

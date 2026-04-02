@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import InvoiceActions from './InvoiceActions';
+import fs from 'fs';
+import path from 'path';
 
 // ── Company constants ───────────────────────────────────────────────────────
 const CO = {
@@ -67,6 +69,12 @@ function amountInWords(amount: number): string {
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  // Load signature server-side — never exposed as a public URL
+  const sigPath = path.join(process.cwd(), 'private', 'signature.jpg');
+  const sigBase64 = fs.existsSync(sigPath)
+    ? `data:image/jpeg;base64,${fs.readFileSync(sigPath).toString('base64')}`
+    : null;
 
   const [orderRes, stagesRes] = await Promise.all([
     supabaseAdmin.from('orders').select('*').eq('id', id).single(),
@@ -344,8 +352,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <div style={{ fontSize: '9px', fontWeight: 700, color: '#444', lineHeight: 1.5, textTransform: 'uppercase' }}>
                   For Rotehuegel Research Business<br />Consultancy Private Limited
                 </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/assets/signature.jpg" alt="Signature" style={{ height: '48px', width: 'auto', objectFit: 'contain', marginTop: '6px', opacity: 0.9 }} />
+                {sigBase64 && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={sigBase64} alt="" style={{ height: '48px', width: 'auto', objectFit: 'contain', marginTop: '6px', opacity: 0.9 }} />
+                )}
                 <div style={{ borderBottom: '1px solid #bbb', marginBottom: '4px' }}></div>
                 <div style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Sivakumar Shanmugam</div>
                 <div style={{ fontSize: '8.5px', color: '#555' }}>CEO, Rotehügels</div>

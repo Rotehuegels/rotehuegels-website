@@ -247,7 +247,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <tr>
                 <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>1</td>
                 <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>
-                  <div style={{ fontWeight: 700, color: '#111', marginBottom: '3px' }}>{order.description}</div>
+                  <div style={{ fontWeight: 700, color: '#111', marginBottom: '3px', whiteSpace: 'pre-line' }}>{order.description}</div>
                   {stages.length > 1 && (
                     <div style={{ marginTop: '4px', paddingLeft: '8px' }}>
                       {stages.map(s => (

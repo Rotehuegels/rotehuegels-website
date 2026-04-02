@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { TrendingUp, TrendingDown, IndianRupee, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import RefreshButton from './RefreshButton';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -27,46 +27,79 @@ interface EnrichedHolding extends Holding {
   dayChangePct: number | null;
 }
 
-async function fetchLivePrices(yahooSymbols: string[]): Promise<Record<string, { price: number; dayChangePct: number }>> {
-  const validSymbols = yahooSymbols.filter(Boolean);
-  if (!validSymbols.length) return {};
+const NSE_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
+
+async function getNSECookie(): Promise<string> {
+  const res = await fetch('https://www.nseindia.com', {
+    headers: {
+      'User-Agent': NSE_UA,
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+    },
+    cache: 'no-store',
+  });
+  // getSetCookie() returns each Set-Cookie header as a separate string (Node 18+)
+  const raw: string[] =
+    typeof (res.headers as { getSetCookie?: () => string[] }).getSetCookie === 'function'
+      ? (res.headers as { getSetCookie: () => string[] }).getSetCookie()
+      : [(res.headers.get('set-cookie') ?? '')];
+  return raw.map((c) => c.split(';')[0].trim()).filter(Boolean).join('; ');
+}
+
+async function nseQuote(
+  symbol: string,
+  cookie: string,
+): Promise<{ price: number; dayChangePct: number } | null> {
   try {
-    const symbols = validSymbols.join(',');
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChangePercent`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
-      cache: 'no-store',
-    });
-    if (!res.ok) return {};
+    const res = await fetch(
+      `https://www.nseindia.com/api/quote-equity?symbol=${encodeURIComponent(symbol)}`,
+      {
+        headers: {
+          Cookie: cookie,
+          'User-Agent': NSE_UA,
+          Referer: 'https://www.nseindia.com/',
+          Accept: 'application/json, text/plain, */*',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        cache: 'no-store',
+      },
+    );
+    if (!res.ok) return null;
     const json = await res.json();
-    const map: Record<string, { price: number; dayChangePct: number }> = {};
-    (json.quoteResponse?.result ?? []).forEach((q: Record<string, number | string>) => {
-      map[q.symbol as string] = {
-        price: q.regularMarketPrice as number,
-        dayChangePct: q.regularMarketChangePercent as number,
-      };
-    });
-    return map;
+    const price = json.priceInfo?.lastPrice;
+    if (!price) return null;
+    return { price: Number(price), dayChangePct: Number(json.priceInfo?.pChange ?? 0) };
   } catch {
-    return {};
+    return null;
   }
 }
 
-async function fetchGoldPriceINR(): Promise<number | null> {
+async function fetchNSEPrices(
+  equitySymbols: string[],
+): Promise<{ priceMap: Record<string, { price: number; dayChangePct: number }>; goldPrice: number | null }> {
+  if (!equitySymbols.length) return { priceMap: {}, goldPrice: null };
   try {
-    // GOLDBEES is a gold ETF on NSE (~1g gold per unit), good proxy for gold price in INR
-    const url = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=GOLDBEES.NS&fields=regularMarketPrice';
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
-      cache: 'no-store',
+    const cookie = await getNSECookie();
+    if (!cookie) return { priceMap: {}, goldPrice: null };
+
+    // Fetch all equity symbols + GOLDBEES (gold proxy) in parallel
+    const allSymbols = [...equitySymbols, 'GOLDBEES'];
+    const results = await Promise.all(allSymbols.map((s) => nseQuote(s, cookie)));
+
+    const priceMap: Record<string, { price: number; dayChangePct: number }> = {};
+    allSymbols.forEach((sym, i) => {
+      const r = results[i];
+      if (r) priceMap[sym] = r;
     });
-    if (!res.ok) return null;
-    const json = await res.json();
-    const price = json.quoteResponse?.result?.[0]?.regularMarketPrice;
-    // GOLDBEES ≈ 1/100th of gold price per gram (each unit ~ 1/100 gram), scale accordingly
-    return price ? price * 100 : null;
+
+    // GOLDBEES: 1 unit ≈ 1/100 gram gold → multiply by 100 for per-gram price
+    const goldData = priceMap['GOLDBEES'];
+    const goldPrice = goldData ? goldData.price * 100 : null;
+    delete priceMap['GOLDBEES'];
+
+    return { priceMap, goldPrice };
   } catch {
-    return null;
+    return { priceMap: {}, goldPrice: null };
   }
 }
 
@@ -77,10 +110,10 @@ export default async function InvestmentsPage() {
     .order('total_invested', { ascending: false });
 
   const rows: Holding[] = holdings ?? [];
-  const [priceMap, goldPrice] = await Promise.all([
-    fetchLivePrices(rows.map((h) => h.yahoo_symbol).filter(Boolean)),
-    fetchGoldPriceINR(),
-  ]);
+
+  // Fetch prices from NSE — equity symbols only (SGB-DIRECT priced via gold proxy)
+  const equitySymbols = rows.filter((h) => h.symbol !== 'SGB-DIRECT').map((h) => h.symbol);
+  const { priceMap, goldPrice } = await fetchNSEPrices(equitySymbols);
 
   const enriched: EnrichedHolding[] = rows.map((h) => {
     let currentPrice: number | null = null;
@@ -89,7 +122,7 @@ export default async function InvestmentsPage() {
     if (h.symbol === 'SGB-DIRECT') {
       currentPrice = goldPrice;
     } else {
-      const live = priceMap[h.yahoo_symbol];
+      const live = priceMap[h.symbol];
       currentPrice = live?.price ?? null;
       dayChangePct = live?.dayChangePct ?? null;
     }
@@ -113,7 +146,7 @@ export default async function InvestmentsPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Investments</h1>
           <p className="mt-0.5 text-sm text-zinc-500">
-            ICICI Direct — Demat Portfolio &nbsp;·&nbsp; {liveCount}/{enriched.length} live
+            ICICI Direct — Demat Portfolio &nbsp;·&nbsp; {liveCount}/{enriched.length} live · NSE
           </p>
         </div>
         <RefreshButton />

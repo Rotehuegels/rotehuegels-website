@@ -117,8 +117,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     .reduce((sum, s) => sum + (s.amount_due ?? 0) + (s.gst_on_stage ?? 0), 0);
   const balanceDue = Math.max(0, order.total_value_incl_gst - totalPaid);
 
-  // UPI payment QR with balance amount pre-filled
-  const upiString = `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel Research Business Consultancy Pvt Ltd&am=${balanceDue.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNo)}`;
+  // UPI limit is ₹1 lakh/txn — omit amount if balance exceeds limit
+  const upiAmountParam = balanceDue > 0 && balanceDue <= 100000
+    ? `&am=${balanceDue.toFixed(2)}`
+    : '';
+  const upiString = `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel Research Business Consultancy Pvt Ltd${upiAmountParam}&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNo)}`;
   const upiQr = await QRCode.toDataURL(upiString, { width: 90, margin: 1, color: { dark: '#111111', light: '#ffffff' } });
 
   return (
@@ -381,7 +384,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <div style={{ textAlign: 'center', flexShrink: 0 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={upiQr} alt="UPI QR" style={{ width: '72px', height: '72px', display: 'block' }} />
-                  <div style={{ fontSize: '7px', color: '#888', marginTop: '2px' }}>Scan to Pay</div>
+                  <div style={{ fontSize: '7px', color: '#888', marginTop: '2px' }}>
+                    {balanceDue > 100000 ? 'Scan to Pay (UPI) / Use NEFT for full amount' : 'Scan to Pay (UPI)'}
+                  </div>
                 </div>
               </div>
             </div>

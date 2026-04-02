@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import InvoiceActions from './InvoiceActions';
 import fs from 'fs';
 import path from 'path';
+import QRCode from 'qrcode';
 
 // ── Company constants ───────────────────────────────────────────────────────
 const CO = {
@@ -109,6 +110,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
   // colspan for footer row: # + Description + (Qty if multi-item) + HSN
   const descColspan = items.length > 0 ? 4 : 3;
+
+  // UPI payment QR — no fixed amount so customer enters balance due
+  const upiString = `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel Research Business Consultancy Pvt Ltd&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNo)}`;
+  const upiQr = await QRCode.toDataURL(upiString, { width: 90, margin: 1, color: { dark: '#111111', light: '#ffffff' } });
 
   return (
     <>
@@ -350,21 +355,29 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <div style={{ fontSize: '8px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>
                 Bank Details
               </div>
-              <table style={{ fontSize: '9px', borderCollapse: 'collapse', width: '100%' }}>
-                <tbody>
-                  {[
-                    ['Name',    CO.name],
-                    ['A/c No.', CO.acc],
-                    ['IFSC',    CO.ifsc],
-                    ['Bank',    CO.bank],
-                  ].map(([l, v]) => (
-                    <tr key={l}>
-                      <td style={{ color: '#888', paddingRight: '8px', paddingBottom: '3px', whiteSpace: 'nowrap', fontWeight: 600 }}>{l}</td>
-                      <td style={{ color: '#111', paddingBottom: '3px', fontFamily: l === 'A/c No.' || l === 'IFSC' ? 'monospace' : 'inherit', fontWeight: l === 'A/c No.' ? 700 : 400 }}>{v}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                <table style={{ fontSize: '9px', borderCollapse: 'collapse', flex: 1 }}>
+                  <tbody>
+                    {[
+                      ['Name',    CO.name],
+                      ['A/c No.', CO.acc],
+                      ['IFSC',    CO.ifsc],
+                      ['Bank',    CO.bank],
+                      ['UPI',     'rotehuegels@sbi'],
+                    ].map(([l, v]) => (
+                      <tr key={l}>
+                        <td style={{ color: '#888', paddingRight: '8px', paddingBottom: '3px', whiteSpace: 'nowrap', fontWeight: 600 }}>{l}</td>
+                        <td style={{ color: '#111', paddingBottom: '3px', fontFamily: l === 'A/c No.' || l === 'IFSC' || l === 'UPI' ? 'monospace' : 'inherit', fontWeight: l === 'A/c No.' ? 700 : 400 }}>{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={upiQr} alt="UPI QR" style={{ width: '72px', height: '72px', display: 'block' }} />
+                  <div style={{ fontSize: '7px', color: '#888', marginTop: '2px' }}>Scan to Pay</div>
+                </div>
+              </div>
             </div>
 
             {/* Declaration + Signature */}

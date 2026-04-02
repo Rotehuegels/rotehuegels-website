@@ -384,9 +384,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <div style={{ textAlign: 'center', flexShrink: 0 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={upiQr} alt="UPI QR" style={{ width: '72px', height: '72px', display: 'block' }} />
-                  <div style={{ fontSize: '7px', color: '#888', marginTop: '2px' }}>
-                    {balanceDue > 100000 ? 'Scan to Pay (UPI) / Use NEFT for full amount' : 'Scan to Pay (UPI)'}
-                  </div>
+                  <div style={{ fontSize: '7px', color: '#888', marginTop: '2px' }}>Scan to Pay (UPI)</div>
                 </div>
               </div>
             </div>
@@ -419,6 +417,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* ── Footer ──────────────────────────────────────────────────── */}
+          {/* UPI disclaimer */}
+          <div style={{ fontSize: '7.5px', color: '#999', marginBottom: '6px', lineHeight: 1.5 }}>
+            * UPI payments are subject to per-transaction limits (typically ₹1 lakh). For amounts exceeding the limit, you may split into multiple UPI transfers or use NEFT / RTGS for the full amount in a single transfer.
+          </div>
+
           <div style={{ borderTop: '1px solid #e0e0e0', paddingTop: '6px', textAlign: 'center', fontSize: '8px', color: '#aaa', lineHeight: 1.6 }}>
             <div>This is a computer-generated invoice. | {CO.web} | {CO.email} | {CO.phone}</div>
           </div>

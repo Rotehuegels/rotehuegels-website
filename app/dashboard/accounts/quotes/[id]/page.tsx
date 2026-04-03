@@ -82,12 +82,14 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
     <style>{`
       @media print {
         @page { size: A4 portrait; margin: 0; }
-        body > * { visibility: hidden !important; }
+        html, body { background: white !important; }
+        body * { visibility: hidden !important; background: transparent !important; }
         #rh-quote-doc, #rh-quote-doc * { visibility: visible !important; }
         #rh-quote-doc {
-          position: absolute !important; left: 0 !important; top: 0 !important;
-          width: 100% !important; background: white !important;
+          position: fixed !important; inset: 0 !important;
+          background: white !important;
           padding: 12mm 16mm !important;
+          box-shadow: none !important; border: none !important;
         }
         .print-hidden { display: none !important; }
       }

@@ -111,7 +111,7 @@ SELECT
   id, 1, 'Advance — Fabrication Work', 80.00,
   20000.00, 0.00, 0.00, 0.00, 20000.00,
   'On delivery of fabricated bus bars',
-  'received'
+  'paid'
 FROM orders WHERE order_no = 'SVC-005'
   AND NOT EXISTS (
     SELECT 1 FROM order_payment_stages ops
@@ -264,7 +264,7 @@ INSERT INTO order_payment_stages (
   1, 'Full Advance Received', 100.00,
   48468.00, 8724.24, 0.00, 0.00, 57192.24,
   'Full advance received on 30 Mar 2026',
-  'received'
+  'paid'
 );
 
 -- Ensure payment record reflects full ₹57,192.24

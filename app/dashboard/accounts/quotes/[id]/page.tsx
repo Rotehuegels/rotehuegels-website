@@ -2,7 +2,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Eye, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Eye, Printer } from 'lucide-react';
 import QuoteActions from './QuoteActions';
 
 export const dynamic = 'force-dynamic';
@@ -84,6 +84,11 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
             target="_blank"
             className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
             <Eye className="h-3.5 w-3.5" /> Preview
+          </Link>
+          <Link href={`/dashboard/accounts/quotes/${id}/preview?print=1`}
+            target="_blank"
+            className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
+            <Printer className="h-3.5 w-3.5" /> Print / PDF
           </Link>
           <QuoteActions quoteId={id} currentStatus={quote.status} />
         </div>

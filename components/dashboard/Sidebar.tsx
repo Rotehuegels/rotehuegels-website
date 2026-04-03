@@ -19,6 +19,9 @@ import {
   BadgePercent,
   Landmark,
   TrendingUp,
+  Building2,
+  BookOpen,
+  FilePlus,
 } from 'lucide-react';
 import { useState } from 'react';
 import LogoutButton from './LogoutButton';
@@ -54,14 +57,20 @@ const NAV = [
     label: 'Accounts',
     icon: IndianRupee,
     children: [
-      { label: 'Overview', href: '/dashboard/accounts', icon: IndianRupee },
-      { label: 'Orders', href: '/dashboard/accounts/orders', icon: ReceiptText },
-      { label: 'New Order', href: '/dashboard/accounts/orders/new', icon: ShoppingBag },
-      { label: 'Expenses', href: '/dashboard/accounts/expenses', icon: ClipboardList },
-      { label: 'Stock', href: '/dashboard/accounts/stock', icon: Package },
-      { label: 'Bank Statement', href: '/dashboard/accounts/bank', icon: Landmark },
-      { label: 'GST Report', href: '/dashboard/accounts/gst', icon: BadgePercent },
-      { label: 'P&L Statement', href: '/dashboard/accounts/pl', icon: FileText },
+      { label: 'Overview',      href: '/dashboard/accounts',                    icon: IndianRupee },
+      { label: '─ Customers',   href: '/dashboard/accounts/customers',           icon: Building2 },
+      { label: 'Add Customer',  href: '/dashboard/accounts/customers/new',       icon: UserPlus },
+      { label: '─ Catalog',     href: '/dashboard/accounts/items',               icon: BookOpen },
+      { label: 'Add Item',      href: '/dashboard/accounts/items/new',           icon: Package },
+      { label: '─ Quotes',      href: '/dashboard/accounts/quotes',              icon: FileText },
+      { label: 'New Quote',     href: '/dashboard/accounts/quotes/new',          icon: FilePlus },
+      { label: '─ Orders',      href: '/dashboard/accounts/orders',              icon: ReceiptText },
+      { label: 'New Order',     href: '/dashboard/accounts/orders/new',          icon: ShoppingBag },
+      { label: '─ Finance',     href: '/dashboard/accounts/expenses',            icon: ClipboardList },
+      { label: 'Stock',         href: '/dashboard/accounts/stock',               icon: Package },
+      { label: 'Bank Statement',href: '/dashboard/accounts/bank',                icon: Landmark },
+      { label: 'GST Report',    href: '/dashboard/accounts/gst',                 icon: BadgePercent },
+      { label: 'P&L Statement', href: '/dashboard/accounts/pl',                  icon: FileText },
     ],
   },
   {
@@ -109,21 +118,43 @@ function NavItem({
         </button>
         {open && (
           <div className="ml-4 mt-1 space-y-0.5 border-l border-zinc-800 pl-4">
-            {item.children.map((child) => (
-              <Link
-                key={child.href}
-                href={child.href}
-                className={[
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                  pathname === child.href
-                    ? 'bg-rose-500/10 text-rose-400 font-medium'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60',
-                ].join(' ')}
-              >
-                <child.icon className="h-3.5 w-3.5 shrink-0" />
-                {child.label}
-              </Link>
-            ))}
+            {item.children.map((child) => {
+              // Section divider labels start with "─"
+              if (child.label.startsWith('─')) {
+                return (
+                  <Link
+                    key={child.href}
+                    href={child.href}
+                    className={[
+                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                      pathname.startsWith(child.href)
+                        ? 'bg-rose-500/10 text-rose-400 font-medium'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60',
+                    ].join(' ')}
+                  >
+                    <child.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="text-xs font-semibold tracking-wide uppercase">
+                      {child.label.replace('─ ', '')}
+                    </span>
+                  </Link>
+                );
+              }
+              return (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  className={[
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                    pathname === child.href
+                      ? 'bg-rose-500/10 text-rose-400 font-medium'
+                      : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60',
+                  ].join(' ')}
+                >
+                  <child.icon className="h-3.5 w-3.5 shrink-0" />
+                  {child.label}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

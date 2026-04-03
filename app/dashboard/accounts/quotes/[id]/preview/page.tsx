@@ -28,10 +28,11 @@ export default async function QuotePreviewPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: { print?: string };
+  searchParams: Promise<{ print?: string }>;
 }) {
   const { id } = await params;
-  const autoPrint = searchParams?.print === '1';
+  const sp = await searchParams;
+  const autoPrint = sp?.print === '1';
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');

@@ -85,8 +85,8 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
         body > * { visibility: hidden !important; }
         #rh-quote-doc, #rh-quote-doc * { visibility: visible !important; }
         #rh-quote-doc {
-          position: fixed !important; inset: 0 !important;
-          z-index: 99999 !important; background: white !important;
+          position: absolute !important; left: 0 !important; top: 0 !important;
+          width: 100% !important; background: white !important;
           padding: 12mm 16mm !important;
         }
         .print-hidden { display: none !important; }

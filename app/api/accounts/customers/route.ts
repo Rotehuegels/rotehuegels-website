@@ -58,10 +58,11 @@ export async function POST(req: Request) {
   const parsed = CustomerSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
-  // Auto-derive state from GSTIN if not supplied (first 2 digits = state code)
-  let { state, state_code } = parsed.data;
-  if (!state_code && parsed.data.gstin && parsed.data.gstin.length >= 2) {
-    state_code = parsed.data.gstin.slice(0, 2);
+  // Auto-derive state + PAN from GSTIN if not supplied
+  let { state, state_code, pan } = parsed.data;
+  if (parsed.data.gstin && parsed.data.gstin.length >= 15) {
+    if (!state_code) state_code = parsed.data.gstin.slice(0, 2);
+    if (!pan)        pan        = parsed.data.gstin.slice(2, 12);
   }
 
   // Generate customer_id
@@ -73,7 +74,7 @@ export async function POST(req: Request) {
 
   const { data, error } = await supabaseAdmin
     .from('customers')
-    .insert([{ ...parsed.data, customer_id, state, state_code }])
+    .insert([{ ...parsed.data, customer_id, state, state_code, pan }])
     .select('id, customer_id')
     .single();
 

@@ -1,12 +1,14 @@
 -- ============================================================
 -- Seed: M/s India Zinc Inc — CUST-001
 -- First customer post incorporation (17 Sep 2025)
+-- PAN extracted from GSTIN: 33BZWPS7278C2ZN → BZWPS7278C
 -- ============================================================
 
 INSERT INTO customers (
   customer_id,
   name,
   gstin,
+  pan,
   billing_address,
   contact_person,
   email,
@@ -18,6 +20,7 @@ INSERT INTO customers (
   'CUST-001',
   'M/s India Zinc Inc',
   '33BZWPS7278C2ZN',
+  'BZWPS7278C',
   '{
     "line1":   "No. 224, 1A/1B/1A, 1st Floor, Venkiteshwara Nagar",
     "line2":   "Vadaperumbakkam, Puzhal Village, Madhavaram",
@@ -30,5 +33,5 @@ INSERT INTO customers (
   '+91-9840830750',
   'Tamil Nadu',
   '33',
-  'First customer post incorporation. Intra-state supply (Tamil Nadu). PAN to be updated.'
+  'First customer post incorporation. Intra-state supply (Tamil Nadu).'
 );

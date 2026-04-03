@@ -100,8 +100,8 @@ function parseCSVText(lines: string[]): ParsedStatement {
     const f = splitCSV(lines[i]);
     if (f.length < 7) continue;
     const txn_date   = parseSBIDate(f[0]);
-    const value_date = parseSBIDate(f[1]);
-    if (!txn_date || !value_date) continue;
+    if (!txn_date) continue;
+    const value_date = parseSBIDate(f[1]) ?? txn_date;
     transactions.push({
       txn_date, value_date,
       description: f[2] ?? '',
@@ -165,8 +165,8 @@ function parseFixedWidth(lines: string[]): ParsedStatement {
     const txnDateStr = line.slice(0, 13).trim();
     const valDateStr = line.slice(13, 36).trim();
     const txn_date   = parseSBIDate(txnDateStr);
-    const value_date = parseSBIDate(valDateStr);
-    if (!txn_date || !value_date) continue;
+    if (!txn_date) continue;
+    const value_date = parseSBIDate(valDateStr) ?? txn_date;
 
     // Numeric columns by position (if header positions are known)
     let debit   = 0;

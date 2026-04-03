@@ -49,8 +49,8 @@ export async function POST(req: Request) {
     for (let i = headerIdx + 1; i < rows.length; i++) {
       const row        = rows[i];
       const txn_date   = parseSBIDate(String(row[0] ?? ''));
-      const value_date = parseSBIDate(String(row[1] ?? ''));
-      if (!txn_date || !value_date) continue;
+      if (!txn_date) continue;
+      const value_date = parseSBIDate(String(row[1] ?? '')) ?? txn_date;
       transactions.push({
         txn_date, value_date,
         description: String(row[2] ?? '').trim(),

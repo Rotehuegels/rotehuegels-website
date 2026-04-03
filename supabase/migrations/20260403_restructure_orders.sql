@@ -51,7 +51,7 @@ INSERT INTO order_payment_stages (
     1, 'Cash Advance Received', 62.50,
     50000.00, 0.00, 0.00, 0.00, 50000.00,
     'Cash received at commencement',
-    'received'
+    'paid'
   ),
   (
     (SELECT id FROM orders WHERE order_no = 'SVC-002'),

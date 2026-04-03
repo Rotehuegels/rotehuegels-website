@@ -1,6 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { supabaseServer } from '@/lib/supabaseServer';
-import { redirect, notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,9 +23,6 @@ const fmtDate = (d: string) =>
 
 export default async function QuotePreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
 
   const { data: quote, error } = await supabaseAdmin
     .from('quotes')

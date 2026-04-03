@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
   const { data, error } = await supabaseAdmin
     .from('bank_transactions')
-    .upsert(rows, { ignoreDuplicates: true })
+    .upsert(rows, { ignoreDuplicates: true, onConflict: 'txn_date,description,debit,credit,balance' })
     .select('id');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

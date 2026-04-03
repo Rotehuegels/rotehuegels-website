@@ -16,8 +16,10 @@ const STATUS_STYLE: Record<string, string> = {
 export default async function OrdersListPage() {
   const { data: orders } = await supabaseAdmin
     .from('orders')
-    .select('id, order_no, order_type, client_name, description, order_date, entry_date, total_value_incl_gst, base_value, tds_deducted_total, status')
-    .order('created_at', { ascending: false });
+    .select('id, order_no, order_type, order_category, client_name, description, order_date, entry_date, total_value_incl_gst, base_value, tds_deducted_total, status')
+    .neq('order_category', 'reimbursement')
+    .neq('status', 'cancelled')
+    .order('order_no', { ascending: true });
 
   const ids = (orders ?? []).map(o => o.id);
   const { data: payments } = ids.length
@@ -35,11 +37,12 @@ export default async function OrdersListPage() {
     pending: (o.total_value_incl_gst ?? 0) - (pmtMap[o.id] ?? 0),
   }));
 
-  // Totals
-  const totalBook = enriched.reduce((s, o) => s + o.total_value_incl_gst, 0);
-  const totalReceived = enriched.reduce((s, o) => s + o.received, 0);
-  const totalPending = enriched.reduce((s, o) => s + o.pending, 0);
-  const totalTds = enriched.reduce((s, o) => s + (o.tds_deducted_total ?? 0), 0);
+  // Totals (exclude complimentary orders from financials)
+  const billable = enriched.filter(o => o.order_category !== 'complimentary');
+  const totalBook = billable.reduce((s, o) => s + o.total_value_incl_gst, 0);
+  const totalReceived = billable.reduce((s, o) => s + o.received, 0);
+  const totalPending = billable.reduce((s, o) => s + o.pending, 0);
+  const totalTds = billable.reduce((s, o) => s + (o.tds_deducted_total ?? 0), 0);
 
   return (
     <div className="p-8 space-y-6">
@@ -113,15 +116,22 @@ export default async function OrdersListPage() {
                   </div>
 
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-white">{fmt(o.total_value_incl_gst)}</p>
+                    {o.order_category === 'complimentary'
+                      ? <span className="text-xs font-medium text-violet-400">Complimentary</span>
+                      : <p className="text-sm font-semibold text-white">{fmt(o.total_value_incl_gst)}</p>
+                    }
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-emerald-400">{fmt(o.received)}</p>
+                    {o.order_category !== 'complimentary' && (
+                      <p className="text-sm font-semibold text-emerald-400">{fmt(o.received)}</p>
+                    )}
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-semibold ${o.pending > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                      {fmt(o.pending)}
-                    </p>
+                    {o.order_category !== 'complimentary' && (
+                      <p className={`text-sm font-semibold ${o.pending > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {fmt(o.pending)}
+                      </p>
+                    )}
                   </div>
 
                   <div className="text-right">

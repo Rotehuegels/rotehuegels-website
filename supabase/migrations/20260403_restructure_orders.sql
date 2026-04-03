@@ -37,7 +37,10 @@ UPDATE orders SET
   customer_id          = (SELECT id FROM customers WHERE customer_id = 'CUST-001')
 WHERE order_no = 'SVC-002';
 
--- Clear and recreate payment stages for SVC-002
+-- Clear and recreate payment stages for SVC-002 (payments first — FK constraint)
+DELETE FROM order_payments
+WHERE order_id = (SELECT id FROM orders WHERE order_no = 'SVC-002');
+
 DELETE FROM order_payment_stages
 WHERE order_id = (SELECT id FROM orders WHERE order_no = 'SVC-002');
 
@@ -61,9 +64,7 @@ INSERT INTO order_payment_stages (
     'pending'
   );
 
--- Record ₹50,000 cash payment for SVC-002
-DELETE FROM order_payments
-WHERE order_id = (SELECT id FROM orders WHERE order_no = 'SVC-002');
+-- Re-insert ₹50,000 cash payment for SVC-002
 
 INSERT INTO order_payments (
   order_id, payment_date, amount_received, tds_deducted, net_received,
@@ -251,7 +252,10 @@ UPDATE orders SET
   notes = 'Consolidated sensor order for AutoREX implementation. All delivered except Float & Board Level Indicator (pending 1–2 weeks). Full advance ₹57,192.24 received 30 Mar 2026.'
 WHERE order_no = 'GDS-002';
 
--- Rebuild GDS-002 payment stage to full consolidated amount
+-- Rebuild GDS-002 payment stage (payments first — FK constraint)
+DELETE FROM order_payments
+WHERE order_id = (SELECT id FROM orders WHERE order_no = 'GDS-002');
+
 DELETE FROM order_payment_stages
 WHERE order_id = (SELECT id FROM orders WHERE order_no = 'GDS-002');
 
@@ -266,10 +270,6 @@ INSERT INTO order_payment_stages (
   'Full advance received on 30 Mar 2026',
   'paid'
 );
-
--- Ensure payment record reflects full ₹57,192.24
-DELETE FROM order_payments
-WHERE order_id = (SELECT id FROM orders WHERE order_no = 'GDS-002');
 
 INSERT INTO order_payments (
   order_id, payment_date, amount_received, tds_deducted, net_received,

@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
+import AutoPrint from './AutoPrint';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,10 +28,10 @@ export default async function QuotePreviewPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ print?: string }>;
+  searchParams?: { print?: string };
 }) {
   const { id } = await params;
-  const { print: autoPrint } = await searchParams;
+  const autoPrint = searchParams?.print === '1';
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
@@ -75,9 +76,7 @@ export default async function QuotePreviewPage({
           .no-print { display: none !important; }
         }
       `}</style>
-      {autoPrint === '1' && (
-        <script dangerouslySetInnerHTML={{ __html: 'window.onload = function(){ window.print(); }' }} />
-      )}
+      {autoPrint && <AutoPrint />}
 
       <div className="no-print sticky top-0 z-10 flex items-center justify-between px-6 py-3 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800">
         <div className="flex items-center gap-3">

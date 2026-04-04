@@ -78,7 +78,6 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
   const th: React.CSSProperties   = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
 
   return (
-    <>
     <div className="p-6 max-w-5xl space-y-4">
       {/* Top bar */}
       <div className="flex items-start justify-between">

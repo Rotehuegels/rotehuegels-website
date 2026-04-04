@@ -82,12 +82,16 @@ export default async function CustomerStatementPage({ params }: { params: Promis
 
   const orderIds = (orders ?? []).map(o => o.id);
 
-  const [{ data: allPayments }, { data: allStages }] = await Promise.all([
+  const [{ data: allPayments }, { data: allStages }, { data: quotes }] = await Promise.all([
     supabaseAdmin.from('order_payments').select('order_id, amount_received')
       .in('order_id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000']),
     supabaseAdmin.from('order_payment_stages').select('*')
       .in('order_id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000'])
       .order('stage_number'),
+    supabaseAdmin.from('quotes').select('*, customers(*)')
+      .eq('customer_id', id)
+      .not('status', 'in', '("rejected","expired","converted")')
+      .order('quote_date', { ascending: true }),
   ]);
 
   const paymentMap: Record<string, number> = {};
@@ -216,11 +220,38 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                   </tr>
                 ))}
                 <tr style={{ background:'#f0f0f0' }}>
-                  <td colSpan={3} style={{ ...cell, textAlign:'right' as const, fontWeight:900 }}>TOTAL</td>
+                  <td colSpan={3} style={{ ...cell, textAlign:'right' as const, fontWeight:900 }}>INVOICED TOTAL</td>
                   <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900 }}>{fmt(totalValue)}</td>
                   <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'#16a34a' }}>{fmt(totalReceived)}</td>
                   <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'#c00', fontSize:'12px' }}>{fmt(totalPending)}</td>
                 </tr>
+
+                {/* Quotes section */}
+                {(quotes ?? []).length > 0 && (
+                  <>
+                    <tr>
+                      <td colSpan={6} style={{ ...cell, background:'#fffbeb', fontWeight:700, fontSize:'9px', color:'#92400e', textTransform:'uppercase' as const, letterSpacing:'0.5px', paddingTop:'8px' }}>
+                        Pending Quotations (Not Yet Invoiced)
+                      </td>
+                    </tr>
+                    {(quotes ?? []).map((q) => (
+                      <tr key={q.id} style={{ background:'#fffdf0' }}>
+                        <td style={{ ...cell, fontFamily:'monospace', fontWeight:700, color:'#92400e' }}>{q.quote_no}</td>
+                        <td style={cell}>
+                          <div style={{ fontWeight:600 }}>
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            {((q.items as any[]) ?? []).map((it: { name: string }) => it.name).join(', ')}
+                          </div>
+                          <div style={{ fontSize:'9px', color:'#888', marginTop:'2px' }}>Quotation · Valid until {fmtDate(q.valid_until)}</div>
+                        </td>
+                        <td style={{ ...cell, textAlign:'center' as const }}>{fmtDate(q.quote_date)}</td>
+                        <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', color:'#92400e' }}>{fmt(q.total_amount)}</td>
+                        <td style={{ ...cell, textAlign:'center' as const, fontSize:'9px', color:'#aaa' }}>—</td>
+                        <td style={{ ...cell, textAlign:'center' as const, fontSize:'9px', color:'#92400e', fontWeight:700 }}>QUOTED</td>
+                      </tr>
+                    ))}
+                  </>
+                )}
               </tbody>
             </table>
 
@@ -469,6 +500,198 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                 <div style={{ borderTop:'1px solid #e0e0e0', paddingTop:'6px', textAlign:'center' as const, fontSize:'8px', color:'#aaa', lineHeight:1.6 }}>
                   Computer-generated invoice. | {CO.web} | {CO.email} | {CO.phone}
                 </div>
+              </div>
+            );
+          })}
+
+          {/* ══════════════════════ QUOTE PAGES ══════════════════════ */}
+          {(quotes ?? []).map(q => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const customer = q.customers as any;
+            const billing  = customer?.billing_address as Record<string, string> | null;
+            const items = (q.items ?? []) as Array<{
+              sku_id: string; name: string; unit: string;
+              hsn_code?: string; sac_code?: string;
+              quantity: number; unit_price: number; discount_pct: number;
+              taxable_amount: number; gst_rate: number; gst_amount: number;
+              cgst_rate: number; sgst_rate: number; igst_rate: number; total: number;
+            }>;
+            const isIntra = customer?.state_code === '33' || customer?.state?.toLowerCase().includes('tamil');
+            const qCell: React.CSSProperties = { border:'1px solid #ddd', padding:'6px 8px', fontSize:'10px' };
+            const qTh: React.CSSProperties = { ...qCell, background:'#f5f5f5', fontWeight:700, textAlign:'center' as const };
+
+            return (
+              <div key={q.id} style={{ ...docStyle, ...pageBreak }}>
+
+                {/* Quote header */}
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'14px' }}>
+                  <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+                    <div>
+                      <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
+                      <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
+                      <div style={{ marginTop:'5px', fontSize:'9px', color:'#666', lineHeight:1.6 }}>
+                        <div>{CO.addr1}</div><div>{CO.addr2}</div>
+                        <div>✉ {CO.email} | 📞 {CO.phone} | 🌐 {CO.web}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign:'right' as const }}>
+                    <div style={{ fontSize:'22px', fontWeight:900, textTransform:'uppercase', color:'#b45309', letterSpacing:'1px' }}>QUOTATION</div>
+                    <div style={{ fontSize:'9.5px', color:'#555', fontStyle:'italic', marginTop:'2px' }}>Not a tax invoice</div>
+                    <div style={{ marginTop:'6px', fontSize:'10px', lineHeight:1.8 }}>
+                      <div><strong>Quote No:</strong> {q.quote_no}</div>
+                      <div><strong>Date:</strong> {fmtDate(q.quote_date)}</div>
+                      {q.valid_until && <div><strong>Valid Until:</strong> {fmtDate(q.valid_until)}</div>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Company strip */}
+                <div style={{ display:'flex', gap:'8px', marginBottom:'14px', fontSize:'9.5px' }}>
+                  <div style={{ background:'#f5f5f5', border:'1px solid #e0e0e0', borderRadius:'4px', padding:'5px 10px', lineHeight:1.7 }}>
+                    <div><strong>GSTIN:</strong> {CO.gstin}</div>
+                    <div><strong>PAN:</strong> {CO.pan}</div>
+                    <div><strong>CIN:</strong> {CO.cin}</div>
+                  </div>
+                </div>
+
+                {/* Quoted To / Quote Details */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'14px' }}>
+                  <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px' }}>
+                    <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'5px', color:'#666' }}>Quoted To</div>
+                    <div style={{ fontWeight:700, fontSize:'11px' }}>{customer?.name}</div>
+                    {customer?.gstin && <div style={{ fontSize:'9.5px', marginTop:'2px' }}>GSTIN: {customer.gstin}</div>}
+                    {billing && (
+                      <div style={{ fontSize:'9.5px', marginTop:'4px', lineHeight:1.6, color:'#444' }}>
+                        {billing.line1}{billing.line2?`, ${billing.line2}`:''}<br />{billing.city}, {billing.state}{billing.pincode?` – ${billing.pincode}`:''}
+                      </div>
+                    )}
+                    {customer?.email && <div style={{ fontSize:'9px', marginTop:'3px' }}>✉ {customer.email}</div>}
+                  </div>
+                  <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px' }}>
+                    <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'5px', color:'#666' }}>Quote Details</div>
+                    <div style={{ fontSize:'10px', lineHeight:1.8 }}>
+                      <div><strong>Quote No:</strong> {q.quote_no}</div>
+                      <div><strong>Date:</strong> {fmtDate(q.quote_date)}</div>
+                      {q.valid_until && <div><strong>Valid Until:</strong> {fmtDate(q.valid_until)}</div>}
+                      <div><strong>Place of Supply:</strong> {isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '—')}</div>
+                      <div><strong>GST Type:</strong> {isIntra ? 'CGST + SGST' : 'IGST'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Items table */}
+                <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:'12px' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...qTh, width:'4%' }}>#</th>
+                      <th style={{ ...qTh, width:'30%', textAlign:'left' as const }}>Description</th>
+                      <th style={{ ...qTh, width:'8%' }}>HSN/SAC</th>
+                      <th style={{ ...qTh, width:'6%' }}>Qty</th>
+                      <th style={{ ...qTh, width:'6%' }}>Unit</th>
+                      <th style={{ ...qTh, width:'10%' }}>Rate (₹)</th>
+                      <th style={{ ...qTh, width:'6%' }}>Disc%</th>
+                      <th style={{ ...qTh, width:'10%' }}>Taxable (₹)</th>
+                      {isIntra ? (
+                        <>
+                          <th style={{ ...qTh, width:'8%' }}>CGST</th>
+                          <th style={{ ...qTh, width:'8%' }}>SGST</th>
+                        </>
+                      ) : (
+                        <th style={{ ...qTh, width:'10%' }}>IGST</th>
+                      )}
+                      <th style={{ ...qTh, width:'10%' }}>Total (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item, i) => {
+                      const halfGst = parseFloat((item.gst_amount / 2).toFixed(2));
+                      return (
+                        <tr key={i} style={{ background: i%2===1?'#fafafa':'white' }}>
+                          <td style={{ ...qCell, textAlign:'center' as const }}>{i+1}</td>
+                          <td style={qCell}>
+                            <div style={{ fontWeight:600 }}>{item.name}</div>
+                            {item.sku_id && <div style={{ fontSize:'9px', color:'#888' }}>{item.sku_id}</div>}
+                          </td>
+                          <td style={{ ...qCell, textAlign:'center' as const, fontFamily:'monospace' }}>{item.hsn_code || item.sac_code || '—'}</td>
+                          <td style={{ ...qCell, textAlign:'right' as const }}>{item.quantity}</td>
+                          <td style={{ ...qCell, textAlign:'center' as const }}>{item.unit}</td>
+                          <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(item.unit_price)}</td>
+                          <td style={{ ...qCell, textAlign:'center' as const }}>{item.discount_pct > 0 ? `${item.discount_pct}%` : '—'}</td>
+                          <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(item.taxable_amount)}</td>
+                          {isIntra ? (
+                            <>
+                              <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(halfGst)}<br /><span style={{ fontSize:'8px', color:'#888' }}>{item.gst_rate/2}%</span></td>
+                              <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(halfGst)}<br /><span style={{ fontSize:'8px', color:'#888' }}>{item.gst_rate/2}%</span></td>
+                            </>
+                          ) : (
+                            <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(item.gst_amount)}<br /><span style={{ fontSize:'8px', color:'#888' }}>{item.gst_rate}%</span></td>
+                          )}
+                          <td style={{ ...qCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(item.total)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+
+                {/* Totals */}
+                <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:'14px' }}>
+                  <table style={{ borderCollapse:'collapse', minWidth:'240px' }}>
+                    <tbody>
+                      <tr><td style={{ ...qCell, textAlign:'right' as const, color:'#666' }}>Taxable Value</td><td style={{ ...qCell, textAlign:'right' as const, fontFamily:'monospace' }}>{fmt(q.taxable_value)}</td></tr>
+                      {isIntra ? (
+                        <>
+                          <tr><td style={{ ...qCell, textAlign:'right' as const, color:'#666' }}>CGST</td><td style={{ ...qCell, textAlign:'right' as const, fontFamily:'monospace' }}>{fmt(q.cgst_amount)}</td></tr>
+                          <tr><td style={{ ...qCell, textAlign:'right' as const, color:'#666' }}>SGST</td><td style={{ ...qCell, textAlign:'right' as const, fontFamily:'monospace' }}>{fmt(q.sgst_amount)}</td></tr>
+                        </>
+                      ) : (
+                        <tr><td style={{ ...qCell, textAlign:'right' as const, color:'#666' }}>IGST</td><td style={{ ...qCell, textAlign:'right' as const, fontFamily:'monospace' }}>{fmt(q.igst_amount)}</td></tr>
+                      )}
+                      <tr style={{ background:'#f0f0f0' }}>
+                        <td style={{ ...qCell, textAlign:'right' as const, fontWeight:900, fontSize:'12px' }}>GRAND TOTAL</td>
+                        <td style={{ ...qCell, textAlign:'right' as const, fontWeight:900, fontSize:'12px', fontFamily:'monospace' }}>{fmt(q.total_amount)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Notes & Terms */}
+                {(q.notes || q.terms) && (
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'14px' }}>
+                    {q.notes && (
+                      <div style={{ border:'1px solid #e0e0e0', borderRadius:'4px', padding:'8px 10px' }}>
+                        <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'4px', color:'#666' }}>Notes</div>
+                        <div style={{ fontSize:'10px', lineHeight:1.6 }}>{q.notes}</div>
+                      </div>
+                    )}
+                    {q.terms && (
+                      <div style={{ border:'1px solid #e0e0e0', borderRadius:'4px', padding:'8px 10px' }}>
+                        <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'4px', color:'#666' }}>Terms &amp; Conditions</div>
+                        <div style={{ fontSize:'10px', lineHeight:1.6 }}>{q.terms}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Quote footer */}
+                <div style={{ borderTop:'1px solid #ddd', paddingTop:'10px', display:'flex', justifyContent:'space-between', fontSize:'9px', color:'#888' }}>
+                  <div>
+                    <div>This is a quotation and not a tax invoice.</div>
+                    <div>Prices are subject to change without notice after validity date.</div>
+                    <div>Subject to Chennai jurisdiction.</div>
+                  </div>
+                  <div style={{ textAlign:'right' as const }}>
+                    <div>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
+                    {sigBase64 && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={sigBase64} alt="" style={{ height:'44px', width:'auto', marginTop:'4px', marginLeft:'auto', display:'block', mixBlendMode:'multiply' }} />
+                    )}
+                    <div style={{ fontWeight:700, color:'#333', marginTop:'2px' }}>Authorised Signatory</div>
+                  </div>
+                </div>
+
               </div>
             );
           })}

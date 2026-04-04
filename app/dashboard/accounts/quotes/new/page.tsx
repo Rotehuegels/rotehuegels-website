@@ -56,7 +56,7 @@ export default function NewQuotePage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const today = new Date().toISOString().split('T')[0];
-  const inThirtyDays = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+  const inThirtyDays = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
 
   const [form, setForm] = useState({
     customer_id: '', quote_date: today, valid_until: inThirtyDays,

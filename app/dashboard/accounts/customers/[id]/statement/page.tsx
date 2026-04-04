@@ -4,6 +4,9 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import StatementPrintButton from './StatementPrintButton';
+import QRCode from 'qrcode';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +17,10 @@ const CO = {
   gstin: '33AAPCR0554G1ZE',
   pan:   'AAPCR0554G',
   cin:   'U70200TN2025PTC184573',
+  tan:   'CHER28694B',
   email: 'sales@rotehuegels.com',
   phone: '+91-90044 91275',
+  web:   'www.rotehuegels.com',
   bank:  'State Bank of India, Padianallur Branch',
   acc:   '44512115640',
   ifsc:  'SBIN0014160',
@@ -27,6 +32,25 @@ const fmt = (n: number) =>
 const fmtDate = (d: string | null) =>
   d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
+function getFY(dateStr: string) {
+  const d = new Date(dateStr); const y = d.getFullYear(); const m = d.getMonth() + 1;
+  return m >= 4 ? `${String(y).slice(2)}-${String(y+1).slice(2)}` : `${String(y-1).slice(2)}-${String(y).slice(2)}`;
+}
+
+function amountInWords(amount: number): string {
+  const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const tensArr = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  const twoD = (n: number) => n < 20 ? ones[n] : tensArr[Math.floor(n/10)]+(n%10?' '+ones[n%10]:'');
+  const threeD = (n: number) => n < 100 ? twoD(n) : ones[Math.floor(n/100)]+' Hundred'+(n%100?' '+twoD(n%100):'');
+  const r = Math.floor(amount); const p = Math.round((amount - r)*100);
+  const parts: string[] = []; let rem = r;
+  if (rem>=10000000){parts.push(twoD(Math.floor(rem/10000000))+' Crore');rem%=10000000;}
+  if (rem>=100000){parts.push(twoD(Math.floor(rem/100000))+' Lakh');rem%=100000;}
+  if (rem>=1000){parts.push(twoD(Math.floor(rem/1000))+' Thousand');rem%=1000;}
+  if (rem>0){parts.push(threeD(rem));}
+  return `Rupees ${r===0?'Zero':parts.join(' ')}${p>0?` and ${twoD(p)} Paise`:''} Only`;
+}
+
 export default async function CustomerStatementPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await supabaseServer();
@@ -34,17 +58,23 @@ export default async function CustomerStatementPage({ params }: { params: Promis
   if (!user) redirect('/login');
 
   const { data: customer, error: custErr } = await supabaseAdmin
-    .from('customers')
-    .select('*')
-    .eq('id', id)
-    .single();
-
+    .from('customers').select('*').eq('id', id).single();
   if (custErr || !customer) notFound();
 
-  // Fetch active orders with their payments
+  // Load assets server-side as base64
+  const sigPath = path.join(process.cwd(), 'private', 'signature.jpg');
+  const sigBase64 = fs.existsSync(sigPath)
+    ? `data:image/jpeg;base64,${fs.readFileSync(sigPath).toString('base64')}` : null;
+
+  const upiQr = await QRCode.toDataURL(
+    `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel+Research+Business+Consultancy+Pvt+Ltd&cu=INR`,
+    { width: 80, margin: 1, color: { dark: '#111111', light: '#ffffff' } }
+  );
+
+  // Fetch orders with payment stages
   const { data: orders } = await supabaseAdmin
     .from('orders')
-    .select('id, order_no, order_type, description, order_date, invoice_date, total_value_incl_gst, status, order_category')
+    .select('*')
     .eq('customer_id', id)
     .neq('status', 'cancelled')
     .neq('order_category', 'reimbursement')
@@ -52,37 +82,48 @@ export default async function CustomerStatementPage({ params }: { params: Promis
 
   const orderIds = (orders ?? []).map(o => o.id);
 
-  // Fetch all payments for these orders in one query
-  const { data: allPayments } = await supabaseAdmin
-    .from('order_payments')
-    .select('order_id, amount_received')
-    .in('order_id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000']);
+  const [{ data: allPayments }, { data: allStages }] = await Promise.all([
+    supabaseAdmin.from('order_payments').select('order_id, amount_received')
+      .in('order_id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000']),
+    supabaseAdmin.from('order_payment_stages').select('*')
+      .in('order_id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000'])
+      .order('stage_number'),
+  ]);
 
-  // Calculate received + pending per order
   const paymentMap: Record<string, number> = {};
   for (const p of allPayments ?? []) {
     paymentMap[p.order_id] = (paymentMap[p.order_id] ?? 0) + (p.amount_received ?? 0);
+  }
+  const stagesMap: Record<string, typeof allStages> = {};
+  for (const s of allStages ?? []) {
+    if (!stagesMap[s.order_id]) stagesMap[s.order_id] = [];
+    stagesMap[s.order_id]!.push(s);
   }
 
   const rows = (orders ?? []).map(o => ({
     ...o,
     received: paymentMap[o.id] ?? 0,
     pending:  (o.total_value_incl_gst ?? 0) - (paymentMap[o.id] ?? 0),
-  })).filter(o => o.order_category !== 'complimentary' || o.total_value_incl_gst > 0);
+    stages:   stagesMap[o.id] ?? [],
+  }));
 
-  const totalValue    = rows.reduce((s, o) => s + o.total_value_incl_gst, 0);
-  const totalReceived = rows.reduce((s, o) => s + o.received, 0);
-  const totalPending  = rows.reduce((s, o) => s + o.pending, 0);
+  // Only show invoiceable rows (exclude zero-value complimentary)
+  const invoiceRows = rows.filter(o => (o.total_value_incl_gst ?? 0) > 0);
+
+  const totalValue    = invoiceRows.reduce((s, o) => s + o.total_value_incl_gst, 0);
+  const totalReceived = invoiceRows.reduce((s, o) => s + o.received, 0);
+  const totalPending  = invoiceRows.reduce((s, o) => s + o.pending, 0);
 
   const billing = customer.billing_address as Record<string, string> | null;
   const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
   const cell: React.CSSProperties = { border: '1px solid #ddd', padding: '6px 8px', fontSize: '10px' };
   const th: React.CSSProperties   = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
+  const docStyle: React.CSSProperties = { padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px', background: 'white' };
+  const pageBreak: React.CSSProperties = { pageBreakBefore: 'always', paddingTop: '12mm' };
 
   return (
     <div className="p-6 max-w-5xl space-y-4">
-      {/* Top bar */}
       <div className="flex items-center justify-between">
         <div>
           <Link href={`/dashboard/accounts/customers/${id}`}
@@ -90,144 +131,347 @@ export default async function CustomerStatementPage({ params }: { params: Promis
             <ArrowLeft className="h-3 w-3" /> {customer.name}
           </Link>
           <h1 className="text-base font-bold text-white">Statement of Account</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Pending bills as of {today}</p>
+          <p className="text-xs text-zinc-500 mt-0.5">SOA + individual invoices — {today}</p>
         </div>
         <StatementPrintButton />
       </div>
 
-      {/* Letterhead document */}
       <div className="rounded-2xl border border-zinc-700 bg-zinc-100 p-2 shadow-xl">
-        <div id="rh-statement-doc" className="bg-white text-zinc-900 rounded-xl"
-          style={{ padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}>
+        <div id="rh-statement-doc" className="bg-white text-zinc-900 rounded-xl">
 
-          {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '10px', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px' }} />
+          {/* ══════════════════════ PAGE 1 — SOA ══════════════════════ */}
+          <div style={docStyle}>
+
+            {/* Header */}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'14px' }}>
+              <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+                <div>
+                  <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
+                  <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
+                  <div style={{ marginTop:'5px', fontSize:'9px', color:'#666', lineHeight:1.6 }}>
+                    <div>{CO.addr1}</div><div>{CO.addr2}</div>
+                    <div>✉ {CO.email} | 📞 {CO.phone}</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ textAlign:'right' as const }}>
+                <div style={{ fontSize:'20px', fontWeight:900, textTransform:'uppercase', color:'#b45309', letterSpacing:'1px' }}>STATEMENT OF ACCOUNT</div>
+                <div style={{ marginTop:'6px', fontSize:'10px', lineHeight:1.8 }}>
+                  <div><strong>Date:</strong> {today}</div>
+                  <div><strong>GSTIN:</strong> {CO.gstin}</div>
+                  <div><strong>PAN:</strong> {CO.pan}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Customer + summary */}
+            <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 12px', marginBottom:'14px', display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
               <div>
-                <div style={{ fontSize: '15px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>
-                  Rotehuegel Research Business
-                </div>
-                <div style={{ fontSize: '15px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>
-                  Consultancy Private Limited
-                </div>
-                <div style={{ marginTop: '5px', fontSize: '9px', color: '#666', lineHeight: 1.6 }}>
-                  <div>{CO.addr1}</div>
-                  <div>{CO.addr2}</div>
-                  <div>✉ {CO.email} | 📞 {CO.phone}</div>
+                <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'4px', color:'#666' }}>To</div>
+                <div style={{ fontWeight:700, fontSize:'12px' }}>{customer.name}</div>
+                {customer.gstin && <div style={{ fontSize:'9.5px', marginTop:'2px' }}>GSTIN: {customer.gstin}</div>}
+                {billing && (
+                  <div style={{ fontSize:'9.5px', marginTop:'4px', lineHeight:1.6, color:'#444' }}>
+                    {billing.line1}{billing.line2?`, ${billing.line2}`:''}<br />{billing.city}, {billing.state}{billing.pincode?` – ${billing.pincode}`:''}
+                  </div>
+                )}
+                {customer.email && <div style={{ fontSize:'9px', marginTop:'2px' }}>✉ {customer.email}</div>}
+              </div>
+              <div style={{ textAlign:'right' as const, fontSize:'10px', lineHeight:1.8 }}>
+                <div style={{ fontSize:'9px', color:'#888', marginBottom:'4px' }}>Outstanding Summary</div>
+                <div><strong>Total Billed:</strong> <span style={{ fontFamily:'monospace' }}>{fmt(totalValue)}</span></div>
+                <div><strong>Total Received:</strong> <span style={{ fontFamily:'monospace', color:'#16a34a' }}>{fmt(totalReceived)}</span></div>
+                <div style={{ fontSize:'12px', fontWeight:900, color:'#c00', marginTop:'4px', borderTop:'1px solid #ddd', paddingTop:'4px' }}>
+                  Total Pending: {fmt(totalPending)}
                 </div>
               </div>
             </div>
-            <div style={{ textAlign: 'right' as const }}>
-              <div style={{ fontSize: '20px', fontWeight: 900, textTransform: 'uppercase', color: '#b45309', letterSpacing: '1px' }}>
-                STATEMENT OF ACCOUNT
-              </div>
-              <div style={{ marginTop: '6px', fontSize: '10px', lineHeight: 1.8 }}>
-                <div><strong>Date:</strong> {today}</div>
-                <div><strong>GSTIN:</strong> {CO.gstin}</div>
-                <div><strong>PAN:</strong> {CO.pan}</div>
-              </div>
-            </div>
-          </div>
 
-          {/* Customer details */}
-          <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '8px 12px', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '9px', textTransform: 'uppercase', marginBottom: '4px', color: '#666' }}>To</div>
-              <div style={{ fontWeight: 700, fontSize: '12px' }}>{customer.name}</div>
-              {customer.gstin && <div style={{ fontSize: '9.5px', marginTop: '2px' }}>GSTIN: {customer.gstin}</div>}
-              {billing && (
-                <div style={{ fontSize: '9.5px', marginTop: '4px', lineHeight: 1.6, color: '#444' }}>
-                  {billing.line1}{billing.line2 ? `, ${billing.line2}` : ''}<br />
-                  {billing.city}, {billing.state}{billing.pincode ? ` – ${billing.pincode}` : ''}
-                </div>
-              )}
-              {customer.email && <div style={{ fontSize: '9px', marginTop: '2px' }}>✉ {customer.email}</div>}
-            </div>
-            <div style={{ textAlign: 'right' as const, fontSize: '10px', lineHeight: 1.8 }}>
-              <div style={{ fontSize: '9px', color: '#888', marginBottom: '4px' }}>Outstanding Summary</div>
-              <div><strong>Total Billed:</strong> <span style={{ fontFamily: 'monospace' }}>{fmt(totalValue)}</span></div>
-              <div><strong>Total Received:</strong> <span style={{ fontFamily: 'monospace', color: '#16a34a' }}>{fmt(totalReceived)}</span></div>
-              <div style={{ fontSize: '12px', fontWeight: 900, color: '#c00', marginTop: '4px', borderTop: '1px solid #ddd', paddingTop: '4px' }}>
-                Total Pending: {fmt(totalPending)}
-              </div>
-            </div>
-          </div>
-
-          {/* Orders table */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '14px' }}>
-            <thead>
-              <tr>
-                <th style={{ ...th, width: '10%', textAlign: 'left' as const }}>Order No</th>
-                <th style={{ ...th, width: '35%', textAlign: 'left' as const }}>Description</th>
-                <th style={{ ...th, width: '10%' }}>Invoice Date</th>
-                <th style={{ ...th, width: '15%' }}>Order Value</th>
-                <th style={{ ...th, width: '15%' }}>Received</th>
-                <th style={{ ...th, width: '15%', color: '#c00' }}>Pending</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((o, i) => (
-                <tr key={o.id} style={{ background: i % 2 === 1 ? '#fafafa' : 'white' }}>
-                  <td style={{ ...cell, fontFamily: 'monospace', fontWeight: 700 }}>{o.order_no}</td>
-                  <td style={cell}>
-                    <div style={{ fontWeight: 600 }}>{o.description}</div>
-                    <div style={{ fontSize: '9px', color: '#888', marginTop: '2px', textTransform: 'capitalize' }}>{o.order_type}</div>
-                  </td>
-                  <td style={{ ...cell, textAlign: 'center' as const }}>{fmtDate(o.invoice_date ?? o.order_date)}</td>
-                  <td style={{ ...cell, textAlign: 'right' as const, fontFamily: 'monospace' }}>
-                    {o.total_value_incl_gst > 0 ? fmt(o.total_value_incl_gst) : 'Complimentary'}
-                  </td>
-                  <td style={{ ...cell, textAlign: 'right' as const, fontFamily: 'monospace', color: '#16a34a' }}>
-                    {fmt(o.received)}
-                  </td>
-                  <td style={{ ...cell, textAlign: 'right' as const, fontFamily: 'monospace', fontWeight: 700, color: o.pending > 0 ? '#c00' : '#16a34a' }}>
-                    {fmt(o.pending)}
-                  </td>
+            {/* SOA table */}
+            <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:'14px' }}>
+              <thead>
+                <tr>
+                  <th style={{ ...th, width:'10%', textAlign:'left' as const }}>Order No</th>
+                  <th style={{ ...th, width:'35%', textAlign:'left' as const }}>Description</th>
+                  <th style={{ ...th, width:'10%' }}>Invoice Date</th>
+                  <th style={{ ...th, width:'15%' }}>Order Value</th>
+                  <th style={{ ...th, width:'15%' }}>Received</th>
+                  <th style={{ ...th, width:'15%', color:'#c00' }}>Pending</th>
                 </tr>
-              ))}
-              {/* Totals row */}
-              <tr style={{ background: '#f0f0f0' }}>
-                <td colSpan={3} style={{ ...cell, textAlign: 'right' as const, fontWeight: 900 }}>TOTAL</td>
-                <td style={{ ...cell, textAlign: 'right' as const, fontFamily: 'monospace', fontWeight: 900 }}>{fmt(totalValue)}</td>
-                <td style={{ ...cell, textAlign: 'right' as const, fontFamily: 'monospace', fontWeight: 900, color: '#16a34a' }}>{fmt(totalReceived)}</td>
-                <td style={{ ...cell, textAlign: 'right' as const, fontFamily: 'monospace', fontWeight: 900, color: '#c00', fontSize: '12px' }}>{fmt(totalPending)}</td>
-              </tr>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {invoiceRows.map((o, i) => (
+                  <tr key={o.id} style={{ background: i%2===1?'#fafafa':'white' }}>
+                    <td style={{ ...cell, fontFamily:'monospace', fontWeight:700 }}>{o.order_no}</td>
+                    <td style={cell}>
+                      <div style={{ fontWeight:600 }}>{o.description}</div>
+                      <div style={{ fontSize:'9px', color:'#888', marginTop:'2px', textTransform:'capitalize' }}>{o.order_type}</div>
+                    </td>
+                    <td style={{ ...cell, textAlign:'center' as const }}>{fmtDate(o.invoice_date ?? o.order_date)}</td>
+                    <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace' }}>{fmt(o.total_value_incl_gst)}</td>
+                    <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', color:'#16a34a' }}>{fmt(o.received)}</td>
+                    <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:700, color:o.pending>0?'#c00':'#16a34a' }}>{fmt(o.pending)}</td>
+                  </tr>
+                ))}
+                <tr style={{ background:'#f0f0f0' }}>
+                  <td colSpan={3} style={{ ...cell, textAlign:'right' as const, fontWeight:900 }}>TOTAL</td>
+                  <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900 }}>{fmt(totalValue)}</td>
+                  <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'#16a34a' }}>{fmt(totalReceived)}</td>
+                  <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'#c00', fontSize:'12px' }}>{fmt(totalPending)}</td>
+                </tr>
+              </tbody>
+            </table>
 
-          {/* Payment request */}
-          <div style={{ border: '1px solid #f0c000', background: '#fffbeb', borderRadius: '4px', padding: '8px 12px', marginBottom: '14px', fontSize: '10px' }}>
-            <strong>Kindly arrange payment of the outstanding amount at the earliest.</strong>
-            <span style={{ color: '#666' }}> Please use the bank details below and mention the Order No. in your payment reference.</span>
-          </div>
+            {/* Payment request */}
+            <div style={{ border:'1px solid #f0c000', background:'#fffbeb', borderRadius:'4px', padding:'8px 12px', marginBottom:'14px', fontSize:'10px' }}>
+              <strong>Kindly arrange payment of the outstanding amount at the earliest.</strong>
+              <span style={{ color:'#666' }}> Please use the bank details below and mention the Order No. in your payment reference.</span>
+            </div>
 
-          {/* Bank details */}
-          <div style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '8px 12px', marginBottom: '14px', fontSize: '10px', lineHeight: 1.8 }}>
-            <div style={{ fontWeight: 700, marginBottom: '4px' }}>Bank Details for Payment</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
-              <div><strong>Bank:</strong> {CO.bank}</div>
-              <div><strong>Account No:</strong> {CO.acc}</div>
-              <div><strong>IFSC:</strong> {CO.ifsc}</div>
-              <div><strong>UPI:</strong> rotehuegels@sbi</div>
+            {/* Bank details + QR */}
+            <div style={{ border:'1px solid #e0e0e0', borderRadius:'4px', padding:'8px 12px', marginBottom:'14px', fontSize:'10px' }}>
+              <div style={{ fontWeight:700, marginBottom:'6px' }}>Bank Details for Payment</div>
+              <div style={{ display:'flex', gap:'16px', alignItems:'flex-start' }}>
+                <div style={{ lineHeight:1.8, flex:1 }}>
+                  <div><strong>Bank:</strong> {CO.bank}</div>
+                  <div><strong>Account No:</strong> <span style={{ fontFamily:'monospace' }}>{CO.acc}</span></div>
+                  <div><strong>IFSC:</strong> <span style={{ fontFamily:'monospace' }}>{CO.ifsc}</span></div>
+                  <div><strong>UPI:</strong> <span style={{ fontFamily:'monospace' }}>rotehuegels@sbi</span></div>
+                </div>
+                <div style={{ textAlign:'center' as const, flexShrink:0 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={upiQr} alt="UPI QR" style={{ width:'80px', height:'80px', display:'block' }} />
+                  <div style={{ fontSize:'8px', color:'#888', marginTop:'2px' }}>Scan to Pay (UPI)</div>
+                </div>
+              </div>
+            </div>
+
+            {/* SOA footer */}
+            <div style={{ borderTop:'1px solid #ddd', paddingTop:'10px', display:'flex', justifyContent:'space-between', fontSize:'9px', color:'#888' }}>
+              <div>
+                <div>This is a computer-generated statement of account.</div>
+                <div>For discrepancies, contact {CO.email}</div>
+                <div>Subject to Chennai jurisdiction. | Detailed invoices follow on next pages.</div>
+              </div>
+              <div style={{ textAlign:'right' as const }}>
+                <div>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
+                {sigBase64 && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={sigBase64} alt="" style={{ height:'44px', width:'auto', marginTop:'4px', marginLeft:'auto', display:'block', mixBlendMode:'multiply' }} />
+                )}
+                <div style={{ fontWeight:700, color:'#333', marginTop:'2px' }}>Authorised Signatory</div>
+              </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#888' }}>
-            <div>
-              <div>This is a computer-generated statement of account.</div>
-              <div>For discrepancies, please contact us at {CO.email}</div>
-              <div>Subject to Chennai jurisdiction.</div>
-            </div>
-            <div style={{ textAlign: 'right' as const }}>
-              <div>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/api/private/signature" alt="Signature" style={{ height: '44px', width: 'auto', marginTop: '4px', marginLeft: 'auto' }} />
-              <div style={{ fontWeight: 700, color: '#333', marginTop: '2px' }}>Authorised Signatory</div>
-            </div>
-          </div>
+          {/* ══════════════════════ PAGES 2+ — INVOICES ══════════════════════ */}
+          {invoiceRows.map(o => {
+            const fy = getFY(o.invoice_date ?? o.order_date);
+            const invoiceNo = `RH/${fy}/${o.order_no}`;
+            const invoiceDate = fmtDate(o.invoice_date ?? o.order_date);
+            const isIntra = (o.igst_amount ?? 0) === 0 && (o.cgst_amount ?? 0) > 0;
+            const gstRate = Number(o.gst_rate ?? 18);
+            const halfRate = gstRate / 2;
+            const sacHsn = o.hsn_sac_code ?? (o.order_type === 'service' ? '9983' : '—');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const items: Array<{ description: string; qty?: string; hsn: string; base: number; cgst: number; sgst: number; igst: number; total: number }> = Array.isArray((o as any).items) ? (o as any).items : [];
+            const stages = o.stages ?? [];
+            const descColspan = items.length > 0 ? 4 : 3;
+
+            const invCell: React.CSSProperties = { border: '1px solid #ddd', padding: '7px 6px', fontSize: '9.5px' };
+            const invTh: React.CSSProperties = { border: '1px solid #555', padding: '5px 6px', fontSize: '9.5px', background: '#1a1a1a', color: 'white' };
+
+            return (
+              <div key={o.id} style={{ ...docStyle, ...pageBreak }}>
+
+                {/* Invoice header */}
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'12px' }}>
+                  <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+                    <div>
+                      <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
+                      <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
+                      <div style={{ marginTop:'5px', fontSize:'9px', color:'#666', lineHeight:1.6 }}>
+                        <div>{CO.addr1}</div><div>{CO.addr2}</div>
+                        <div>✉ {CO.email} | 📞 {CO.phone} | 🌐 {CO.web}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign:'right' as const, flexShrink:0, marginLeft:'12px' }}>
+                    <div style={{ display:'inline-block', border:'2px solid #111', padding:'4px 10px', marginBottom:'6px' }}>
+                      <span style={{ fontSize:'13px', fontWeight:900, letterSpacing:'1px' }}>TAX INVOICE</span>
+                    </div>
+                    <div style={{ fontSize:'9px', color:'#555', lineHeight:1.8 }}>
+                      <div><strong>GSTIN:</strong> {CO.gstin}</div>
+                      <div><strong>PAN:</strong> {CO.pan}</div>
+                      <div><strong>CIN:</strong> {CO.cin}</div>
+                      <div><strong>TAN:</strong> {CO.tan}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bill To + Invoice details */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
+                  <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px' }}>
+                    <div style={{ fontSize:'8px', fontWeight:700, color:'#888', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'5px' }}>Bill To</div>
+                    <div style={{ fontSize:'12px', fontWeight:800, color:'#111', marginBottom:'2px' }}>{o.client_name}</div>
+                    {o.client_address && <div style={{ fontSize:'8.5px', color:'#555', lineHeight:1.5, marginBottom:'3px' }}>{o.client_address}</div>}
+                    {o.client_gstin && <div style={{ fontSize:'9px', color:'#555', fontFamily:'monospace' }}>GSTIN: {o.client_gstin}</div>}
+                  </div>
+                  <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px' }}>
+                    <table style={{ width:'100%', fontSize:'9px', borderCollapse:'collapse' }}>
+                      <tbody>
+                        {[
+                          ['Invoice No.', <span key="inv" style={{ fontFamily:'monospace', fontWeight:800 }}>{invoiceNo}</span>],
+                          ['Invoice Date', invoiceDate],
+                          ['Order Ref.', o.order_no],
+                          ['Place of Supply', o.place_of_supply ?? 'Tamil Nadu (33)'],
+                          ['Supply Type', isIntra ? 'Intra-State' : 'Inter-State'],
+                        ].map(([label, value]) => (
+                          <tr key={String(label)}>
+                            <td style={{ color:'#888', paddingRight:'8px', paddingBottom:'3px', whiteSpace:'nowrap' as const, fontWeight:600 }}>{label}</td>
+                            <td style={{ color:'#111', paddingBottom:'3px' }}>{value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Items table */}
+                <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:'12px', fontSize:'9.5px' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...invTh, textAlign:'left' as const, width:'20px' }}>#</th>
+                      <th style={{ ...invTh, textAlign:'left' as const }}>Description</th>
+                      {items.length > 0 && <th style={{ ...invTh, textAlign:'center' as const, width:'45px' }}>Qty</th>}
+                      <th style={{ ...invTh, textAlign:'center' as const, width:'55px' }}>SAC/HSN</th>
+                      <th style={{ ...invTh, textAlign:'right' as const, width:'90px' }}>Taxable (₹)</th>
+                      {isIntra ? (
+                        <>
+                          <th style={{ ...invTh, textAlign:'right' as const, width:'75px' }}>CGST {halfRate}%</th>
+                          <th style={{ ...invTh, textAlign:'right' as const, width:'75px' }}>SGST {halfRate}%</th>
+                        </>
+                      ) : (
+                        <th style={{ ...invTh, textAlign:'right' as const, width:'90px' }}>IGST {gstRate}%</th>
+                      )}
+                      <th style={{ ...invTh, textAlign:'right' as const, width:'90px' }}>Total (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.length > 0 ? items.map((item, idx) => (
+                      <tr key={idx}>
+                        <td style={{ ...invCell, verticalAlign:'top' as const }}>{idx+1}</td>
+                        <td style={{ ...invCell, verticalAlign:'top' as const }}><div style={{ fontWeight:700 }}>{item.description}</div></td>
+                        <td style={{ ...invCell, textAlign:'center' as const, verticalAlign:'top' as const }}>{item.qty ?? '—'}</td>
+                        <td style={{ ...invCell, textAlign:'center' as const, fontFamily:'monospace', fontWeight:700 }}>{item.hsn}</td>
+                        <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(item.base)}</td>
+                        {isIntra ? (
+                          <>
+                            <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(item.cgst)}</td>
+                            <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(item.sgst)}</td>
+                          </>
+                        ) : (
+                          <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(item.igst)}</td>
+                        )}
+                        <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(item.total)}</td>
+                      </tr>
+                    )) : (
+                      <tr>
+                        <td style={{ ...invCell, verticalAlign:'top' as const }}>1</td>
+                        <td style={{ ...invCell, verticalAlign:'top' as const }}>
+                          <div style={{ fontWeight:700, marginBottom:'3px' }}>{o.description}</div>
+                          {stages.length > 1 && stages.map((s: { id: string; stage_name: string; amount_due: number; gst_on_stage: number; tds_amount?: number }) => (
+                            <div key={s.id} style={{ fontSize:'8.5px', color:'#666', marginTop:'2px' }}>
+                              • {s.stage_name}: {fmt(s.amount_due)} + GST {fmt(s.gst_on_stage ?? 0)}
+                            </div>
+                          ))}
+                        </td>
+                        <td style={{ ...invCell, textAlign:'center' as const, fontFamily:'monospace', fontWeight:700 }}>{sacHsn}</td>
+                        <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.base_value ?? 0)}</td>
+                        {isIntra ? (
+                          <>
+                            <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.cgst_amount ?? 0)}</td>
+                            <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.sgst_amount ?? 0)}</td>
+                          </>
+                        ) : (
+                          <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.igst_amount ?? 0)}</td>
+                        )}
+                        <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.total_value_incl_gst)}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ background:'#f5f5f5' }}>
+                      <td colSpan={descColspan} style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>Total</td>
+                      <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.base_value ?? 0)}</td>
+                      {isIntra ? (
+                        <>
+                          <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.cgst_amount ?? 0)}</td>
+                          <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.sgst_amount ?? 0)}</td>
+                        </>
+                      ) : (
+                        <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.igst_amount ?? 0)}</td>
+                      )}
+                      <td style={{ ...invCell, textAlign:'right' as const, fontWeight:900, fontSize:'11px' }}>{fmt(o.total_value_incl_gst)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+
+                {/* Amount in words */}
+                <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px', marginBottom:'12px' }}>
+                  <div style={{ fontSize:'8px', fontWeight:700, color:'#888', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'3px' }}>Amount in Words</div>
+                  <div style={{ fontSize:'11px', fontWeight:800, color:'#111' }}>{amountInWords(o.total_value_incl_gst)}</div>
+                </div>
+
+                {/* Bank + Signature */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
+                  <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px' }}>
+                    <div style={{ fontSize:'8px', fontWeight:700, color:'#888', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'6px' }}>Bank Details</div>
+                    <div style={{ display:'flex', gap:'10px', alignItems:'flex-start' }}>
+                      <table style={{ fontSize:'9px', borderCollapse:'collapse', flex:1 }}>
+                        <tbody>
+                          {[['A/c No.', CO.acc],['IFSC', CO.ifsc],['Bank', CO.bank],['UPI', 'rotehuegels@sbi']].map(([l,v]) => (
+                            <tr key={l}><td style={{ color:'#888', paddingRight:'8px', paddingBottom:'3px', whiteSpace:'nowrap' as const, fontWeight:600 }}>{l}</td><td style={{ paddingBottom:'3px', fontFamily: l==='A/c No.'||l==='IFSC'||l==='UPI'?'monospace':'inherit' }}>{v}</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <div style={{ textAlign:'center' as const, flexShrink:0 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={upiQr} alt="UPI QR" style={{ width:'72px', height:'72px', display:'block' }} />
+                        <div style={{ fontSize:'7px', color:'#888', marginTop:'2px' }}>Scan to Pay</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px', display:'flex', flexDirection:'column' as const, justifyContent:'space-between' }}>
+                    <div style={{ fontSize:'8.5px', color:'#666', lineHeight:1.5 }}>
+                      We declare that this invoice shows the actual price of goods/services described and all particulars are true and correct.
+                    </div>
+                    <div style={{ textAlign:'right' as const, marginTop:'8px' }}>
+                      <div style={{ fontSize:'9px', fontWeight:700, color:'#444', textTransform:'uppercase' as const }}>
+                        For Rotehuegel Research Business<br />Consultancy Private Limited
+                      </div>
+                      {sigBase64 && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={sigBase64} alt="" style={{ height:'48px', width:'auto', marginLeft:'auto', display:'block', marginTop:'6px', mixBlendMode:'multiply' }} />
+                      )}
+                      <div style={{ borderBottom:'1px solid #bbb', marginBottom:'3px' }}></div>
+                      <div style={{ fontSize:'9px', fontWeight:700, color:'#111' }}>Sivakumar Shanmugam</div>
+                      <div style={{ fontSize:'8px', color:'#555' }}>CEO, Rotehügels | Authorised Signatory</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Invoice footer */}
+                <div style={{ borderTop:'1px solid #e0e0e0', paddingTop:'6px', textAlign:'center' as const, fontSize:'8px', color:'#aaa', lineHeight:1.6 }}>
+                  Computer-generated invoice. | {CO.web} | {CO.email} | {CO.phone}
+                </div>
+              </div>
+            );
+          })}
 
         </div>
       </div>

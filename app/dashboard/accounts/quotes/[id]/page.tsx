@@ -79,24 +79,9 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
 
   return (
     <>
-    <style>{`
-      @media print {
-        @page { size: A4 portrait; margin: 0; }
-        html, body { background: white !important; }
-        body * { visibility: hidden !important; background: transparent !important; }
-        #rh-quote-doc, #rh-quote-doc * { visibility: visible !important; }
-        #rh-quote-doc {
-          position: fixed !important; inset: 0 !important;
-          background: white !important;
-          padding: 12mm 16mm !important;
-          box-shadow: none !important; border: none !important;
-        }
-        .print-hidden { display: none !important; }
-      }
-    `}</style>
     <div className="p-6 max-w-5xl space-y-4">
       {/* Top bar */}
-      <div className="print-hidden flex items-start justify-between">
+      <div className="flex items-start justify-between">
         <div>
           <Link href="/dashboard/accounts/quotes"
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
@@ -114,14 +99,14 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
           </p>
         </div>
         <div className="flex gap-2">
-          <QuotePrintButton />
+          <QuotePrintButton id={id} />
           <QuoteActions quoteId={id} currentStatus={quote.status} />
         </div>
       </div>
 
       {/* Converted notice */}
       {convertedOrder && (
-        <div className="print-hidden rounded-xl border border-amber-600/30 bg-amber-500/5 p-4 flex items-center justify-between">
+        <div className="rounded-xl border border-amber-600/30 bg-amber-500/5 p-4 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-amber-400">Converted to Order</p>
             <p className="text-xs text-zinc-500 mt-0.5">
@@ -363,6 +348,5 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
         </div>
       </div>
     </div>
-    </>
   );
 }

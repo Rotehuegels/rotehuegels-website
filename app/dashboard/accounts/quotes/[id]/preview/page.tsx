@@ -260,8 +260,10 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
               <div>Subject to Chennai jurisdiction.</div>
             </div>
             <div style={{ textAlign: 'right' as const }}>
-              <div style={{ marginBottom: '24px' }}>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
-              <div style={{ fontWeight: 700, color: '#333' }}>Authorised Signatory</div>
+              <div>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/assets/Signature.png" alt="Signature" style={{ height: '48px', width: 'auto', marginTop: '4px', marginLeft: 'auto' }} />
+              <div style={{ fontWeight: 700, color: '#333', marginTop: '2px' }}>Authorised Signatory</div>
             </div>
           </div>
 

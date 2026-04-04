@@ -2,7 +2,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Building2, Mail, Phone, MapPin, User, FileText, ArrowLeft } from 'lucide-react';
+import { Building2, Mail, Phone, MapPin, User, FileText, ArrowLeft, ReceiptText } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,6 +67,10 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           )}
         </div>
         <div className="flex gap-2">
+          <Link href={`/dashboard/accounts/customers/${id}/statement`}
+            className="rounded-xl border border-amber-600/50 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center gap-2">
+            <ReceiptText className="h-3.5 w-3.5" /> Pending Bills
+          </Link>
           <Link href={`/dashboard/accounts/quotes/new?customer=${id}`}
             className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500 transition-colors flex items-center gap-2">
             <FileText className="h-3.5 w-3.5" /> New Quote

@@ -31,6 +31,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       .from('orders')
       .select('id, order_no, order_type, order_date, total_value_incl_gst, status')
       .eq('customer_id', id)
+      .neq('order_category', 'reimbursement')
+      .neq('status', 'cancelled')
       .order('order_date', { ascending: false }),
   ]);
 

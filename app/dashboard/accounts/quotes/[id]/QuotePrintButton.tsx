@@ -10,8 +10,8 @@ export default function QuotePrintButton({ id }: { id: string }) {
       setTimeout(() => {
         iframe.contentWindow?.focus();
         iframe.contentWindow?.print();
-        setTimeout(() => document.body.removeChild(iframe), 1000);
-      }, 500);
+        setTimeout(() => document.body.removeChild(iframe), 2000);
+      }, 1500);
     };
     iframe.src = `/dashboard/accounts/quotes/${id}/preview`;
   };

@@ -44,7 +44,7 @@ function numToWords(n: number): string {
 export default async function POPreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [poRes, itemsRes] = await Promise.all([
+  const [poRes, itemsRes, pmtsRes] = await Promise.all([
     supabaseAdmin
       .from('purchase_orders')
       .select('*, suppliers(*)')
@@ -55,16 +55,22 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
       .select('*')
       .eq('po_id', id)
       .order('sl_no'),
+    supabaseAdmin
+      .from('po_payments')
+      .select('amount')
+      .eq('po_id', id),
   ]);
 
   if (poRes.error || !poRes.data) notFound();
 
-  const po       = poRes.data;
+  const po        = poRes.data;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supplier = po.suppliers as any;
-  const items    = itemsRes.data ?? [];
-  const isIGST   = po.igst_amount > 0;
-  const shipTo   = po.ship_to as Record<string, string> | null;
+  const supplier  = po.suppliers as any;
+  const items     = itemsRes.data ?? [];
+  const totalPaid = (pmtsRes.data ?? []).reduce((s, p) => s + p.amount, 0);
+  const balance   = po.total_amount - totalPaid;
+  const isIGST    = po.igst_amount > 0;
+  const shipTo    = po.ship_to as Record<string, string> | null;
 
   const cell: React.CSSProperties = { border: '1px solid #ddd', padding: '5px 7px', fontSize: '9.5px' };
   const th: React.CSSProperties   = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
@@ -79,7 +85,7 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
           #rh-po {
             position: fixed !important; inset: 0 !important;
             z-index: 99999 !important; background: white !important;
-            overflow: visible !important;
+            overflow: hidden !important;
           }
         }
       `}</style>
@@ -239,14 +245,30 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
                   <td style={{ ...cell, textAlign: 'right' as const, fontWeight: 900, fontSize: '11px' }}>GRAND TOTAL</td>
                   <td style={{ ...cell, textAlign: 'right' as const, fontWeight: 900, fontSize: '11px', fontFamily: 'monospace' }}>{fmt(po.total_amount)}</td>
                 </tr>
+                {totalPaid > 0 && (
+                  <>
+                    <tr>
+                      <td style={{ ...cell, textAlign: 'right' as const, color: '#059669' }}>Less: Advance Paid</td>
+                      <td style={{ ...cell, textAlign: 'right' as const, fontFamily: 'monospace', color: '#059669' }}>− {fmt(totalPaid)}</td>
+                    </tr>
+                    <tr style={{ background: balance > 0 ? '#fff5f5' : '#f0fdf4' }}>
+                      <td style={{ ...cell, textAlign: 'right' as const, fontWeight: 900, fontSize: '11px' }}>BALANCE PAYABLE</td>
+                      <td style={{ ...cell, textAlign: 'right' as const, fontWeight: 900, fontSize: '11px', fontFamily: 'monospace', color: balance > 0 ? '#dc2626' : '#059669' }}>
+                        {fmt(balance)}
+                      </td>
+                    </tr>
+                  </>
+                )}
               </tbody>
             </table>
           </div>
 
           {/* ── Amount in words ──────────────────────────────── */}
           <div style={{ border: '1px solid #e0e0e0', borderRadius: '3px', padding: '5px 8px', marginBottom: '10px', fontSize: '9px' }}>
-            <strong>Amount Chargeable (in words): </strong>
-            {numToWords(po.total_amount)} (INR)
+            <strong>Grand Total (in words): </strong>{numToWords(po.total_amount)} (INR)
+            {totalPaid > 0 && (
+              <span> &nbsp;|&nbsp; <strong>Balance Payable: </strong>{numToWords(balance)} (INR)</span>
+            )}
           </div>
 
           {/* ── Terms (brief) ────────────────────────────────── */}

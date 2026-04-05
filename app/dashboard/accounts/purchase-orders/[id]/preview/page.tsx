@@ -80,31 +80,23 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 0; }
-          html, body {
-            height: 297mm !important;
-            overflow: hidden !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
           body * { visibility: hidden !important; }
           #rh-po, #rh-po * { visibility: visible !important; }
           #rh-po {
-            position: absolute !important;
-            top: 0 !important; left: 0 !important;
-            width: 210mm !important;
-            height: 297mm !important;
-            overflow: hidden !important;
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 99999 !important;
             background: white !important;
-            margin: 0 !important;
+            overflow: visible !important;
           }
         }
       `}</style>
 
       <POPreviewActions poId={id} poNo={po.po_no} />
 
-      <div className="bg-zinc-950 min-h-screen py-10 print:py-0 print:bg-white flex justify-center">
+      <div className="bg-zinc-950 min-h-screen py-10 print:py-0 print:min-h-0 print:bg-transparent flex justify-center">
         <div id="rh-po" className="bg-white text-zinc-900"
-          style={{ width: '210mm', height: '297mm', padding: '10mm 14mm', fontFamily: 'Arial, sans-serif', fontSize: '10px', display: 'flex', flexDirection: 'column' }}>
+          style={{ width: '210mm', minHeight: '297mm', padding: '10mm 14mm', fontFamily: 'Arial, sans-serif', fontSize: '10px', display: 'flex', flexDirection: 'column' }}>
 
           {/* ── Header ───────────────────────────────────────── */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '8px', marginBottom: '10px' }}>

@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
+import POPreviewActions from './POPreviewActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,24 +91,10 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
             z-index: 99999 !important; background: white !important;
             overflow: visible !important;
           }
-          .no-print { display: none !important; }
         }
       `}</style>
 
-      {/* Toolbar */}
-      <div className="no-print sticky top-0 z-10 flex items-center justify-between px-6 py-3 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800">
-        <div className="flex items-center gap-3">
-          <a href={`/dashboard/accounts/purchase-orders/${id}`}
-            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">← Back to PO</a>
-          <span className="text-zinc-700">|</span>
-          <span className="text-xs text-zinc-500">Purchase Order Preview</span>
-          <span className="font-mono text-sm text-amber-400 font-bold">{po.po_no}</span>
-        </div>
-        <button onClick={() => window.print()}
-          className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
-          Print / Save PDF
-        </button>
-      </div>
+      <POPreviewActions poId={id} poNo={po.po_no} />
 
       <div className="bg-zinc-950 min-h-screen py-10 print:py-0 print:bg-white flex justify-center">
         <div id="rh-po" className="bg-white text-zinc-900"

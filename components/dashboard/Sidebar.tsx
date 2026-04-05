@@ -22,6 +22,7 @@ import {
   Building2,
   BookOpen,
   FilePlus,
+  ShoppingCart,
 } from 'lucide-react';
 import { useState } from 'react';
 import LogoutButton from './LogoutButton';
@@ -66,6 +67,8 @@ const NAV = [
       { label: 'New Quote',     href: '/dashboard/accounts/quotes/new',          icon: FilePlus },
       { label: '─ Orders',      href: '/dashboard/accounts/orders',              icon: ReceiptText },
       { label: 'New Order',     href: '/dashboard/accounts/orders/new',          icon: ShoppingBag },
+      { label: '─ Purchases',   href: '/dashboard/accounts/purchase-orders',     icon: ShoppingCart },
+      { label: 'New PO',        href: '/dashboard/accounts/purchase-orders/new', icon: FilePlus },
       { label: '─ Finance',     href: '/dashboard/accounts/expenses',            icon: ClipboardList },
       { label: 'Stock',         href: '/dashboard/accounts/stock',               icon: Package },
       { label: 'Bank Statement',href: '/dashboard/accounts/bank',                icon: Landmark },

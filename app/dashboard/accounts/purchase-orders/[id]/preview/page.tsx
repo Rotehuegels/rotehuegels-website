@@ -80,21 +80,12 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 0; }
-          body * { visibility: hidden !important; }
-          #rh-po, #rh-po * { visibility: visible !important; }
-          #rh-po {
-            position: fixed !important;
-            inset: 0 !important;
-            z-index: 99999 !important;
-            background: white !important;
-            overflow: visible !important;
-          }
         }
       `}</style>
 
       <POPreviewActions poId={id} poNo={po.po_no} />
 
-      <div className="bg-zinc-950 min-h-screen py-10 print:py-0 print:min-h-0 print:bg-transparent flex justify-center">
+      <div className="bg-zinc-950 min-h-screen py-10 flex justify-center print:block print:bg-transparent print:p-0 print:min-h-0">
         <div id="rh-po" className="bg-white text-zinc-900"
           style={{ width: '210mm', minHeight: '297mm', padding: '10mm 14mm', fontFamily: 'Arial, sans-serif', fontSize: '10px', display: 'flex', flexDirection: 'column' }}>
 

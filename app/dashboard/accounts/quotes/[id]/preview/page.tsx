@@ -54,14 +54,27 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 0; }
-          body * { visibility: hidden !important; }
-          #rh-quote, #rh-quote * { visibility: visible !important; }
-          #rh-quote {
-            position: fixed !important; inset: 0 !important;
-            z-index: 99999 !important; background: white !important;
-            overflow: visible !important;
-          }
+
+          /* Kill site chrome */
+          header, footer, body > div { display: none !important; }
+
+          /* Kill dashboard MobileNav (md:hidden only hides on screen) */
+          .md\\:hidden { display: none !important; }
+
+          /* Strip wrapper backgrounds/padding so nothing bleeds through */
+          html, body, main,
+          main > div, main > div > div,
+          main > div > div > div,
+          main > div > div > div > div { background: transparent !important; background-color: transparent !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; }
+
+          /* Hide toolbar */
           .no-print { display: none !important; }
+
+          /* A4 outer wrapper — no min-height, white */
+          .quote-print-wrapper { display: flex !important; justify-content: center !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; background: white !important; }
+
+          /* A4 page — static (not fixed, which repeats on every page) */
+          #rh-quote { display: block !important; position: static !important; width: 210mm !important; min-height: 0 !important; background: white !important; }
         }
       `}</style>
 
@@ -76,7 +89,7 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
         </button>
       </div>
 
-      <div className="bg-zinc-950 min-h-screen py-10 print:py-0 print:bg-white flex justify-center">
+      <div className="quote-print-wrapper bg-zinc-950 min-h-screen py-10 flex justify-center">
         <div id="rh-quote" className="bg-white text-zinc-900"
           style={{ width: '210mm', minHeight: '297mm', padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}>
 

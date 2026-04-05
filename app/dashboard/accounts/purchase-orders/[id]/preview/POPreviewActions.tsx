@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 export default function POPreviewActions({ poId, poNo }: { poId: string; poNo: string }) {
   const router = useRouter();
   return (
-    <div className="print:hidden flex items-center justify-between px-6 py-3 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800 sticky top-0 z-10">
+    <div className="po-no-print flex items-center justify-between px-6 py-3 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800 sticky top-0 z-10">
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.push(`/dashboard/accounts/purchase-orders/${poId}`)}

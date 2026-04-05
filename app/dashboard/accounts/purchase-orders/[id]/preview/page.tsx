@@ -80,12 +80,22 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 0; }
+          html, body {
+            height: 297mm !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
           body * { visibility: hidden !important; }
           #rh-po, #rh-po * { visibility: visible !important; }
           #rh-po {
-            position: fixed !important; inset: 0 !important;
-            z-index: 99999 !important; background: white !important;
+            position: absolute !important;
+            top: 0 !important; left: 0 !important;
+            width: 210mm !important;
+            height: 297mm !important;
             overflow: hidden !important;
+            background: white !important;
+            margin: 0 !important;
           }
         }
       `}</style>

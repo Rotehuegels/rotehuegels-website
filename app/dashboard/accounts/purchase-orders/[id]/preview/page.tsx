@@ -84,20 +84,23 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
           /* 1. Kill site chrome (root layout: Header, TickerBar, Footer) */
           header, footer, body > div { display: none !important; }
 
-          /* 2. Strip all wrapper backgrounds / padding so no dark page bleeds through */
+          /* 2. Kill dashboard MobileNav (md:hidden only applies on screen, not print) */
+          .md\:hidden { display: none !important; }
+
+          /* 3. Strip all wrapper backgrounds / padding so nothing bleeds through */
           html, body, main,
           main > div, main > div > div,
           main > div > div > div,
           main > div > div > div > div { background: transparent !important; background-color: transparent !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; }
 
-          /* 3. Hide toolbar and sidebar */
+          /* 4. Hide toolbar */
           .po-no-print { display: none !important; }
 
-          /* 4. The A4 wrapper — static flow, centred, white */
-          .po-print-wrapper { display: flex !important; justify-content: center !important; padding: 0 !important; background: white !important; }
+          /* 5. A4 wrapper — no min-height so it doesn't push a blank page 2 */
+          .po-print-wrapper { display: flex !important; justify-content: center !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; background: white !important; }
 
-          /* 5. The A4 page — keep its own size, no extra transforms */
-          #rh-po { display: block !important; position: static !important; width: 210mm !important; min-height: 297mm !important; background: white !important; }
+          /* 6. A4 page — static, no min-height (content determines height in print) */
+          #rh-po { display: block !important; position: static !important; width: 210mm !important; min-height: 0 !important; background: white !important; }
         }
       `}</style>
 

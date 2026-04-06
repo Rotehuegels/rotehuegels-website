@@ -1,12 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { supabaseServer } from '@/lib/supabaseServer';
-import { redirect, notFound } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import StatementPrintButton from './StatementPrintButton';
+import { notFound } from 'next/navigation';
+import PDFViewer from '@/components/PDFViewer';
+import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
 import QRCode from 'qrcode';
-import fs from 'fs';
-import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,27 +47,21 @@ function amountInWords(amount: number): string {
   return `Rupees ${r===0?'Zero':parts.join(' ')}${p>0?` and ${twoD(p)} Paise`:''} Only`;
 }
 
-export default async function CustomerStatementPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function StatementPreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
 
   const { data: customer, error: custErr } = await supabaseAdmin
     .from('customers').select('*').eq('id', id).single();
   if (custErr || !customer) notFound();
 
-  // Load assets server-side as base64
-  const sigPath = path.join(process.cwd(), 'private', 'signature.jpg');
-  const sigBase64 = fs.existsSync(sigPath)
-    ? `data:image/jpeg;base64,${fs.readFileSync(sigPath).toString('base64')}` : null;
+  const logoSrc = getLogoBase64();
+  const sigSrc  = getSignatureBase64();
 
   const upiQr = await QRCode.toDataURL(
     `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel+Research+Business+Consultancy+Pvt+Ltd&cu=INR`,
     { width: 80, margin: 1, color: { dark: '#111111', light: '#ffffff' } }
   );
 
-  // Fetch orders with payment stages
   const { data: orders } = await supabaseAdmin
     .from('orders')
     .select('*')
@@ -111,7 +101,6 @@ export default async function CustomerStatementPage({ params }: { params: Promis
     stages:   stagesMap[o.id] ?? [],
   }));
 
-  // Only show invoiceable rows (exclude zero-value complimentary)
   const invoiceRows = rows.filter(o => (o.total_value_incl_gst ?? 0) > 0);
 
   const totalValue    = invoiceRows.reduce((s, o) => s + o.total_value_incl_gst, 0);
@@ -127,21 +116,23 @@ export default async function CustomerStatementPage({ params }: { params: Promis
   const pageBreak: React.CSSProperties = { pageBreakBefore: 'always', paddingTop: '12mm' };
 
   return (
-    <div className="p-6 max-w-5xl space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href={`/dashboard/accounts/customers/${id}`}
-            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
-            <ArrowLeft className="h-3 w-3" /> {customer.name}
-          </Link>
-          <h1 className="text-base font-bold text-white">Statement of Account</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">SOA + individual invoices — {today}</p>
+    <PDFViewer
+      contentId="rh-statement-doc"
+      filename={`SOA-${customer.name.replace(/\s+/g, '-')}.pdf`}
+      toolbar={
+        <div className="flex items-center gap-3">
+          <a href={`/dashboard/accounts/customers/${id}/statement`}
+            className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
+            ← Back to Statement
+          </a>
+          <span className="text-zinc-700">|</span>
+          <span className="text-xs text-zinc-500">Statement of Account</span>
+          <span className="text-sm text-amber-400 font-bold">{customer.name}</span>
         </div>
-        <StatementPrintButton customerId={id} />
-      </div>
-
-      <div className="rounded-2xl border border-zinc-700 bg-zinc-100 p-2 shadow-xl">
-        <div id="rh-statement-doc" className="bg-white text-zinc-900 rounded-xl">
+      }
+    >
+      <div>
+        <div id="rh-statement-doc" style={{ width: '210mm', fontFamily: 'Arial, sans-serif', background: 'white' }}>
 
           {/* ══════════════════════ PAGE 1 — SOA ══════════════════════ */}
           <div style={docStyle}>
@@ -150,7 +141,7 @@ export default async function CustomerStatementPage({ params }: { params: Promis
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'14px' }}>
               <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+                <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
                 <div>
                   <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
                   <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
@@ -288,10 +279,8 @@ export default async function CustomerStatementPage({ params }: { params: Promis
               </div>
               <div style={{ textAlign:'right' as const }}>
                 <div>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
-                {sigBase64 && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={sigBase64} alt="" style={{ height:'44px', width:'auto', marginTop:'4px', marginLeft:'auto', display:'block', mixBlendMode:'multiply' }} />
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={sigSrc} alt="" style={{ height:'44px', width:'auto', marginTop:'4px', marginLeft:'auto', display:'block', mixBlendMode:'multiply' }} />
                 <div style={{ fontWeight:700, color:'#333', marginTop:'2px' }}>Authorised Signatory</div>
               </div>
             </div>
@@ -321,7 +310,7 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'12px' }}>
                   <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+                    <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
                     <div>
                       <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
                       <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
@@ -485,10 +474,8 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                       <div style={{ fontSize:'9px', fontWeight:700, color:'#444', textTransform:'uppercase' as const }}>
                         For Rotehuegel Research Business<br />Consultancy Private Limited
                       </div>
-                      {sigBase64 && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={sigBase64} alt="" style={{ height:'48px', width:'auto', marginLeft:'auto', display:'block', marginTop:'6px', mixBlendMode:'multiply' }} />
-                      )}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={sigSrc} alt="" style={{ height:'48px', width:'auto', marginLeft:'auto', display:'block', marginTop:'6px', mixBlendMode:'multiply' }} />
                       <div style={{ borderBottom:'1px solid #bbb', marginBottom:'3px' }}></div>
                       <div style={{ fontSize:'9px', fontWeight:700, color:'#111' }}>Sivakumar Shanmugam</div>
                       <div style={{ fontSize:'8px', color:'#555' }}>CEO, Rotehügels | Authorised Signatory</div>
@@ -507,8 +494,8 @@ export default async function CustomerStatementPage({ params }: { params: Promis
           {/* ══════════════════════ QUOTE PAGES ══════════════════════ */}
           {(quotes ?? []).map(q => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const customer = q.customers as any;
-            const billing  = customer?.billing_address as Record<string, string> | null;
+            const qCustomer = q.customers as any;
+            const qBilling  = qCustomer?.billing_address as Record<string, string> | null;
             const items = (q.items ?? []) as Array<{
               sku_id: string; name: string; unit: string;
               hsn_code?: string; sac_code?: string;
@@ -516,7 +503,7 @@ export default async function CustomerStatementPage({ params }: { params: Promis
               taxable_amount: number; gst_rate: number; gst_amount: number;
               cgst_rate: number; sgst_rate: number; igst_rate: number; total: number;
             }>;
-            const isIntra = customer?.state_code === '33' || customer?.state?.toLowerCase().includes('tamil');
+            const isIntra = qCustomer?.state_code === '33' || qCustomer?.state?.toLowerCase().includes('tamil');
             const qCell: React.CSSProperties = { border:'1px solid #ddd', padding:'6px 8px', fontSize:'10px' };
             const qTh: React.CSSProperties = { ...qCell, background:'#f5f5f5', fontWeight:700, textAlign:'center' as const };
 
@@ -527,7 +514,7 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'14px' }}>
                   <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+                    <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
                     <div>
                       <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
                       <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
@@ -561,14 +548,14 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'14px' }}>
                   <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px' }}>
                     <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'5px', color:'#666' }}>Quoted To</div>
-                    <div style={{ fontWeight:700, fontSize:'11px' }}>{customer?.name}</div>
-                    {customer?.gstin && <div style={{ fontSize:'9.5px', marginTop:'2px' }}>GSTIN: {customer.gstin}</div>}
-                    {billing && (
+                    <div style={{ fontWeight:700, fontSize:'11px' }}>{qCustomer?.name}</div>
+                    {qCustomer?.gstin && <div style={{ fontSize:'9.5px', marginTop:'2px' }}>GSTIN: {qCustomer.gstin}</div>}
+                    {qBilling && (
                       <div style={{ fontSize:'9.5px', marginTop:'4px', lineHeight:1.6, color:'#444' }}>
-                        {billing.line1}{billing.line2?`, ${billing.line2}`:''}<br />{billing.city}, {billing.state}{billing.pincode?` – ${billing.pincode}`:''}
+                        {qBilling.line1}{qBilling.line2?`, ${qBilling.line2}`:''}<br />{qBilling.city}, {qBilling.state}{qBilling.pincode?` – ${qBilling.pincode}`:''}
                       </div>
                     )}
-                    {customer?.email && <div style={{ fontSize:'9px', marginTop:'3px' }}>✉ {customer.email}</div>}
+                    {qCustomer?.email && <div style={{ fontSize:'9px', marginTop:'3px' }}>✉ {qCustomer.email}</div>}
                   </div>
                   <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px' }}>
                     <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'5px', color:'#666' }}>Quote Details</div>
@@ -576,7 +563,7 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                       <div><strong>Quote No:</strong> {q.quote_no}</div>
                       <div><strong>Date:</strong> {fmtDate(q.quote_date)}</div>
                       {q.valid_until && <div><strong>Valid Until:</strong> {fmtDate(q.valid_until)}</div>}
-                      <div><strong>Place of Supply:</strong> {isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '—')}</div>
+                      <div><strong>Place of Supply:</strong> {isIntra ? 'Tamil Nadu (33)' : (qCustomer?.state ?? '—')}</div>
                       <div><strong>GST Type:</strong> {isIntra ? 'CGST + SGST' : 'IGST'}</div>
                     </div>
                   </div>
@@ -684,10 +671,8 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                   </div>
                   <div style={{ textAlign:'right' as const }}>
                     <div>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
-                    {sigBase64 && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={sigBase64} alt="" style={{ height:'44px', width:'auto', marginTop:'4px', marginLeft:'auto', display:'block', mixBlendMode:'multiply' }} />
-                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={sigSrc} alt="" style={{ height:'44px', width:'auto', marginTop:'4px', marginLeft:'auto', display:'block', mixBlendMode:'multiply' }} />
                     <div style={{ fontWeight:700, color:'#333', marginTop:'2px' }}>Authorised Signatory</div>
                   </div>
                 </div>
@@ -698,6 +683,6 @@ export default async function CustomerStatementPage({ params }: { params: Promis
 
         </div>
       </div>
-    </div>
+    </PDFViewer>
   );
 }

@@ -27,10 +27,23 @@ export default function PDFViewer({ contentId, filename, toolbar, children }: Pr
         // Capture at 2× as JPEG (quality 0.92) — sharp text, ~1–2 MB output
         const jpeg = await toJpeg(el, { pixelRatio: 2, quality: 0.92, backgroundColor: '#ffffff' });
 
-        // A4 in mm
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        // Load image to get natural dimensions
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const i = new Image();
+          i.onload = () => resolve(i);
+          i.onerror = reject;
+          i.src = jpeg;
+        });
+
+        // A4 in mm — slice tall captures across multiple pages
         const W = 210, H = 297;
-        pdf.addImage(jpeg, 'JPEG', 0, 0, W, H);
+        const totalHeightMm = W * (img.height / img.width);
+        const totalPages = Math.ceil(totalHeightMm / H);
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        for (let i = 0; i < totalPages; i++) {
+          if (i > 0) pdf.addPage();
+          pdf.addImage(jpeg, 'JPEG', 0, -(H * i), W, totalHeightMm);
+        }
 
         const blob = pdf.output('blob');
         objectUrl = URL.createObjectURL(blob);

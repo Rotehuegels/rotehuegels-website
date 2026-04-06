@@ -1,8 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import PDFViewer from '@/components/PDFViewer';
-import fs from 'fs';
-import path from 'path';
+import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,10 +26,8 @@ const fmtDate = (d: string) =>
 export default async function QuotePreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const sigPath = path.join(process.cwd(), 'private', 'signature.jpg');
-  const sigSrc = fs.existsSync(sigPath)
-    ? `data:image/jpeg;base64,${fs.readFileSync(sigPath).toString('base64')}`
-    : '/api/private/signature';
+  const logoSrc = getLogoBase64();
+  const sigSrc  = getSignatureBase64();
 
   const { data: quote, error } = await supabaseAdmin
     .from('quotes')
@@ -81,7 +78,8 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '6px', marginBottom: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height: '44px', width: 'auto', objectFit: 'contain', marginTop: '2px' }} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={logoSrc} alt="Rotehügels" style={{ height: '44px', width: 'auto', objectFit: 'contain', marginTop: '2px' }} />
               <div>
                 <div style={{ fontSize: '13px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>
                   Rotehuegel Research Business

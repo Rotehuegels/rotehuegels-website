@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
+import PDFViewer from '@/components/PDFViewer';
+import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,6 +59,9 @@ export default async function ProformaPage({ params }: { params: Promise<{ id: s
 
   if (error || !pi) notFound();
 
+  const logoSrc = getLogoBase64();
+  const sigSrc  = getSignatureBase64();
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const customer = pi.customers as any;
   const billing  = customer?.billing_address as Record<string, string> | null;
@@ -73,19 +78,16 @@ export default async function ProformaPage({ params }: { params: Promise<{ id: s
   const th: React.CSSProperties   = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
 
   return (
-    <>
-      <style>{`
-        @media print {
-          @page { size: A4 portrait; margin: 0; }
-          body * { visibility: hidden !important; }
-          #rh-pi, #rh-pi * { visibility: visible !important; }
-          #rh-pi { position: fixed !important; inset: 0 !important; z-index: 99999 !important; background: white !important; }
-          .no-print { display: none !important; }
-        }
-      `}</style>
-
-      <div className="no-print sticky top-0 z-10 flex items-center justify-between px-6 py-3 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800">
+    <PDFViewer
+      contentId="rh-pi"
+      filename={`${pi.pi_no}.pdf`}
+      toolbar={
         <div className="flex items-center gap-3">
+          <a href={`/dashboard/accounts/quotes/${id}`}
+            className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
+            ← Back to Quote
+          </a>
+          <span className="text-zinc-700">|</span>
           <span className="text-xs text-zinc-500">Proforma Invoice</span>
           <span className="font-mono text-sm text-amber-400 font-bold">{pi.pi_no}</span>
           <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
@@ -94,13 +96,9 @@ export default async function ProformaPage({ params }: { params: Promise<{ id: s
             'bg-zinc-800 text-zinc-400'
           }`}>{pi.status}</span>
         </div>
-        <button onClick={() => window.print()}
-          className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
-          Print / Save PDF
-        </button>
-      </div>
-
-      <div className="bg-zinc-950 min-h-screen py-10 print:py-0 print:bg-white flex justify-center">
+      }
+    >
+      <div>
         <div id="rh-pi" className="bg-white text-zinc-900"
           style={{ width: '210mm', minHeight: '297mm', padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}>
 
@@ -108,7 +106,7 @@ export default async function ProformaPage({ params }: { params: Promise<{ id: s
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '10px', marginBottom: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px' }} />
+              <img src={logoSrc} alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px' }} />
               <div>
                 <div style={{ fontSize: '15px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>Rotehuegel Research Business</div>
                 <div style={{ fontSize: '15px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>Consultancy Private Limited</div>
@@ -280,13 +278,15 @@ export default async function ProformaPage({ params }: { params: Promise<{ id: s
               <div>Subject to Chennai jurisdiction.</div>
             </div>
             <div style={{ textAlign: 'right' as const }}>
-              <div style={{ marginBottom: '30px' }}>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
-              <div style={{ fontWeight: 700, color: '#333' }}>Authorised Signatory</div>
+              <div>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={sigSrc} alt="Signature" style={{ height: '44px', width: 'auto', marginTop: '4px', marginLeft: 'auto' }} />
+              <div style={{ fontWeight: 700, color: '#333', marginTop: '2px' }}>Authorised Signatory</div>
             </div>
           </div>
 
         </div>
       </div>
-    </>
+    </PDFViewer>
   );
 }

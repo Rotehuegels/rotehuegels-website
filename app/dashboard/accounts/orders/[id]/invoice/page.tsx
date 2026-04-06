@@ -1,8 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
-import InvoiceActions from './InvoiceActions';
-import fs from 'fs';
-import path from 'path';
+import PDFViewer from '@/components/PDFViewer';
+import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
 import QRCode from 'qrcode';
 
 // ── Company constants ───────────────────────────────────────────────────────
@@ -71,11 +70,8 @@ function amountInWords(amount: number): string {
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  // Load signature server-side — never exposed as a public URL
-  const sigPath = path.join(process.cwd(), 'private', 'signature.jpg');
-  const sigBase64 = fs.existsSync(sigPath)
-    ? `data:image/jpeg;base64,${fs.readFileSync(sigPath).toString('base64')}`
-    : null;
+  const logoSrc   = getLogoBase64();
+  const sigBase64 = getSignatureBase64();
 
   const [orderRes, stagesRes] = await Promise.all([
     supabaseAdmin.from('orders').select('*').eq('id', id).single(),
@@ -125,34 +121,22 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const upiQr = await QRCode.toDataURL(upiString, { width: 90, margin: 1, color: { dark: '#111111', light: '#ffffff' } });
 
   return (
-    <>
-      {/* Print isolation CSS */}
-      <style>{`
-        @media print {
-          @page { size: A4 portrait; margin: 0; }
-          body * { visibility: hidden !important; }
-          #rh-invoice, #rh-invoice * { visibility: visible !important; }
-          #rh-invoice {
-            position: fixed !important;
-            inset: 0 !important;
-            z-index: 99999 !important;
-            background: white !important;
-            overflow: visible !important;
-          }
-        }
-      `}</style>
-
-      {/* Screen top bar */}
-      <div className="print:hidden sticky top-0 z-10 flex items-center justify-between px-6 py-3 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800">
+    <PDFViewer
+      contentId="rh-invoice"
+      filename={`${invoiceNo.replace(/\//g, '-')}.pdf`}
+      toolbar={
         <div className="flex items-center gap-3">
+          <a href={`/dashboard/accounts/orders/${id}`}
+            className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
+            ← Back to Order
+          </a>
+          <span className="text-zinc-700">|</span>
           <span className="text-xs text-zinc-500">Invoice</span>
           <span className="font-mono text-sm text-amber-400 font-bold">{invoiceNo}</span>
         </div>
-        <InvoiceActions orderId={id} />
-      </div>
-
-      {/* Print-safe wrapper */}
-      <div className="bg-zinc-950 min-h-screen py-10 print:py-0 print:bg-white flex justify-center">
+      }
+    >
+      <div>
         <div
           id="rh-invoice"
           className="bg-white text-zinc-900"
@@ -163,7 +147,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '10px', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px', flexShrink: 0 }} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={logoSrc} alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px', flexShrink: 0 }} />
               <div>
               <div style={{ fontSize: '15px', fontWeight: 900, lineHeight: 1.2, color: '#111', textTransform: 'uppercase' }}>
                 Rotehuegel Research Business
@@ -404,7 +389,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <div style={{ fontSize: '9px', fontWeight: 700, color: '#444', lineHeight: 1.5, textTransform: 'uppercase' }}>
                   For Rotehuegel Research Business<br />Consultancy Private Limited
                 </div>
-                {sigBase64 && (
+                {true && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={sigBase64} alt="" style={{ display: 'block', height: '52px', width: 'auto', objectFit: 'contain', marginLeft: 'auto', marginTop: '8px', mixBlendMode: 'multiply' }} />
                 )}
@@ -428,6 +413,6 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
         </div>
       </div>
-    </>
+    </PDFViewer>
   );
 }

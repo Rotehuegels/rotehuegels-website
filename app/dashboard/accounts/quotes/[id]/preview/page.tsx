@@ -55,10 +55,7 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
         @media print {
           @page { size: A4 portrait; margin: 0; }
 
-          /* Nuclear: hide every direct body child except <main> */
-          body > *:not(main) { display: none !important; }
-
-          /* Strip all dashboard wrapper backgrounds / padding */
+          /* Strip all wrapper backgrounds / padding */
           html, body, main,
           main > *, main > * > *, main > * > * > *, main > * > * > * > * {
             background: transparent !important;
@@ -67,9 +64,6 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
             padding: 0 !important;
             margin: 0 !important;
           }
-
-          /* Hide sidebar, MobileNav, toolbar */
-          aside, .md\\:hidden, .no-print { display: none !important; }
 
           /* A4 wrapper */
           .quote-print-wrapper { display: flex !important; justify-content: center !important; background: white !important; }

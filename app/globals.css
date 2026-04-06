@@ -35,3 +35,15 @@
   .btn-ghost { @apply btn border border-white/20 hover:bg-white/10; }
   .card { @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 shadow; }
 }
+
+/* ── Print: hide site chrome and dashboard shell on all preview pages ── */
+@media print {
+  /* Kill site header, ticker, footer, aura, any portals */
+  body > *:not(main) { display: none !important; }
+
+  /* Kill dashboard sidebar (md:flex overrides hidden at A4 width ~793px) */
+  aside { display: none !important; }
+
+  /* Kill toolbar bars on preview pages */
+  .no-print, .po-no-print { display: none !important; }
+}

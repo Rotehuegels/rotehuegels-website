@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import PDFViewer from '@/components/PDFViewer';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +45,11 @@ function numToWords(n: number): string {
 
 export default async function POPreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  const sigPath = path.join(process.cwd(), 'private', 'signature.jpg');
+  const sigSrc = fs.existsSync(sigPath)
+    ? `data:image/jpeg;base64,${fs.readFileSync(sigPath).toString('base64')}`
+    : '/api/private/signature';
 
   const [poRes, itemsRes, pmtsRes] = await Promise.all([
     supabaseAdmin
@@ -287,7 +294,8 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
             <div style={{ textAlign: 'right' as const }}>
               <div style={{ marginBottom: '4px', color: '#666' }}>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/api/private/signature" alt="Signature" style={{ height: '44px', width: 'auto', marginLeft: 'auto' }} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={sigSrc} alt="Signature" style={{ height: '44px', width: 'auto', marginLeft: 'auto' }} />
               <div style={{ fontWeight: 700, color: '#333', marginTop: '2px' }}>Authorised Signatory</div>
             </div>
           </div>

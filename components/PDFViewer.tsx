@@ -25,7 +25,7 @@ export default function PDFViewer({ contentId, filename, toolbar, children }: Pr
         if (!el) throw new Error('content element not found');
 
         // Capture at 2× as JPEG (quality 0.92) — sharp text, ~1–2 MB output
-        const jpeg = await toJpeg(el, { pixelRatio: 2, quality: 0.92, backgroundColor: '#ffffff' });
+        const jpeg = await toJpeg(el, { pixelRatio: 2, quality: 0.97, backgroundColor: '#ffffff' });
 
         // Load image to get natural dimensions
         const img = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -38,9 +38,12 @@ export default function PDFViewer({ contentId, filename, toolbar, children }: Pr
         // A4 in mm — slice tall captures across multiple pages
         const W = 210, H = 297;
         const totalHeightMm = W * (img.height / img.width);
+        // Skip a page if it would contain less than 4mm of content (avoids blank trailing pages)
         const totalPages = Math.ceil(totalHeightMm / H);
         const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         for (let i = 0; i < totalPages; i++) {
+          const remainingMm = totalHeightMm - i * H;
+          if (remainingMm < 4) break;
           if (i > 0) pdf.addPage();
           pdf.addImage(jpeg, 'JPEG', 0, -(H * i), W, totalHeightMm);
         }

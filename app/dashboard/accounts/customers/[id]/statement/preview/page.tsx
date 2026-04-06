@@ -132,7 +132,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
       }
     >
       <div>
-        <div id="rh-statement-doc" style={{ width: '210mm', fontFamily: 'Arial, sans-serif', background: 'white' }}>
+        <div id="rh-statement-doc" style={{ width: '210mm', fontFamily: 'Arial, sans-serif', background: 'white', color: '#111' }}>
 
           {/* ══════════════════════ PAGE 1 — SOA ══════════════════════ */}
           <div style={docStyle}>
@@ -175,7 +175,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                 {customer.email && <div style={{ fontSize:'9px', marginTop:'2px' }}>✉ {customer.email}</div>}
               </div>
               <div style={{ textAlign:'right' as const, fontSize:'10px', lineHeight:1.8 }}>
-                <div style={{ fontSize:'9px', color:'#888', marginBottom:'4px' }}>Outstanding Summary</div>
+                <div style={{ fontSize:'9px', color:'#555', marginBottom:'4px' }}>Outstanding Summary</div>
                 <div><strong>Total Billed:</strong> <span style={{ fontFamily:'monospace' }}>{fmt(totalValue)}</span></div>
                 <div><strong>Total Received:</strong> <span style={{ fontFamily:'monospace', color:'#16a34a' }}>{fmt(totalReceived)}</span></div>
                 <div style={{ fontSize:'12px', fontWeight:900, color:'#c00', marginTop:'4px', borderTop:'1px solid #ddd', paddingTop:'4px' }}>
@@ -202,7 +202,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                     <td style={{ ...cell, fontFamily:'monospace', fontWeight:700 }}>{o.order_no}</td>
                     <td style={cell}>
                       <div style={{ fontWeight:600 }}>{o.description}</div>
-                      <div style={{ fontSize:'9px', color:'#888', marginTop:'2px', textTransform:'capitalize' }}>{o.order_type}</div>
+                      <div style={{ fontSize:'9px', color:'#555', marginTop:'2px', textTransform:'capitalize' }}>{o.order_type}</div>
                     </td>
                     <td style={{ ...cell, textAlign:'center' as const }}>{fmtDate(o.invoice_date ?? o.order_date)}</td>
                     <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace' }}>{fmt(o.total_value_incl_gst)}</td>
@@ -233,11 +233,11 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {((q.items as any[]) ?? []).map((it: { name: string }) => it.name).join(', ')}
                           </div>
-                          <div style={{ fontSize:'9px', color:'#888', marginTop:'2px' }}>Quotation · Valid until {fmtDate(q.valid_until)}</div>
+                          <div style={{ fontSize:'9px', color:'#555', marginTop:'2px' }}>Quotation · Valid until {fmtDate(q.valid_until)}</div>
                         </td>
                         <td style={{ ...cell, textAlign:'center' as const }}>{fmtDate(q.quote_date)}</td>
                         <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', color:'#92400e' }}>{fmt(q.total_amount)}</td>
-                        <td style={{ ...cell, textAlign:'center' as const, fontSize:'9px', color:'#aaa' }}>—</td>
+                        <td style={{ ...cell, textAlign:'center' as const, fontSize:'9px', color:'#777' }}>—</td>
                         <td style={{ ...cell, textAlign:'center' as const, fontSize:'9px', color:'#92400e', fontWeight:700 }}>QUOTED</td>
                       </tr>
                     ))}
@@ -265,13 +265,13 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                 <div style={{ textAlign:'center' as const, flexShrink:0 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={upiQr} alt="UPI QR" style={{ width:'80px', height:'80px', display:'block' }} />
-                  <div style={{ fontSize:'8px', color:'#888', marginTop:'2px' }}>Scan to Pay (UPI)</div>
+                  <div style={{ fontSize:'8px', color:'#555', marginTop:'2px' }}>Scan to Pay (UPI)</div>
                 </div>
               </div>
             </div>
 
             {/* SOA footer */}
-            <div style={{ borderTop:'1px solid #ddd', paddingTop:'10px', display:'flex', justifyContent:'space-between', fontSize:'9px', color:'#888' }}>
+            <div style={{ borderTop:'1px solid #ddd', paddingTop:'10px', display:'flex', justifyContent:'space-between', fontSize:'9px', color:'#555' }}>
               <div>
                 <div>This is a computer-generated statement of account.</div>
                 <div>For discrepancies, contact {CO.email}</div>
@@ -336,7 +336,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                 {/* Bill To + Invoice details */}
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
                   <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px' }}>
-                    <div style={{ fontSize:'8px', fontWeight:700, color:'#888', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'5px' }}>Bill To</div>
+                    <div style={{ fontSize:'8px', fontWeight:700, color:'#555', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'5px' }}>Bill To</div>
                     <div style={{ fontSize:'12px', fontWeight:800, color:'#111', marginBottom:'2px' }}>{o.client_name}</div>
                     {o.client_address && <div style={{ fontSize:'8.5px', color:'#555', lineHeight:1.5, marginBottom:'3px' }}>{o.client_address}</div>}
                     {o.client_gstin && <div style={{ fontSize:'9px', color:'#555', fontFamily:'monospace' }}>GSTIN: {o.client_gstin}</div>}
@@ -352,7 +352,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                           ['Supply Type', isIntra ? 'Intra-State' : 'Inter-State'],
                         ].map(([label, value]) => (
                           <tr key={String(label)}>
-                            <td style={{ color:'#888', paddingRight:'8px', paddingBottom:'3px', whiteSpace:'nowrap' as const, fontWeight:600 }}>{label}</td>
+                            <td style={{ color:'#555', paddingRight:'8px', paddingBottom:'3px', whiteSpace:'nowrap' as const, fontWeight:600 }}>{label}</td>
                             <td style={{ color:'#111', paddingBottom:'3px' }}>{value}</td>
                           </tr>
                         ))}
@@ -443,26 +443,26 @@ export default async function StatementPreviewPage({ params }: { params: Promise
 
                 {/* Amount in words */}
                 <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px', marginBottom:'12px' }}>
-                  <div style={{ fontSize:'8px', fontWeight:700, color:'#888', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'3px' }}>Amount in Words</div>
+                  <div style={{ fontSize:'8px', fontWeight:700, color:'#555', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'3px' }}>Amount in Words</div>
                   <div style={{ fontSize:'11px', fontWeight:800, color:'#111' }}>{amountInWords(o.total_value_incl_gst)}</div>
                 </div>
 
                 {/* Bank + Signature */}
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
                   <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px' }}>
-                    <div style={{ fontSize:'8px', fontWeight:700, color:'#888', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'6px' }}>Bank Details</div>
+                    <div style={{ fontSize:'8px', fontWeight:700, color:'#555', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'6px' }}>Bank Details</div>
                     <div style={{ display:'flex', gap:'10px', alignItems:'flex-start' }}>
                       <table style={{ fontSize:'9px', borderCollapse:'collapse', flex:1 }}>
                         <tbody>
                           {[['A/c No.', CO.acc],['IFSC', CO.ifsc],['Bank', CO.bank],['UPI', 'rotehuegels@sbi']].map(([l,v]) => (
-                            <tr key={l}><td style={{ color:'#888', paddingRight:'8px', paddingBottom:'3px', whiteSpace:'nowrap' as const, fontWeight:600 }}>{l}</td><td style={{ paddingBottom:'3px', fontFamily: l==='A/c No.'||l==='IFSC'||l==='UPI'?'monospace':'inherit' }}>{v}</td></tr>
+                            <tr key={l}><td style={{ color:'#555', paddingRight:'8px', paddingBottom:'3px', whiteSpace:'nowrap' as const, fontWeight:600 }}>{l}</td><td style={{ paddingBottom:'3px', fontFamily: l==='A/c No.'||l==='IFSC'||l==='UPI'?'monospace':'inherit' }}>{v}</td></tr>
                           ))}
                         </tbody>
                       </table>
                       <div style={{ textAlign:'center' as const, flexShrink:0 }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={upiQr} alt="UPI QR" style={{ width:'72px', height:'72px', display:'block' }} />
-                        <div style={{ fontSize:'7px', color:'#888', marginTop:'2px' }}>Scan to Pay</div>
+                        <div style={{ fontSize:'7px', color:'#555', marginTop:'2px' }}>Scan to Pay</div>
                       </div>
                     </div>
                   </div>
@@ -484,7 +484,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                 </div>
 
                 {/* Invoice footer */}
-                <div style={{ borderTop:'1px solid #e0e0e0', paddingTop:'6px', textAlign:'center' as const, fontSize:'8px', color:'#aaa', lineHeight:1.6 }}>
+                <div style={{ borderTop:'1px solid #e0e0e0', paddingTop:'6px', textAlign:'center' as const, fontSize:'8px', color:'#777', lineHeight:1.6 }}>
                   Computer-generated invoice. | {CO.web} | {CO.email} | {CO.phone}
                 </div>
               </div>
@@ -600,7 +600,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                           <td style={{ ...qCell, textAlign:'center' as const }}>{i+1}</td>
                           <td style={qCell}>
                             <div style={{ fontWeight:600 }}>{item.name}</div>
-                            {item.sku_id && <div style={{ fontSize:'9px', color:'#888' }}>{item.sku_id}</div>}
+                            {item.sku_id && <div style={{ fontSize:'9px', color:'#555' }}>{item.sku_id}</div>}
                           </td>
                           <td style={{ ...qCell, textAlign:'center' as const, fontFamily:'monospace' }}>{item.hsn_code || item.sac_code || '—'}</td>
                           <td style={{ ...qCell, textAlign:'right' as const }}>{item.quantity}</td>
@@ -610,11 +610,11 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                           <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(item.taxable_amount)}</td>
                           {isIntra ? (
                             <>
-                              <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(halfGst)}<br /><span style={{ fontSize:'8px', color:'#888' }}>{item.gst_rate/2}%</span></td>
-                              <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(halfGst)}<br /><span style={{ fontSize:'8px', color:'#888' }}>{item.gst_rate/2}%</span></td>
+                              <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(halfGst)}<br /><span style={{ fontSize:'8px', color:'#555' }}>{item.gst_rate/2}%</span></td>
+                              <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(halfGst)}<br /><span style={{ fontSize:'8px', color:'#555' }}>{item.gst_rate/2}%</span></td>
                             </>
                           ) : (
-                            <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(item.gst_amount)}<br /><span style={{ fontSize:'8px', color:'#888' }}>{item.gst_rate}%</span></td>
+                            <td style={{ ...qCell, textAlign:'right' as const }}>{fmt(item.gst_amount)}<br /><span style={{ fontSize:'8px', color:'#555' }}>{item.gst_rate}%</span></td>
                           )}
                           <td style={{ ...qCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(item.total)}</td>
                         </tr>
@@ -663,7 +663,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                 )}
 
                 {/* Quote footer */}
-                <div style={{ borderTop:'1px solid #ddd', paddingTop:'10px', display:'flex', justifyContent:'space-between', fontSize:'9px', color:'#888' }}>
+                <div style={{ borderTop:'1px solid #ddd', paddingTop:'10px', display:'flex', justifyContent:'space-between', fontSize:'9px', color:'#555' }}>
                   <div>
                     <div>This is a quotation and not a tax invoice.</div>
                     <div>Prices are subject to change without notice after validity date.</div>

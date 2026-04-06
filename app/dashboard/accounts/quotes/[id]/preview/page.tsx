@@ -45,7 +45,7 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
   const isIntra = customer?.state_code === '33' || customer?.state?.toLowerCase().includes('tamil');
 
   const cell: React.CSSProperties = {
-    border: '1px solid #ddd', padding: '6px 8px', fontSize: '10px',
+    border: '1px solid #ddd', padding: '4px 5px', fontSize: '9px',
   };
   const th: React.CSSProperties = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
 
@@ -86,32 +86,33 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
 
       <div className="quote-print-wrapper bg-zinc-950 min-h-screen py-10 flex justify-center">
         <div id="rh-quote" className="bg-white text-zinc-900"
-          style={{ width: '210mm', minHeight: '297mm', padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}>
+          style={{ width: '210mm', minHeight: '297mm', padding: '6mm 10mm', fontFamily: 'Arial, sans-serif', fontSize: '9.5px' }}>
 
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '10px', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '6px', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px' }} />
+              <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height: '44px', width: 'auto', objectFit: 'contain', marginTop: '2px' }} />
               <div>
-                <div style={{ fontSize: '15px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '13px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>
                   Rotehuegel Research Business
                 </div>
-                <div style={{ fontSize: '15px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '13px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>
                   Consultancy Private Limited
                 </div>
-                <div style={{ marginTop: '5px', fontSize: '9px', color: '#666', lineHeight: 1.6 }}>
+                <div style={{ marginTop: '3px', fontSize: '8.5px', color: '#666', lineHeight: 1.5 }}>
                   <div>{CO.addr1}</div>
                   <div>{CO.addr2}</div>
-                  <div style={{ marginTop: '2px' }}>✉ {CO.email} | 📞 {CO.phone} | 🌐 {CO.web}</div>
+                  <div>✉ {CO.email} | 📞 {CO.phone} | 🌐 {CO.web}</div>
                 </div>
               </div>
             </div>
             <div style={{ textAlign: 'right' as const }}>
-              <div style={{ fontSize: '20px', fontWeight: 900, textTransform: 'uppercase', color: '#111', letterSpacing: '1px' }}>
+              <div style={{ fontSize: '18px', fontWeight: 900, textTransform: 'uppercase', color: '#111', letterSpacing: '1px' }}>
                 QUOTATION
               </div>
-              <div style={{ marginTop: '8px', fontSize: '10px', lineHeight: 1.7 }}>
+              <div style={{ fontSize: '8.5px', color: '#888', marginBottom: '2px' }}>Not a tax invoice</div>
+              <div style={{ marginTop: '4px', fontSize: '9px', lineHeight: 1.6 }}>
                 <div><strong>Quote No:</strong> {quote.quote_no}</div>
                 <div><strong>Date:</strong> {fmtDate(quote.quote_date)}</div>
                 {quote.valid_until && <div><strong>Valid Until:</strong> {fmtDate(quote.valid_until)}</div>}
@@ -120,36 +121,35 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
           </div>
 
           {/* Company details strip */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', fontSize: '9.5px' }}>
-            <div style={{ background: '#f5f5f5', border: '1px solid #e0e0e0', borderRadius: '4px', padding: '5px 10px', lineHeight: 1.7 }}>
-              <div><strong>GSTIN:</strong> {CO.gstin}</div>
-              <div><strong>PAN:</strong> {CO.pan}</div>
-              <div><strong>CIN:</strong> {CO.cin}</div>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', fontSize: '9px' }}>
+            <div style={{ background: '#f5f5f5', border: '1px solid #e0e0e0', borderRadius: '4px', padding: '3px 8px', lineHeight: 1.6 }}>
+              <strong>GSTIN:</strong> {CO.gstin} &nbsp;|&nbsp; <strong>PAN:</strong> {CO.pan} &nbsp;|&nbsp; <strong>CIN:</strong> {CO.cin}
             </div>
           </div>
 
           {/* Bill To */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-            <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '8px 10px' }}>
-              <div style={{ fontWeight: 700, fontSize: '9px', textTransform: 'uppercase', marginBottom: '5px', color: '#666' }}>
-                Bill To
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '5px 8px' }}>
+              <div style={{ fontWeight: 700, fontSize: '8px', textTransform: 'uppercase', marginBottom: '3px', color: '#666' }}>
+                Quoted To
               </div>
-              <div style={{ fontWeight: 700, fontSize: '11px' }}>{customer?.name}</div>
-              {customer?.gstin && <div style={{ fontSize: '9.5px', marginTop: '2px' }}>GSTIN: {customer.gstin}</div>}
+              <div style={{ fontWeight: 700, fontSize: '10px' }}>{customer?.name}</div>
+              {customer?.gstin && <div style={{ fontSize: '9px', marginTop: '1px' }}>GSTIN: {customer.gstin}</div>}
+              {customer?.pan && <div style={{ fontSize: '9px' }}>PAN: {customer.pan}</div>}
               {billing && (
-                <div style={{ fontSize: '9.5px', marginTop: '4px', lineHeight: 1.6, color: '#444' }}>
+                <div style={{ fontSize: '9px', marginTop: '3px', lineHeight: 1.5, color: '#444' }}>
                   {billing.line1}{billing.line2 ? `, ${billing.line2}` : ''}<br />
                   {billing.city}, {billing.state}{billing.pincode ? ` – ${billing.pincode}` : ''}
                 </div>
               )}
-              {customer?.phone && <div style={{ fontSize: '9px', marginTop: '3px' }}>📞 {customer.phone}</div>}
-              {customer?.email && <div style={{ fontSize: '9px' }}>✉ {customer.email}</div>}
+              {customer?.phone && <div style={{ fontSize: '8.5px', marginTop: '2px' }}>📞 {customer.phone}</div>}
+              {customer?.email && <div style={{ fontSize: '8.5px' }}>✉ {customer.email}</div>}
             </div>
-            <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '8px 10px' }}>
-              <div style={{ fontWeight: 700, fontSize: '9px', textTransform: 'uppercase', marginBottom: '5px', color: '#666' }}>
+            <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '5px 8px' }}>
+              <div style={{ fontWeight: 700, fontSize: '8px', textTransform: 'uppercase', marginBottom: '3px', color: '#666' }}>
                 Quote Details
               </div>
-              <div style={{ fontSize: '10px', lineHeight: 1.8 }}>
+              <div style={{ fontSize: '9px', lineHeight: 1.6 }}>
                 <div><strong>Quote No:</strong> {quote.quote_no}</div>
                 <div><strong>Date:</strong> {fmtDate(quote.quote_date)}</div>
                 {quote.valid_until && <div><strong>Valid Until:</strong> {fmtDate(quote.valid_until)}</div>}
@@ -160,7 +160,7 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
           </div>
 
           {/* Items table */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '12px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '8px' }}>
             <thead>
               <tr>
                 <th style={{ ...th, width: '4%' }}>#</th>
@@ -201,7 +201,7 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
           </table>
 
           {/* Totals */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
             <table style={{ borderCollapse: 'collapse', minWidth: '220px' }}>
               <tbody>
                 <tr>
@@ -236,8 +236,8 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
                   </tr>
                 )}
                 <tr style={{ background: '#f0f0f0' }}>
-                  <td style={{ ...cell, textAlign: 'right' as const, fontWeight: 900, fontSize: '12px' }}>GRAND TOTAL</td>
-                  <td style={{ ...cell, textAlign: 'right' as const, fontWeight: 900, fontSize: '12px', fontFamily: 'monospace' }}>{fmt(quote.total_amount)}</td>
+                  <td style={{ ...cell, textAlign: 'right' as const, fontWeight: 900, fontSize: '11px' }}>GRAND TOTAL</td>
+                  <td style={{ ...cell, textAlign: 'right' as const, fontWeight: 900, fontSize: '11px', fontFamily: 'monospace' }}>{fmt(quote.total_amount)}</td>
                 </tr>
               </tbody>
             </table>
@@ -245,32 +245,33 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
 
           {/* Notes & Terms */}
           {(quote.notes || quote.terms) && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
               {quote.notes && (
-                <div style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '8px 10px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '9px', textTransform: 'uppercase', marginBottom: '4px', color: '#666' }}>Notes</div>
-                  <div style={{ fontSize: '10px', lineHeight: 1.6 }}>{quote.notes}</div>
+                <div style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '5px 8px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '8px', textTransform: 'uppercase', marginBottom: '3px', color: '#666' }}>Notes</div>
+                  <div style={{ fontSize: '8.5px', lineHeight: 1.5 }}>{quote.notes}</div>
                 </div>
               )}
               {quote.terms && (
-                <div style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '8px 10px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '9px', textTransform: 'uppercase', marginBottom: '4px', color: '#666' }}>Terms &amp; Conditions</div>
-                  <div style={{ fontSize: '10px', lineHeight: 1.6 }}>{quote.terms}</div>
+                <div style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '5px 8px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '8px', textTransform: 'uppercase', marginBottom: '3px', color: '#666' }}>Terms &amp; Conditions</div>
+                  <div style={{ fontSize: '8.5px', lineHeight: 1.5 }}>{quote.terms}</div>
                 </div>
               )}
             </div>
           )}
 
           {/* Footer */}
-          <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#888' }}>
+          <div style={{ borderTop: '1px solid #ddd', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', fontSize: '8.5px', color: '#888' }}>
             <div>
-              <div>This is a quotation, not a tax invoice.</div>
+              <div>This is a quotation and not a tax invoice.</div>
+              <div>Prices are subject to change without notice after validity date.</div>
               <div>Subject to Chennai jurisdiction.</div>
             </div>
             <div style={{ textAlign: 'right' as const }}>
               <div>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/api/private/signature" alt="Signature" style={{ height: '48px', width: 'auto', marginTop: '4px', marginLeft: 'auto' }} />
+              <img src="/api/private/signature" alt="Signature" style={{ height: '40px', width: 'auto', marginTop: '3px', marginLeft: 'auto' }} />
               <div style={{ fontWeight: 700, color: '#333', marginTop: '2px' }}>Authorised Signatory</div>
             </div>
           </div>

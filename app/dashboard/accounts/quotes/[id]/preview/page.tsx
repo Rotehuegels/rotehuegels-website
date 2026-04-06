@@ -55,26 +55,26 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
         @media print {
           @page { size: A4 portrait; margin: 0; }
 
-          /* Kill site chrome */
-          header, footer, body > div { display: none !important; }
+          /* Nuclear: hide every direct body child except <main> */
+          body > *:not(main) { display: none !important; }
 
-          /* Kill dashboard sidebar + MobileNav
-             A4 width (~793px) > md breakpoint (768px), so md:flex overrides hidden on sidebar */
-          aside, .md\\:hidden { display: none !important; }
-
-          /* Strip wrapper backgrounds/padding so nothing bleeds through */
+          /* Strip all dashboard wrapper backgrounds / padding */
           html, body, main,
-          main > div, main > div > div,
-          main > div > div > div,
-          main > div > div > div > div { background: transparent !important; background-color: transparent !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; }
+          main > *, main > * > *, main > * > * > *, main > * > * > * > * {
+            background: transparent !important;
+            background-color: transparent !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
 
-          /* Hide toolbar */
-          .no-print { display: none !important; }
+          /* Hide sidebar, MobileNav, toolbar */
+          aside, .md\\:hidden, .no-print { display: none !important; }
 
-          /* A4 outer wrapper — no min-height, white */
-          .quote-print-wrapper { display: flex !important; justify-content: center !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; background: white !important; }
+          /* A4 wrapper */
+          .quote-print-wrapper { display: flex !important; justify-content: center !important; background: white !important; }
 
-          /* A4 page — static (not fixed, which repeats on every page) */
+          /* A4 page */
           #rh-quote { display: block !important; position: static !important; width: 210mm !important; min-height: 0 !important; background: white !important; }
         }
       `}</style>

@@ -81,26 +81,26 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
         @media print {
           @page { size: A4 portrait; margin: 0; }
 
-          /* 1. Kill site chrome (root layout: Header, TickerBar, Footer) */
-          header, footer, body > div { display: none !important; }
+          /* Nuclear: hide every direct body child except <main> */
+          body > *:not(main) { display: none !important; }
 
-          /* 2. Kill dashboard sidebar + MobileNav
-             A4 width (~793px) > md breakpoint (768px), so md:flex overrides hidden on sidebar */
-          aside, .md\:hidden { display: none !important; }
-
-          /* 3. Strip all wrapper backgrounds / padding so nothing bleeds through */
+          /* Strip all dashboard wrapper backgrounds / padding */
           html, body, main,
-          main > div, main > div > div,
-          main > div > div > div,
-          main > div > div > div > div { background: transparent !important; background-color: transparent !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; }
+          main > *, main > * > *, main > * > * > *, main > * > * > * > * {
+            background: transparent !important;
+            background-color: transparent !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
 
-          /* 4. Hide toolbar */
-          .po-no-print { display: none !important; }
+          /* Hide sidebar, MobileNav, toolbar */
+          aside, .md\:hidden, .po-no-print { display: none !important; }
 
-          /* 5. A4 wrapper — no min-height so it doesn't push a blank page 2 */
-          .po-print-wrapper { display: flex !important; justify-content: center !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; background: white !important; }
+          /* A4 wrapper */
+          .po-print-wrapper { display: flex !important; justify-content: center !important; background: white !important; }
 
-          /* 6. A4 page — static, no min-height (content determines height in print) */
+          /* A4 page */
           #rh-po { display: block !important; position: static !important; width: 210mm !important; min-height: 0 !important; background: white !important; }
         }
       `}</style>

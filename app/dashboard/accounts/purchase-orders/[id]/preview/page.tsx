@@ -84,8 +84,9 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
           /* 1. Kill site chrome (root layout: Header, TickerBar, Footer) */
           header, footer, body > div { display: none !important; }
 
-          /* 2. Kill dashboard MobileNav (md:hidden only applies on screen, not print) */
-          .md\:hidden { display: none !important; }
+          /* 2. Kill dashboard sidebar + MobileNav
+             A4 width (~793px) > md breakpoint (768px), so md:flex overrides hidden on sidebar */
+          aside, .md\:hidden { display: none !important; }
 
           /* 3. Strip all wrapper backgrounds / padding so nothing bleeds through */
           html, body, main,

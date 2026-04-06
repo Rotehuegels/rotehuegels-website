@@ -58,8 +58,9 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
           /* Kill site chrome */
           header, footer, body > div { display: none !important; }
 
-          /* Kill dashboard MobileNav (md:hidden only hides on screen) */
-          .md\\:hidden { display: none !important; }
+          /* Kill dashboard sidebar + MobileNav
+             A4 width (~793px) > md breakpoint (768px), so md:flex overrides hidden on sidebar */
+          aside, .md\\:hidden { display: none !important; }
 
           /* Strip wrapper backgrounds/padding so nothing bleeds through */
           html, body, main,

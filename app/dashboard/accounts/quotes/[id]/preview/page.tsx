@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
+import PDFViewer from '@/components/PDFViewer';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,41 +51,22 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
   const th: React.CSSProperties = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
 
   return (
-    <>
-      <style>{`
-        @media print {
-          @page { size: A4 portrait; margin: 0; }
-
-          /* Strip all wrapper backgrounds / padding */
-          html, body, main,
-          main > *, main > * > *, main > * > * > *, main > * > * > * > * {
-            background: transparent !important;
-            background-color: transparent !important;
-            min-height: 0 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-
-          /* A4 wrapper */
-          .quote-print-wrapper { display: flex !important; justify-content: center !important; background: white !important; }
-
-          /* A4 page */
-          #rh-quote { display: block !important; position: static !important; width: 210mm !important; min-height: 0 !important; background: white !important; }
-        }
-      `}</style>
-
-      <div className="no-print sticky top-0 z-10 flex items-center justify-between px-6 py-3 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800">
+    <PDFViewer
+      contentId="rh-quote"
+      filename={`${quote.quote_no}.pdf`}
+      toolbar={
         <div className="flex items-center gap-3">
-          <span className="text-xs text-zinc-500">Quotation Preview</span>
+          <a href={`/dashboard/accounts/quotes/${id}`}
+            className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
+            ← Back to Quote
+          </a>
+          <span className="text-zinc-700">|</span>
+          <span className="text-xs text-zinc-500">Quotation</span>
           <span className="font-mono text-sm text-amber-400 font-bold">{quote.quote_no}</span>
         </div>
-        <button onClick={() => window.print()}
-          className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
-          Print / Save PDF
-        </button>
-      </div>
-
-      <div className="quote-print-wrapper bg-zinc-950 min-h-screen py-10 flex justify-center">
+      }
+    >
+      <div>
         <div id="rh-quote" className="bg-white text-zinc-900"
           style={{ width: '210mm', minHeight: '297mm', padding: '6mm 10mm', fontFamily: 'Arial, sans-serif', fontSize: '9.5px' }}>
 
@@ -278,6 +260,6 @@ export default async function QuotePreviewPage({ params }: { params: Promise<{ i
 
         </div>
       </div>
-    </>
+    </PDFViewer>
   );
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Printer } from 'lucide-react';
+import Link from 'next/link';
+import { FileDown } from 'lucide-react';
 
 const FY_OPTIONS = [
   { value: '2025-26', label: 'FY 2025-26 (Apr 2025 – Mar 2026)' },
@@ -24,12 +25,12 @@ export default function FYSelector({ current }: { current: string }) {
         ))}
       </select>
 
-      <button
-        onClick={() => window.print()}
+      <Link
+        href={`/dashboard/accounts/pl/preview?fy=${current}`}
         className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-medium text-zinc-300 hover:border-amber-600 hover:text-amber-400 transition-colors print:hidden"
       >
-        <Printer className="h-4 w-4" /> Print / Save PDF
-      </button>
+        <FileDown className="h-4 w-4" /> Print / Save PDF
+      </Link>
     </div>
   );
 }

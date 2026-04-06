@@ -4,13 +4,14 @@ import { toJpeg } from 'html-to-image';
 import jsPDF from 'jspdf';
 
 interface Props {
-  contentId: string;        // id of the A4 div to capture
-  filename: string;         // e.g. "PO-2026-001.pdf"
-  toolbar: React.ReactNode; // the Back/Print toolbar
-  children: React.ReactNode; // the A4 content div
+  contentId?: string;        // single element to slice across pages (PO / quote / invoice)
+  pages?: string[];          // one element ID per logical page — each auto-scaled to fit A4
+  filename: string;
+  toolbar: React.ReactNode;
+  children: React.ReactNode;
 }
 
-export default function PDFViewer({ contentId, filename, toolbar, children }: Props) {
+export default function PDFViewer({ contentId, pages, filename, toolbar, children }: Props) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(true);
   const [error, setError] = useState(false);
@@ -20,32 +21,58 @@ export default function PDFViewer({ contentId, filename, toolbar, children }: Pr
     let objectUrl: string;
 
     async function generate() {
-      try {
-        const el = document.getElementById(contentId);
-        if (!el) throw new Error('content element not found');
+      const W = 210, H = 297;
+      const opts = { pixelRatio: 2, quality: 0.97, backgroundColor: '#ffffff' } as const;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-        // Capture at 2× as JPEG (quality 0.92) — sharp text, ~1–2 MB output
-        const jpeg = await toJpeg(el, { pixelRatio: 2, quality: 0.97, backgroundColor: '#ffffff' });
-
-        // Load image to get natural dimensions
-        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const loadImg = (src: string) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
           const i = new Image();
           i.onload = () => resolve(i);
           i.onerror = reject;
-          i.src = jpeg;
+          i.src = src;
         });
 
-        // A4 in mm — slice tall captures across multiple pages
-        const W = 210, H = 297;
-        const totalHeightMm = W * (img.height / img.width);
-        // Skip a page if it would contain less than 4mm of content (avoids blank trailing pages)
-        const totalPages = Math.ceil(totalHeightMm / H);
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        for (let i = 0; i < totalPages; i++) {
-          const remainingMm = totalHeightMm - i * H;
-          if (remainingMm < 4) break;
-          if (i > 0) pdf.addPage();
-          pdf.addImage(jpeg, 'JPEG', 0, -(H * i), W, totalHeightMm);
+      try {
+        if (pages && pages.length > 0) {
+          // ── Multi-page: capture each section individually, auto-scale to fit A4 ──
+          for (let p = 0; p < pages.length; p++) {
+            const el = document.getElementById(pages[p]);
+            if (!el) continue;
+
+            const jpeg = await toJpeg(el, opts);
+            const img  = await loadImg(jpeg);
+
+            if (p > 0) pdf.addPage();
+
+            const naturalH = W * (img.height / img.width);
+            if (naturalH > H) {
+              // Taller than A4 — scale down proportionally to fit height
+              const scale = H / naturalH;
+              const rW = W * scale;
+              pdf.addImage(jpeg, 'JPEG', (W - rW) / 2, 0, rW, H);
+            } else {
+              // Shorter than A4 — render at natural size, top-aligned
+              pdf.addImage(jpeg, 'JPEG', 0, 0, W, naturalH);
+            }
+          }
+        } else if (contentId) {
+          // ── Single element: slice tall content across multiple pages ──
+          const el = document.getElementById(contentId);
+          if (!el) throw new Error('content element not found');
+
+          const jpeg = await toJpeg(el, opts);
+          const img  = await loadImg(jpeg);
+
+          const totalH = W * (img.height / img.width);
+          const nPages = Math.ceil(totalH / H);
+          for (let i = 0; i < nPages; i++) {
+            if (totalH - i * H < 4) break; // skip near-empty trailing page
+            if (i > 0) pdf.addPage();
+            pdf.addImage(jpeg, 'JPEG', 0, -(H * i), W, totalH);
+          }
+        } else {
+          throw new Error('Either contentId or pages must be provided');
         }
 
         const blob = pdf.output('blob');
@@ -61,7 +88,8 @@ export default function PDFViewer({ contentId, filename, toolbar, children }: Pr
 
     generate();
     return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
-  }, [contentId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDownload = () => {
     if (!pdfUrl) return;
@@ -91,7 +119,7 @@ export default function PDFViewer({ contentId, filename, toolbar, children }: Pr
         </div>
       </div>
 
-      {/* Hidden A4 render area — used only for capture */}
+      {/* Hidden render area — used only for capture */}
       <div className="absolute -left-[9999px] top-0" ref={contentRef}>
         {children}
       </div>

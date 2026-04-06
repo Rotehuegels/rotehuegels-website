@@ -112,12 +112,18 @@ export default async function StatementPreviewPage({ params }: { params: Promise
 
   const cell: React.CSSProperties = { border: '1px solid #ddd', padding: '6px 8px', fontSize: '10px' };
   const th: React.CSSProperties   = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
-  const docStyle: React.CSSProperties = { padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px', background: 'white' };
-  const pageBreak: React.CSSProperties = { pageBreakBefore: 'always', paddingTop: '12mm' };
+  // Each section is captured individually — width must be set so html-to-image renders at A4 width
+  const docStyle: React.CSSProperties = { width: '210mm', padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px', background: 'white', color: '#111' };
+
+  const pageIds = [
+    'rh-stmt-p-soa',
+    ...invoiceRows.map(o => `rh-stmt-p-inv-${o.id}`),
+    ...(quotes ?? []).map(q => `rh-stmt-p-qt-${q.id}`),
+  ];
 
   return (
     <PDFViewer
-      contentId="rh-statement-doc"
+      pages={pageIds}
       filename={`SOA-${customer.name.replace(/\s+/g, '-')}.pdf`}
       toolbar={
         <div className="flex items-center gap-3">
@@ -132,10 +138,9 @@ export default async function StatementPreviewPage({ params }: { params: Promise
       }
     >
       <div>
-        <div id="rh-statement-doc" style={{ width: '210mm', fontFamily: 'Arial, sans-serif', background: 'white', color: '#111' }}>
 
           {/* ══════════════════════ PAGE 1 — SOA ══════════════════════ */}
-          <div style={docStyle}>
+          <div id="rh-stmt-p-soa" style={docStyle}>
 
             {/* Header */}
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'14px' }}>
@@ -143,8 +148,8 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
                 <div>
-                  <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
-                  <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
+                  <div style={{ fontSize:'11px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
+                  <div style={{ fontSize:'11px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
                   <div style={{ marginTop:'5px', fontSize:'9px', color:'#666', lineHeight:1.6 }}>
                     <div>{CO.addr1}</div><div>{CO.addr2}</div>
                     <div>✉ {CO.email} | 📞 {CO.phone}</div>
@@ -287,7 +292,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
           </div>
 
           {/* ══════════════════════ PAGES 2+ — INVOICES ══════════════════════ */}
-          {invoiceRows.map(o => {
+          {invoiceRows.map((o) => {
             const fy = getFY(o.invoice_date ?? o.order_date);
             const invoiceNo = `RH/${fy}/${o.order_no}`;
             const invoiceDate = fmtDate(o.invoice_date ?? o.order_date);
@@ -304,7 +309,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
             const invTh: React.CSSProperties = { border: '1px solid #555', padding: '5px 6px', fontSize: '9.5px', background: '#1a1a1a', color: 'white' };
 
             return (
-              <div key={o.id} style={{ ...docStyle, ...pageBreak }}>
+              <div key={o.id} id={`rh-stmt-p-inv-${o.id}`} style={docStyle}>
 
                 {/* Invoice header */}
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'12px' }}>
@@ -312,8 +317,8 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
                     <div>
-                      <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
-                      <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
+                      <div style={{ fontSize:'11px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
+                      <div style={{ fontSize:'11px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
                       <div style={{ marginTop:'5px', fontSize:'9px', color:'#666', lineHeight:1.6 }}>
                         <div>{CO.addr1}</div><div>{CO.addr2}</div>
                         <div>✉ {CO.email} | 📞 {CO.phone} | 🌐 {CO.web}</div>
@@ -508,7 +513,7 @@ export default async function StatementPreviewPage({ params }: { params: Promise
             const qTh: React.CSSProperties = { ...qCell, background:'#f5f5f5', fontWeight:700, textAlign:'center' as const };
 
             return (
-              <div key={q.id} style={{ ...docStyle, ...pageBreak }}>
+              <div key={q.id} id={`rh-stmt-p-qt-${q.id}`} style={docStyle}>
 
                 {/* Quote header */}
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'14px' }}>
@@ -516,8 +521,8 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
                     <div>
-                      <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
-                      <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
+                      <div style={{ fontSize:'11px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
+                      <div style={{ fontSize:'11px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
                       <div style={{ marginTop:'5px', fontSize:'9px', color:'#666', lineHeight:1.6 }}>
                         <div>{CO.addr1}</div><div>{CO.addr2}</div>
                         <div>✉ {CO.email} | 📞 {CO.phone} | 🌐 {CO.web}</div>
@@ -681,7 +686,6 @@ export default async function StatementPreviewPage({ params }: { params: Promise
             );
           })}
 
-        </div>
       </div>
     </PDFViewer>
   );

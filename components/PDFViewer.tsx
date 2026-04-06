@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { toPng } from 'html-to-image';
+import { toJpeg } from 'html-to-image';
 import jsPDF from 'jspdf';
 
 interface Props {
@@ -24,13 +24,13 @@ export default function PDFViewer({ contentId, filename, toolbar, children }: Pr
         const el = document.getElementById(contentId);
         if (!el) throw new Error('content element not found');
 
-        // Capture at 3× for sharp text
-        const png = await toPng(el, { pixelRatio: 3, backgroundColor: '#ffffff' });
+        // Capture at 2× as JPEG (quality 0.92) — sharp text, ~1–2 MB output
+        const jpeg = await toJpeg(el, { pixelRatio: 2, quality: 0.92, backgroundColor: '#ffffff' });
 
         // A4 in mm
         const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const W = 210, H = 297;
-        pdf.addImage(png, 'PNG', 0, 0, W, H);
+        pdf.addImage(jpeg, 'JPEG', 0, 0, W, H);
 
         const blob = pdf.output('blob');
         objectUrl = URL.createObjectURL(blob);

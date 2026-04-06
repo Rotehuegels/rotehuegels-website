@@ -98,7 +98,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
           </p>
         </div>
         <div className="flex gap-2">
-          <QuotePrintButton />
+          <QuotePrintButton quoteId={id} />
           <QuoteActions quoteId={id} currentStatus={quote.status} />
         </div>
       </div>

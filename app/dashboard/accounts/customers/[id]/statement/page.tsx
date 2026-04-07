@@ -83,7 +83,8 @@ export default async function CustomerStatementPage({ params }: { params: Promis
   const orderIds = (orders ?? []).map(o => o.id);
 
   const [{ data: allPayments }, { data: allStages }, { data: quotes }] = await Promise.all([
-    supabaseAdmin.from('order_payments').select('order_id, amount_received')
+    // Include stage_id so we can map payments to individual stages
+    supabaseAdmin.from('order_payments').select('order_id, stage_id, amount_received')
       .in('order_id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000']),
     supabaseAdmin.from('order_payment_stages').select('*')
       .in('order_id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000'])
@@ -94,9 +95,14 @@ export default async function CustomerStatementPage({ params }: { params: Promis
       .order('quote_date', { ascending: true }),
   ]);
 
-  const paymentMap: Record<string, number> = {};
+  // Build payment maps — both by order and by stage
+  const orderPaymentMap: Record<string, number> = {};
+  const stagePaymentMap: Record<string, number> = {};
   for (const p of allPayments ?? []) {
-    paymentMap[p.order_id] = (paymentMap[p.order_id] ?? 0) + (p.amount_received ?? 0);
+    orderPaymentMap[p.order_id] = (orderPaymentMap[p.order_id] ?? 0) + (p.amount_received ?? 0);
+    if (p.stage_id) {
+      stagePaymentMap[p.stage_id] = (stagePaymentMap[p.stage_id] ?? 0) + (p.amount_received ?? 0);
+    }
   }
   const stagesMap: Record<string, typeof allStages> = {};
   for (const s of allStages ?? []) {
@@ -104,15 +110,63 @@ export default async function CustomerStatementPage({ params }: { params: Promis
     stagesMap[s.order_id]!.push(s);
   }
 
-  const rows = (orders ?? []).map(o => ({
-    ...o,
-    received: paymentMap[o.id] ?? 0,
-    pending:  (o.total_value_incl_gst ?? 0) - (paymentMap[o.id] ?? 0),
-    stages:   stagesMap[o.id] ?? [],
-  }));
+  // Build SOA rows — orders with stages on different invoice dates expand into separate rows
+  type SoaRow = {
+    id: string; order_no: string; description: string; order_type: string;
+    invoice_date: string | null; order_date: string;
+    total_value_incl_gst: number; received: number; pending: number;
+    stageLabel?: string;
+  };
+
+  const soaRows: SoaRow[] = [];
+  for (const o of orders ?? []) {
+    const stages = stagesMap[o.id] ?? [];
+    const stagesWithDate = stages.filter((s: { invoice_date?: string | null }) => s.invoice_date);
+
+    // Group stages by their invoice_date
+    const dateGroups: Record<string, typeof stages> = {};
+    for (const s of stagesWithDate) {
+      const key = (s as { invoice_date: string }).invoice_date;
+      if (!dateGroups[key]) dateGroups[key] = [];
+      dateGroups[key].push(s);
+    }
+    const groupKeys = Object.keys(dateGroups);
+
+    if (groupKeys.length > 1) {
+      // Multiple invoice dates — one SOA row per date group
+      for (const dateKey of groupKeys.sort()) {
+        const group = dateGroups[dateKey];
+        const groupValue   = group.reduce((sum: number, s: { amount_due?: number; gst_on_stage?: number }) => sum + (s.amount_due ?? 0) + (s.gst_on_stage ?? 0), 0);
+        const groupReceived = group.reduce((sum: number, s: { id: string }) => sum + (stagePaymentMap[s.id] ?? 0), 0);
+        const nums = group.map((s: { stage_number: number }) => s.stage_number).sort((a: number, b: number) => a - b);
+        const stageLabel = nums.length === 1 ? `Stage ${nums[0]}` : `Stages ${nums[0]}–${nums[nums.length - 1]}`;
+        soaRows.push({
+          id: `${o.id}_${dateKey}`, order_no: o.order_no,
+          description: o.description, order_type: o.order_type,
+          invoice_date: dateKey, order_date: o.order_date,
+          total_value_incl_gst: groupValue,
+          received: groupReceived, pending: groupValue - groupReceived,
+          stageLabel,
+        });
+      }
+    } else {
+      // Single invoice date or no stage dates — use order-level totals
+      const received = orderPaymentMap[o.id] ?? 0;
+      soaRows.push({
+        ...o, received, pending: (o.total_value_incl_gst ?? 0) - received,
+      });
+    }
+  }
+
+  // Sort by invoice_date then order_no
+  soaRows.sort((a, b) => {
+    const da = a.invoice_date ?? a.order_date;
+    const db = b.invoice_date ?? b.order_date;
+    return da !== db ? da.localeCompare(db) : a.order_no.localeCompare(b.order_no);
+  });
 
   // Only show invoiceable rows (exclude zero-value complimentary)
-  const invoiceRows = rows.filter(o => (o.total_value_incl_gst ?? 0) > 0);
+  const invoiceRows = soaRows.filter(o => (o.total_value_incl_gst ?? 0) > 0);
 
   const totalValue    = invoiceRows.reduce((s, o) => s + o.total_value_incl_gst, 0);
   const totalReceived = invoiceRows.reduce((s, o) => s + o.received, 0);
@@ -208,7 +262,10 @@ export default async function CustomerStatementPage({ params }: { params: Promis
               <tbody>
                 {invoiceRows.map((o, i) => (
                   <tr key={o.id} style={{ background: i%2===1?'#fafafa':'white' }}>
-                    <td style={{ ...cell, fontFamily:'monospace', fontWeight:700 }}>{o.order_no}</td>
+                    <td style={{ ...cell, fontFamily:'monospace', fontWeight:700 }}>
+                      {o.order_no}
+                      {o.stageLabel && <div style={{ fontSize:'8px', color:'#92400e', fontWeight:400, fontFamily:'sans-serif' }}>{o.stageLabel}</div>}
+                    </td>
                     <td style={cell}>
                       <div style={{ fontWeight:600 }}>{o.description}</div>
                       <div style={{ fontSize:'9px', color:'#888', marginTop:'2px', textTransform:'capitalize' }}>{o.order_type}</div>

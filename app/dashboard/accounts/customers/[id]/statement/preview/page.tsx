@@ -48,8 +48,15 @@ function amountInWords(amount: number): string {
   return `Rupees ${r===0?'Zero':parts.join(' ')}${p>0?` and ${twoD(p)} Paise`:''} Only`;
 }
 
-export default async function StatementPreviewPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function StatementPreviewPage({
+  params, searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ fy?: string }>;
+}) {
   const { id } = await params;
+  const { fy: fyParam } = await searchParams;
+  const selectedFY = fyParam ?? 'all';
 
   const { data: customer, error: custErr } = await supabaseAdmin
     .from('customers').select('*').eq('id', id).single();
@@ -170,7 +177,17 @@ export default async function StatementPreviewPage({ params }: { params: Promise
     return da !== db ? da.localeCompare(db) : a.order_no.localeCompare(b.order_no);
   });
 
-  const invoiceRows = soaRows.filter(o => (o.total_value_incl_gst ?? 0) > 0);
+  const rowFY = (row: SoaRow) => {
+    const d = new Date(row.invoice_date ?? row.order_date);
+    return (d.getMonth() + 1) >= 4
+      ? `${d.getFullYear()}-${String(d.getFullYear()+1).slice(2)}`
+      : `${d.getFullYear()-1}-${String(d.getFullYear()).slice(2)}`;
+  };
+
+  const allInvoiceRows = soaRows.filter(o => (o.total_value_incl_gst ?? 0) > 0);
+  const invoiceRows = selectedFY === 'all'
+    ? allInvoiceRows
+    : allInvoiceRows.filter(r => rowFY(r) === selectedFY);
 
   const totalValue    = invoiceRows.reduce((s, o) => s + o.total_value_incl_gst, 0);
   const totalReceived = invoiceRows.reduce((s, o) => s + o.received, 0);

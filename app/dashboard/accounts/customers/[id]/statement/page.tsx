@@ -251,7 +251,7 @@ export default async function CustomerStatementPage({
         </div>
         <div className="flex items-center gap-3">
           <StatementFYSelector customerId={id} current={selectedFY} />
-          <StatementPrintButton customerId={id} />
+          <StatementPrintButton customerId={id} fy={selectedFY} />
         </div>
       </div>
 

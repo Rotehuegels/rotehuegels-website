@@ -206,7 +206,9 @@ export default async function StatementPreviewPage({ params }: { params: Promise
   const cell: React.CSSProperties = { border: '1px solid #ddd', padding: '6px 8px', fontSize: '10px' };
   const th: React.CSSProperties   = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
   // Width must be set so html-to-image renders at A4 width
-  const docStyle: React.CSSProperties = { width: '210mm', padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px', background: 'white', color: '#111' };
+  // minHeight: '297mm' ensures every captured page is at least A4-tall so the PDF page fills correctly.
+  // Content taller than A4 will still capture at full height and PDFViewer scales it down.
+  const docStyle: React.CSSProperties = { width: '210mm', minHeight: '297mm', padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px', background: 'white', color: '#111' };
 
   const pageIds = [
     'rh-stmt-p-soa',

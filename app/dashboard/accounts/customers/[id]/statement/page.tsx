@@ -360,7 +360,8 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                     const fyValue    = fyRows.reduce((s, r) => s + r.total_value_incl_gst, 0);
                     const fyReceived = fyRows.reduce((s, r) => s + r.received, 0);
                     const fyPending  = fyRows.reduce((s, r) => s + r.pending, 0);
-                    const fyLabel = fy === '2025-26' ? 'Up to 31 Mar 2026 — FY 2025-26' : `From 1 Apr ${fy.split('-')[0].slice(0,2)}${fy.split('-')[1]} — FY ${fy}`;
+                    const fyStartYear = fy.split('-')[0];
+                    const fyLabel = fy === '2025-26' ? 'Up to 31 Mar 2026 — FY 2025-26' : `From 1 Apr ${fyStartYear} — FY ${fy}`;
 
                     return (
                       <React.Fragment key={fy}>

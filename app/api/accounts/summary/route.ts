@@ -17,7 +17,10 @@ export async function GET() {
   const [ordersRes, paymentsRes, expensesRes, stockRes] = await Promise.all([
     supabaseAdmin
       .from('orders')
-      .select('id, order_type, total_value_incl_gst, base_value, status, tds_deducted_total'),
+      .select('id, order_type, total_value_incl_gst, base_value, status, tds_deducted_total')
+      .neq('status', 'cancelled')
+      .neq('order_category', 'reimbursement')
+      .neq('order_category', 'complimentary'),
     supabaseAdmin
       .from('order_payments')
       .select('amount_received, tds_deducted, net_received'),

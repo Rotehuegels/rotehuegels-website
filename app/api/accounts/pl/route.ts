@@ -31,12 +31,15 @@ export async function GET(req: Request) {
 
   const [ordersRes, paymentsRes, expensesRes] = await Promise.all([
     // Revenue — orders by order_date within FY (accrual)
+    // Exclude cancelled, reimbursements (pass-through, not revenue) and complimentary (zero-value)
     supabaseAdmin
       .from('orders')
       .select('order_type, base_value, total_value_incl_gst, cgst_amount, sgst_amount, igst_amount, status')
       .gte('order_date', from)
       .lte('order_date', to)
-      .neq('status', 'cancelled'),
+      .neq('status', 'cancelled')
+      .neq('order_category', 'reimbursement')
+      .neq('order_category', 'complimentary'),
 
     // Receipts — payments by payment_date within FY (cash)
     supabaseAdmin

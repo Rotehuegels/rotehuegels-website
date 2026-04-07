@@ -53,12 +53,13 @@ export async function GET() {
   const { data: orders, error } = await supabaseAdmin
     .from('orders')
     .select(`
-      id, order_no, order_type, client_name, description,
+      id, order_no, order_type, order_category, client_name, description,
       order_date, entry_date, total_value_incl_gst, base_value,
       tds_applicable, tds_rate, tds_deducted_total, status, notes,
       created_at,
       order_payments(amount_received, tds_deducted, net_received)
     `)
+    .neq('status', 'cancelled')
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

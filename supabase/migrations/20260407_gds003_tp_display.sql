@@ -7,6 +7,11 @@
 -- Invoice date: 07 Apr 2026 (FY 2026-27) | Status: active, pending
 -- ============================================================
 
+-- Remove any pre-existing order with this number (e.g. misclassified reimbursement entry)
+DELETE FROM order_payment_stages
+WHERE order_id = (SELECT id FROM orders WHERE order_no = 'GDS-003');
+DELETE FROM orders WHERE order_no = 'GDS-003';
+
 INSERT INTO orders (
   order_no, order_type, order_category,
   client_name, client_gstin, client_address, client_contact,
@@ -30,7 +35,12 @@ INSERT INTO orders (
   'Tamil Nadu (33)', '8537', 'active',
   'Converted from QT-2026-001 (approved). Payment: 100% advance before dispatch. Full amount ₹55,342.42 pending.',
   (SELECT id FROM customers WHERE customer_id = 'CUST-001')
-) ON CONFLICT (order_no) DO NOTHING;
+);
+-- Note: delete any pre-existing order with same order_no before running this insert.
+-- Pattern for all future order migrations:
+--   DELETE FROM order_payment_stages WHERE order_id = (SELECT id FROM orders WHERE order_no = '...');
+--   DELETE FROM orders WHERE order_no = '...';
+--   Then INSERT.
 
 -- Single payment stage — full amount pending
 INSERT INTO order_payment_stages (

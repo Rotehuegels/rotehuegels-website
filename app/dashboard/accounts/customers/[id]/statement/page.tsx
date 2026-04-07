@@ -5,6 +5,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import StatementPrintButton from './StatementPrintButton';
+import StatementFYSelector from './StatementFYSelector';
 import QRCode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
@@ -52,8 +53,15 @@ function amountInWords(amount: number): string {
   return `Rupees ${r===0?'Zero':parts.join(' ')}${p>0?` and ${twoD(p)} Paise`:''} Only`;
 }
 
-export default async function CustomerStatementPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CustomerStatementPage({
+  params, searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ fy?: string }>;
+}) {
   const { id } = await params;
+  const { fy: fyParam } = await searchParams;
+  const selectedFY = fyParam ?? 'all';
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
@@ -186,20 +194,23 @@ export default async function CustomerStatementPage({ params }: { params: Promis
     return da !== db ? da.localeCompare(db) : a.order_no.localeCompare(b.order_no);
   });
 
-  // Only show invoiceable rows (exclude zero-value complimentary)
-  const invoiceRows = soaRows.filter(o => (o.total_value_incl_gst ?? 0) > 0);
-
-  const totalValue    = invoiceRows.reduce((s, o) => s + o.total_value_incl_gst, 0);
-  const totalReceived = invoiceRows.reduce((s, o) => s + o.received, 0);
-  const totalPending  = invoiceRows.reduce((s, o) => s + o.pending, 0);
-
-  // FY aggregates for summary table
+  // FY helper
   const rowFY = (row: SoaRow) => {
     const d = new Date(row.invoice_date ?? row.order_date);
     return (d.getMonth() + 1) >= 4
       ? `${d.getFullYear()}-${String(d.getFullYear()+1).slice(2)}`
       : `${d.getFullYear()-1}-${String(d.getFullYear()).slice(2)}`;
   };
+
+  // Only show invoiceable rows (exclude zero-value complimentary), optionally filtered by FY
+  const allInvoiceRows = soaRows.filter(o => (o.total_value_incl_gst ?? 0) > 0);
+  const invoiceRows = selectedFY === 'all'
+    ? allInvoiceRows
+    : allInvoiceRows.filter(r => rowFY(r) === selectedFY);
+
+  const totalValue    = invoiceRows.reduce((s, o) => s + o.total_value_incl_gst, 0);
+  const totalReceived = invoiceRows.reduce((s, o) => s + o.received, 0);
+  const totalPending  = invoiceRows.reduce((s, o) => s + o.pending, 0);
   type FyAgg = { baseValue: number; gstAmount: number; tdsAmount: number; total: number; received: number; pending: number };
   const fyAggs: Record<string, FyAgg> = {};
   for (const row of invoiceRows) {
@@ -227,16 +238,21 @@ export default async function CustomerStatementPage({ params }: { params: Promis
 
   return (
     <div className="p-6 max-w-5xl space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <Link href={`/dashboard/accounts/customers/${id}`}
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
             <ArrowLeft className="h-3 w-3" /> {customer.name}
           </Link>
           <h1 className="text-base font-bold text-white">Statement of Account</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">SOA + individual invoices — {today}</p>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            {selectedFY === 'all' ? 'All years' : `FY ${selectedFY}`} · {today}
+          </p>
         </div>
-        <StatementPrintButton customerId={id} />
+        <div className="flex items-center gap-3">
+          <StatementFYSelector customerId={id} current={selectedFY} />
+          <StatementPrintButton customerId={id} />
+        </div>
       </div>
 
       <div className="rounded-2xl border border-zinc-700 bg-zinc-100 p-2 shadow-xl">
@@ -298,7 +314,9 @@ export default async function CustomerStatementPage({ params }: { params: Promis
               <tbody>
                 {fyKeys.map((fy, i) => {
                   const a = fyAggs[fy];
-                  const fyLabel = fy === '2025-26' ? 'FY 2025-26  (up to 31 Mar 2026)' : `FY ${fy}  (from 1 Apr ${fy.slice(0,4)})`;
+                  const fyStartYear = fy.split('-')[0];
+                  const fyEndYear   = String(Number(fyStartYear) + 1);
+                  const fyLabel = `FY ${fy}  (1 Apr ${fyStartYear} – 31 Mar ${fyEndYear})`;
                   const bg = i === 0 ? '#f5f0ff' : '#f0fdf4';
                   const labelColor = i === 0 ? '#6d28d9' : '#065f46';
                   return (

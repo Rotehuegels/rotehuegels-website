@@ -4,9 +4,8 @@ import { useRouter } from 'next/navigation';
 import { Printer } from 'lucide-react';
 
 const FY_OPTIONS = [
+  { value: '2026-27', label: 'FY 2026-27 (Apr 2026 – Mar 2027)' },
   { value: '2025-26', label: 'FY 2025-26 (Apr 2025 – Mar 2026)' },
-  { value: '2024-25', label: 'FY 2024-25 (Apr 2024 – Mar 2025)' },
-  { value: '2023-24', label: 'FY 2023-24 (Apr 2023 – Mar 2024)' },
 ];
 
 export default function FYSelector({ current }: { current: string }) {

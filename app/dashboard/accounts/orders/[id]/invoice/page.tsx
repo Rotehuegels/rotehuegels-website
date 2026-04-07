@@ -67,8 +67,15 @@ function amountInWords(amount: number): string {
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
-export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function InvoicePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ upto?: string; stage?: string }>;
+}) {
   const { id } = await params;
+  const sp = await searchParams;
 
   const logoSrc   = getLogoBase64();
   const sigBase64 = getSignatureBase64();
@@ -89,29 +96,83 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     base: number; cgst: number; sgst: number; igst: number; total: number;
   }> = Array.isArray(rawItems) ? rawItems : [];
 
-  const fy          = getFY(order.invoice_date ?? order.order_date);
-  const invoiceNo   = `RH/${fy}/${order.order_no}`;
-  const invoiceDate = order.invoice_date
-    ? fmtDate(order.invoice_date)
-    : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  const isIntra     = (order.igst_amount ?? 0) === 0 && (order.cgst_amount ?? 0) > 0;
-  const gstRate     = Number(order.gst_rate ?? 18);
-  const halfRate    = gstRate / 2;
-  const sacHsn      = order.hsn_sac_code
-    ?? (order.order_type === 'service' ? '9983' : '—');
-  const tdsNet      = order.tds_applicable
-    ? order.total_value_incl_gst - (order.base_value ?? 0) * (order.tds_rate / 100)
+  // ── Stage filtering ────────────────────────────────────────────────────────
+  const uptoStage = sp.upto ? parseInt(sp.upto) : null;
+  const onlyStage = sp.stage ? parseInt(sp.stage) : null;
+  const isFiltered = uptoStage !== null || onlyStage !== null;
+
+  const filteredStages = isFiltered
+    ? stages.filter(s => {
+        if (uptoStage !== null) return s.stage_number <= uptoStage;
+        if (onlyStage !== null) return s.stage_number === onlyStage;
+        return true;
+      })
+    : stages;
+
+  // Stage label for toolbar / invoice reference
+  const stageLabel = uptoStage
+    ? `Stages 1–${uptoStage}`
+    : onlyStage
+    ? `Stage ${onlyStage}`
     : null;
+
+  // ── Effective financials (recalculate when stage-filtered) ────────────────
+  const isIntra = (order.igst_amount ?? 0) === 0 && (order.cgst_amount ?? 0) > 0;
+
+  let effectiveBase  = order.base_value ?? 0;
+  let effectiveCgst  = order.cgst_amount ?? 0;
+  let effectiveSgst  = order.sgst_amount ?? 0;
+  let effectiveIgst  = order.igst_amount ?? 0;
+  let effectiveTotal = order.total_value_incl_gst;
+  let effectiveTds   = order.tds_applicable
+    ? (order.base_value ?? 0) * (order.tds_rate / 100)
+    : 0;
+
+  if (isFiltered && filteredStages.length > 0) {
+    effectiveBase = filteredStages.reduce((sum, s) => sum + (s.amount_due ?? 0), 0);
+    const gstTotal = filteredStages.reduce((sum, s) => sum + (s.gst_on_stage ?? 0), 0);
+    if (isIntra) {
+      effectiveCgst = gstTotal / 2;
+      effectiveSgst = gstTotal / 2;
+      effectiveIgst = 0;
+    } else {
+      effectiveCgst = 0;
+      effectiveSgst = 0;
+      effectiveIgst = gstTotal;
+    }
+    effectiveTotal = effectiveBase + gstTotal;
+    effectiveTds   = order.tds_applicable
+      ? filteredStages.reduce((sum, s) => sum + (s.tds_amount ?? 0), 0)
+      : 0;
+  }
+
+  const tdsNet = order.tds_applicable ? effectiveTotal - effectiveTds : null;
+
+  // ── Invoice date — stage invoice_date > order.invoice_date > today ─────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const stageDate = isFiltered
+    ? (filteredStages[filteredStages.length - 1] as any)?.invoice_date ?? null
+    : null;
+  const rawDate    = stageDate ?? order.invoice_date ?? null;
+  const fy         = getFY(rawDate ?? order.order_date);
+  const invoiceNo  = `RH/${fy}/${order.order_no}`;
+  const invoiceDate = rawDate
+    ? fmtDate(rawDate)
+    : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  const gstRate  = Number(order.gst_rate ?? 18);
+  const halfRate = gstRate / 2;
+  const sacHsn   = order.hsn_sac_code ?? (order.order_type === 'service' ? '9983' : '—');
   const placeOfSupply = order.place_of_supply ?? 'Tamil Nadu (33)';
 
   // colspan for footer row: # + Description + (Qty if multi-item) + HSN
   const descColspan = items.length > 0 ? 4 : 3;
 
-  // Balance due = total invoice − sum of already-paid stages
-  const totalPaid = stages
+  // Balance due — scoped to filtered stages
+  const filteredPaid = filteredStages
     .filter(s => s.status === 'paid')
     .reduce((sum, s) => sum + (s.amount_due ?? 0) + (s.gst_on_stage ?? 0), 0);
-  const balanceDue = Math.max(0, order.total_value_incl_gst - totalPaid);
+  const balanceDue = Math.max(0, effectiveTotal - filteredPaid);
 
   // UPI limit is ₹1 lakh/txn — omit amount if balance exceeds limit
   const upiAmountParam = balanceDue > 0 && balanceDue <= 100000
@@ -123,7 +184,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   return (
     <PDFViewer
       contentId="rh-invoice"
-      filename={`${invoiceNo.replace(/\//g, '-')}.pdf`}
+      filename={`${invoiceNo.replace(/\//g, '-')}${stageLabel ? `-${stageLabel.replace(/\s/g, '')}` : ''}.pdf`}
       toolbar={
         <div className="flex items-center gap-3">
           <a href={`/dashboard/accounts/orders/${id}`}
@@ -133,6 +194,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           <span className="text-zinc-700">|</span>
           <span className="text-xs text-zinc-500">Invoice</span>
           <span className="font-mono text-sm text-amber-400 font-bold">{invoiceNo}</span>
+          {stageLabel && (
+            <span className="text-xs text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-full">{stageLabel}</span>
+          )}
         </div>
       }
     >
@@ -146,7 +210,6 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           {/* ── Header ─────────────────────────────────────────────────── */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '10px', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logoSrc} alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px', flexShrink: 0 }} />
               <div>
@@ -216,6 +279,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                     ['Order Date',    fmtDate(order.order_date)],
                     ...(order.delivery_date ? [['Delivery Date', fmtDate(order.delivery_date)]] : []),
                     ['Order Ref.',    order.order_no],
+                    ...(stageLabel ? [['Stage',  stageLabel]] : []),
                     ['Place of Supply', placeOfSupply],
                     ['Supply Type',   isIntra ? 'Intra-State' : 'Inter-State'],
                   ].map(([label, value]) => (
@@ -276,9 +340,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                   <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>1</td>
                   <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>
                     <div style={{ fontWeight: 700, color: '#111', marginBottom: '3px', whiteSpace: 'pre-line' }}>{order.description}</div>
-                    {stages.length > 1 && (
+                    {filteredStages.length > 1 && (
                       <div style={{ marginTop: '4px', paddingLeft: '8px' }}>
-                        {stages.map(s => (
+                        {filteredStages.map(s => (
                           <div key={s.id} style={{ fontSize: '8.5px', color: '#666', marginBottom: '2px' }}>
                             • {s.stage_name}: {fmt(s.amount_due)} base + {fmt(s.gst_on_stage ?? 0)} GST
                             {s.tds_amount ? ` – TDS ${fmt(s.tds_amount)}` : ''}
@@ -286,34 +350,40 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                         ))}
                       </div>
                     )}
+                    {filteredStages.length === 1 && (
+                      <div style={{ marginTop: '4px', fontSize: '8.5px', color: '#555' }}>
+                        {filteredStages[0].stage_name}
+                        {filteredStages[0].tds_amount ? ` (TDS @ ${filteredStages[0].tds_rate}% = ${fmt(filteredStages[0].tds_amount)})` : ''}
+                      </div>
+                    )}
                   </td>
                   <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 700 }}>{sacHsn}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.base_value ?? 0)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(effectiveBase)}</td>
                   {isIntra ? (
                     <>
-                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.cgst_amount ?? 0)}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.sgst_amount ?? 0)}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(effectiveCgst)}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(effectiveSgst)}</td>
                     </>
                   ) : (
-                    <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(order.igst_amount ?? 0)}</td>
+                    <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(effectiveIgst)}</td>
                   )}
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right', fontWeight: 700 }}>{fmt(order.total_value_incl_gst)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right', fontWeight: 700 }}>{fmt(effectiveTotal)}</td>
                 </tr>
               )}
             </tbody>
             <tfoot>
               <tr style={{ background: '#f5f5f5' }}>
                 <td colSpan={descColspan} style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 700 }}>Total</td>
-                <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 700 }}>{fmt(order.base_value ?? 0)}</td>
+                <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 700 }}>{fmt(effectiveBase)}</td>
                 {isIntra ? (
                   <>
-                    <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 700 }}>{fmt(order.cgst_amount ?? 0)}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 700 }}>{fmt(order.sgst_amount ?? 0)}</td>
+                    <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 700 }}>{fmt(effectiveCgst)}</td>
+                    <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 700 }}>{fmt(effectiveSgst)}</td>
                   </>
                 ) : (
-                  <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 700 }}>{fmt(order.igst_amount ?? 0)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 700 }}>{fmt(effectiveIgst)}</td>
                 )}
-                <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 900, fontSize: '11px' }}>{fmt(order.total_value_incl_gst)}</td>
+                <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right', fontWeight: 900, fontSize: '11px' }}>{fmt(effectiveTotal)}</td>
               </tr>
             </tfoot>
           </table>
@@ -324,7 +394,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               Amount in Words
             </div>
             <div style={{ fontSize: '11px', fontWeight: 800, color: '#111' }}>
-              {amountInWords(order.total_value_incl_gst)}
+              {amountInWords(effectiveTotal)}
             </div>
             {order.tds_applicable && tdsNet !== null && (
               <div style={{ marginTop: '5px', fontSize: '8.5px', color: '#777', borderTop: '1px dashed #ddd', paddingTop: '4px' }}>
@@ -402,7 +472,6 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* ── Footer ──────────────────────────────────────────────────── */}
-          {/* UPI disclaimer */}
           <div style={{ fontSize: '7.5px', color: '#999', marginBottom: '6px', lineHeight: 1.5 }}>
             * UPI payments are subject to per-transaction limits (typically ₹1 lakh). For amounts exceeding the limit, you may split into multiple UPI transfers or use NEFT / RTGS for the full amount in a single transfer.
           </div>

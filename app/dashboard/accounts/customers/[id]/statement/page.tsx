@@ -122,6 +122,12 @@ export default async function CustomerStatementPage({ params }: { params: Promis
     baseValue: number; gstAmount: number; tdsAmount: number;
     total_value_incl_gst: number; received: number; pending: number;
     stageLabel?: string;
+    // Optional order-level fields used in invoice rendering (present via spread for order rows)
+    igst_amount?: number; cgst_amount?: number; sgst_amount?: number; gst_rate?: number;
+    hsn_sac_code?: string; client_name?: string; client_address?: string;
+    client_gstin?: string; place_of_supply?: string; stages?: unknown[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   };
 
   const soaRows: SoaRow[] = [];
@@ -150,9 +156,9 @@ export default async function CustomerStatementPage({ params }: { params: Promis
         const nums = group.map((s: { stage_number: number }) => s.stage_number).sort((a: number, b: number) => a - b);
         const stageLabel = nums.length === 1 ? `Stage ${nums[0]}` : `Stages ${nums[0]}–${nums[nums.length - 1]}`;
         soaRows.push({
-          id: `${o.id}_${dateKey}`, order_no: o.order_no,
-          description: o.description, order_type: o.order_type,
-          invoice_date: dateKey, order_date: o.order_date,
+          ...o,
+          id: `${o.id}_${dateKey}`,
+          invoice_date: dateKey,
           baseValue: groupBase, gstAmount: groupGst, tdsAmount: groupTds,
           total_value_incl_gst: groupValue,
           received: groupReceived, pending: groupValue - groupReceived,
@@ -477,7 +483,8 @@ export default async function CustomerStatementPage({ params }: { params: Promis
             const fy = getFY(o.invoice_date ?? o.order_date);
             const invoiceNo = `RH/${fy}/${o.order_no}`;
             const invoiceDate = fmtDate(o.invoice_date ?? o.order_date);
-            const isIntra = (o.igst_amount ?? 0) === 0 && (o.cgst_amount ?? 0) > 0;
+            // Intra-state if no IGST. Defaults to true (intra) when fields are absent (stage-group rows, always TN supplier).
+            const isIntra = (o.igst_amount ?? 0) === 0;
             const gstRate = Number(o.gst_rate ?? 18);
             const halfRate = gstRate / 2;
             const sacHsn = o.hsn_sac_code ?? (o.order_type === 'service' ? '9983' : '—');

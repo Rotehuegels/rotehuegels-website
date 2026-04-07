@@ -1,3 +1,4 @@
+import React from 'react';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
@@ -260,27 +261,72 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                 </tr>
               </thead>
               <tbody>
-                {invoiceRows.map((o, i) => (
-                  <tr key={o.id} style={{ background: i%2===1?'#fafafa':'white' }}>
-                    <td style={{ ...cell, fontFamily:'monospace', fontWeight:700 }}>
-                      {o.order_no}
-                      {o.stageLabel && <div style={{ fontSize:'8px', color:'#92400e', fontWeight:400, fontFamily:'sans-serif' }}>{o.stageLabel}</div>}
-                    </td>
-                    <td style={cell}>
-                      <div style={{ fontWeight:600 }}>{o.description}</div>
-                      <div style={{ fontSize:'9px', color:'#888', marginTop:'2px', textTransform:'capitalize' }}>{o.order_type}</div>
-                    </td>
-                    <td style={{ ...cell, textAlign:'center' as const }}>{fmtDate(o.invoice_date ?? o.order_date)}</td>
-                    <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace' }}>{fmt(o.total_value_incl_gst)}</td>
-                    <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', color:'#16a34a' }}>{fmt(o.received)}</td>
-                    <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:700, color:o.pending>0?'#c00':'#16a34a' }}>{fmt(o.pending)}</td>
-                  </tr>
-                ))}
-                <tr style={{ background:'#f0f0f0' }}>
-                  <td colSpan={3} style={{ ...cell, textAlign:'right' as const, fontWeight:900 }}>INVOICED TOTAL</td>
-                  <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900 }}>{fmt(totalValue)}</td>
-                  <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'#16a34a' }}>{fmt(totalReceived)}</td>
-                  <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'#c00', fontSize:'12px' }}>{fmt(totalPending)}</td>
+                {(() => {
+                  // Split rows into FY sections
+                  const getFY = (row: SoaRow) => {
+                    const d = new Date(row.invoice_date ?? row.order_date);
+                    return (d.getMonth() + 1) >= 4
+                      ? `${d.getFullYear()}-${String(d.getFullYear()+1).slice(2)}`
+                      : `${d.getFullYear()-1}-${String(d.getFullYear()).slice(2)}`;
+                  };
+                  const fyGroups: Record<string, SoaRow[]> = {};
+                  for (const row of invoiceRows) {
+                    const fy = getFY(row);
+                    if (!fyGroups[fy]) fyGroups[fy] = [];
+                    fyGroups[fy].push(row);
+                  }
+                  const fyKeys = Object.keys(fyGroups).sort();
+
+                  return fyKeys.map((fy, fyIdx) => {
+                    const fyRows = fyGroups[fy];
+                    const fyValue    = fyRows.reduce((s, r) => s + r.total_value_incl_gst, 0);
+                    const fyReceived = fyRows.reduce((s, r) => s + r.received, 0);
+                    const fyPending  = fyRows.reduce((s, r) => s + r.pending, 0);
+                    const fyLabel = fy === '2025-26' ? 'Up to 31 Mar 2026 — FY 2025-26' : `From 1 Apr ${fy.split('-')[0].slice(0,2)}${fy.split('-')[1]} — FY ${fy}`;
+
+                    return (
+                      <React.Fragment key={fy}>
+                        {/* FY section header */}
+                        <tr>
+                          <td colSpan={6} style={{ ...cell, background: fyIdx === 0 ? '#1a1a2e' : '#0f2027', color: fyIdx === 0 ? '#c084fc' : '#34d399', fontWeight:800, fontSize:'9px', textTransform:'uppercase' as const, letterSpacing:'0.8px', paddingTop:'8px', paddingBottom:'8px' }}>
+                            {fyIdx === 0 ? '▸ ' : '▸ '}Payments — {fyLabel}
+                          </td>
+                        </tr>
+                        {fyRows.map((o, i) => (
+                          <tr key={o.id} style={{ background: i%2===1?'#fafafa':'white' }}>
+                            <td style={{ ...cell, fontFamily:'monospace', fontWeight:700 }}>
+                              {o.order_no}
+                              {o.stageLabel && <div style={{ fontSize:'8px', color:'#92400e', fontWeight:400, fontFamily:'sans-serif' }}>{o.stageLabel}</div>}
+                            </td>
+                            <td style={cell}>
+                              <div style={{ fontWeight:600 }}>{o.description}</div>
+                              <div style={{ fontSize:'9px', color:'#888', marginTop:'2px', textTransform:'capitalize' }}>{o.order_type}</div>
+                            </td>
+                            <td style={{ ...cell, textAlign:'center' as const }}>{fmtDate(o.invoice_date ?? o.order_date)}</td>
+                            <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace' }}>{fmt(o.total_value_incl_gst)}</td>
+                            <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', color:'#16a34a' }}>{fmt(o.received)}</td>
+                            <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:700, color:o.pending>0?'#c00':'#16a34a' }}>{fmt(o.pending)}</td>
+                          </tr>
+                        ))}
+                        {/* FY subtotal */}
+                        <tr style={{ background: fyIdx === 0 ? '#f3e8ff' : '#d1fae5' }}>
+                          <td colSpan={3} style={{ ...cell, textAlign:'right' as const, fontWeight:800, fontSize:'9px', color: fyIdx === 0 ? '#7c3aed' : '#065f46' }}>
+                            FY {fy} Subtotal
+                          </td>
+                          <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:800 }}>{fmt(fyValue)}</td>
+                          <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:800, color:'#16a34a' }}>{fmt(fyReceived)}</td>
+                          <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:800, color: fyPending > 0 ? '#c00' : '#16a34a' }}>{fmt(fyPending)}</td>
+                        </tr>
+                      </React.Fragment>
+                    );
+                  });
+                })()}
+                {/* Grand total */}
+                <tr style={{ background:'#1a1a1a' }}>
+                  <td colSpan={3} style={{ ...cell, textAlign:'right' as const, fontWeight:900, color:'white', fontSize:'10px' }}>TOTAL INVOICED</td>
+                  <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'white' }}>{fmt(totalValue)}</td>
+                  <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'#86efac' }}>{fmt(totalReceived)}</td>
+                  <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'#fca5a5', fontSize:'12px' }}>{fmt(totalPending)}</td>
                 </tr>
 
                 {/* Quotes section */}

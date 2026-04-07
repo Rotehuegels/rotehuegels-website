@@ -194,12 +194,6 @@ export default async function StatementPreviewPage({
   const totalPending  = invoiceRows.reduce((s, o) => s + o.pending, 0);
 
   // FY aggregates
-  const rowFY = (row: SoaRow) => {
-    const d = new Date(row.invoice_date ?? row.order_date);
-    return (d.getMonth() + 1) >= 4
-      ? `${d.getFullYear()}-${String(d.getFullYear()+1).slice(2)}`
-      : `${d.getFullYear()-1}-${String(d.getFullYear()).slice(2)}`;
-  };
   type FyAgg = { baseValue: number; gstAmount: number; tdsAmount: number; total: number; received: number; pending: number };
   const fyAggs: Record<string, FyAgg> = {};
   for (const row of invoiceRows) {

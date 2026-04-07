@@ -84,8 +84,8 @@ export default async function CustomerStatementPage({ params }: { params: Promis
   const orderIds = (orders ?? []).map(o => o.id);
 
   const [{ data: allPayments }, { data: allStages }, { data: quotes }] = await Promise.all([
-    // Include stage_id so we can map payments to individual stages
-    supabaseAdmin.from('order_payments').select('order_id, stage_id, amount_received')
+    // Include stage_id and tds_deducted so we can map payments to individual stages
+    supabaseAdmin.from('order_payments').select('order_id, stage_id, amount_received, tds_deducted')
       .in('order_id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000']),
     supabaseAdmin.from('order_payment_stages').select('*')
       .in('order_id', orderIds.length ? orderIds : ['00000000-0000-0000-0000-000000000000'])
@@ -98,11 +98,15 @@ export default async function CustomerStatementPage({ params }: { params: Promis
 
   // Build payment maps — both by order and by stage
   const orderPaymentMap: Record<string, number> = {};
+  const orderTdsMap:     Record<string, number> = {};
   const stagePaymentMap: Record<string, number> = {};
+  const stageTdsMap:     Record<string, number> = {};
   for (const p of allPayments ?? []) {
     orderPaymentMap[p.order_id] = (orderPaymentMap[p.order_id] ?? 0) + (p.amount_received ?? 0);
+    orderTdsMap[p.order_id]     = (orderTdsMap[p.order_id]     ?? 0) + (p.tds_deducted   ?? 0);
     if (p.stage_id) {
       stagePaymentMap[p.stage_id] = (stagePaymentMap[p.stage_id] ?? 0) + (p.amount_received ?? 0);
+      stageTdsMap[p.stage_id]     = (stageTdsMap[p.stage_id]     ?? 0) + (p.tds_deducted   ?? 0);
     }
   }
   const stagesMap: Record<string, typeof allStages> = {};
@@ -115,6 +119,7 @@ export default async function CustomerStatementPage({ params }: { params: Promis
   type SoaRow = {
     id: string; order_no: string; description: string; order_type: string;
     invoice_date: string | null; order_date: string;
+    baseValue: number; gstAmount: number; tdsAmount: number;
     total_value_incl_gst: number; received: number; pending: number;
     stageLabel?: string;
   };
@@ -137,7 +142,10 @@ export default async function CustomerStatementPage({ params }: { params: Promis
       // Multiple invoice dates — one SOA row per date group
       for (const dateKey of groupKeys.sort()) {
         const group = dateGroups[dateKey];
-        const groupValue   = group.reduce((sum: number, s: { amount_due?: number; gst_on_stage?: number }) => sum + (s.amount_due ?? 0) + (s.gst_on_stage ?? 0), 0);
+        const groupBase     = group.reduce((sum: number, s: { amount_due?: number }) => sum + (s.amount_due ?? 0), 0);
+        const groupGst      = group.reduce((sum: number, s: { gst_on_stage?: number }) => sum + (s.gst_on_stage ?? 0), 0);
+        const groupTds      = group.reduce((sum: number, s: { id: string }) => sum + (stageTdsMap[s.id] ?? 0), 0);
+        const groupValue    = groupBase + groupGst;
         const groupReceived = group.reduce((sum: number, s: { id: string }) => sum + (stagePaymentMap[s.id] ?? 0), 0);
         const nums = group.map((s: { stage_number: number }) => s.stage_number).sort((a: number, b: number) => a - b);
         const stageLabel = nums.length === 1 ? `Stage ${nums[0]}` : `Stages ${nums[0]}–${nums[nums.length - 1]}`;
@@ -145,6 +153,7 @@ export default async function CustomerStatementPage({ params }: { params: Promis
           id: `${o.id}_${dateKey}`, order_no: o.order_no,
           description: o.description, order_type: o.order_type,
           invoice_date: dateKey, order_date: o.order_date,
+          baseValue: groupBase, gstAmount: groupGst, tdsAmount: groupTds,
           total_value_incl_gst: groupValue,
           received: groupReceived, pending: groupValue - groupReceived,
           stageLabel,
@@ -154,7 +163,12 @@ export default async function CustomerStatementPage({ params }: { params: Promis
       // Single invoice date or no stage dates — use order-level totals
       const received = orderPaymentMap[o.id] ?? 0;
       soaRows.push({
-        ...o, received, pending: (o.total_value_incl_gst ?? 0) - received,
+        ...o,
+        baseValue:  o.base_value ?? 0,
+        gstAmount:  (o.cgst_amount ?? 0) + (o.sgst_amount ?? 0) + (o.igst_amount ?? 0),
+        tdsAmount:  orderTdsMap[o.id] ?? 0,
+        received,
+        pending: (o.total_value_incl_gst ?? 0) - received,
       });
     }
   }
@@ -172,6 +186,30 @@ export default async function CustomerStatementPage({ params }: { params: Promis
   const totalValue    = invoiceRows.reduce((s, o) => s + o.total_value_incl_gst, 0);
   const totalReceived = invoiceRows.reduce((s, o) => s + o.received, 0);
   const totalPending  = invoiceRows.reduce((s, o) => s + o.pending, 0);
+
+  // FY aggregates for summary table
+  const rowFY = (row: SoaRow) => {
+    const d = new Date(row.invoice_date ?? row.order_date);
+    return (d.getMonth() + 1) >= 4
+      ? `${d.getFullYear()}-${String(d.getFullYear()+1).slice(2)}`
+      : `${d.getFullYear()-1}-${String(d.getFullYear()).slice(2)}`;
+  };
+  type FyAgg = { baseValue: number; gstAmount: number; tdsAmount: number; total: number; received: number; pending: number };
+  const fyAggs: Record<string, FyAgg> = {};
+  for (const row of invoiceRows) {
+    const fy = rowFY(row);
+    if (!fyAggs[fy]) fyAggs[fy] = { baseValue:0, gstAmount:0, tdsAmount:0, total:0, received:0, pending:0 };
+    fyAggs[fy].baseValue  += row.baseValue;
+    fyAggs[fy].gstAmount  += row.gstAmount;
+    fyAggs[fy].tdsAmount  += row.tdsAmount;
+    fyAggs[fy].total      += row.total_value_incl_gst;
+    fyAggs[fy].received   += row.received;
+    fyAggs[fy].pending    += row.pending;
+  }
+  const fyKeys = Object.keys(fyAggs).sort();
+  const grandBase = invoiceRows.reduce((s, r) => s + r.baseValue, 0);
+  const grandGst  = invoiceRows.reduce((s, r) => s + r.gstAmount, 0);
+  const grandTds  = invoiceRows.reduce((s, r) => s + r.tdsAmount, 0);
 
   const billing = customer.billing_address as Record<string, string> | null;
   const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -225,28 +263,62 @@ export default async function CustomerStatementPage({ params }: { params: Promis
               </div>
             </div>
 
-            {/* Customer + summary */}
-            <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 12px', marginBottom:'14px', display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-              <div>
-                <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'4px', color:'#666' }}>To</div>
-                <div style={{ fontWeight:700, fontSize:'12px' }}>{customer.name}</div>
-                {customer.gstin && <div style={{ fontSize:'9.5px', marginTop:'2px' }}>GSTIN: {customer.gstin}</div>}
-                {billing && (
-                  <div style={{ fontSize:'9.5px', marginTop:'4px', lineHeight:1.6, color:'#444' }}>
-                    {billing.line1}{billing.line2?`, ${billing.line2}`:''}<br />{billing.city}, {billing.state}{billing.pincode?` – ${billing.pincode}`:''}
-                  </div>
-                )}
-                {customer.email && <div style={{ fontSize:'9px', marginTop:'2px' }}>✉ {customer.email}</div>}
-              </div>
-              <div style={{ textAlign:'right' as const, fontSize:'10px', lineHeight:1.8 }}>
-                <div style={{ fontSize:'9px', color:'#888', marginBottom:'4px' }}>Outstanding Summary</div>
-                <div><strong>Total Billed:</strong> <span style={{ fontFamily:'monospace' }}>{fmt(totalValue)}</span></div>
-                <div><strong>Total Received:</strong> <span style={{ fontFamily:'monospace', color:'#16a34a' }}>{fmt(totalReceived)}</span></div>
-                <div style={{ fontSize:'12px', fontWeight:900, color:'#c00', marginTop:'4px', borderTop:'1px solid #ddd', paddingTop:'4px' }}>
-                  Total Pending: {fmt(totalPending)}
+            {/* Customer info */}
+            <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 12px', marginBottom:'10px' }}>
+              <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'4px', color:'#666' }}>To</div>
+              <div style={{ fontWeight:700, fontSize:'12px' }}>{customer.name}</div>
+              {customer.gstin && <div style={{ fontSize:'9.5px', marginTop:'2px' }}>GSTIN: {customer.gstin}</div>}
+              {billing && (
+                <div style={{ fontSize:'9.5px', marginTop:'4px', lineHeight:1.6, color:'#444' }}>
+                  {billing.line1}{billing.line2?`, ${billing.line2}`:''}<br />{billing.city}, {billing.state}{billing.pincode?` – ${billing.pincode}`:''}
                 </div>
-              </div>
+              )}
+              {customer.email && <div style={{ fontSize:'9px', marginTop:'2px' }}>✉ {customer.email}</div>}
             </div>
+
+            {/* Financial summary table — per FY with subtotals */}
+            <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:'14px', fontSize:'9px' }}>
+              <thead>
+                <tr style={{ background:'#1a1a1a', color:'white' }}>
+                  <th style={{ padding:'5px 8px', textAlign:'left' as const, fontWeight:700 }}>Period</th>
+                  <th style={{ padding:'5px 8px', textAlign:'right' as const, fontWeight:700 }}>Base Value</th>
+                  <th style={{ padding:'5px 8px', textAlign:'right' as const, fontWeight:700 }}>GST</th>
+                  <th style={{ padding:'5px 8px', textAlign:'right' as const, fontWeight:700 }}>Total Invoiced</th>
+                  <th style={{ padding:'5px 8px', textAlign:'right' as const, fontWeight:700, color:'#86efac' }}>Received</th>
+                  <th style={{ padding:'5px 8px', textAlign:'right' as const, fontWeight:700, color:'#fcd34d' }}>TDS Deducted</th>
+                  <th style={{ padding:'5px 8px', textAlign:'right' as const, fontWeight:700, color:'#fca5a5' }}>Pending</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fyKeys.map((fy, i) => {
+                  const a = fyAggs[fy];
+                  const fyLabel = fy === '2025-26' ? 'FY 2025-26  (up to 31 Mar 2026)' : `FY ${fy}  (from 1 Apr ${fy.slice(0,4)})`;
+                  const bg = i === 0 ? '#f5f0ff' : '#f0fdf4';
+                  const labelColor = i === 0 ? '#6d28d9' : '#065f46';
+                  return (
+                    <tr key={fy} style={{ background: bg }}>
+                      <td style={{ padding:'6px 8px', fontWeight:700, color: labelColor, borderBottom:'1px solid #e5e7eb' }}>{fyLabel}</td>
+                      <td style={{ padding:'6px 8px', textAlign:'right' as const, fontFamily:'monospace', borderBottom:'1px solid #e5e7eb' }}>{fmt(a.baseValue)}</td>
+                      <td style={{ padding:'6px 8px', textAlign:'right' as const, fontFamily:'monospace', borderBottom:'1px solid #e5e7eb' }}>{fmt(a.gstAmount)}</td>
+                      <td style={{ padding:'6px 8px', textAlign:'right' as const, fontFamily:'monospace', fontWeight:700, borderBottom:'1px solid #e5e7eb' }}>{fmt(a.total)}</td>
+                      <td style={{ padding:'6px 8px', textAlign:'right' as const, fontFamily:'monospace', color:'#16a34a', borderBottom:'1px solid #e5e7eb' }}>{fmt(a.received)}</td>
+                      <td style={{ padding:'6px 8px', textAlign:'right' as const, fontFamily:'monospace', color:'#b45309', borderBottom:'1px solid #e5e7eb' }}>{a.tdsAmount > 0 ? fmt(a.tdsAmount) : '—'}</td>
+                      <td style={{ padding:'6px 8px', textAlign:'right' as const, fontFamily:'monospace', fontWeight:700, color: a.pending > 0 ? '#dc2626' : '#16a34a', borderBottom:'1px solid #e5e7eb' }}>{fmt(a.pending)}</td>
+                    </tr>
+                  );
+                })}
+                {/* Grand total */}
+                <tr style={{ background:'#111827', color:'white' }}>
+                  <td style={{ padding:'7px 8px', fontWeight:900, fontSize:'10px' }}>Grand Total</td>
+                  <td style={{ padding:'7px 8px', textAlign:'right' as const, fontFamily:'monospace', fontWeight:700 }}>{fmt(grandBase)}</td>
+                  <td style={{ padding:'7px 8px', textAlign:'right' as const, fontFamily:'monospace', fontWeight:700 }}>{fmt(grandGst)}</td>
+                  <td style={{ padding:'7px 8px', textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, fontSize:'11px' }}>{fmt(totalValue)}</td>
+                  <td style={{ padding:'7px 8px', textAlign:'right' as const, fontFamily:'monospace', fontWeight:700, color:'#86efac' }}>{fmt(totalReceived)}</td>
+                  <td style={{ padding:'7px 8px', textAlign:'right' as const, fontFamily:'monospace', color:'#fcd34d' }}>{grandTds > 0 ? fmt(grandTds) : '—'}</td>
+                  <td style={{ padding:'7px 8px', textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, fontSize:'12px', color:'#fca5a5' }}>{fmt(totalPending)}</td>
+                </tr>
+              </tbody>
+            </table>
 
             {/* SOA table */}
             <table style={{ width:'100%', borderCollapse:'collapse', marginBottom:'14px' }}>

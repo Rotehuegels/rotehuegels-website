@@ -124,9 +124,17 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
               <div style={{ fontSize: '18px', fontWeight: 900, textTransform: 'uppercase', color: '#111', letterSpacing: '1px' }}>
                 PURCHASE ORDER
               </div>
+              {(po as any).amendment_no > 0 && (
+                <div style={{ display: 'inline-block', marginTop: '4px', background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '3px', padding: '2px 8px', fontSize: '9px', fontWeight: 700, color: '#92400e', letterSpacing: '0.5px' }}>
+                  AMENDMENT {String((po as any).amendment_no).padStart(2, '0')} — {fmtDate((po as any).amendment_date)}
+                </div>
+              )}
               <div style={{ marginTop: '6px', fontSize: '9.5px', lineHeight: 1.7 }}>
                 <div><strong>PO No:</strong> {po.po_no}</div>
                 <div><strong>Date:</strong> {fmtDate(po.po_date)}</div>
+                {(po as any).amendment_no > 0 && (
+                  <div><strong>Amendment:</strong> {String((po as any).amendment_no).padStart(2, '0')} dated {fmtDate((po as any).amendment_date)}</div>
+                )}
                 {po.expected_delivery && <div><strong>Delivery By:</strong> {fmtDate(po.expected_delivery)}</div>}
                 {po.supplier_ref && <div><strong>Supplier Ref:</strong> {po.supplier_ref}</div>}
               </div>
@@ -280,6 +288,14 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
           {po.terms && (
             <div style={{ border: '1px solid #e0e0e0', borderRadius: '3px', padding: '5px 8px', marginBottom: '10px', fontSize: '9px' }}>
               <strong>Terms: </strong>{po.terms}
+            </div>
+          )}
+
+          {/* ── Amendment history ────────────────────────────── */}
+          {(po as any).amendment_no > 0 && (po as any).amendment_notes && (
+            <div style={{ border: '1px solid #f59e0b', borderRadius: '3px', padding: '5px 8px', marginBottom: '10px', fontSize: '8.5px', background: '#fffbeb' }}>
+              <strong style={{ color: '#92400e' }}>Amendment {String((po as any).amendment_no).padStart(2, '0')}: </strong>
+              <span style={{ color: '#555' }}>{(po as any).amendment_notes}</span>
             </div>
           )}
 

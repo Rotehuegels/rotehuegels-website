@@ -490,7 +490,7 @@ export default async function CustomerStatementPage({ params }: { params: Promis
             const sacHsn = o.hsn_sac_code ?? (o.order_type === 'service' ? '9983' : '—');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const items: Array<{ description: string; qty?: string; hsn: string; base: number; cgst: number; sgst: number; igst: number; total: number }> = Array.isArray((o as any).items) ? (o as any).items : [];
-            const stages = o.stages ?? [];
+            const stages = (o.stages ?? []) as Array<{ id: string; stage_name: string; amount_due: number; gst_on_stage: number; tds_amount?: number }>;
             const descColspan = items.length > 0 ? 4 : 3;
 
             const invCell: React.CSSProperties = { border: '1px solid #ddd', padding: '7px 6px', fontSize: '9.5px' };
@@ -597,7 +597,7 @@ export default async function CustomerStatementPage({ params }: { params: Promis
                         <td style={{ ...invCell, verticalAlign:'top' as const }}>1</td>
                         <td style={{ ...invCell, verticalAlign:'top' as const }}>
                           <div style={{ fontWeight:700, marginBottom:'3px' }}>{o.description}</div>
-                          {stages.length > 1 && stages.map((s: { id: string; stage_name: string; amount_due: number; gst_on_stage: number; tds_amount?: number }) => (
+                          {stages.length > 1 && stages.map((s) => (
                             <div key={s.id} style={{ fontSize:'8.5px', color:'#666', marginTop:'2px' }}>
                               • {s.stage_name}: {fmt(s.amount_due)} + GST {fmt(s.gst_on_stage ?? 0)}
                             </div>

@@ -429,11 +429,11 @@ export default async function StatementPreviewPage({ params }: { params: Promise
 
         </div>{/* end Page 1 */}
 
-        {/* ══════════════════════ PAGE 2 — PAYMENT & SIGN-OFF ══════════════════════ */}
+        {/* ══════════════════════ PAGE 2 — REMITTANCE ADVICE ══════════════════════ */}
         <div id="rh-stmt-p-soa-2" style={docStyle}>
 
-          {/* Continuation header — minimal */}
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1.5px solid #111', paddingBottom:'8px', marginBottom:'20px' }}>
+          {/* Continuation header */}
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1.5px solid #111', paddingBottom:'8px', marginBottom:'16px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logoSrc} alt="Rotehügels" style={{ height:'36px', width:'auto', objectFit:'contain' }} />
@@ -443,32 +443,77 @@ export default async function StatementPreviewPage({ params }: { params: Promise
               </div>
             </div>
             <div style={{ textAlign:'right' as const, fontSize:'9px', color:'#888' }}>
-              <div style={{ fontWeight:700, color:'#b45309', textTransform:'uppercase', letterSpacing:'0.5px' }}>Statement of Account</div>
-              <div>{customer.name} · {today} · Page 2</div>
+              <div style={{ fontWeight:700, color:'#b45309', textTransform:'uppercase', letterSpacing:'0.5px' }}>Remittance Advice</div>
+              <div>{customer.name} · {today}</div>
             </div>
           </div>
 
-          {/* Outstanding summary banner */}
-          <div style={{ background:'#1a1a1a', color:'white', borderRadius:'6px', padding:'12px 16px', marginBottom:'20px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <div style={{ fontSize:'9px', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.5px' }}>Outstanding Balance</div>
-            <div style={{ fontSize:'20px', fontWeight:900, color:'#fca5a5', fontFamily:'monospace' }}>{fmt(totalPending)}</div>
-            <div style={{ fontSize:'9px', color:'#aaa', textAlign:'right' as const }}>
-              <div>Total Invoiced: <span style={{ color:'white', fontFamily:'monospace' }}>{fmt(totalValue)}</span></div>
-              <div>Received: <span style={{ color:'#86efac', fontFamily:'monospace' }}>{fmt(totalReceived)}</span></div>
+          {/* Outstanding balance bar */}
+          <div style={{ background:'#111827', color:'white', borderRadius:'6px', padding:'14px 18px', marginBottom:'16px', display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', gap:'12px' }}>
+            <div>
+              <div style={{ fontSize:'8px', color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:'2px' }}>Total Invoiced</div>
+              <div style={{ fontSize:'14px', fontWeight:700, fontFamily:'monospace' }}>{fmt(totalValue)}</div>
+            </div>
+            <div style={{ textAlign:'center' as const }}>
+              <div style={{ fontSize:'8px', color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:'2px' }}>Balance Due</div>
+              <div style={{ fontSize:'22px', fontWeight:900, fontFamily:'monospace', color:'#fca5a5' }}>{fmt(totalPending)}</div>
+            </div>
+            <div style={{ textAlign:'right' as const }}>
+              <div style={{ fontSize:'8px', color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:'2px' }}>Total Received</div>
+              <div style={{ fontSize:'14px', fontWeight:700, fontFamily:'monospace', color:'#86efac' }}>{fmt(totalReceived)}</div>
             </div>
           </div>
+
+          {/* Pending items breakdown */}
+          {invoiceRows.filter(r => r.pending > 0).length > 0 && (
+            <div style={{ marginBottom:'16px' }}>
+              <div style={{ fontSize:'9px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', color:'#555', marginBottom:'6px' }}>Pending Payment Breakdown</div>
+              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'9.5px' }}>
+                <thead>
+                  <tr style={{ background:'#f5f5f5' }}>
+                    <th style={{ ...cell, textAlign:'left' as const, fontWeight:700, width:'14%' }}>Order No</th>
+                    <th style={{ ...cell, textAlign:'left' as const, fontWeight:700 }}>Description</th>
+                    <th style={{ ...cell, textAlign:'center' as const, fontWeight:700, width:'13%' }}>Invoice Date</th>
+                    <th style={{ ...cell, textAlign:'right' as const, fontWeight:700, width:'16%' }}>Invoiced</th>
+                    <th style={{ ...cell, textAlign:'right' as const, fontWeight:700, width:'14%' }}>Received</th>
+                    <th style={{ ...cell, textAlign:'right' as const, fontWeight:700, color:'#c00', width:'14%' }}>Pending</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoiceRows.filter(r => r.pending > 0).map((o, i) => (
+                    <tr key={o.id} style={{ background: i%2===1 ? '#fafafa' : 'white' }}>
+                      <td style={{ ...cell, fontFamily:'monospace', fontWeight:700, fontSize:'9px' }}>
+                        {o.order_no}
+                        {o.stageLabel && <div style={{ fontSize:'7.5px', color:'#92400e', fontWeight:400, fontFamily:'sans-serif' }}>{o.stageLabel}</div>}
+                      </td>
+                      <td style={{ ...cell, fontSize:'9px' }}>{o.description}</td>
+                      <td style={{ ...cell, textAlign:'center' as const }}>{fmtDate(o.invoice_date ?? o.order_date)}</td>
+                      <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace' }}>{fmt(o.total_value_incl_gst)}</td>
+                      <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', color:'#16a34a' }}>{fmt(o.received)}</td>
+                      <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:700, color:'#c00' }}>{fmt(o.pending)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{ background:'#fff7ed' }}>
+                    <td colSpan={4} style={{ ...cell, textAlign:'right' as const, fontWeight:800, fontSize:'9.5px', color:'#92400e' }}>Total Outstanding</td>
+                    <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:800, color:'#16a34a' }}>{fmt(totalReceived)}</td>
+                    <td style={{ ...cell, textAlign:'right' as const, fontFamily:'monospace', fontWeight:900, color:'#c00', fontSize:'11px' }}>{fmt(totalPending)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {/* Payment request */}
-          <div style={{ border:'1.5px solid #f0c000', background:'#fffbeb', borderRadius:'6px', padding:'10px 14px', marginBottom:'20px', fontSize:'10px' }}>
-            <div style={{ fontWeight:700, fontSize:'11px', marginBottom:'3px' }}>Kindly arrange payment of the outstanding amount at the earliest.</div>
-            <div style={{ color:'#666' }}>Please use the bank details below and mention the Order No. in your payment reference.</div>
+          <div style={{ border:'1.5px solid #f0c000', background:'#fffbeb', borderRadius:'5px', padding:'10px 14px', marginBottom:'16px', fontSize:'10px' }}>
+            <div style={{ fontWeight:700, marginBottom:'2px' }}>Kindly arrange payment of the outstanding amount at the earliest.</div>
+            <div style={{ color:'#666' }}>Please use the bank details below and quote the Order No. in your payment reference.</div>
           </div>
 
-          {/* Bank details + QR — larger, more breathing room */}
-          <div style={{ border:'1px solid #e0e0e0', borderRadius:'6px', padding:'14px 16px', marginBottom:'20px' }}>
-            <div style={{ fontWeight:700, fontSize:'11px', marginBottom:'10px', borderBottom:'1px solid #eee', paddingBottom:'6px' }}>Bank Details for Payment</div>
-            <div style={{ display:'flex', gap:'24px', alignItems:'flex-start' }}>
-              <table style={{ fontSize:'10px', borderCollapse:'collapse', flex:1 }}>
+          {/* Bank details + QR side by side */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr auto', gap:'20px', alignItems:'start', border:'1px solid #e0e0e0', borderRadius:'6px', padding:'14px 16px', marginBottom:'16px' }}>
+            <div>
+              <div style={{ fontWeight:700, fontSize:'10.5px', marginBottom:'10px' }}>Bank Details for Payment</div>
+              <table style={{ fontSize:'10px', borderCollapse:'collapse' }}>
                 <tbody>
                   {[
                     ['Bank',       CO.bank],
@@ -477,35 +522,35 @@ export default async function StatementPreviewPage({ params }: { params: Promise
                     ['UPI ID',     'rotehuegels@sbi'],
                   ].map(([l, v]) => (
                     <tr key={l}>
-                      <td style={{ color:'#666', paddingRight:'16px', paddingBottom:'6px', fontWeight:600, whiteSpace:'nowrap' as const }}>{l}</td>
-                      <td style={{ paddingBottom:'6px', fontFamily: l !== 'Bank' ? 'monospace' : 'inherit', fontWeight: l === 'Account No' ? 700 : 400 }}>{v}</td>
+                      <td style={{ color:'#666', paddingRight:'16px', paddingBottom:'5px', fontWeight:600, whiteSpace:'nowrap' as const }}>{l}</td>
+                      <td style={{ paddingBottom:'5px', fontFamily: l !== 'Bank' ? 'monospace' : 'inherit', fontWeight: l === 'Account No' ? 700 : 400 }}>{v}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <div style={{ textAlign:'center' as const, flexShrink:0 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={upiQr} alt="UPI QR" style={{ width:'96px', height:'96px', display:'block' }} />
-                <div style={{ fontSize:'8px', color:'#888', marginTop:'4px' }}>Scan to Pay via UPI</div>
-              </div>
+            </div>
+            <div style={{ textAlign:'center' as const }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={upiQr} alt="UPI QR" style={{ width:'88px', height:'88px', display:'block' }} />
+              <div style={{ fontSize:'8px', color:'#888', marginTop:'3px' }}>Scan to Pay (UPI)</div>
             </div>
           </div>
 
-          {/* Sign-off */}
-          <div style={{ borderTop:'1.5px solid #ddd', paddingTop:'14px', display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginTop:'auto' }}>
-            <div style={{ fontSize:'9px', color:'#666', lineHeight:1.8 }}>
-              <div style={{ fontWeight:700, color:'#333', marginBottom:'4px' }}>Rotehuegel Research Business Consultancy Private Limited</div>
+          {/* Footer with address + signature */}
+          <div style={{ borderTop:'1px solid #ddd', paddingTop:'12px', display:'flex', justifyContent:'space-between', alignItems:'flex-end' }}>
+            <div style={{ fontSize:'9px', color:'#666', lineHeight:1.7 }}>
+              <div style={{ fontWeight:700, color:'#333', marginBottom:'3px' }}>Rotehuegel Research Business Consultancy Private Limited</div>
               <div>{CO.addr1}</div>
               <div>{CO.addr2}</div>
-              <div style={{ marginTop:'4px' }}>✉ {CO.email} | 📞 {CO.phone}</div>
-              <div style={{ marginTop:'8px', fontSize:'8px', color:'#999' }}>This is a computer-generated statement. For discrepancies, contact {CO.email}</div>
-              <div style={{ fontSize:'8px', color:'#999' }}>Subject to Chennai jurisdiction. | Detailed invoices follow on subsequent pages.</div>
+              <div style={{ marginTop:'3px' }}>✉ {CO.email} · 📞 {CO.phone} · 🌐 {CO.web}</div>
+              <div style={{ marginTop:'6px', fontSize:'8px', color:'#aaa' }}>Computer-generated statement · Subject to Chennai jurisdiction</div>
+              <div style={{ fontSize:'8px', color:'#aaa' }}>For disputes write to {CO.email} quoting the order number.</div>
             </div>
-            <div style={{ textAlign:'right' as const, flexShrink:0 }}>
-              <div style={{ fontSize:'9px', color:'#555', marginBottom:'6px' }}>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
+            <div style={{ textAlign:'right' as const, flexShrink:0, marginLeft:'20px' }}>
+              <div style={{ fontSize:'9px', color:'#555', marginBottom:'5px' }}>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={sigSrc} alt="" style={{ height:'52px', width:'auto', marginLeft:'auto', display:'block', mixBlendMode:'multiply' }} />
-              <div style={{ borderTop:'1px solid #bbb', marginTop:'4px', paddingTop:'4px', fontSize:'9px', fontWeight:700, color:'#111' }}>Sivakumar Shanmugam</div>
+              <div style={{ borderTop:'1px solid #bbb', marginTop:'3px', paddingTop:'3px', fontSize:'9px', fontWeight:700, color:'#111' }}>Sivakumar Shanmugam</div>
               <div style={{ fontSize:'8px', color:'#555' }}>CEO, Rotehügels | Authorised Signatory</div>
             </div>
           </div>

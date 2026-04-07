@@ -211,7 +211,8 @@ export default async function StatementPreviewPage({ params }: { params: Promise
   const docStyle: React.CSSProperties = { width: '210mm', minHeight: '297mm', padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px', background: 'white', color: '#111' };
 
   const pageIds = [
-    'rh-stmt-p-soa',
+    'rh-stmt-p-soa-1',   // Page 1: header + financial summary + SOA table
+    'rh-stmt-p-soa-2',   // Page 2: payment request + bank details + signature
     ...invoiceRows.map(o => `rh-stmt-p-inv-${o.id}`),
     ...(quotes ?? []).map(q => `rh-stmt-p-qt-${q.id}`),
   ];
@@ -234,26 +235,26 @@ export default async function StatementPreviewPage({ params }: { params: Promise
     >
       <div>
 
-        {/* ══════════════════════ PAGE 1 — SOA ══════════════════════ */}
-        <div id="rh-stmt-p-soa" style={docStyle}>
+        {/* ══════════════════════ PAGE 1 — SUMMARY + SOA TABLE ══════════════════════ */}
+        <div id="rh-stmt-p-soa-1" style={docStyle}>
 
           {/* Header */}
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'14px' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'12px' }}>
             <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+              <img src={logoSrc} alt="Rotehügels" style={{ height:'48px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
               <div>
                 <div style={{ fontSize:'11px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
                 <div style={{ fontSize:'11px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
-                <div style={{ marginTop:'5px', fontSize:'9px', color:'#666', lineHeight:1.6 }}>
+                <div style={{ marginTop:'4px', fontSize:'9px', color:'#666', lineHeight:1.5 }}>
                   <div>{CO.addr1}</div><div>{CO.addr2}</div>
                   <div>✉ {CO.email} | 📞 {CO.phone}</div>
                 </div>
               </div>
             </div>
             <div style={{ textAlign:'right' as const }}>
-              <div style={{ fontSize:'20px', fontWeight:900, textTransform:'uppercase', color:'#b45309', letterSpacing:'1px' }}>STATEMENT OF ACCOUNT</div>
-              <div style={{ marginTop:'6px', fontSize:'10px', lineHeight:1.8 }}>
+              <div style={{ fontSize:'18px', fontWeight:900, textTransform:'uppercase', color:'#b45309', letterSpacing:'1px' }}>STATEMENT OF ACCOUNT</div>
+              <div style={{ marginTop:'5px', fontSize:'9.5px', lineHeight:1.8 }}>
                 <div><strong>Date:</strong> {today}</div>
                 <div><strong>GSTIN:</strong> {CO.gstin}</div>
                 <div><strong>PAN:</strong> {CO.pan}</div>
@@ -261,17 +262,19 @@ export default async function StatementPreviewPage({ params }: { params: Promise
             </div>
           </div>
 
-          {/* Customer info */}
-          <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 12px', marginBottom:'10px' }}>
-            <div style={{ fontWeight:700, fontSize:'9px', textTransform:'uppercase', marginBottom:'4px', color:'#666' }}>To</div>
-            <div style={{ fontWeight:700, fontSize:'12px' }}>{customer.name}</div>
-            {customer.gstin && <div style={{ fontSize:'9.5px', marginTop:'2px' }}>GSTIN: {customer.gstin}</div>}
+          {/* Customer info — compact single line */}
+          <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'7px 12px', marginBottom:'10px', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'16px' }}>
+            <div>
+              <div style={{ fontWeight:700, fontSize:'8px', textTransform:'uppercase', marginBottom:'3px', color:'#888' }}>To</div>
+              <div style={{ fontWeight:700, fontSize:'12px' }}>{customer.name}</div>
+              {customer.gstin && <div style={{ fontSize:'9px', marginTop:'1px', color:'#555' }}>GSTIN: {customer.gstin}</div>}
+            </div>
             {billing && (
-              <div style={{ fontSize:'9.5px', marginTop:'4px', lineHeight:1.6, color:'#444' }}>
-                {billing.line1}{billing.line2?`, ${billing.line2}`:''}<br />{billing.city}, {billing.state}{billing.pincode?` – ${billing.pincode}`:''}
+              <div style={{ fontSize:'9px', lineHeight:1.5, color:'#555', textAlign:'right' as const }}>
+                {billing.line1}{billing.line2?`, ${billing.line2}`:''}, {billing.city}, {billing.state}{billing.pincode?` – ${billing.pincode}`:''}
+                {customer.email && <div style={{ marginTop:'1px' }}>✉ {customer.email}</div>}
               </div>
             )}
-            {customer.email && <div style={{ fontSize:'9px', marginTop:'2px' }}>✉ {customer.email}</div>}
           </div>
 
           {/* Financial summary table — per FY with subtotals */}
@@ -424,45 +427,90 @@ export default async function StatementPreviewPage({ params }: { params: Promise
             </tbody>
           </table>
 
-          {/* Payment request */}
-          <div style={{ border:'1px solid #f0c000', background:'#fffbeb', borderRadius:'4px', padding:'8px 12px', marginBottom:'14px', fontSize:'10px' }}>
-            <strong>Kindly arrange payment of the outstanding amount at the earliest.</strong>
-            <span style={{ color:'#666' }}> Please use the bank details below and mention the Order No. in your payment reference.</span>
+        </div>{/* end Page 1 */}
+
+        {/* ══════════════════════ PAGE 2 — PAYMENT & SIGN-OFF ══════════════════════ */}
+        <div id="rh-stmt-p-soa-2" style={docStyle}>
+
+          {/* Continuation header — minimal */}
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1.5px solid #111', paddingBottom:'8px', marginBottom:'20px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={logoSrc} alt="Rotehügels" style={{ height:'36px', width:'auto', objectFit:'contain' }} />
+              <div>
+                <div style={{ fontSize:'10px', fontWeight:900, textTransform:'uppercase' }}>Rotehuegel Research Business Consultancy Pvt Ltd</div>
+                <div style={{ fontSize:'8.5px', color:'#666' }}>{CO.gstin} | {CO.pan}</div>
+              </div>
+            </div>
+            <div style={{ textAlign:'right' as const, fontSize:'9px', color:'#888' }}>
+              <div style={{ fontWeight:700, color:'#b45309', textTransform:'uppercase', letterSpacing:'0.5px' }}>Statement of Account</div>
+              <div>{customer.name} · {today} · Page 2</div>
+            </div>
           </div>
 
-          {/* Bank details + QR */}
-          <div style={{ border:'1px solid #e0e0e0', borderRadius:'4px', padding:'8px 12px', marginBottom:'14px', fontSize:'10px' }}>
-            <div style={{ fontWeight:700, marginBottom:'6px' }}>Bank Details for Payment</div>
-            <div style={{ display:'flex', gap:'16px', alignItems:'flex-start' }}>
-              <div style={{ lineHeight:1.8, flex:1 }}>
-                <div><strong>Bank:</strong> {CO.bank}</div>
-                <div><strong>Account No:</strong> <span style={{ fontFamily:'monospace' }}>{CO.acc}</span></div>
-                <div><strong>IFSC:</strong> <span style={{ fontFamily:'monospace' }}>{CO.ifsc}</span></div>
-                <div><strong>UPI:</strong> <span style={{ fontFamily:'monospace' }}>rotehuegels@sbi</span></div>
-              </div>
+          {/* Outstanding summary banner */}
+          <div style={{ background:'#1a1a1a', color:'white', borderRadius:'6px', padding:'12px 16px', marginBottom:'20px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div style={{ fontSize:'9px', color:'#aaa', textTransform:'uppercase', letterSpacing:'0.5px' }}>Outstanding Balance</div>
+            <div style={{ fontSize:'20px', fontWeight:900, color:'#fca5a5', fontFamily:'monospace' }}>{fmt(totalPending)}</div>
+            <div style={{ fontSize:'9px', color:'#aaa', textAlign:'right' as const }}>
+              <div>Total Invoiced: <span style={{ color:'white', fontFamily:'monospace' }}>{fmt(totalValue)}</span></div>
+              <div>Received: <span style={{ color:'#86efac', fontFamily:'monospace' }}>{fmt(totalReceived)}</span></div>
+            </div>
+          </div>
+
+          {/* Payment request */}
+          <div style={{ border:'1.5px solid #f0c000', background:'#fffbeb', borderRadius:'6px', padding:'10px 14px', marginBottom:'20px', fontSize:'10px' }}>
+            <div style={{ fontWeight:700, fontSize:'11px', marginBottom:'3px' }}>Kindly arrange payment of the outstanding amount at the earliest.</div>
+            <div style={{ color:'#666' }}>Please use the bank details below and mention the Order No. in your payment reference.</div>
+          </div>
+
+          {/* Bank details + QR — larger, more breathing room */}
+          <div style={{ border:'1px solid #e0e0e0', borderRadius:'6px', padding:'14px 16px', marginBottom:'20px' }}>
+            <div style={{ fontWeight:700, fontSize:'11px', marginBottom:'10px', borderBottom:'1px solid #eee', paddingBottom:'6px' }}>Bank Details for Payment</div>
+            <div style={{ display:'flex', gap:'24px', alignItems:'flex-start' }}>
+              <table style={{ fontSize:'10px', borderCollapse:'collapse', flex:1 }}>
+                <tbody>
+                  {[
+                    ['Bank',       CO.bank],
+                    ['Account No', CO.acc],
+                    ['IFSC Code',  CO.ifsc],
+                    ['UPI ID',     'rotehuegels@sbi'],
+                  ].map(([l, v]) => (
+                    <tr key={l}>
+                      <td style={{ color:'#666', paddingRight:'16px', paddingBottom:'6px', fontWeight:600, whiteSpace:'nowrap' as const }}>{l}</td>
+                      <td style={{ paddingBottom:'6px', fontFamily: l !== 'Bank' ? 'monospace' : 'inherit', fontWeight: l === 'Account No' ? 700 : 400 }}>{v}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
               <div style={{ textAlign:'center' as const, flexShrink:0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={upiQr} alt="UPI QR" style={{ width:'80px', height:'80px', display:'block' }} />
-                <div style={{ fontSize:'8px', color:'#555', marginTop:'2px' }}>Scan to Pay (UPI)</div>
+                <img src={upiQr} alt="UPI QR" style={{ width:'96px', height:'96px', display:'block' }} />
+                <div style={{ fontSize:'8px', color:'#888', marginTop:'4px' }}>Scan to Pay via UPI</div>
               </div>
             </div>
           </div>
 
-          {/* SOA footer */}
-          <div style={{ borderTop:'1px solid #ddd', paddingTop:'10px', display:'flex', justifyContent:'space-between', fontSize:'9px', color:'#555' }}>
-            <div>
-              <div>This is a computer-generated statement of account.</div>
-              <div>For discrepancies, contact {CO.email}</div>
-              <div>Subject to Chennai jurisdiction. | Detailed invoices follow on next pages.</div>
+          {/* Sign-off */}
+          <div style={{ borderTop:'1.5px solid #ddd', paddingTop:'14px', display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginTop:'auto' }}>
+            <div style={{ fontSize:'9px', color:'#666', lineHeight:1.8 }}>
+              <div style={{ fontWeight:700, color:'#333', marginBottom:'4px' }}>Rotehuegel Research Business Consultancy Private Limited</div>
+              <div>{CO.addr1}</div>
+              <div>{CO.addr2}</div>
+              <div style={{ marginTop:'4px' }}>✉ {CO.email} | 📞 {CO.phone}</div>
+              <div style={{ marginTop:'8px', fontSize:'8px', color:'#999' }}>This is a computer-generated statement. For discrepancies, contact {CO.email}</div>
+              <div style={{ fontSize:'8px', color:'#999' }}>Subject to Chennai jurisdiction. | Detailed invoices follow on subsequent pages.</div>
             </div>
-            <div style={{ textAlign:'right' as const }}>
-              <div>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
+            <div style={{ textAlign:'right' as const, flexShrink:0 }}>
+              <div style={{ fontSize:'9px', color:'#555', marginBottom:'6px' }}>For Rotehuegel Research Business Consultancy Pvt Ltd</div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={sigSrc} alt="" style={{ height:'44px', width:'auto', marginTop:'4px', marginLeft:'auto', display:'block', mixBlendMode:'multiply' }} />
-              <div style={{ fontWeight:700, color:'#333', marginTop:'2px' }}>Authorised Signatory</div>
+              <img src={sigSrc} alt="" style={{ height:'52px', width:'auto', marginLeft:'auto', display:'block', mixBlendMode:'multiply' }} />
+              <div style={{ borderTop:'1px solid #bbb', marginTop:'4px', paddingTop:'4px', fontSize:'9px', fontWeight:700, color:'#111' }}>Sivakumar Shanmugam</div>
+              <div style={{ fontSize:'8px', color:'#555' }}>CEO, Rotehügels | Authorised Signatory</div>
             </div>
           </div>
-        </div>
+
+        </div>{/* end Page 2 */}
 
         {/* ══════════════════════ PAGES 2+ — INVOICES ══════════════════════ */}
         {invoiceRows.map(o => {

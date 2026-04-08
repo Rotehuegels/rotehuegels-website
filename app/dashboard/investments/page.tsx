@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { TrendingUp, TrendingDown, BarChart3, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Sparkles, Gem } from 'lucide-react';
 import RefreshButton from './RefreshButton';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -204,6 +204,44 @@ Rules: real NSE symbols only, no duplicates with portfolio sectors already over 
   }
 }
 
+// ─── Gold jewellery ───────────────────────────────────────────────────────────
+interface GoldItem {
+  id: string;
+  purchase_date: string;
+  owner: string;
+  item_name: string;
+  grams_22k: number;
+  gold_rate_22k: number;
+  making_charges: number;
+  purchase_value: number;
+}
+
+// Fetches live 22K gold rate in INR/gram via Yahoo Finance (GC=F + USDINR=X)
+// India domestic rate = COMEX × USD/INR × import-duty-factor / troy-oz-per-gram
+// Empirical duty+GST factor ≈ 1.1447 (derived from user's data: COMEX $4820.10 → 24K ₹16,366.36)
+const GOLD_DUTY_FACTOR = 1.1447;
+const TROY_OZ_PER_GRAM = 31.1035;
+
+async function fetchLive22KRate(): Promise<number | null> {
+  try {
+    const res = await fetch(
+      'https://query1.finance.yahoo.com/v7/finance/quote?symbols=GC%3DF%2CUSDINR%3DX',
+      { headers: { 'User-Agent': 'Mozilla/5.0' }, cache: 'no-store', signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+    const quotes: Array<{ symbol: string; regularMarketPrice: number }> =
+      json?.quoteResponse?.result ?? [];
+    const gcf    = quotes.find((q) => q.symbol === 'GC=F')?.regularMarketPrice;
+    const usdInr = quotes.find((q) => q.symbol === 'USDINR=X')?.regularMarketPrice;
+    if (!gcf || !usdInr) return null;
+    const rate24k = (gcf * usdInr * GOLD_DUTY_FACTOR) / TROY_OZ_PER_GRAM;
+    return rate24k * (22 / 24);
+  } catch {
+    return null;
+  }
+}
+
 // ─── NSE price fetching ───────────────────────────────────────────────────────
 async function getNSECookie(): Promise<string> {
   const res = await fetch('https://www.nseindia.com', {
@@ -262,12 +300,13 @@ async function fetchNSEPrices(symbols: string[]): Promise<Record<string, { price
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default async function InvestmentsPage() {
-  const { data: holdings } = await supabaseAdmin
-    .from('demat_holdings')
-    .select('*')
-    .order('total_invested', { ascending: false });
+  const [{ data: holdings }, { data: goldRaw }] = await Promise.all([
+    supabaseAdmin.from('demat_holdings').select('*').order('total_invested', { ascending: false }),
+    supabaseAdmin.from('gold_jewellery').select('*').order('purchase_date', { ascending: true }),
+  ]);
 
   const rows = (holdings ?? []) as Holding[];
+  const goldItems = (goldRaw ?? []) as GoldItem[];
 
   const nseSymbols = [...new Set(rows.map((h) => NSE_SYMBOL_MAP[h.symbol] ?? h.symbol))];
 
@@ -286,9 +325,10 @@ export default async function InvestmentsPage() {
 
   const currentDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  // Fetch prices and generate ideas in parallel
-  const [priceMap, ideasResult] = await Promise.all([
+  // Fetch NSE prices, gold rate, and AI ideas in parallel
+  const [priceMap, live22kRate, ideasResult] = await Promise.all([
     fetchNSEPrices(nseSymbols),
+    fetchLive22KRate(),
     generateInvestmentIdeas(sectorAllocations, currentDate),
   ]);
 
@@ -326,6 +366,31 @@ export default async function InvestmentsPage() {
     const gain = cur - inv;
     return { sector, inv, cur, pct, gain };
   });
+
+  // Gold jewellery computed values
+  const goldRate = live22kRate ?? 15002.42; // fallback: COMEX-based rate from user's data
+  const goldRateIsLive = live22kRate !== null;
+
+  const goldEnriched = goldItems.map((item) => ({
+    ...item,
+    currentValue: item.grams_22k * goldRate,
+    gain: item.grams_22k * goldRate - item.purchase_value,
+    gainPct: ((item.grams_22k * goldRate - item.purchase_value) / item.purchase_value) * 100,
+  }));
+
+  const goldByOwner = ['Sivakumar', 'Arrthe'].map((owner) => {
+    const items = goldEnriched.filter((g) => g.owner === owner);
+    const totalInv = items.reduce((s, g) => s + g.purchase_value, 0);
+    const totalCur = items.reduce((s, g) => s + g.currentValue, 0);
+    const totalGrams = items.reduce((s, g) => s + g.grams_22k, 0);
+    return { owner, items, totalInv, totalCur, totalGrams, gain: totalCur - totalInv };
+  });
+
+  const goldTotalInvested = goldEnriched.reduce((s, g) => s + g.purchase_value, 0);
+  const goldTotalCurrent  = goldEnriched.reduce((s, g) => s + g.currentValue, 0);
+  const goldTotalGrams    = goldEnriched.reduce((s, g) => s + g.grams_22k, 0);
+  const goldTotalGain     = goldTotalCurrent - goldTotalInvested;
+  const goldTotalGainPct  = (goldTotalGain / goldTotalInvested) * 100;
 
   return (
     <div className="space-y-5">
@@ -568,6 +633,126 @@ export default async function InvestmentsPage() {
           ))}
         </div>
       </div>
+
+      {/* Gold Jewellery */}
+      {goldItems.length > 0 && (
+        <div className={glass}>
+          <div className="flex items-center gap-3 border-b border-zinc-800 px-5 py-3">
+            <Gem className="h-4 w-4 text-yellow-400" />
+            <h2 className="font-semibold text-white text-sm">Physical Gold — 22K Jewellery</h2>
+            <span className="ml-auto flex items-center gap-1.5 text-xs">
+              {goldRateIsLive
+                ? <><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /><span className="text-emerald-400">Live · ₹{goldRate.toFixed(0)}/g</span></>
+                : <span className="text-zinc-500">₹{goldRate.toFixed(0)}/g (last known)</span>
+              }
+            </span>
+          </div>
+
+          {/* Owner summary strip */}
+          <div className="grid grid-cols-2 divide-x divide-zinc-800 border-b border-zinc-800">
+            {goldByOwner.map(({ owner, totalGrams, totalInv, totalCur, gain }) => (
+              <div key={owner} className="px-5 py-3 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs text-zinc-500">{owner}</p>
+                  <p className="text-sm font-bold text-yellow-400">{totalGrams.toFixed(3)} g</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-zinc-400">{fmtCompact(totalCur)}</p>
+                  <p className={`text-xs font-medium ${gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {gain >= 0 ? '+' : ''}{fmtCompact(gain)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Items by owner */}
+          {goldByOwner.map(({ owner, items }) => (
+            <div key={owner}>
+              <div className="px-5 py-1.5 bg-zinc-900/60 border-b border-zinc-800/50">
+                <span className="text-xs font-semibold text-yellow-400 uppercase tracking-wider">{owner}</span>
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-zinc-800 text-zinc-500 uppercase tracking-wider">
+                      <th className="px-5 py-2 text-left">Item</th>
+                      <th className="px-3 py-2 text-right">Date</th>
+                      <th className="px-3 py-2 text-right">Grams</th>
+                      <th className="px-3 py-2 text-right">Buy Rate</th>
+                      <th className="px-3 py-2 text-right">MC+VAT</th>
+                      <th className="px-3 py-2 text-right">Invested</th>
+                      <th className="px-3 py-2 text-right">Curr Value</th>
+                      <th className="px-5 py-2 text-right">Gain</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/50">
+                    {items.map((g) => (
+                      <tr key={g.id} className="hover:bg-zinc-800/20 transition-colors">
+                        <td className="px-5 py-2 font-medium text-white">{g.item_name}</td>
+                        <td className="px-3 py-2 text-right text-zinc-500 font-mono">
+                          {new Date(g.purchase_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </td>
+                        <td className="px-3 py-2 text-right text-zinc-300 font-mono">{g.grams_22k.toFixed(3)}</td>
+                        <td className="px-3 py-2 text-right text-zinc-400 font-mono">
+                          {new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(g.gold_rate_22k)}
+                        </td>
+                        <td className="px-3 py-2 text-right text-zinc-500">{fmtCompact(g.making_charges)}</td>
+                        <td className="px-3 py-2 text-right text-zinc-300">{fmtCompact(g.purchase_value)}</td>
+                        <td className="px-3 py-2 text-right text-yellow-300">{fmtCompact(g.currentValue)}</td>
+                        <td className="px-5 py-2 text-right">
+                          <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 font-medium ${
+                            g.gain >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+                          }`} style={{ fontSize: '10px' }}>
+                            {g.gain >= 0 ? '+' : ''}{g.gainPct.toFixed(1)}%
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="md:hidden divide-y divide-zinc-800/50">
+                {items.map((g) => (
+                  <div key={g.id} className="px-4 py-3 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-white text-sm">{g.item_name}</p>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        g.gain >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+                      }`}>
+                        {g.gain >= 0 ? '+' : ''}{g.gainPct.toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div><p className="text-zinc-500">Grams</p><p className="text-zinc-300">{g.grams_22k.toFixed(3)}g</p></div>
+                      <div><p className="text-zinc-500">Invested</p><p className="text-zinc-300">{fmtCompact(g.purchase_value)}</p></div>
+                      <div><p className="text-zinc-500">Current</p><p className="text-yellow-300">{fmtCompact(g.currentValue)}</p></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* Gold total footer */}
+          <div className="border-t border-zinc-700 bg-zinc-900/60 px-5 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-4">
+              <span className="text-zinc-400">Total <span className="text-yellow-400 font-bold">{goldTotalGrams.toFixed(3)} g</span> 22K</span>
+              <span className="text-zinc-400">Invested <span className="text-zinc-200 font-semibold">{fmtCompact(goldTotalInvested)}</span></span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-zinc-400">Current <span className="text-yellow-300 font-semibold">{fmtCompact(goldTotalCurrent)}</span></span>
+              <span className={`font-bold ${goldTotalGain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {goldTotalGain >= 0 ? '+' : ''}{fmtCompact(goldTotalGain)} ({goldTotalGainPct.toFixed(1)}%)
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Dynamic Investment Ideas */}
       <div className={glass}>

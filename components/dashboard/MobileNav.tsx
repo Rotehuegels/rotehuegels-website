@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ChevronDown, LayoutDashboard, Users, UserPlus, Network, Package, Briefcase, ClipboardList, LogOut, IndianRupee, ReceiptText, ShoppingBag, FileText, TrendingUp } from 'lucide-react';
+import { Menu, X, ChevronDown, LayoutDashboard, Users, UserPlus, Network, Package, Briefcase, ClipboardList, LogOut, IndianRupee, ReceiptText, ShoppingBag, FileText, TrendingUp, Wallet } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
@@ -37,6 +37,7 @@ const NAV = [
     ],
   },
   { label: 'Investments', href: '/dashboard/investments', icon: TrendingUp },
+  { label: 'Finance', href: '/dashboard/finance', icon: Wallet },
   { label: 'REX Members', href: '/dashboard/rex', icon: Network },
   { label: 'Suppliers', href: '/dashboard/suppliers', icon: Package },
 ];

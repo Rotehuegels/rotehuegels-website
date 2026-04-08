@@ -19,6 +19,7 @@ import {
   BadgePercent,
   Landmark,
   TrendingUp,
+  Wallet,
   Building2,
   BookOpen,
   FilePlus,
@@ -80,6 +81,11 @@ const NAV = [
     label: 'Investments',
     href: '/dashboard/investments',
     icon: TrendingUp,
+  },
+  {
+    label: 'Finance',
+    href: '/dashboard/finance',
+    icon: Wallet,
   },
   {
     label: 'REX Members',

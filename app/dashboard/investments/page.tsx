@@ -1,5 +1,6 @@
+import Anthropic from '@anthropic-ai/sdk';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { TrendingUp, TrendingDown, BarChart3, Lightbulb } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Sparkles } from 'lucide-react';
 import RefreshButton from './RefreshButton';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -30,10 +31,9 @@ interface EnrichedHolding extends Holding {
 
 const NSE_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
 
-// Maps DB symbol → NSE quote symbol
 const NSE_SYMBOL_MAP: Record<string, string> = {
   SGBT65:       'SGBSEP31II',
-  'SGB-DIRECT': 'SGBSEP31II',  // Direct allotment SGB — use SGBSEP31II NSE LTP
+  'SGB-DIRECT': 'SGBSEP31II',
 };
 
 const SECTOR_ORDER = [
@@ -75,58 +75,136 @@ const SECTOR_DOT: Record<string, string> = {
   'Other':                    'bg-zinc-400',
 };
 
-const IDEAS = [
-  {
-    symbol: 'HINDZINC',
-    name: 'Hindustan Zinc Ltd',
-    sector: 'Metals & Mining',
-    rationale: 'Core raw material for your electrochemical business. World\'s 2nd largest zinc producer, consistent high dividend payer. Direct alignment with Rotehügels project scope.',
-    color: 'text-orange-400',
-  },
-  {
-    symbol: 'LT',
-    name: 'Larsen & Toubro',
-    sector: 'Engineering & Capital Goods',
-    rationale: 'Strong order book in industrial infrastructure. Aligns with project-execution and EPC nature of your business. Defensive large-cap with steady compounding.',
-    color: 'text-blue-400',
-  },
-  {
-    symbol: 'ABB',
-    name: 'ABB India Ltd',
-    sector: 'Industrial Automation',
-    rationale: 'Electrical & automation equipment — directly relevant to AutoREX and industrial commissioning projects. Well-positioned for India\'s manufacturing capex cycle.',
-    color: 'text-cyan-400',
-  },
-  {
-    symbol: 'RECLTD',
-    name: 'REC Ltd',
-    sector: 'Energy Finance',
-    rationale: 'Government NBFC funding power infrastructure. High dividend yield (~4%), low valuation. Complements existing NTPC/POWERGRID holdings in the energy sector.',
-    color: 'text-red-400',
-  },
-  {
-    symbol: 'TATAPOWER',
-    name: 'Tata Power Co Ltd',
-    sector: 'Energy',
-    rationale: 'Renewable energy transition play with growing solar EPC and rooftop segment. Balances conventional energy exposure from ONGC/IOC/COALINDIA holdings.',
-    color: 'text-emerald-400',
-  },
-  {
-    symbol: 'TITAN',
-    name: 'Titan Company Ltd',
-    sector: 'Consumer Discretionary',
-    rationale: 'Portfolio has zero consumer discretionary exposure. Titan is a high-quality compounder across jewellery, watches and eyewear. Diversifies away from metals/banking concentration.',
-    color: 'text-yellow-400',
-  },
-  {
-    symbol: 'SGB ↑',
-    name: 'Increase SGB Allocation',
-    sector: 'Gold & Sovereign Bonds',
-    rationale: 'SGBs are tax-free at 8-year maturity and earn 2.5% p.a. guaranteed interest. With business exposure to lead and aluminium, increasing gold allocation improves portfolio hedging.',
-    color: 'text-yellow-500',
-  },
+const SECTOR_HEX: Record<string, string> = {
+  'Gold & Sovereign Bonds':   '#facc15',
+  'Banking & Finance':        '#38bdf8',
+  'Metals & Mining':          '#fb923c',
+  'Energy':                   '#f87171',
+  'Technology':               '#818cf8',
+  'Pharma & Healthcare':      '#34d399',
+  'FMCG':                     '#f472b6',
+  'Auto':                     '#c084fc',
+  'Telecom Infrastructure':   '#22d3ee',
+  'Other':                    '#71717a',
+};
+
+// Left-border accent color for sector rows in the table
+const SECTOR_BORDER: Record<string, string> = {
+  'Gold & Sovereign Bonds':   'border-l-yellow-400',
+  'Banking & Finance':        'border-l-sky-400',
+  'Metals & Mining':          'border-l-orange-400',
+  'Energy':                   'border-l-red-400',
+  'Technology':               'border-l-indigo-400',
+  'Pharma & Healthcare':      'border-l-emerald-400',
+  'FMCG':                     'border-l-pink-400',
+  'Auto':                     'border-l-purple-400',
+  'Telecom Infrastructure':   'border-l-cyan-400',
+  'Other':                    'border-l-zinc-400',
+};
+
+// ─── SVG Donut Chart (pure server-renderable) ───────────────────────────────
+function DonutChart({ slices }: { slices: Array<{ sector: string; pct: number }> }) {
+  const r = 56;
+  const cx = 80;
+  const cy = 80;
+  const sw = 22;
+  const C = 2 * Math.PI * r;
+
+  let cum = 0;
+  const segs = slices.map((s) => {
+    const len = (s.pct / 100) * C;
+    const off = -(cum / 100) * C;
+    cum += s.pct;
+    return { ...s, len, off };
+  });
+
+  return (
+    <svg width="160" height="160" viewBox="0 0 160 160" className="shrink-0">
+      {/* Track */}
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#27272a" strokeWidth={sw + 1} />
+      <g transform={`rotate(-90 ${cx} ${cy})`}>
+        {segs.map((seg, i) => (
+          <circle
+            key={i}
+            cx={cx} cy={cy} r={r}
+            fill="none"
+            stroke={SECTOR_HEX[seg.sector] ?? '#71717a'}
+            strokeWidth={sw}
+            strokeDasharray={`${seg.len.toFixed(2)} ${C.toFixed(2)}`}
+            strokeDashoffset={seg.off.toFixed(2)}
+            strokeLinecap="butt"
+          />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+// ─── Dynamic Investment Ideas via Claude ─────────────────────────────────────
+interface IdeaItem {
+  symbol: string;
+  name: string;
+  sector: string;
+  rationale: string;
+  theme: string;
+}
+
+const FALLBACK_IDEAS: IdeaItem[] = [
+  { symbol: 'HINDZINC',  name: 'Hindustan Zinc Ltd',  sector: 'Metals & Mining',    theme: 'Core alignment',       rationale: 'World\'s 2nd largest zinc producer and consistent high dividend payer. Direct raw material alignment with your electrochemical business.' },
+  { symbol: 'LT',        name: 'Larsen & Toubro',      sector: 'Engineering',         theme: 'Capex cycle',          rationale: 'Strong order book in industrial infrastructure. Aligns with EPC and project-execution nature of your business.' },
+  { symbol: 'RECLTD',    name: 'REC Ltd',              sector: 'Energy Finance',      theme: 'High yield',           rationale: 'Government NBFC funding power infrastructure. High dividend yield, low valuation, complements existing energy holdings.' },
+  { symbol: 'TATAPOWER', name: 'Tata Power Co Ltd',    sector: 'Energy',              theme: 'Green transition',     rationale: 'Renewable energy transition play with growing solar EPC. Balances conventional energy exposure.' },
+  { symbol: 'ABB',       name: 'ABB India Ltd',        sector: 'Industrial Auto',     theme: 'Manufacturing capex',  rationale: 'Electrical & automation equipment — directly relevant to AutoREX and industrial commissioning projects.' },
+  { symbol: 'TITAN',     name: 'Titan Company Ltd',    sector: 'Consumer',            theme: 'Diversification',      rationale: 'Portfolio has zero consumer discretionary exposure. High-quality compounder across jewellery, watches and eyewear.' },
 ];
 
+async function generateInvestmentIdeas(
+  sectorAllocations: Array<{ sector: string; pct: number }>,
+  currentDate: string,
+): Promise<{ ideas: IdeaItem[]; generatedAt: string; isAI: boolean }> {
+  try {
+    const client = new Anthropic();
+    const portfolioSummary = sectorAllocations.map((s) => `${s.sector}: ${s.pct.toFixed(1)}%`).join(', ');
+
+    const resp = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1200,
+      messages: [{
+        role: 'user',
+        content: `You are an investment advisor for an Indian investor using ICICI Direct Demat (NSE stocks).
+
+Current portfolio allocation: ${portfolioSummary}
+Date: ${currentDate}
+
+Considering current geopolitical context (US-China trade tensions, Middle East instability, global energy transition, India's manufacturing growth, defence capex, digital infrastructure build-out, commodity cycles) AND portfolio gaps — generate exactly 6 investment ideas for Indian listed stocks/ETFs.
+
+Return ONLY a valid JSON array, no other text:
+[
+  {
+    "symbol": "NSE_SYMBOL",
+    "name": "Full Company Name",
+    "sector": "Sector Name",
+    "rationale": "2-3 sentences linking the geopolitical/macro theme to this specific stock and why it fits this portfolio.",
+    "theme": "Short theme tag (e.g. 'China+1 Play', 'Defence Capex', 'Energy Transition')"
+  }
+]
+
+Rules: real NSE symbols only, no duplicates with portfolio sectors already over 25%, cover at least 3 different geopolitical themes.`,
+      }],
+    });
+
+    const text = resp.content[0].type === 'text' ? resp.content[0].text : '';
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return { ideas: FALLBACK_IDEAS, generatedAt: currentDate, isAI: false };
+
+    const parsed = JSON.parse(jsonMatch[0]) as IdeaItem[];
+    return { ideas: parsed.slice(0, 6), generatedAt: currentDate, isAI: true };
+  } catch {
+    return { ideas: FALLBACK_IDEAS, generatedAt: currentDate, isAI: false };
+  }
+}
+
+// ─── NSE price fetching ───────────────────────────────────────────────────────
 async function getNSECookie(): Promise<string> {
   const res = await fetch('https://www.nseindia.com', {
     headers: {
@@ -143,10 +221,7 @@ async function getNSECookie(): Promise<string> {
   return raw.map((c) => c.split(';')[0].trim()).filter(Boolean).join('; ');
 }
 
-async function nseQuote(
-  symbol: string,
-  cookie: string,
-): Promise<{ price: number; dayChangePct: number } | null> {
+async function nseQuote(symbol: string, cookie: string): Promise<{ price: number; dayChangePct: number } | null> {
   try {
     const res = await fetch(
       `https://www.nseindia.com/api/quote-equity?symbol=${encodeURIComponent(symbol)}`,
@@ -171,9 +246,7 @@ async function nseQuote(
   }
 }
 
-async function fetchNSEPrices(
-  symbols: string[],
-): Promise<Record<string, { price: number; dayChangePct: number }>> {
+async function fetchNSEPrices(symbols: string[]): Promise<Record<string, { price: number; dayChangePct: number }>> {
   if (!symbols.length) return {};
   try {
     const cookie = await getNSECookie();
@@ -187,6 +260,7 @@ async function fetchNSEPrices(
   }
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default async function InvestmentsPage() {
   const { data: holdings } = await supabaseAdmin
     .from('demat_holdings')
@@ -195,9 +269,28 @@ export default async function InvestmentsPage() {
 
   const rows = (holdings ?? []) as Holding[];
 
-  // Deduplicate NSE symbols (SGB-DIRECT and SGBT65 both map to SGBSEP31II)
   const nseSymbols = [...new Set(rows.map((h) => NSE_SYMBOL_MAP[h.symbol] ?? h.symbol))];
-  const priceMap = await fetchNSEPrices(nseSymbols);
+
+  // Group by sector (needed before enrichment for ideas call)
+  const rawSectorMap: Record<string, Holding[]> = {};
+  for (const h of rows) {
+    const s = h.sector ?? 'Other';
+    if (!rawSectorMap[s]) rawSectorMap[s] = [];
+    rawSectorMap[s].push(h);
+  }
+  const totalRawInvested = rows.reduce((s, h) => s + h.total_invested, 0);
+  const sectorAllocations = SECTOR_ORDER.filter((s) => rawSectorMap[s]).map((s) => ({
+    sector: s,
+    pct: (rawSectorMap[s].reduce((acc, h) => acc + h.total_invested, 0) / totalRawInvested) * 100,
+  }));
+
+  const currentDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  // Fetch prices and generate ideas in parallel
+  const [priceMap, ideasResult] = await Promise.all([
+    fetchNSEPrices(nseSymbols),
+    generateInvestmentIdeas(sectorAllocations, currentDate),
+  ]);
 
   const enriched: EnrichedHolding[] = rows.map((h) => {
     const nseSymbol    = NSE_SYMBOL_MAP[h.symbol] ?? h.symbol;
@@ -216,7 +309,6 @@ export default async function InvestmentsPage() {
   const totalPnlPct   = (totalPnl / totalInvested) * 100;
   const liveCount     = enriched.filter((h) => h.currentPrice !== null).length;
 
-  // Group by sector
   const sectorMap: Record<string, EnrichedHolding[]> = {};
   for (const h of enriched) {
     const s = h.sector ?? 'Other';
@@ -225,8 +317,18 @@ export default async function InvestmentsPage() {
   }
   const orderedSectors = SECTOR_ORDER.filter((s) => sectorMap[s]);
 
+  // Sector stats for allocation panel
+  const sectorStats = orderedSectors.map((sector) => {
+    const sh   = sectorMap[sector];
+    const inv  = sh.reduce((s, h) => s + h.total_invested, 0);
+    const cur  = sh.reduce((s, h) => s + (h.currentValue ?? h.total_invested), 0);
+    const pct  = (inv / totalInvested) * 100;
+    const gain = cur - inv;
+    return { sector, inv, cur, pct, gain };
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -239,25 +341,25 @@ export default async function InvestmentsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div className={`${glass} p-5`}>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className={`${glass} p-4`}>
           <p className="text-xs text-zinc-500 uppercase tracking-wider">Total Invested</p>
           <p className="mt-2 text-xl font-bold text-indigo-400">{fmtCompact(totalInvested)}</p>
           <p className="mt-0.5 text-xs text-zinc-600">{fmt(totalInvested)}</p>
         </div>
-        <div className={`${glass} p-5`}>
+        <div className={`${glass} p-4`}>
           <p className="text-xs text-zinc-500 uppercase tracking-wider">Current Value</p>
           <p className="mt-2 text-xl font-bold text-indigo-300">{fmtCompact(totalCurrent)}</p>
           <p className="mt-0.5 text-xs text-zinc-600">{fmt(totalCurrent)}</p>
         </div>
-        <div className={`${glass} p-5`}>
+        <div className={`${glass} p-4`}>
           <p className="text-xs text-zinc-500 uppercase tracking-wider">Total P&amp;L</p>
           <p className={`mt-2 text-xl font-bold ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {totalPnl >= 0 ? '+' : ''}{fmtCompact(totalPnl)}
           </p>
           <p className="mt-0.5 text-xs text-zinc-600">{fmt(Math.abs(totalPnl))}</p>
         </div>
-        <div className={`${glass} p-5`}>
+        <div className={`${glass} p-4`}>
           <p className="text-xs text-zinc-500 uppercase tracking-wider">P&amp;L %</p>
           <div className="mt-2 flex items-center gap-1.5">
             {totalPnl >= 0
@@ -271,133 +373,135 @@ export default async function InvestmentsPage() {
         </div>
       </div>
 
-      {/* Sector Allocation Bars */}
+      {/* Sector Allocation — Donut + Bars */}
       <div className={`${glass} p-5`}>
-        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Sector Allocation</h2>
-        <div className="space-y-2.5">
-          {orderedSectors.map((sector) => {
-            const sh      = sectorMap[sector];
-            const inv     = sh.reduce((s, h) => s + h.total_invested, 0);
-            const cur     = sh.reduce((s, h) => s + (h.currentValue ?? h.total_invested), 0);
-            const pct     = (inv / totalInvested) * 100;
-            const gain    = cur - inv;
-            return (
-              <div key={sector} className="flex items-center gap-3">
-                <div className="w-40 shrink-0 flex items-center gap-2">
+        <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">Sector Allocation</h2>
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+
+          {/* Donut chart */}
+          <div className="flex flex-col items-center gap-3 shrink-0">
+            <DonutChart slices={sectorStats.map((s) => ({ sector: s.sector, pct: s.pct }))} />
+            <p className="text-xs text-zinc-500">{orderedSectors.length} sectors</p>
+          </div>
+
+          {/* Bar list */}
+          <div className="flex-1 space-y-2 w-full">
+            {sectorStats.map(({ sector, pct, gain }) => (
+              <div key={sector} className="flex items-center gap-2.5">
+                <div className="w-36 shrink-0 flex items-center gap-1.5">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${SECTOR_DOT[sector] ?? 'bg-zinc-400'}`} />
-                  <span className="text-xs text-zinc-400 truncate">{sector}</span>
+                  <span className="text-xs text-zinc-300 truncate">{sector}</span>
                 </div>
-                <div className="flex-1 h-2 rounded-full bg-zinc-800 overflow-hidden">
+                <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
                   <div
-                    className={`h-full rounded-full opacity-70 ${SECTOR_DOT[sector] ?? 'bg-zinc-400'}`}
-                    style={{ width: `${pct.toFixed(1)}%` }}
+                    className={`h-full rounded-full ${SECTOR_DOT[sector] ?? 'bg-zinc-400'}`}
+                    style={{ width: `${pct.toFixed(1)}%`, opacity: 0.75 }}
                   />
                 </div>
-                <span className="w-10 text-right text-xs text-zinc-500">{pct.toFixed(1)}%</span>
-                <span className={`w-20 text-right text-xs ${gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                <span className="w-9 text-right text-xs text-zinc-400 font-mono">{pct.toFixed(1)}%</span>
+                <span className={`w-16 text-right text-xs font-mono ${gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {gain >= 0 ? '+' : ''}{fmtCompact(gain)}
                 </span>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Holdings Table grouped by sector */}
+      {/* Holdings Table — compact, grouped by sector */}
       <div className={glass}>
-        <div className="flex items-center gap-3 border-b border-zinc-800 px-6 py-4">
-          <BarChart3 className="h-5 w-5 text-indigo-400" />
-          <h2 className="font-semibold text-white">Holdings</h2>
+        <div className="flex items-center gap-3 border-b border-zinc-800 px-5 py-3">
+          <BarChart3 className="h-4 w-4 text-indigo-400" />
+          <h2 className="font-semibold text-white text-sm">Holdings</h2>
+          <span className="text-xs text-zinc-500 ml-auto">{enriched.length} positions</span>
         </div>
 
         {/* Desktop Table */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-zinc-800 text-xs text-zinc-500 uppercase tracking-wider">
-                <th className="px-6 py-3 text-left">Stock</th>
-                <th className="px-4 py-3 text-right">Qty</th>
-                <th className="px-4 py-3 text-right">Avg Buy</th>
-                <th className="px-4 py-3 text-right">Invested</th>
-                <th className="px-4 py-3 text-right">Current Price</th>
-                <th className="px-4 py-3 text-right">Current Value</th>
-                <th className="px-4 py-3 text-right">P&amp;L</th>
-                <th className="px-6 py-3 text-right">P&amp;L %</th>
+              <tr className="border-b border-zinc-800 text-zinc-500 uppercase tracking-wider">
+                <th className="px-5 py-2.5 text-left">Stock</th>
+                <th className="px-3 py-2.5 text-right">Qty</th>
+                <th className="px-3 py-2.5 text-right">Avg Buy</th>
+                <th className="px-3 py-2.5 text-right">Invested</th>
+                <th className="px-3 py-2.5 text-right">Curr Price</th>
+                <th className="px-3 py-2.5 text-right">Curr Value</th>
+                <th className="px-3 py-2.5 text-right">P&amp;L</th>
+                <th className="px-5 py-2.5 text-right">P&amp;L %</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/60">
+            <tbody className="divide-y divide-zinc-800/50">
               {orderedSectors.map((sector) => {
                 const sh      = sectorMap[sector];
                 const sInv    = sh.reduce((s, h) => s + h.total_invested, 0);
                 const sCur    = sh.reduce((s, h) => s + (h.currentValue ?? h.total_invested), 0);
                 const sPnl    = sCur - sInv;
                 const sPnlPct = (sPnl / sInv) * 100;
+                const border  = SECTOR_BORDER[sector] ?? 'border-l-zinc-600';
                 return [
-                  <tr key={`hdr-${sector}`} className="bg-zinc-900/70 border-t border-zinc-700">
-                    <td className="px-6 py-2" colSpan={3}>
+                  <tr key={`hdr-${sector}`} className={`bg-zinc-900/80 border-t border-zinc-700/60 border-l-2 ${border}`}>
+                    <td className="px-5 py-1.5" colSpan={3}>
                       <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${SECTOR_DOT[sector] ?? 'bg-zinc-400'}`} />
                         <span className={`text-xs font-bold uppercase tracking-wider ${SECTOR_COLOR[sector] ?? 'text-zinc-400'}`}>{sector}</span>
-                        <span className="text-xs text-zinc-600">({sh.length})</span>
+                        <span className="text-zinc-600">({sh.length})</span>
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-right text-xs text-zinc-400">{fmtCompact(sInv)}</td>
-                    <td className="px-4 py-2" />
-                    <td className="px-4 py-2 text-right text-xs text-zinc-300">{fmtCompact(sCur)}</td>
-                    <td className={`px-4 py-2 text-right text-xs ${sPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <td className="px-3 py-1.5 text-right text-zinc-400">{fmtCompact(sInv)}</td>
+                    <td className="px-3 py-1.5" />
+                    <td className="px-3 py-1.5 text-right text-zinc-300">{fmtCompact(sCur)}</td>
+                    <td className={`px-3 py-1.5 text-right ${sPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {sPnl >= 0 ? '+' : ''}{fmtCompact(sPnl)}
                     </td>
-                    <td className={`px-6 py-2 text-right text-xs font-semibold ${sPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <td className={`px-5 py-1.5 text-right font-semibold ${sPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {sPnl >= 0 ? '+' : ''}{sPnlPct.toFixed(2)}%
                     </td>
                   </tr>,
                   ...sh.map((h) => {
                     const gain = h.pnl !== null ? h.pnl >= 0 : null;
                     return (
-                      <tr key={h.id} className="hover:bg-zinc-800/30 transition-colors">
-                        <td className="px-6 py-3.5 pl-10">
-                          <p className="font-medium text-white">{h.symbol}</p>
-                          <p className="text-xs text-zinc-500 truncate max-w-[180px]">{h.company_name}</p>
+                      <tr key={h.id} className={`hover:bg-zinc-800/20 transition-colors border-l-2 ${border} border-l-transparent hover:border-l-2`}>
+                        <td className="px-5 py-2 pl-8">
+                          <p className="font-semibold text-white text-xs">{h.symbol}</p>
+                          <p className="text-zinc-500 truncate max-w-[160px]" style={{ fontSize: '10px' }}>{h.company_name}</p>
                         </td>
-                        <td className="px-4 py-3.5 text-right text-zinc-300">{h.quantity}</td>
-                        <td className="px-4 py-3.5 text-right text-zinc-300">
+                        <td className="px-3 py-2 text-right text-zinc-300">{h.quantity}</td>
+                        <td className="px-3 py-2 text-right text-zinc-400 font-mono">
                           {new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(h.avg_buy_price)}
                         </td>
-                        <td className="px-4 py-3.5 text-right text-zinc-300">{fmtCompact(h.total_invested)}</td>
-                        <td className="px-4 py-3.5 text-right">
+                        <td className="px-3 py-2 text-right text-zinc-300">{fmtCompact(h.total_invested)}</td>
+                        <td className="px-3 py-2 text-right">
                           {h.currentPrice !== null ? (
                             <div>
-                              <p className="text-white font-medium">
+                              <p className="text-white font-mono">
                                 {new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(h.currentPrice)}
                               </p>
                               {h.dayChangePct !== null && (
-                                <p className={`text-xs ${h.dayChangePct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                <p className={`${h.dayChangePct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} style={{ fontSize: '10px' }}>
                                   {h.dayChangePct >= 0 ? '+' : ''}{h.dayChangePct.toFixed(2)}%
                                 </p>
                               )}
                             </div>
-                          ) : (
-                            <span className="text-zinc-600">N/A</span>
-                          )}
+                          ) : <span className="text-zinc-700">N/A</span>}
                         </td>
-                        <td className="px-4 py-3.5 text-right text-zinc-300">
-                          {h.currentValue !== null ? fmtCompact(h.currentValue) : <span className="text-zinc-600">—</span>}
+                        <td className="px-3 py-2 text-right text-zinc-300">
+                          {h.currentValue !== null ? fmtCompact(h.currentValue) : <span className="text-zinc-700">—</span>}
                         </td>
-                        <td className="px-4 py-3.5 text-right">
+                        <td className="px-3 py-2 text-right">
                           {h.pnl !== null ? (
                             <span className={gain ? 'text-emerald-400' : 'text-rose-400'}>
                               {gain ? '+' : ''}{fmtCompact(h.pnl)}
                             </span>
-                          ) : <span className="text-zinc-600">—</span>}
+                          ) : <span className="text-zinc-700">—</span>}
                         </td>
-                        <td className="px-6 py-3.5 text-right">
+                        <td className="px-5 py-2 text-right">
                           {h.pnlPct !== null ? (
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                            <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 font-medium ${
                               gain ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
-                            }`}>
+                            }`} style={{ fontSize: '10px' }}>
                               {gain ? '+' : ''}{h.pnlPct.toFixed(2)}%
                             </span>
-                          ) : <span className="text-zinc-600">—</span>}
+                          ) : <span className="text-zinc-700">—</span>}
                         </td>
                       </tr>
                     );
@@ -406,20 +510,20 @@ export default async function InvestmentsPage() {
               })}
             </tbody>
             <tfoot>
-              <tr className="border-t border-zinc-700 bg-zinc-900/60 text-sm font-semibold">
-                <td className="px-6 py-3.5 text-zinc-400" colSpan={3}>Total</td>
-                <td className="px-4 py-3.5 text-right text-indigo-400">{fmtCompact(totalInvested)}</td>
-                <td className="px-4 py-3.5" />
-                <td className="px-4 py-3.5 text-right text-indigo-300">{fmtCompact(totalCurrent)}</td>
-                <td className="px-4 py-3.5 text-right">
+              <tr className="border-t border-zinc-700 bg-zinc-900/60 font-semibold text-xs">
+                <td className="px-5 py-2.5 text-zinc-400" colSpan={3}>Portfolio Total</td>
+                <td className="px-3 py-2.5 text-right text-indigo-400">{fmtCompact(totalInvested)}</td>
+                <td className="px-3 py-2.5" />
+                <td className="px-3 py-2.5 text-right text-indigo-300">{fmtCompact(totalCurrent)}</td>
+                <td className="px-3 py-2.5 text-right">
                   <span className={totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
                     {totalPnl >= 0 ? '+' : ''}{fmtCompact(totalPnl)}
                   </span>
                 </td>
-                <td className="px-6 py-3.5 text-right">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                <td className="px-5 py-2.5 text-right">
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium ${
                     totalPnl >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
-                  }`}>
+                  }`} style={{ fontSize: '10px' }}>
                     {totalPnl >= 0 ? '+' : ''}{totalPnlPct.toFixed(2)}%
                   </span>
                 </td>
@@ -432,17 +536,16 @@ export default async function InvestmentsPage() {
         <div className="md:hidden divide-y divide-zinc-800/60">
           {orderedSectors.map((sector) => (
             <div key={sector}>
-              <div className="px-4 py-2 bg-zinc-900/70 flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${SECTOR_DOT[sector] ?? 'bg-zinc-400'}`} />
+              <div className={`px-4 py-1.5 bg-zinc-900/70 flex items-center gap-2 border-l-2 ${SECTOR_BORDER[sector] ?? 'border-l-zinc-600'}`}>
                 <span className={`text-xs font-bold uppercase tracking-wider ${SECTOR_COLOR[sector] ?? 'text-zinc-400'}`}>{sector}</span>
               </div>
               {sectorMap[sector].map((h) => {
                 const gain = h.pnl !== null ? h.pnl >= 0 : null;
                 return (
-                  <div key={h.id} className="px-4 py-4 space-y-2">
+                  <div key={h.id} className="px-4 py-3 space-y-1.5">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="font-semibold text-white">{h.symbol}</p>
+                        <p className="font-semibold text-white text-sm">{h.symbol}</p>
                         <p className="text-xs text-zinc-500">{h.company_name}</p>
                       </div>
                       {h.pnlPct !== null && (
@@ -458,11 +561,6 @@ export default async function InvestmentsPage() {
                       <div><p className="text-zinc-500">Invested</p><p className="text-zinc-300">{fmtCompact(h.total_invested)}</p></div>
                       <div><p className="text-zinc-500">Current</p><p className="text-zinc-300">{h.currentValue !== null ? fmtCompact(h.currentValue) : '—'}</p></div>
                     </div>
-                    {h.pnl !== null && (
-                      <p className={`text-xs font-medium ${gain ? 'text-emerald-400' : 'text-rose-400'}`}>
-                        P&L: {gain ? '+' : ''}{fmt(h.pnl)}
-                      </p>
-                    )}
                   </div>
                 );
               })}
@@ -471,22 +569,34 @@ export default async function InvestmentsPage() {
         </div>
       </div>
 
-      {/* Investment Ideas */}
+      {/* Dynamic Investment Ideas */}
       <div className={glass}>
-        <div className="flex items-center gap-3 border-b border-zinc-800 px-6 py-4">
-          <Lightbulb className="h-5 w-5 text-yellow-400" />
-          <h2 className="font-semibold text-white">Investment Ideas</h2>
-          <span className="text-xs text-zinc-500">Based on portfolio gaps &amp; business alignment</span>
+        <div className="flex items-center gap-3 border-b border-zinc-800 px-5 py-3">
+          <Sparkles className="h-4 w-4 text-yellow-400" />
+          <h2 className="font-semibold text-white text-sm">Investment Ideas</h2>
+          {ideasResult.isAI ? (
+            <span className="ml-auto flex items-center gap-1.5 text-xs text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              AI · {ideasResult.generatedAt}
+            </span>
+          ) : (
+            <span className="ml-auto text-xs text-zinc-500">Portfolio gaps &amp; business alignment</span>
+          )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-800">
-          {IDEAS.map((idea) => (
-            <div key={idea.symbol} className="bg-zinc-950 p-5 space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-800/60">
+          {ideasResult.ideas.map((idea, i) => (
+            <div key={`${idea.symbol}-${i}`} className="bg-zinc-950 p-4 space-y-2 hover:bg-zinc-900/60 transition-colors">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className={`font-bold text-sm ${idea.color}`}>{idea.symbol}</p>
+                  <p className={`font-bold text-sm ${SECTOR_COLOR[idea.sector] ?? 'text-indigo-400'}`}>{idea.symbol}</p>
                   <p className="text-xs text-zinc-400">{idea.name}</p>
                 </div>
-                <span className="text-xs text-zinc-600 bg-zinc-800/80 rounded px-1.5 py-0.5 shrink-0 text-right">{idea.sector}</span>
+                <div className="text-right shrink-0 space-y-0.5">
+                  <p className="text-xs bg-zinc-800 text-zinc-400 rounded px-1.5 py-0.5">{idea.sector}</p>
+                  {idea.theme && (
+                    <p className="text-xs bg-indigo-500/10 text-indigo-400 rounded px-1.5 py-0.5">{idea.theme}</p>
+                  )}
+                </div>
               </div>
               <p className="text-xs text-zinc-400 leading-relaxed">{idea.rationale}</p>
             </div>

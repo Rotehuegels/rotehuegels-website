@@ -99,39 +99,44 @@ values (
   140994,    -- principal paid back via EMI
   7742597,   -- all-in cost (paid + stamp + registration + interest)
   7900000    -- current market value (Mar-26)
-) returning id \gset
+);
 
--- Payment milestones
-insert into finance_property_payments (property_id, sno, invoice_date, amount, description, is_gst) values
-  ((select id from finance_property limit 1),  1, '2022-08-27', 108000.00,   'Initial Booking',          false),
-  ((select id from finance_property limit 1),  2, '2022-08-24',  15335.00,   'Booking charges',          false),
-  ((select id from finance_property limit 1),  3, '2022-09-17', 198700.00,   'Instalment',               false),
-  ((select id from finance_property limit 1),  4, '2022-10-21',1533479.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1),  5, '2022-10-21',  76674.00,   'GST',                      true),
-  ((select id from finance_property limit 1),  6, '2023-01-19', 920089.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1),  7, '2023-01-19',  46004.00,   'GST',                      true),
-  ((select id from finance_property limit 1),  8, '2023-06-13', 245357.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1),  9, '2023-06-13',  12268.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 10, '2023-07-27', 122679.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 11, '2023-07-27',   6134.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 12, '2023-09-14', 122678.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 13, '2023-09-14',   6134.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 14, '2023-11-15', 245358.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 15, '2023-11-16',  12268.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 16, '2023-12-27', 122678.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 17, '2023-12-27',   6134.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 18, '2024-02-15', 245357.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 19, '2024-02-15',  12268.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 20, '2024-03-07', 368036.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 21, '2024-03-07',  18402.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 22, '2024-04-26', 248425.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 23, '2024-04-26', 119611.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 24, '2024-04-26',  18401.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 25, '2024-06-07', 245357.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 26, '2024-06-07',  12268.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 27, '2024-07-18', 184018.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 28, '2024-07-18',  12268.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 29, '2024-09-12', 181564.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 30, '2024-09-12',   6134.00,   'GST',                      true),
-  ((select id from finance_property limit 1), 31, '2025-12-19', 122679.00,   'Flat Instalment',          false),
-  ((select id from finance_property limit 1), 32, '2025-12-19',   6134.00,   'GST',                      true);
+-- Payment milestones (subquery instead of \gset — works in Supabase SQL editor)
+insert into finance_property_payments (property_id, sno, invoice_date, amount, description, is_gst)
+select p.id, v.sno, v.invoice_date::date, v.amount, v.description, v.is_gst
+from finance_property p,
+(values
+  ( 1, '2022-08-27', 108000.00, 'Initial Booking',  false),
+  ( 2, '2022-08-24',  15335.00, 'Booking charges',  false),
+  ( 3, '2022-09-17', 198700.00, 'Instalment',        false),
+  ( 4, '2022-10-21',1533479.00, 'Flat Instalment',   false),
+  ( 5, '2022-10-21',  76674.00, 'GST',               true),
+  ( 6, '2023-01-19', 920089.00, 'Flat Instalment',   false),
+  ( 7, '2023-01-19',  46004.00, 'GST',               true),
+  ( 8, '2023-06-13', 245357.00, 'Flat Instalment',   false),
+  ( 9, '2023-06-13',  12268.00, 'GST',               true),
+  (10, '2023-07-27', 122679.00, 'Flat Instalment',   false),
+  (11, '2023-07-27',   6134.00, 'GST',               true),
+  (12, '2023-09-14', 122678.00, 'Flat Instalment',   false),
+  (13, '2023-09-14',   6134.00, 'GST',               true),
+  (14, '2023-11-15', 245358.00, 'Flat Instalment',   false),
+  (15, '2023-11-16',  12268.00, 'GST',               true),
+  (16, '2023-12-27', 122678.00, 'Flat Instalment',   false),
+  (17, '2023-12-27',   6134.00, 'GST',               true),
+  (18, '2024-02-15', 245357.00, 'Flat Instalment',   false),
+  (19, '2024-02-15',  12268.00, 'GST',               true),
+  (20, '2024-03-07', 368036.00, 'Flat Instalment',   false),
+  (21, '2024-03-07',  18402.00, 'GST',               true),
+  (22, '2024-04-26', 248425.00, 'Flat Instalment',   false),
+  (23, '2024-04-26', 119611.00, 'Flat Instalment',   false),
+  (24, '2024-04-26',  18401.00, 'GST',               true),
+  (25, '2024-06-07', 245357.00, 'Flat Instalment',   false),
+  (26, '2024-06-07',  12268.00, 'GST',               true),
+  (27, '2024-07-18', 184018.00, 'Flat Instalment',   false),
+  (28, '2024-07-18',  12268.00, 'GST',               true),
+  (29, '2024-09-12', 181564.00, 'Flat Instalment',   false),
+  (30, '2024-09-12',   6134.00, 'GST',               true),
+  (31, '2025-12-19', 122679.00, 'Flat Instalment',   false),
+  (32, '2025-12-19',   6134.00, 'GST',               true)
+) as v(sno, invoice_date, amount, description, is_gst)
+where p.unit = 'A-1206';

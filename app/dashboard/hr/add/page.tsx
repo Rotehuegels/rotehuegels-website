@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Network } from 'lucide-react';
+import { Network, Search } from 'lucide-react';
 
 type Status = 'idle' | 'loading' | 'error';
 
@@ -29,14 +29,35 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function AddEmployeePage() {
-  const router = useRouter();
-  const [status, setStatus]   = useState<Status>('idle');
-  const [errorMsg, setError]  = useState('');
-  const [empType, setEmpType] = useState('');
+type RexMember = {
+  full_name: string; phone?: string; email?: string; address?: string;
+  national_id?: string; bank_name?: string; bank_account?: string; bank_ifsc?: string;
+  emergency_contact_name?: string; emergency_contact_phone?: string; date_of_birth?: string;
+};
 
-  const isRex     = empType === 'rex_network';
+export default function AddEngagementPage() {
+  const router = useRouter();
+  const [status, setStatus]         = useState<Status>('idle');
+  const [errorMsg, setError]        = useState('');
+  const [empType, setEmpType]       = useState('');
+  const [rexId, setRexId]           = useState('');
+  const [existingMember, setExisting] = useState<RexMember | null>(null);
+  const [lookupDone, setLookupDone] = useState(false);
+
+  const isRex      = empType === 'rex_network';
   const isFullTime = empType === 'full_time';
+
+  async function lookupRex() {
+    if (!rexId.trim()) return;
+    const res = await fetch(`/api/rex-members/${encodeURIComponent(rexId.trim().toUpperCase())}`);
+    if (res.ok) {
+      const { data } = await res.json();
+      setExisting(data ?? null);
+    } else {
+      setExisting(null);
+    }
+    setLookupDone(true);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -75,43 +96,123 @@ export default function AddEmployeePage() {
     <div className="p-8 max-w-4xl">
       <div className="mb-8">
         <Link href="/dashboard/hr/employees" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
-          ← Back to Employees
+          ← Back to Engagements
         </Link>
-        <h1 className="mt-3 text-2xl font-bold text-white">Add Employee</h1>
-        <p className="mt-1 text-sm text-zinc-400">All employees must be registered in the REX Network before onboarding.</p>
+        <h1 className="mt-3 text-2xl font-bold text-white">New Engagement</h1>
+        <p className="mt-1 text-sm text-zinc-400">
+          Look up the REX member first — if they exist, personal details are pre-filled. An engagement ID (ENG-YY-NNN) will be auto-assigned.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <SectionTitle>Basic Information</SectionTitle>
+
+        {/* ── REX ID lookup ─────────────────────────────────────── */}
+        <SectionTitle>REX Member</SectionTitle>
+
+        <div className="col-span-full">
+          <Field label="REX Network ID" required hint="Lookup fetches existing member details. If new, fill in details below.">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Network className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400 pointer-events-none" />
+                <input
+                  name="rex_id"
+                  required
+                  value={rexId}
+                  onChange={e => { setRexId(e.target.value); setLookupDone(false); setExisting(null); }}
+                  className={`${inputCls} pl-9`}
+                  placeholder="e.g. REX-2847"
+                  pattern="[A-Za-z0-9\-]+"
+                />
+              </div>
+              <button type="button" onClick={lookupRex}
+                className="flex items-center gap-1.5 rounded-xl border border-indigo-500/40 bg-indigo-500/10 px-4 py-2.5 text-sm font-medium text-indigo-300 hover:bg-indigo-500/20 transition-colors">
+                <Search className="h-3.5 w-3.5" /> Lookup
+              </button>
+            </div>
+          </Field>
+          {lookupDone && existingMember && (
+            <div className="mt-2 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5 text-xs text-emerald-300">
+              <span className="font-semibold">Existing member:</span> {existingMember.full_name} — personal details pre-filled.
+            </div>
+          )}
+          {lookupDone && !existingMember && (
+            <div className="mt-2 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-2.5 text-xs text-amber-300">
+              New REX member — fill in personal details below.
+            </div>
+          )}
+        </div>
+
+        {/* ── Personal details ─────────────────────────────────── */}
+        <SectionTitle>Personal Details</SectionTitle>
 
         <div className="col-span-full">
           <Field label="Full name" required>
-            <input name="full_name" required className={inputCls} placeholder="As per official ID" />
+            <input name="full_name" required className={inputCls} placeholder="As per official ID"
+              defaultValue={existingMember?.full_name ?? ''} key={existingMember?.full_name} />
           </Field>
         </div>
 
-        {/* REX ID — always required for everyone */}
+        <Field label="Date of birth">
+          <input name="date_of_birth" type="date" className={`${inputCls} [color-scheme:dark]`}
+            defaultValue={existingMember?.date_of_birth ?? ''} key={existingMember?.date_of_birth} />
+        </Field>
+
+        <Field label="Phone">
+          <input name="phone" type="tel" className={inputCls} placeholder="+91 00000 00000"
+            defaultValue={existingMember?.phone ?? ''} key={existingMember?.phone} />
+        </Field>
+
+        <Field label="Email">
+          <input name="email" type="email" className={inputCls} placeholder="member@example.com"
+            defaultValue={existingMember?.email ?? ''} key={existingMember?.email} />
+        </Field>
+
         <div className="col-span-full">
-          <Field
-            label="REX Network ID"
-            required
-            hint="Employee must be registered in the REX Network first. Their REX ID becomes their Employee ID."
-          >
-            <div className="relative">
-              <Network className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400 pointer-events-none" />
-              <input
-                name="rex_id"
-                required
-                className={`${inputCls} pl-9`}
-                placeholder="e.g. REX-2847"
-                pattern="[A-Za-z0-9\-]+"
-                title="Alphanumeric REX ID"
-              />
-            </div>
+          <Field label="Address">
+            <textarea name="address" rows={2} className={`${inputCls} resize-none`} placeholder="Residential address"
+              defaultValue={existingMember?.address ?? ''} key={existingMember?.address} />
           </Field>
         </div>
 
-        {/* Employment type */}
+        <div className="col-span-full">
+          <Field label="National ID (Aadhaar / PAN / Passport)">
+            <input name="national_id" className={inputCls} placeholder="ID number"
+              defaultValue={existingMember?.national_id ?? ''} key={existingMember?.national_id} />
+          </Field>
+        </div>
+
+        <SectionTitle>Bank Details</SectionTitle>
+
+        <Field label="Bank name">
+          <input name="bank_name" className={inputCls} placeholder="e.g. State Bank of India"
+            defaultValue={existingMember?.bank_name ?? ''} key={existingMember?.bank_name} />
+        </Field>
+
+        <Field label="Account number">
+          <input name="bank_account" className={inputCls} placeholder="Account number"
+            defaultValue={existingMember?.bank_account ?? ''} key={existingMember?.bank_account} />
+        </Field>
+
+        <Field label="IFSC code">
+          <input name="bank_ifsc" className={inputCls} placeholder="e.g. SBIN0001234"
+            defaultValue={existingMember?.bank_ifsc ?? ''} key={existingMember?.bank_ifsc} />
+        </Field>
+
+        <SectionTitle>Emergency Contact</SectionTitle>
+
+        <Field label="Contact name">
+          <input name="emergency_contact_name" className={inputCls} placeholder="Full name"
+            defaultValue={existingMember?.emergency_contact_name ?? ''} key={existingMember?.emergency_contact_name} />
+        </Field>
+
+        <Field label="Contact phone">
+          <input name="emergency_contact_phone" type="tel" className={inputCls} placeholder="+91 00000 00000"
+            defaultValue={existingMember?.emergency_contact_phone ?? ''} key={existingMember?.emergency_contact_phone} />
+        </Field>
+
+        {/* ── Engagement details ────────────────────────────────── */}
+        <SectionTitle>Engagement Details</SectionTitle>
+
         <Field label="Employment type" required>
           <select name="employment_type" required defaultValue="" className={selectCls}
             onChange={(e) => setEmpType(e.target.value)}>
@@ -121,7 +222,6 @@ export default function AddEmployeePage() {
           </select>
         </Field>
 
-        {/* Sub-type — only for REX Network */}
         {isRex ? (
           <Field label="REX Sub-type" required>
             <select name="rex_subtype" required defaultValue="" className={selectCls}>
@@ -135,7 +235,7 @@ export default function AddEmployeePage() {
         ) : isFullTime ? (
           <div className="flex items-center gap-2 rounded-xl border border-indigo-500/20 bg-indigo-500/5 px-4 py-3 text-xs text-indigo-300 self-end mb-0.5">
             <Network className="h-4 w-4 shrink-0" />
-            Full-time employee · RBC series · Update REX ID above
+            Full-time engagement · Engagement ID auto-assigned as ENG-YY-NNN
           </div>
         ) : <div />}
 
@@ -157,54 +257,6 @@ export default function AddEmployeePage() {
             <input name="reporting_manager" className={inputCls} placeholder="Manager's name" />
           </Field>
         </div>
-
-        <SectionTitle>Contact Details</SectionTitle>
-
-        <Field label="Phone">
-          <input name="phone" type="tel" className={inputCls} placeholder="+91 00000 00000" />
-        </Field>
-
-        <Field label="Email">
-          <input name="email" type="email" className={inputCls} placeholder="employee@example.com" />
-        </Field>
-
-        <div className="col-span-full">
-          <Field label="Address">
-            <textarea name="address" rows={2} className={`${inputCls} resize-none`} placeholder="Residential address" />
-          </Field>
-        </div>
-
-        <SectionTitle>Identity</SectionTitle>
-
-        <div className="col-span-full">
-          <Field label="National ID (Aadhaar / PAN / Passport)">
-            <input name="national_id" className={inputCls} placeholder="ID number" />
-          </Field>
-        </div>
-
-        <SectionTitle>Bank Details</SectionTitle>
-
-        <Field label="Bank name">
-          <input name="bank_name" className={inputCls} placeholder="e.g. State Bank of India" />
-        </Field>
-
-        <Field label="Account number">
-          <input name="bank_account" className={inputCls} placeholder="Account number" />
-        </Field>
-
-        <Field label="IFSC code">
-          <input name="bank_ifsc" className={inputCls} placeholder="e.g. SBIN0001234" />
-        </Field>
-
-        <SectionTitle>Emergency Contact</SectionTitle>
-
-        <Field label="Contact name">
-          <input name="emergency_contact_name" className={inputCls} placeholder="Full name" />
-        </Field>
-
-        <Field label="Contact phone">
-          <input name="emergency_contact_phone" type="tel" className={inputCls} placeholder="+91 00000 00000" />
-        </Field>
 
         <SectionTitle>Salary (INR / month)</SectionTitle>
 
@@ -229,7 +281,7 @@ export default function AddEmployeePage() {
         <div className="col-span-full flex gap-3 pt-2">
           <button type="submit" disabled={status === 'loading'}
             className="rounded-xl bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            {status === 'loading' ? 'Saving…' : 'Add Employee'}
+            {status === 'loading' ? 'Saving…' : 'Create Engagement'}
           </button>
           <Link href="/dashboard/hr/employees"
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">

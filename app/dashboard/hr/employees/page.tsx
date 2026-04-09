@@ -17,37 +17,38 @@ const SUBTYPE_LABEL: Record<string, string> = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  inactive: 'bg-zinc-500/10 text-zinc-400 border-zinc-600/20',
+  active:     'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  inactive:   'bg-zinc-500/10 text-zinc-400 border-zinc-600/20',
   terminated: 'bg-red-500/10 text-red-400 border-red-500/20',
+  completed:  'bg-sky-500/10 text-sky-400 border-sky-500/20',
 };
 
 export default async function EmployeesPage() {
-  const { data: employees } = await supabaseAdmin
+  const { data: engagements } = await supabaseAdmin
     .from('employees')
-    .select('id, employee_code, full_name, role, department, employment_type, rex_subtype, email, status, join_date')
+    .select('id, engagement_id, rex_id, role, department, employment_type, rex_subtype, status, join_date, end_date, rex_members(full_name, email)')
     .order('created_at', { ascending: true });
 
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Employees</h1>
-          <p className="mt-1 text-sm text-zinc-400">{employees?.length ?? 0} total</p>
+          <h1 className="text-2xl font-bold text-white">Engagements</h1>
+          <p className="mt-1 text-sm text-zinc-400">{engagements?.length ?? 0} total</p>
         </div>
         <Link href="/dashboard/hr/add"
           className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
-          <UserPlus className="h-4 w-4" /> Add Employee
+          <UserPlus className="h-4 w-4" /> Add Engagement
         </Link>
       </div>
 
       <div className={glass}>
-        {!employees || employees.length === 0 ? (
+        {!engagements || engagements.length === 0 ? (
           <div className="p-12 text-center">
-            <p className="text-zinc-500 text-sm">No employees yet.</p>
+            <p className="text-zinc-500 text-sm">No engagements yet.</p>
             <Link href="/dashboard/hr/add"
               className="mt-4 inline-block rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
-              Add your first employee
+              Add first engagement
             </Link>
           </div>
         ) : (
@@ -55,7 +56,8 @@ export default async function EmployeesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-zinc-800 text-left">
-                  <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Emp ID</th>
+                  <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Engagement ID</th>
+                  <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">REX ID</th>
                   <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Name</th>
                   <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Role</th>
                   <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider hidden md:table-cell">Department</th>
@@ -65,35 +67,49 @@ export default async function EmployeesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/60">
-                {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-zinc-800/20 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="font-mono text-xs font-semibold text-indigo-400 bg-indigo-500/10 rounded px-1.5 py-0.5">
-                        {emp.employee_code ?? '—'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="font-medium text-white">{emp.full_name}</p>
-                      {emp.email && <p className="text-xs text-zinc-500 mt-0.5">{emp.email}</p>}
-                    </td>
-                    <td className="px-6 py-4 text-zinc-300">{emp.role}</td>
-                    <td className="px-6 py-4 text-zinc-400 hidden md:table-cell">{emp.department ?? '—'}</td>
-                    <td className="px-6 py-4 text-zinc-400 hidden lg:table-cell">
-                      <p>{TYPE_LABEL[emp.employment_type] ?? emp.employment_type}</p>
-                      {emp.rex_subtype && (
-                        <p className="text-xs text-indigo-400 mt-0.5">{SUBTYPE_LABEL[emp.rex_subtype] ?? emp.rex_subtype}</p>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-zinc-400 hidden lg:table-cell">
-                      {emp.join_date ? new Date(emp.join_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[emp.status] ?? STATUS_STYLE.inactive}`}>
-                        {emp.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {engagements.map((eng) => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const member = eng.rex_members as any;
+                  return (
+                    <tr key={eng.id} className="hover:bg-zinc-800/20 transition-colors">
+                      <td className="px-6 py-4">
+                        <span className="font-mono text-xs font-semibold text-amber-400 bg-amber-500/10 rounded px-1.5 py-0.5">
+                          {eng.engagement_id ?? '—'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-mono text-xs font-semibold text-indigo-400 bg-indigo-500/10 rounded px-1.5 py-0.5">
+                          {eng.rex_id ?? '—'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-white">{member?.full_name ?? '—'}</p>
+                        {member?.email && <p className="text-xs text-zinc-500 mt-0.5">{member.email}</p>}
+                      </td>
+                      <td className="px-6 py-4 text-zinc-300">{eng.role}</td>
+                      <td className="px-6 py-4 text-zinc-400 hidden md:table-cell">{eng.department ?? '—'}</td>
+                      <td className="px-6 py-4 text-zinc-400 hidden lg:table-cell">
+                        <p>{TYPE_LABEL[eng.employment_type] ?? eng.employment_type}</p>
+                        {eng.rex_subtype && (
+                          <p className="text-xs text-indigo-400 mt-0.5">{SUBTYPE_LABEL[eng.rex_subtype] ?? eng.rex_subtype}</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-zinc-400 hidden lg:table-cell">
+                        {eng.join_date ? new Date(eng.join_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                        {eng.end_date && (
+                          <p className="text-xs text-zinc-600 mt-0.5">
+                            → {new Date(eng.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[eng.status] ?? STATUS_STYLE.inactive}`}>
+                          {eng.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

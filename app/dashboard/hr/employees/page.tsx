@@ -5,7 +5,11 @@ import { UserPlus } from 'lucide-react';
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
 const TYPE_LABEL: Record<string, string> = {
-  full_time:  'Full-time',
+  full_time:   'Full-time',
+  rex_network: 'REX Network',
+};
+
+const SUBTYPE_LABEL: Record<string, string> = {
   part_time:  'Part-time',
   consultant: 'Consultant',
   contract:   'Contract',
@@ -21,7 +25,7 @@ const STATUS_STYLE: Record<string, string> = {
 export default async function EmployeesPage() {
   const { data: employees } = await supabaseAdmin
     .from('employees')
-    .select('id, employee_code, full_name, role, department, employment_type, email, status, join_date')
+    .select('id, employee_code, full_name, role, department, employment_type, rex_subtype, email, status, join_date')
     .order('created_at', { ascending: false });
 
   return (
@@ -74,7 +78,12 @@ export default async function EmployeesPage() {
                     </td>
                     <td className="px-6 py-4 text-zinc-300">{emp.role}</td>
                     <td className="px-6 py-4 text-zinc-400 hidden md:table-cell">{emp.department ?? '—'}</td>
-                    <td className="px-6 py-4 text-zinc-400 hidden lg:table-cell">{TYPE_LABEL[emp.employment_type] ?? emp.employment_type}</td>
+                    <td className="px-6 py-4 text-zinc-400 hidden lg:table-cell">
+                      <p>{TYPE_LABEL[emp.employment_type] ?? emp.employment_type}</p>
+                      {emp.rex_subtype && (
+                        <p className="text-xs text-indigo-400 mt-0.5">{SUBTYPE_LABEL[emp.rex_subtype] ?? emp.rex_subtype}</p>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-zinc-400 hidden lg:table-cell">
                       {emp.join_date ? new Date(emp.join_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                     </td>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Network } from 'lucide-react';
 
 type Status = 'idle' | 'loading' | 'error';
 
@@ -10,11 +11,12 @@ const inputCls = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 p
 const selectCls = `${inputCls} cursor-pointer`;
 const labelCls = 'block text-xs font-medium text-zinc-400 mb-1.5';
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, required, hint, children }: { label: string; required?: boolean; hint?: string; children: React.ReactNode }) {
   return (
     <div>
       <label className={labelCls}>{label}{required && <span className="text-rose-400 ml-0.5">*</span>}</label>
       {children}
+      {hint && <p className="mt-1 text-xs text-zinc-500">{hint}</p>}
     </div>
   );
 }
@@ -29,14 +31,17 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 export default function AddEmployeePage() {
   const router = useRouter();
-  const [status, setStatus] = useState<Status>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [status, setStatus]   = useState<Status>('idle');
+  const [errorMsg, setError]  = useState('');
   const [empType, setEmpType] = useState('');
+
+  const isRex     = empType === 'rex_network';
+  const isFullTime = empType === 'full_time';
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus('loading');
-    setErrorMsg('');
+    setError('');
 
     const fd = new FormData(e.currentTarget);
     const body: Record<string, unknown> = {};
@@ -54,14 +59,14 @@ export default function AddEmployeePage() {
         const firstErr = typeof data.error === 'string'
           ? data.error
           : Object.values(data.error as Record<string, string[]>)[0]?.[0] ?? 'Something went wrong.';
-        setErrorMsg(firstErr);
+        setError(firstErr);
         setStatus('error');
         return;
       }
 
       router.push('/dashboard/hr/employees');
     } catch {
-      setErrorMsg('Network error. Please try again.');
+      setError('Network error. Please try again.');
       setStatus('error');
     }
   }
@@ -73,7 +78,7 @@ export default function AddEmployeePage() {
           ← Back to Employees
         </Link>
         <h1 className="mt-3 text-2xl font-bold text-white">Add Employee</h1>
-        <p className="mt-1 text-sm text-zinc-400">Register a new team member into the system.</p>
+        <p className="mt-1 text-sm text-zinc-400">All employees must be registered in the REX Network before onboarding.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -85,27 +90,54 @@ export default function AddEmployeePage() {
           </Field>
         </div>
 
+        {/* REX ID — always required for everyone */}
+        <div className="col-span-full">
+          <Field
+            label="REX Network ID"
+            required
+            hint="Employee must be registered in the REX Network first. Their REX ID becomes their Employee ID."
+          >
+            <div className="relative">
+              <Network className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400 pointer-events-none" />
+              <input
+                name="rex_id"
+                required
+                className={`${inputCls} pl-9`}
+                placeholder="e.g. REX-2847"
+                pattern="[A-Za-z0-9\-]+"
+                title="Alphanumeric REX ID"
+              />
+            </div>
+          </Field>
+        </div>
+
+        {/* Employment type */}
         <Field label="Employment type" required>
           <select name="employment_type" required defaultValue="" className={selectCls}
             onChange={(e) => setEmpType(e.target.value)}>
             <option value="" disabled>Select…</option>
             <option value="full_time">Full-time</option>
-            <option value="part_time">Part-time</option>
-            <option value="consultant">Consultant</option>
-            <option value="contract">Contract</option>
-            <option value="intern">Intern</option>
+            <option value="rex_network">REX Network</option>
           </select>
         </Field>
 
-        {empType === 'intern' ? (
-          <Field label="REX ID" required>
-            <input name="rex_id" required className={inputCls} placeholder="REX Network ID (mandatory for interns)"
-              pattern="[A-Za-z0-9\-]+" title="Enter a valid REX ID" />
-            <p className="mt-1 text-xs text-zinc-500">Interns must be registered in the REX Network. Their REX ID becomes their Employee ID.</p>
+        {/* Sub-type — only for REX Network */}
+        {isRex ? (
+          <Field label="REX Sub-type" required>
+            <select name="rex_subtype" required defaultValue="" className={selectCls}>
+              <option value="" disabled>Select…</option>
+              <option value="part_time">Part-time</option>
+              <option value="consultant">Consultant</option>
+              <option value="contract">Contract</option>
+              <option value="intern">Intern</option>
+            </select>
           </Field>
-        ) : (
-          <div /> /* keeps grid alignment */
-        )}
+        ) : isFullTime ? (
+          <div className="flex items-center gap-2 rounded-xl border border-indigo-500/20 bg-indigo-500/5 px-4 py-3 text-xs text-indigo-300 self-end mb-0.5">
+            <Network className="h-4 w-4 shrink-0" />
+            Full-time employee · RBC series · Update REX ID above
+          </div>
+        ) : <div />}
 
         <Field label="Join date">
           <input name="join_date" type="date" defaultValue={new Date().toISOString().split('T')[0]}
@@ -188,7 +220,6 @@ export default function AddEmployeePage() {
           <input name="bonus" type="number" min="0" className={inputCls} placeholder="0.00" />
         </Field>
 
-        {/* Error */}
         {errorMsg && (
           <div className="col-span-full rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
             {errorMsg}

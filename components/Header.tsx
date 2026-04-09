@@ -21,9 +21,6 @@ const NAV = [
     label: 'Services',
     children: [
       { label: 'Overview',              href: '/services' },
-      { label: 'Research',              href: '/services/research' },
-      { label: 'Business',              href: '/services/business' },
-      { label: 'Consultancy',           href: '/services/consultancy' },
       { label: 'Digital Solutions',     href: '/digital-solutions' },
       { label: 'Success Stories',       href: '/success-stories' },
     ],

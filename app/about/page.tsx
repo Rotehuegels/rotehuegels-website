@@ -2,7 +2,6 @@
 import type { ReactElement } from "react";
 import Image from "next/image";
 import Section from "@/components/Section";
-import AssistNudge from "@/components/AssistNudge";
 import {
   ShieldCheck,
   FlaskConical,
@@ -345,8 +344,6 @@ export default function AboutPage() {
           ))}
         </div>
       </Section>
-
-      <AssistNudge />
 
       <Section title="Work With Us">
         <p className="text-sm text-zinc-300 mb-4">

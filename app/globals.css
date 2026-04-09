@@ -36,6 +36,47 @@
   .card { @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 shadow; }
 }
 
+/* ── Rotehügels Assist Widget animations ── */
+@keyframes rh-pulse {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+@keyframes rh-wave {
+  0%,100% { transform: rotate(0deg); }
+  20%     { transform: rotate(28deg); }
+  40%     { transform: rotate(-12deg); }
+  60%     { transform: rotate(22deg); }
+  80%     { transform: rotate(-6deg); }
+}
+@keyframes rh-nudge {
+  0%,100% { transform: translateY(0)   rotate(0deg); }
+  15%     { transform: translateY(-8px) rotate(-4deg); }
+  35%     { transform: translateY(-4px) rotate(4deg); }
+  55%     { transform: translateY(-7px) rotate(-3deg); }
+  75%     { transform: translateY(-3px) rotate(2deg); }
+}
+@keyframes rh-greet {
+  0%   { opacity: 0; transform: translateY(12px) scale(0.92); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes rh-panel {
+  0%   { opacity: 0; transform: translateY(24px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes rh-pop-in {
+  0%   { opacity: 0; transform: scale(0.5);  }
+  70%  { transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1);    }
+}
+
+.rh-pulse      { animation: rh-pulse 2.2s ease-out infinite; }
+.rh-pulse-2    { animation: rh-pulse 2.2s ease-out infinite 1.1s; }
+.rh-wave       { animation: rh-wave  2.4s ease-in-out infinite; transform-origin: 11px 27px; }
+.rh-nudge      { animation: rh-nudge 0.9s ease-in-out infinite; }
+.rh-greet      { animation: rh-greet 0.35s cubic-bezier(.22,1,.36,1) forwards; }
+.rh-panel      { animation: rh-panel 0.3s  cubic-bezier(.22,1,.36,1) forwards; }
+.rh-pop-in     { animation: rh-pop-in 0.45s cubic-bezier(.22,1,.36,1) forwards; }
+
 /* ── Print: hide site chrome and dashboard shell on all preview pages ── */
 @media print {
   /* Kill site header, ticker, footer, aura, any portals */

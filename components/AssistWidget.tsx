@@ -317,8 +317,184 @@ function Avatar3D({ size = 56 }: { size?: number }) {
   );
 }
 
+// ── Waving pop-out character ────────────────────────────────────────────────
+function WavingPopout({ onDone }: { onDone: () => void }) {
+  const id = 'rhw';
+  return (
+    <div
+      className="rh-popout-rise absolute pointer-events-none"
+      style={{ bottom: '52px', right: '-18px' }}
+      onAnimationEnd={onDone}
+    >
+      <svg viewBox="0 0 140 170" width={130} height={158} fill="none" aria-hidden>
+        <defs>
+          <radialGradient id={`${id}-skin`} cx="38%" cy="30%" r="65%">
+            <stop offset="0%" stopColor="#f5cda0" />
+            <stop offset="50%" stopColor="#d4915c" />
+            <stop offset="100%" stopColor="#a0582a" />
+          </radialGradient>
+          <radialGradient id={`${id}-skin-dk`} cx="75%" cy="70%" r="50%">
+            <stop offset="0%" stopColor="#7a3a10" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#7a3a10" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id={`${id}-hair`} cx="40%" cy="25%" r="70%">
+            <stop offset="0%" stopColor="#4a2c10" />
+            <stop offset="100%" stopColor="#0d0603" />
+          </radialGradient>
+          <radialGradient id={`${id}-iris`} cx="35%" cy="35%" r="70%">
+            <stop offset="0%" stopColor="#6b4226" />
+            <stop offset="100%" stopColor="#0d0603" />
+          </radialGradient>
+          <linearGradient id={`${id}-suit`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1d4ed8" />
+            <stop offset="100%" stopColor="#1e3a8a" />
+          </linearGradient>
+          <linearGradient id={`${id}-collar`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#f8fafc" />
+            <stop offset="100%" stopColor="#cbd5e1" />
+          </linearGradient>
+          <radialGradient id={`${id}-ear`} cx="60%" cy="40%" r="70%">
+            <stop offset="0%" stopColor="#dfa060" />
+            <stop offset="100%" stopColor="#a05828" />
+          </radialGradient>
+          <radialGradient id={`${id}-spec`} cx="32%" cy="28%" r="28%">
+            <stop offset="0%" stopColor="white" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id={`${id}-eye`} cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#fff" />
+            <stop offset="100%" stopColor="#d4d0cc" />
+          </radialGradient>
+          <filter id={`${id}-sh`} x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#000" floodOpacity="0.45" />
+          </filter>
+          <linearGradient id={`${id}-neck`} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#b87040" />
+            <stop offset="50%" stopColor="#dfa060" />
+            <stop offset="100%" stopColor="#9a5820" />
+          </linearGradient>
+        </defs>
+
+        {/* Drop shadow under whole character */}
+        <ellipse cx="70" cy="168" rx="38" ry="7" fill="#000" opacity="0.3" />
+
+        {/* ── Body ── */}
+        <g filter={`url(#${id}-sh)`}>
+          {/* Jacket body */}
+          <path d="M18 170 Q18 118 70 112 Q122 118 122 170Z" fill={`url(#${id}-suit)`} />
+          {/* Jacket lapels */}
+          <path d="M46 112 Q54 124 70 126 Q86 124 94 112 Q84 108 70 108 Q56 108 46 112Z" fill="#1e3a8a" opacity="0.55" />
+          {/* White shirt collar */}
+          <path d="M52 112 L70 130 L88 112 Q80 108 70 108 Q60 108 52 112Z" fill={`url(#${id}-collar)`} />
+          <path d="M70 108 L64 122 L70 130 L76 122Z" fill="#94a3b8" opacity="0.35" />
+
+          {/* LEFT arm — relaxed, angled down */}
+          <path d="M22 125 Q10 140 8 158" stroke={`url(#${id}-suit)`} strokeWidth="18" strokeLinecap="round" fill="none" />
+          <path d="M22 125 Q10 140 8 158" stroke="#1e3a8a" strokeWidth="4" strokeLinecap="round" fill="none" opacity="0.3" />
+          {/* Left hand */}
+          <ellipse cx="8" cy="160" rx="7" ry="5.5" fill={`url(#${id}-skin)`} transform="rotate(-20 8 160)" />
+        </g>
+
+        {/* RIGHT ARM — waving (animated, outside drop shadow for perf) */}
+        <g className="rh-arm-wave-anim" style={{ transformOrigin: '114px 118px' }}>
+          {/* Upper arm */}
+          <path d="M114 118 Q132 98 136 78" stroke={`url(#${id}-suit)`} strokeWidth="17" strokeLinecap="round" fill="none" />
+          <path d="M114 118 Q132 98 136 78" stroke="#1e3a8a" strokeWidth="3.5" strokeLinecap="round" fill="none" opacity="0.3" />
+          {/* Forearm */}
+          <path d="M136 78 Q140 58 134 42" stroke={`url(#${id}-skin)`} strokeWidth="12" strokeLinecap="round" fill="none" />
+          {/* Waving hand / palm */}
+          <g className="rh-hand-flick" style={{ transformOrigin: '134px 42px' }}>
+            <ellipse cx="132" cy="38" rx="9" ry="7" fill={`url(#${id}-skin)`} transform="rotate(-25 132 38)" />
+            {/* Fingers */}
+            <path d="M126 34 Q122 26 124 22" stroke={`url(#${id}-skin)`} strokeWidth="4.5" strokeLinecap="round" fill="none" />
+            <path d="M130 31 Q128 22 131 18" stroke={`url(#${id}-skin)`} strokeWidth="4.5" strokeLinecap="round" fill="none" />
+            <path d="M135 31 Q135 22 138 18" stroke={`url(#${id}-skin)`} strokeWidth="4.5" strokeLinecap="round" fill="none" />
+            <path d="M139 33 Q141 25 143 22" stroke={`url(#${id}-skin)`} strokeWidth="4" strokeLinecap="round" fill="none" />
+            {/* Thumb */}
+            <path d="M124 38 Q118 36 116 32" stroke={`url(#${id}-skin)`} strokeWidth="4" strokeLinecap="round" fill="none" />
+          </g>
+        </g>
+
+        {/* ── Neck ── */}
+        <rect x="61" y="94" width="18" height="18" rx="7" fill={`url(#${id}-neck)`} />
+
+        {/* ── Head ── */}
+        <g className="rh-head-idle" style={{ transformOrigin: '70px 58px' }}>
+          {/* Ear left */}
+          <ellipse cx="36" cy="62" rx="6" ry="8" fill={`url(#${id}-ear)`} />
+          <path d="M38 57 Q35 62 38 67" stroke="#8a4820" strokeWidth="1.3" fill="none" />
+          {/* Ear right */}
+          <ellipse cx="104" cy="62" rx="6" ry="8" fill={`url(#${id}-ear)`} />
+          <path d="M102 57 Q105 62 102 67" stroke="#8a4820" strokeWidth="1.3" fill="none" />
+
+          {/* Head sphere */}
+          <ellipse cx="70" cy="58" rx="34" ry="37" fill={`url(#${id}-skin)`} filter={`url(#${id}-sh)`} />
+          <ellipse cx="70" cy="58" rx="34" ry="37" fill={`url(#${id}-skin-dk)`} />
+
+          {/* Hair */}
+          <path d="M36 56 Q36 24 70 22 Q104 24 104 56 Q102 38 84 30 Q70 26 56 30 Q38 38 36 56Z" fill={`url(#${id}-hair)`} />
+          <path d="M36 56 Q33 65 36 72 Q36 62 40 58Z" fill="#1e0e05" />
+          <path d="M104 56 Q107 65 104 72 Q104 62 100 58Z" fill="#1e0e05" />
+          <path d="M46 28 Q70 20 92 30 Q70 22 46 28Z" fill="#6b4020" opacity="0.45" />
+
+          {/* Eyebrows */}
+          <path d="M48 44 Q55 39 62 42" stroke="#2c1208" strokeWidth="3" strokeLinecap="round" fill="none" />
+          <path d="M78 42 Q85 39 92 44" stroke="#2c1208" strokeWidth="3" strokeLinecap="round" fill="none" />
+
+          {/* Eyes */}
+          <ellipse cx="55" cy="56" rx="8.5" ry="7.5" fill={`url(#${id}-eye)`} />
+          <circle cx="55" cy="56" r="5" fill={`url(#${id}-iris)`} />
+          <circle cx="55" cy="56" r="2.7" fill="#050302" />
+          <circle cx="53" cy="54" r="1.6" fill="white" opacity="0.9" />
+          <circle cx="57" cy="58" r="0.8" fill="white" opacity="0.4" />
+          {/* Blink */}
+          <g className="rh-blink" style={{ transformOrigin: '55px 56px' }}>
+            <ellipse cx="55" cy="56" rx="9" ry="7.5" fill="#c07040" />
+            <path d="M46 56 Q55 49 64 56" fill="#2c1208" />
+          </g>
+
+          <ellipse cx="85" cy="56" rx="8.5" ry="7.5" fill={`url(#${id}-eye)`} />
+          <circle cx="85" cy="56" r="5" fill={`url(#${id}-iris)`} />
+          <circle cx="85" cy="56" r="2.7" fill="#050302" />
+          <circle cx="83" cy="54" r="1.6" fill="white" opacity="0.9" />
+          <circle cx="87" cy="58" r="0.8" fill="white" opacity="0.4" />
+          <g className="rh-blink" style={{ transformOrigin: '85px 56px' }}>
+            <ellipse cx="85" cy="56" rx="9" ry="7.5" fill="#c07040" />
+            <path d="M76 56 Q85 49 94 56" fill="#2c1208" />
+          </g>
+
+          {/* Nose */}
+          <circle cx="70" cy="73" r="5.5" fill="#c87840" opacity="0.85" />
+          <ellipse cx="66" cy="75" rx="3" ry="2.2" fill="#8a3a10" />
+          <ellipse cx="74" cy="75" rx="3" ry="2.2" fill="#8a3a10" />
+          <circle cx="68.5" cy="71" r="1.4" fill="white" opacity="0.2" />
+
+          {/* Smile */}
+          <path d="M57 82 Q70 92 83 82" stroke="#7a3c28" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+          <path d="M60 86 Q70 91 80 86 Q70 90 60 86Z" fill="#c06840" opacity="0.8" />
+          <path d="M63 83 Q70 86 77 83" stroke="white" strokeWidth="1.4" strokeLinecap="round" fill="none" opacity="0.65" />
+
+          {/* Cheek blush */}
+          <ellipse cx="42" cy="72" rx="10" ry="6" fill="#e87050" opacity="0.1" />
+          <ellipse cx="98" cy="72" rx="10" ry="6" fill="#e87050" opacity="0.1" />
+
+          {/* Specular highlight */}
+          <ellipse cx="70" cy="58" rx="34" ry="37" fill={`url(#${id}-spec)`} />
+        </g>
+
+        {/* Sparkles around waving hand */}
+        <text x="108" y="28" fontSize="14" className="rh-pop-in">✨</text>
+        <text x="118" y="12" fontSize="10" className="rh-pop-in" style={{ animationDelay: '0.2s' }}>⭐</text>
+        <text x="126" y="38" fontSize="9"  className="rh-pop-in" style={{ animationDelay: '0.35s' }}>✦</text>
+      </svg>
+    </div>
+  );
+}
+
 // ── Avatar button wrapper ───────────────────────────────────────────────────
-function AvatarBubble({ ring, glow, emoji }: { ring: string; glow: string; emoji: string }) {
+function AvatarBubble({ ring, glow, emoji, waving, onWaveDone }: {
+  ring: string; glow: string; emoji: string; waving: boolean; onWaveDone: () => void
+}) {
   return (
     <div className="rh-float relative w-16 h-16">
       {/* Pulsing rings */}
@@ -334,6 +510,8 @@ function AvatarBubble({ ring, glow, emoji }: { ring: string; glow: string; emoji
       <span key={emoji} className="rh-pop-in absolute -top-1 -right-1 w-7 h-7 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-sm z-10 shadow-lg">
         {emoji}
       </span>
+      {/* Pop-out wave character */}
+      {waving && <WavingPopout onDone={onWaveDone} />}
     </div>
   );
 }
@@ -343,7 +521,7 @@ export default function AssistWidget() {
   const pathname = usePathname() ?? '/';
   const [open, setOpen] = useState(false);
   const [showGreet, setShowGreet] = useState(false);
-  const [nudge, setNudge] = useState(false);
+  const [waving, setWaving] = useState(false);
   const [ctx, setCtx] = useState<Ctx>(getCtx(pathname));
   const idleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const greetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -370,12 +548,12 @@ export default function AssistWidget() {
     return () => { if (greetRef.current) clearTimeout(greetRef.current); };
   }, []);
 
-  // 5s idle → wiggle
+  // 5s idle → pop-out wave
   const resetIdle = () => {
     if (idleRef.current) clearTimeout(idleRef.current);
-    setNudge(false);
+    setWaving(false);
     if (!open) {
-      idleRef.current = setTimeout(() => setNudge(true), IDLE_MS);
+      idleRef.current = setTimeout(() => setWaving(true), IDLE_MS);
     }
   };
 
@@ -447,7 +625,7 @@ export default function AssistWidget() {
                 </Link>
               )}
               <button
-                onClick={() => { setOpen(true); setShowGreet(false); setNudge(false); }}
+                onClick={() => { setOpen(true); setShowGreet(false); setWaving(false); }}
                 className="block w-full mt-2 rounded-lg bg-rose-600/90 hover:bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors text-center"
               >
                 Ask me anything
@@ -457,11 +635,15 @@ export default function AssistWidget() {
 
           {/* Avatar button */}
           <button
-            onClick={() => { setOpen(true); setShowGreet(false); setNudge(false); }}
+            onClick={() => { setOpen(true); setShowGreet(false); setWaving(false); }}
             aria-label="Open Rotehügels Assist"
-            className={`pointer-events-auto transition-transform duration-200 hover:scale-110 active:scale-95 ${nudge ? 'rh-nudge' : ''}`}
+            className="pointer-events-auto transition-transform duration-200 hover:scale-110 active:scale-95"
           >
-            <AvatarBubble ring={ctx.ring} glow={ctx.glow} emoji={ctx.emoji} />
+            <AvatarBubble
+              ring={ctx.ring} glow={ctx.glow} emoji={ctx.emoji}
+              waving={waving}
+              onWaveDone={() => setWaving(false)}
+            />
           </button>
         </div>
       )}

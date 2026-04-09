@@ -94,6 +94,30 @@
 .rh-blink     { animation: rh-blink     4s   ease-in-out infinite; transform-origin: center center; }
 .rh-head-idle { animation: rh-head-idle 6s   ease-in-out infinite; }
 
+/* Pop-out wave character */
+@keyframes rh-popout-rise {
+  0%          { opacity: 0; transform: translateY(60px) scale(0.55); }
+  18%         { opacity: 1; transform: translateY(0)    scale(1.05); }
+  22%         { transform: scale(1); }
+  78%         { opacity: 1; transform: translateY(0)    scale(1); }
+  100%        { opacity: 0; transform: translateY(60px) scale(0.55); }
+}
+@keyframes rh-arm-wave-anim {
+  0%,100% { transform: rotate(0deg); }
+  15%     { transform: rotate(-52deg); }
+  35%     { transform: rotate(-15deg); }
+  55%     { transform: rotate(-58deg); }
+  75%     { transform: rotate(-10deg); }
+}
+@keyframes rh-hand-flick {
+  0%,100% { transform: rotate(0deg); }
+  25%     { transform: rotate(20deg); }
+  75%     { transform: rotate(-15deg); }
+}
+.rh-popout-rise   { animation: rh-popout-rise  4.2s cubic-bezier(.34,1.3,.64,1) forwards; }
+.rh-arm-wave-anim { animation: rh-arm-wave-anim 0.55s ease-in-out infinite; transform-box: fill-box; transform-origin: 14px 8px; }
+.rh-hand-flick    { animation: rh-hand-flick   0.55s ease-in-out infinite 0.1s; transform-box: fill-box; transform-origin: center top; }
+
 /* ── Print: hide site chrome and dashboard shell on all preview pages ── */
 @media print {
   /* Kill site header, ticker, footer, aura, any portals */

@@ -686,6 +686,11 @@ export default async function StatementPreviewPage({
                       <td style={{ ...invCell, verticalAlign:'top' as const }}>1</td>
                       <td style={{ ...invCell, verticalAlign:'top' as const }}>
                         <div style={{ fontWeight:700, marginBottom:'3px' }}>{o.description}</div>
+                        {o.stageLabel && (
+                          <div style={{ fontSize:'9px', fontWeight:700, color:'#92400e', marginTop:'3px', marginBottom:'2px' }}>
+                            Invoiced: {o.stageLabel}
+                          </div>
+                        )}
                         {stages.length > 1 && stages.map((s) => (
                           <div key={s.id} style={{ fontSize:'8.5px', color:'#666', marginTop:'2px' }}>
                             • {s.stage_name}: {fmt(s.amount_due)} + GST {fmt(s.gst_on_stage ?? 0)}
@@ -728,6 +733,13 @@ export default async function StatementPreviewPage({
                 <div style={{ fontSize:'8px', fontWeight:700, color:'#555', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'3px' }}>Amount in Words</div>
                 <div style={{ fontSize:'11px', fontWeight:800, color:'#111' }}>{amountInWords(o.total_value_incl_gst)}</div>
               </div>
+
+              {/* Advance / deferral note */}
+              {o.advance_note && (
+                <div style={{ border:'1px dashed #ccc', borderRadius:'4px', padding:'7px 10px', marginBottom:'12px', fontSize:'8.5px', color:'#555', lineHeight:1.6 }}>
+                  <strong style={{ color:'#333' }}>Note: </strong>{o.advance_note}
+                </div>
+              )}
 
               {/* Bank + Signature */}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>

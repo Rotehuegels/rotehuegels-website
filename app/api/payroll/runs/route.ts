@@ -45,11 +45,12 @@ export async function POST(req: Request) {
     .single();
   if (runErr) return NextResponse.json({ error: runErr.message }, { status: 500 });
 
-  // Fetch active employees with their salary structures
+  // Fetch active staff (exclude board members — they draw director fees, not salary)
   const { data: employees } = await supabaseAdmin
     .from('employees')
     .select('id, basic_salary, allowance, bonus')
-    .eq('status', 'active');
+    .eq('status', 'active')
+    .neq('employment_type', 'board_member');
 
   const { data: structures } = await supabaseAdmin
     .from('payroll_salary_structures')

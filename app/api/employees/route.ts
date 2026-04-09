@@ -71,6 +71,21 @@ async function generateEngagementId(joinDate?: string): Promise<string> {
   return `ENG-${yy}-${next}`;
 }
 
+// ── Generate RBC-NNN ──────────────────────────────────────────────────────────
+async function generateBoardMemberId(): Promise<string> {
+  const { data } = await supabaseAdmin
+    .from('employees')
+    .select('engagement_id')
+    .like('engagement_id', 'RBC-%')
+    .order('engagement_id', { ascending: false })
+    .limit(1);
+
+  const last = data?.[0]?.engagement_id;
+  const lastSeq = last ? parseInt(last.split('-')[1], 10) : 0;
+  const next = String(lastSeq + 1).padStart(3, '0');
+  return `RBC-${next}`;
+}
+
 // ── GET /api/employees ────────────────────────────────────────────────────────
 export async function GET() {
   const user = await requireAuth();
@@ -131,8 +146,8 @@ export async function POST(req: Request) {
     if (memberErr) return NextResponse.json({ error: memberErr.message }, { status: 500 });
   }
 
-  // 2. Generate engagement ID (board members don't get one)
-  const engagementId = isBoardMember ? null : await generateEngagementId(d.join_date);
+  // 2. Generate engagement ID (RBC-NNN for board members, ENG-YY-NNN for others)
+  const engagementId = isBoardMember ? await generateBoardMemberId() : await generateEngagementId(d.join_date);
 
   // 3. Create engagement
   const { data, error } = await supabaseAdmin

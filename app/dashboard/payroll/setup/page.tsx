@@ -11,6 +11,7 @@ export default async function SalarySetupPage() {
       .from('employees')
       .select('id, role, department, basic_salary, allowance, rex_members(full_name)')
       .eq('status', 'active')
+      .neq('employment_type', 'board_member')
       .order('role'),
     supabaseAdmin.from('payroll_salary_structures').select('*'),
   ]);

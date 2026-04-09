@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ShoppingBag, Wrench, Pencil, FileText } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Wrench, Pencil, FileText, Receipt } from 'lucide-react';
 import RecordPaymentForm from './RecordPaymentForm';
 import StageStatusButton from './StageStatusButton';
 
@@ -194,8 +194,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     {s.status}
                   </span>
                 </div>
-                <div>
+                <div className="flex flex-col gap-1.5">
                   <StageStatusButton stageId={s.id} orderId={id} currentStatus={s.status} />
+                  <Link
+                    href={`/dashboard/accounts/orders/${id}/invoice?upto=${s.stage_number}`}
+                    title={`Invoice stages 1–${s.stage_number}`}
+                    className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800/40 px-2 py-1 text-[10px] text-zinc-400 hover:border-amber-500 hover:text-amber-400 transition-colors">
+                    <Receipt className="h-2.5 w-2.5" /> Inv 1–{s.stage_number}
+                  </Link>
                 </div>
               </div>
             ))}

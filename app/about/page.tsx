@@ -2,7 +2,7 @@
 import type { ReactElement } from "react";
 import Image from "next/image";
 import Section from "@/components/Section";
-import WebLLMAssistant from "@/components/WebLLMAssistant";
+import AssistNudge from "@/components/AssistNudge";
 import {
   ShieldCheck,
   FlaskConical,
@@ -346,14 +346,7 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      <Section
-        title="Talk to Rotehügels Assist"
-        subtitle="Ask anything about our services, products, or capabilities — available 24/7."
-      >
-        <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/40 p-5">
-          <WebLLMAssistant />
-        </div>
-      </Section>
+      <AssistNudge />
 
       <Section title="Work With Us">
         <p className="text-sm text-zinc-300 mb-4">

@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from 'next'
+import { Suspense } from 'react'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import TickerBar from '@/components/TickerBar'
 import AuraBackground from '@/components/AuraBackground'
+import PageTracker from '@/components/PageTracker'
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.rotehuegels.com"),
@@ -83,6 +85,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning>
+        <Suspense fallback={null}><PageTracker /></Suspense>
         <AuraBackground />
         <Header />
         <TickerBar />

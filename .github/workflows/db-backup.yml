@@ -17,20 +17,21 @@ jobs:
       - name: Dump database
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PGSSLMODE: require
         run: |
           set -euo pipefail
           FILENAME="backup-$(date +%Y-%m-%d).sql.gz"
           echo "Testing connection..."
           pg_isready \
-            --host=aws-0-ap-southeast-1.pooler.supabase.com \
+            --host=db.wprhuurrujipaphejznq.supabase.co \
             --port=5432 \
-            --username=postgres.wprhuurrujipaphejznq \
+            --username=postgres \
             --dbname=postgres || true
           echo "Running pg_dump..."
           pg_dump \
-            --host=aws-0-ap-southeast-1.pooler.supabase.com \
+            --host=db.wprhuurrujipaphejznq.supabase.co \
             --port=5432 \
-            --username=postgres.wprhuurrujipaphejznq \
+            --username=postgres \
             --dbname=postgres \
             --no-password \
             --format=plain \

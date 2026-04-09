@@ -8,5 +8,6 @@ alter table employees
   add column if not exists emergency_contact_name   text,
   add column if not exists emergency_contact_phone  text,
   add column if not exists reporting_manager        text,
+  add column if not exists basic_salary             numeric(14,2),
   add column if not exists allowance                numeric(14,2),
   add column if not exists bonus                    numeric(14,2);

@@ -1,13 +1,19 @@
--- Add columns that the employees API expects but were missing from the initial table
+-- Add all columns that the employees API expects (safe to re-run — uses if not exists)
 alter table employees
-  add column if not exists address                  text,
-  add column if not exists national_id              text,
-  add column if not exists bank_name                text,
-  add column if not exists bank_account             text,
-  add column if not exists bank_ifsc                text,
-  add column if not exists emergency_contact_name   text,
-  add column if not exists emergency_contact_phone  text,
-  add column if not exists reporting_manager        text,
-  add column if not exists basic_salary             numeric(14,2),
-  add column if not exists allowance                numeric(14,2),
-  add column if not exists bonus                    numeric(14,2);
+  add column if not exists join_date                 date,
+  add column if not exists status                    text not null default 'active',
+  add column if not exists address                   text,
+  add column if not exists national_id               text,
+  add column if not exists bank_name                 text,
+  add column if not exists bank_account              text,
+  add column if not exists bank_ifsc                 text,
+  add column if not exists emergency_contact_name    text,
+  add column if not exists emergency_contact_phone   text,
+  add column if not exists reporting_manager         text,
+  add column if not exists department                text,
+  add column if not exists email                     text,
+  add column if not exists phone                     text,
+  add column if not exists employment_type           text not null default 'full_time',
+  add column if not exists basic_salary              numeric(14,2),
+  add column if not exists allowance                 numeric(14,2),
+  add column if not exists bonus                     numeric(14,2);

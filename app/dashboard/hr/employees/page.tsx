@@ -5,10 +5,11 @@ import { UserPlus } from 'lucide-react';
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
 const TYPE_LABEL: Record<string, string> = {
-  full_time: 'Full-time',
-  part_time: 'Part-time',
+  full_time:  'Full-time',
+  part_time:  'Part-time',
   consultant: 'Consultant',
-  contract: 'Contract',
+  contract:   'Contract',
+  intern:     'Intern',
 };
 
 const STATUS_STYLE: Record<string, string> = {

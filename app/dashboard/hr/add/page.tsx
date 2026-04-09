@@ -31,6 +31,7 @@ export default function AddEmployeePage() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [empType, setEmpType] = useState('');
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -85,14 +86,26 @@ export default function AddEmployeePage() {
         </div>
 
         <Field label="Employment type" required>
-          <select name="employment_type" required defaultValue="" className={selectCls}>
+          <select name="employment_type" required defaultValue="" className={selectCls}
+            onChange={(e) => setEmpType(e.target.value)}>
             <option value="" disabled>Select…</option>
             <option value="full_time">Full-time</option>
             <option value="part_time">Part-time</option>
             <option value="consultant">Consultant</option>
             <option value="contract">Contract</option>
+            <option value="intern">Intern</option>
           </select>
         </Field>
+
+        {empType === 'intern' ? (
+          <Field label="REX ID" required>
+            <input name="rex_id" required className={inputCls} placeholder="REX Network ID (mandatory for interns)"
+              pattern="[A-Za-z0-9\-]+" title="Enter a valid REX ID" />
+            <p className="mt-1 text-xs text-zinc-500">Interns must be registered in the REX Network. Their REX ID becomes their Employee ID.</p>
+          </Field>
+        ) : (
+          <div /> /* keeps grid alignment */
+        )}
 
         <Field label="Join date">
           <input name="join_date" type="date" defaultValue={new Date().toISOString().split('T')[0]}

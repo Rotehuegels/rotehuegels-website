@@ -7,7 +7,8 @@ import { supabaseServer } from '@/lib/supabaseServer';
 
 const EmployeeSchema = z.object({
   full_name: z.string().min(2),
-  employment_type: z.enum(['full_time', 'part_time', 'consultant', 'contract']),
+  employment_type: z.enum(['full_time', 'part_time', 'consultant', 'contract', 'intern']),
+  rex_id: z.string().optional(),
   role: z.string().min(1),
   department: z.string().optional(),
   reporting_manager: z.string().optional(),
@@ -60,6 +61,12 @@ export async function POST(req: Request) {
   }
 
   const d = parsed.data;
+
+  // Interns must provide a REX ID — it becomes their employee_code
+  if (d.employment_type === 'intern' && !d.rex_id?.trim()) {
+    return NextResponse.json({ error: 'REX ID is required for interns.' }, { status: 400 });
+  }
+
   const { data, error } = await supabaseAdmin.from('employees').insert([{
     full_name: d.full_name,
     employment_type: d.employment_type,
@@ -79,6 +86,8 @@ export async function POST(req: Request) {
     allowance: d.allowance ?? null,
     bonus: d.bonus ?? null,
     join_date: d.join_date || new Date().toISOString().split('T')[0],
+    // Interns: use REX ID as employee_code (trigger skips auto-gen when not null)
+    ...(d.employment_type === 'intern' && d.rex_id ? { employee_code: d.rex_id.trim().toUpperCase() } : {}),
   }]).select('id').single();
 
   if (error) {

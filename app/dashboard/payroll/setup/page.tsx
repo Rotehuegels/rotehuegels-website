@@ -42,7 +42,7 @@ export default async function SalarySetupPage() {
         <div className="space-y-1">
           <p><strong>EPF</strong> — 12% of Basic (capped at ₹15,000 basic). Enable for permanent employees earning basic ≤ ₹15K or if opted in.</p>
           <p><strong>ESI</strong> — 0.75% employee / 3.25% employer. Only applicable if gross ≤ ₹21,000/mo.</p>
-          <p><strong>PT</strong> — Maharashtra Professional Tax. ₹0 (≤₹7.5K) · ₹175 (₹7.5K–₹10K) · ₹200/mo or ₹300 in Feb (above ₹10K).</p>
+          <p><strong>PT</strong> — Tamil Nadu Professional Tax. Deducted in April &amp; October only. ₹0 (HY ≤₹21K) · ₹135 (≤₹30K) · ₹315 (≤₹45K) · ₹690 (≤₹60K) · ₹1,025 (≤₹75K) · ₹1,250 (above). Max ₹2,500/year.</p>
         </div>
       </div>
 

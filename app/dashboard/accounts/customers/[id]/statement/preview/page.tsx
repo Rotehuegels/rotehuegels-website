@@ -693,14 +693,14 @@ export default async function StatementPreviewPage({
                         ))}
                       </td>
                       <td style={{ ...invCell, textAlign:'center' as const, fontFamily:'monospace', fontWeight:700 }}>{sacHsn}</td>
-                      <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.base_value ?? 0)}</td>
+                      <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.baseValue)}</td>
                       {isIntra ? (
                         <>
-                          <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.cgst_amount ?? 0)}</td>
-                          <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.sgst_amount ?? 0)}</td>
+                          <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.gstAmount / 2)}</td>
+                          <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.gstAmount / 2)}</td>
                         </>
                       ) : (
-                        <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.igst_amount ?? 0)}</td>
+                        <td style={{ ...invCell, textAlign:'right' as const }}>{fmt(o.gstAmount)}</td>
                       )}
                       <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.total_value_incl_gst)}</td>
                     </tr>
@@ -709,14 +709,14 @@ export default async function StatementPreviewPage({
                 <tfoot>
                   <tr style={{ background:'#f5f5f5' }}>
                     <td colSpan={descColspan} style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>Total</td>
-                    <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.base_value ?? 0)}</td>
+                    <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.baseValue)}</td>
                     {isIntra ? (
                       <>
-                        <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.cgst_amount ?? 0)}</td>
-                        <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.sgst_amount ?? 0)}</td>
+                        <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.gstAmount / 2)}</td>
+                        <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.gstAmount / 2)}</td>
                       </>
                     ) : (
-                      <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.igst_amount ?? 0)}</td>
+                      <td style={{ ...invCell, textAlign:'right' as const, fontWeight:700 }}>{fmt(o.gstAmount)}</td>
                     )}
                     <td style={{ ...invCell, textAlign:'right' as const, fontWeight:900, fontSize:'11px' }}>{fmt(o.total_value_incl_gst)}</td>
                   </tr>

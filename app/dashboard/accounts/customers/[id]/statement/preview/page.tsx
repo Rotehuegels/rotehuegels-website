@@ -728,10 +728,17 @@ export default async function StatementPreviewPage({
                 </tfoot>
               </table>
 
-              {/* Amount in words */}
+              {/* Amount in words + TDS note */}
               <div style={{ border:'1px solid #ddd', borderRadius:'4px', padding:'8px 10px', marginBottom:'12px' }}>
                 <div style={{ fontSize:'8px', fontWeight:700, color:'#555', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:'3px' }}>Amount in Words</div>
                 <div style={{ fontSize:'11px', fontWeight:800, color:'#111' }}>{amountInWords(o.total_value_incl_gst)}</div>
+                {o.tds_applicable && o.tdsAmount > 0 && (
+                  <div style={{ marginTop:'6px', fontSize:'8.5px', color:'#777', borderTop:'1px dashed #ddd', paddingTop:'5px' }}>
+                    * Subject to TDS deduction @ {o.tds_rate}% under applicable Income Tax provisions.
+                    &nbsp; TDS deducted by client: <strong>{fmt(o.tdsAmount)}</strong>.
+                    &nbsp; Net receivable after TDS: <strong>{fmt(o.total_value_incl_gst - o.tdsAmount)}</strong>
+                  </div>
+                )}
               </div>
 
               {/* Advance / deferral note */}

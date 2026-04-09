@@ -25,13 +25,17 @@ export default async function RunDetailPage({
   const [{ data: run }, { data: entriesRaw }, { data: empsRaw }] = await Promise.all([
     supabaseAdmin.from('payroll_runs').select('*').eq('id', runId).single(),
     supabaseAdmin.from('payroll_entries').select('*').eq('run_id', runId).order('created_at'),
-    supabaseAdmin.from('employees').select('id, full_name, role, department, rex_members(bank_account, bank_ifsc)').eq('status', 'active'),
+    supabaseAdmin.from('employees').select('id, role, department, rex_members(full_name, bank_account, bank_ifsc)').eq('status', 'active'),
   ]);
 
   if (!run) notFound();
 
   const entries   = entriesRaw ?? [];
-  const employees = empsRaw   ?? [];
+  // Supabase infers rex_members as array; normalize to object (it's a many-to-one join)
+  const employees = (empsRaw ?? []).map((e) => ({
+    ...e,
+    rex_members: Array.isArray(e.rex_members) ? (e.rex_members[0] ?? null) : e.rex_members,
+  }));
 
   const totalGross     = entries.reduce((s, e) => s + (e.gross_pay        ?? 0), 0);
   const totalDed       = entries.reduce((s, e) => s + (e.total_deductions ?? 0), 0);

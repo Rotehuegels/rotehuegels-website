@@ -5,8 +5,9 @@ import { UserPlus } from 'lucide-react';
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
 const TYPE_LABEL: Record<string, string> = {
-  full_time:   'Full-time',
-  rex_network: 'REX Network',
+  full_time:    'Full-time',
+  rex_network:  'REX Network',
+  board_member: 'Board Member',
 };
 
 const SUBTYPE_LABEL: Record<string, string> = {
@@ -26,7 +27,7 @@ const STATUS_STYLE: Record<string, string> = {
 export default async function EmployeesPage() {
   const { data: engagements } = await supabaseAdmin
     .from('employees')
-    .select('id, engagement_id, rex_id, role, department, employment_type, rex_subtype, status, join_date, end_date, rex_members(full_name, email)')
+    .select('id, engagement_id, rex_id, full_name, role, department, employment_type, rex_subtype, status, join_date, end_date, rex_members(full_name, email)')
     .order('created_at', { ascending: true });
 
   return (
@@ -83,7 +84,7 @@ export default async function EmployeesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="font-medium text-white">{member?.full_name ?? '—'}</p>
+                        <p className="font-medium text-white">{member?.full_name ?? eng.full_name ?? '—'}</p>
                         {member?.email && <p className="text-xs text-zinc-500 mt-0.5">{member.email}</p>}
                       </td>
                       <td className="px-6 py-4 text-zinc-300">{eng.role}</td>

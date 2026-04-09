@@ -23,8 +23,8 @@ const RexMemberSchema = z.object({
 });
 
 const EngagementSchema = z.object({
-  rex_id:           z.string().min(1, 'REX ID is required'),
-  employment_type:  z.enum(['full_time', 'rex_network']),
+  rex_id:           z.string().optional(),
+  employment_type:  z.enum(['full_time', 'rex_network', 'board_member']),
   rex_subtype:      z.enum(['part_time', 'consultant', 'contract', 'intern']).optional(),
   role:             z.string().min(1),
   department:       z.string().optional(),
@@ -106,30 +106,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'REX sub-type is required for REX Network employees.' }, { status: 400 });
   }
 
-  const rexId = d.rex_id.trim().toUpperCase();
+  const isBoardMember = d.employment_type === 'board_member';
+  const rexId = d.rex_id ? d.rex_id.trim().toUpperCase() : null;
 
-  // 1. Upsert rex_member (create if new, update name/contact if changed)
-  const { error: memberErr } = await supabaseAdmin
-    .from('rex_members')
-    .upsert({
-      rex_id:                  rexId,
-      full_name:               d.full_name,
-      date_of_birth:           d.date_of_birth || null,
-      phone:                   d.phone || null,
-      email:                   d.email || null,
-      address:                 d.address || null,
-      national_id:             d.national_id || null,
-      bank_name:               d.bank_name || null,
-      bank_account:            d.bank_account || null,
-      bank_ifsc:               d.bank_ifsc || null,
-      emergency_contact_name:  d.emergency_contact_name || null,
-      emergency_contact_phone: d.emergency_contact_phone || null,
-    }, { onConflict: 'rex_id' });
+  // 1. Upsert rex_member only if REX ID provided
+  if (rexId) {
+    const { error: memberErr } = await supabaseAdmin
+      .from('rex_members')
+      .upsert({
+        rex_id:                  rexId,
+        full_name:               d.full_name,
+        date_of_birth:           d.date_of_birth || null,
+        phone:                   d.phone || null,
+        email:                   d.email || null,
+        address:                 d.address || null,
+        national_id:             d.national_id || null,
+        bank_name:               d.bank_name || null,
+        bank_account:            d.bank_account || null,
+        bank_ifsc:               d.bank_ifsc || null,
+        emergency_contact_name:  d.emergency_contact_name || null,
+        emergency_contact_phone: d.emergency_contact_phone || null,
+      }, { onConflict: 'rex_id' });
 
-  if (memberErr) return NextResponse.json({ error: memberErr.message }, { status: 500 });
+    if (memberErr) return NextResponse.json({ error: memberErr.message }, { status: 500 });
+  }
 
-  // 2. Generate engagement ID
-  const engagementId = await generateEngagementId(d.join_date);
+  // 2. Generate engagement ID (board members don't get one)
+  const engagementId = isBoardMember ? null : await generateEngagementId(d.join_date);
 
   // 3. Create engagement
   const { data, error } = await supabaseAdmin

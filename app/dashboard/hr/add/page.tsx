@@ -44,8 +44,9 @@ export default function AddEngagementPage() {
   const [existingMember, setExisting] = useState<RexMember | null>(null);
   const [lookupDone, setLookupDone] = useState(false);
 
-  const isRex      = empType === 'rex_network';
-  const isFullTime = empType === 'full_time';
+  const isRex         = empType === 'rex_network';
+  const isFullTime    = empType === 'full_time';
+  const isBoardMember = empType === 'board_member';
 
   async function lookupRex() {
     if (!rexId.trim()) return;
@@ -100,7 +101,7 @@ export default function AddEngagementPage() {
         </Link>
         <h1 className="mt-3 text-2xl font-bold text-white">New Engagement</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          Look up the REX member first — if they exist, personal details are pre-filled. An engagement ID (ENG-YY-NNN) will be auto-assigned.
+          Look up the REX member first — if they exist, personal details are pre-filled. Full-time and REX Network engagements get an auto-assigned ENG-YY-NNN ID. Board members do not.
         </p>
       </div>
 
@@ -110,13 +111,13 @@ export default function AddEngagementPage() {
         <SectionTitle>REX Member</SectionTitle>
 
         <div className="col-span-full">
-          <Field label="REX Network ID" required hint="Lookup fetches existing member details. If new, fill in details below.">
+          <Field label="REX Network ID" required={!isBoardMember} hint={isBoardMember ? "Optional for board members." : "Lookup fetches existing member details. If new, fill in details below."}>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Network className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400 pointer-events-none" />
                 <input
                   name="rex_id"
-                  required
+                  required={!isBoardMember}
                   value={rexId}
                   onChange={e => { setRexId(e.target.value); setLookupDone(false); setExisting(null); }}
                   className={`${inputCls} pl-9`}
@@ -219,6 +220,7 @@ export default function AddEngagementPage() {
             <option value="" disabled>Select…</option>
             <option value="full_time">Full-time</option>
             <option value="rex_network">REX Network</option>
+            <option value="board_member">Board Member</option>
           </select>
         </Field>
 
@@ -236,6 +238,11 @@ export default function AddEngagementPage() {
           <div className="flex items-center gap-2 rounded-xl border border-indigo-500/20 bg-indigo-500/5 px-4 py-3 text-xs text-indigo-300 self-end mb-0.5">
             <Network className="h-4 w-4 shrink-0" />
             Full-time engagement · Engagement ID auto-assigned as ENG-YY-NNN
+          </div>
+        ) : isBoardMember ? (
+          <div className="flex items-center gap-2 rounded-xl border border-zinc-600/30 bg-zinc-800/40 px-4 py-3 text-xs text-zinc-400 self-end mb-0.5">
+            <Network className="h-4 w-4 shrink-0" />
+            Board member · No engagement ID assigned
           </div>
         ) : <div />}
 

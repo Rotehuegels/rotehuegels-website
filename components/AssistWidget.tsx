@@ -111,207 +111,260 @@ function getCtx(pathname: string): Ctx {
   return DEFAULT_CTX;
 }
 
-// ── 3D Avatar SVG with radial-gradient shading ─────────────────────────────
+// ── Tamil woman 3D avatar ───────────────────────────────────────────────────
 function Avatar3D({ size = 56 }: { size?: number }) {
-  const id = 'rha'; // short prefix to avoid conflicts
+  const id = 'rha';
   return (
     <svg viewBox="0 0 120 120" width={size} height={size} fill="none" aria-hidden>
       <defs>
-        {/* Scene BG */}
-        <radialGradient id={`${id}-bg`} cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="#1e2a3a" />
-          <stop offset="100%" stopColor="#0d1117" />
+        {/* Background */}
+        <radialGradient id={`${id}-bg`} cx="45%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#2a1535" />
+          <stop offset="100%" stopColor="#0d0812" />
         </radialGradient>
-        {/* Skin — main sphere shading (light from top-left) */}
-        <radialGradient id={`${id}-skin`} cx="38%" cy="32%" r="65%">
-          <stop offset="0%"   stopColor="#f5cda0" />
-          <stop offset="45%"  stopColor="#d4915c" />
-          <stop offset="100%" stopColor="#a0582a" />
+        {/* Deep warm Tamil skin — light from upper-left */}
+        <radialGradient id={`${id}-sk`} cx="34%" cy="28%" r="70%">
+          <stop offset="0%"   stopColor="#f0b07a" />
+          <stop offset="28%"  stopColor="#c87238" />
+          <stop offset="65%"  stopColor="#984e18" />
+          <stop offset="100%" stopColor="#5a2808" />
         </radialGradient>
-        {/* Skin dark side */}
-        <radialGradient id={`${id}-skin-dark`} cx="75%" cy="70%" r="50%">
-          <stop offset="0%" stopColor="#7a3a10" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="#7a3a10" stopOpacity="0" />
+        {/* Skin shadow — far side */}
+        <radialGradient id={`${id}-skd`} cx="82%" cy="78%" r="52%">
+          <stop offset="0%"   stopColor="#3a1006" stopOpacity="0.65" />
+          <stop offset="100%" stopColor="#3a1006" stopOpacity="0" />
         </radialGradient>
-        {/* Hair gradient */}
-        <radialGradient id={`${id}-hair`} cx="40%" cy="25%" r="70%">
-          <stop offset="0%"   stopColor="#4a2c10" />
-          <stop offset="60%"  stopColor="#1e0e05" />
-          <stop offset="100%" stopColor="#0d0603" />
-        </radialGradient>
-        {/* Eye iris */}
-        <radialGradient id={`${id}-iris`} cx="35%" cy="35%" r="70%">
-          <stop offset="0%"   stopColor="#6b4226" />
-          <stop offset="50%"  stopColor="#3b1e0a" />
-          <stop offset="100%" stopColor="#0d0603" />
-        </radialGradient>
-        {/* Shirt */}
-        <linearGradient id={`${id}-shirt`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1d4ed8" />
-          <stop offset="100%" stopColor="#1e3a8a" />
-        </linearGradient>
-        {/* Collar */}
-        <linearGradient id={`${id}-collar`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#f8fafc" />
-          <stop offset="100%" stopColor="#cbd5e1" />
-        </linearGradient>
         {/* Neck */}
-        <linearGradient id={`${id}-neck`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"  stopColor="#c07840" />
-          <stop offset="40%" stopColor="#dfa060" />
-          <stop offset="100%" stopColor="#9a5820" />
+        <linearGradient id={`${id}-nk`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor="#7a3a10" />
+          <stop offset="45%"  stopColor="#be6e30" />
+          <stop offset="100%" stopColor="#6a2e0c" />
         </linearGradient>
         {/* Ear */}
-        <radialGradient id={`${id}-ear`} cx="60%" cy="40%" r="70%">
-          <stop offset="0%"   stopColor="#dfa060" />
-          <stop offset="100%" stopColor="#a05828" />
+        <radialGradient id={`${id}-ear`} cx="38%" cy="32%" r="65%">
+          <stop offset="0%"   stopColor="#d89050" />
+          <stop offset="100%" stopColor="#7a3810" />
         </radialGradient>
-        {/* Drop shadow */}
-        <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000" floodOpacity="0.5" />
-        </filter>
-        {/* Specular highlight */}
-        <radialGradient id={`${id}-spec`} cx="32%" cy="28%" r="28%">
-          <stop offset="0%"   stopColor="white" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        {/* Hair — black with subtle blue sheen */}
+        <radialGradient id={`${id}-hr`} cx="36%" cy="18%" r="68%">
+          <stop offset="0%"   stopColor="#3c2410" />
+          <stop offset="40%"  stopColor="#130b04" />
+          <stop offset="100%" stopColor="#060402" />
+        </radialGradient>
+        {/* Kondai (bun) */}
+        <radialGradient id={`${id}-bn`} cx="35%" cy="28%" r="62%">
+          <stop offset="0%"   stopColor="#2e1a08" />
+          <stop offset="100%" stopColor="#060402" />
+        </radialGradient>
+        {/* Eye iris — very dark brown */}
+        <radialGradient id={`${id}-ir`} cx="30%" cy="28%" r="68%">
+          <stop offset="0%"   stopColor="#4e2808" />
+          <stop offset="55%"  stopColor="#180c04" />
+          <stop offset="100%" stopColor="#040202" />
         </radialGradient>
         {/* Eyeball */}
-        <radialGradient id={`${id}-eye-white`} cx="35%" cy="30%" r="70%">
+        <radialGradient id={`${id}-ew`} cx="30%" cy="25%" r="65%">
           <stop offset="0%"   stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#d0ccc8" />
+          <stop offset="100%" stopColor="#d4cfc8" />
         </radialGradient>
+        {/* Lips — rose-red */}
+        <linearGradient id={`${id}-lp`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#c03050" />
+          <stop offset="100%" stopColor="#8a1c30" />
+        </linearGradient>
+        {/* Kanjivaram saree — deep teal/peacock */}
+        <linearGradient id={`${id}-sr`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor="#0e6070" />
+          <stop offset="55%"  stopColor="#084050" />
+          <stop offset="100%" stopColor="#042838" />
+        </linearGradient>
+        {/* Saree drape (pallu) */}
+        <linearGradient id={`${id}-pl`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor="#145870" />
+          <stop offset="100%" stopColor="#063040" />
+        </linearGradient>
+        {/* Gold zari */}
+        <linearGradient id={`${id}-gd`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor="#f8d060" />
+          <stop offset="50%"  stopColor="#e8a820" />
+          <stop offset="100%" stopColor="#c88010" />
+        </linearGradient>
+        {/* Specular on head */}
+        <radialGradient id={`${id}-sp`} cx="30%" cy="24%" r="30%">
+          <stop offset="0%"   stopColor="white" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+        {/* Drop shadow */}
+        <filter id={`${id}-sh`} x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="3" stdDeviation="3.5" floodColor="#000" floodOpacity="0.5" />
+        </filter>
       </defs>
 
-      {/* Scene background circle */}
+      {/* Scene background */}
       <circle cx="60" cy="60" r="60" fill={`url(#${id}-bg)`} />
+      <ellipse cx="60" cy="110" rx="26" ry="5" fill="#000" opacity="0.3" />
 
-      {/* Ambient ground shadow */}
-      <ellipse cx="60" cy="108" rx="28" ry="6" fill="#000" opacity="0.35" />
-
-      {/* ── Body ── */}
-      {/* Jacket */}
-      <path d="M14 120 Q14 86 60 82 Q106 86 106 120Z" fill={`url(#${id}-shirt)`} filter={`url(#${id}-shadow)`} />
-      {/* Jacket lapel shadow */}
-      <path d="M40 82 Q48 90 60 92 Q72 90 80 82 Q72 80 60 80 Q48 80 40 82Z" fill="#1e3a8a" opacity="0.6" />
-      {/* White shirt collar */}
-      <path d="M46 82 L60 96 L74 82 Q68 79 60 79 Q52 79 46 82Z" fill={`url(#${id}-collar)`} />
-      {/* Collar shadow fold */}
-      <path d="M60 79 L55 90 L60 96 L65 90Z" fill="#94a3b8" opacity="0.4" />
+      {/* ── Saree body ── */}
+      {/* Main body drape */}
+      <path d="M10 120 Q10 85 60 78 Q110 85 110 120Z" fill={`url(#${id}-sr)`} filter={`url(#${id}-sh)`} />
+      {/* Saree pallu over left shoulder */}
+      <path d="M10 120 Q10 88 28 80 Q36 76 42 80 Q22 92 16 120Z" fill={`url(#${id}-pl)`} opacity="0.9" />
+      {/* Gold zari border — main */}
+      <path d="M10 120 Q10 89 60 82 Q110 89 110 120" stroke={`url(#${id}-gd)`} strokeWidth="2.8" fill="none" opacity="0.85" />
+      {/* Gold zari border — second line */}
+      <path d="M10 120 Q10 93 60 86 Q110 93 110 120" stroke={`url(#${id}-gd)`} strokeWidth="1.2" fill="none" opacity="0.45" />
+      {/* Pallu border */}
+      <path d="M14 100 Q22 88 34 82" stroke={`url(#${id}-gd)`} strokeWidth="1.5" fill="none" opacity="0.6" />
 
       {/* ── Neck ── */}
-      <rect x="51" y="68" width="18" height="16" rx="7" fill={`url(#${id}-neck)`} />
+      <rect x="50" y="67" width="20" height="14" rx="8" fill={`url(#${id}-nk)`} />
+      {/* Gold necklace */}
+      <path d="M46 73 Q60 80 74 73" stroke={`url(#${id}-gd)`} strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.85" />
+      <circle cx="60" cy="78" r="2.2" fill={`url(#${id}-gd)`} />
 
-      {/* ── Head (3D sphere illusion) ── */}
-      <g className="rh-head-idle" style={{ transformOrigin: '60px 46px' }}>
-        {/* Ear left */}
-        <ellipse cx="30" cy="50" rx="5.5" ry="7" fill={`url(#${id}-ear)`} />
-        <path d="M32 46 Q29 50 32 54" stroke="#8a4820" strokeWidth="1.2" fill="none" />
+      {/* ── Head ── */}
+      <g className="rh-head-idle" style={{ transformOrigin: '60px 45px' }}>
 
-        {/* Ear right */}
-        <ellipse cx="90" cy="50" rx="5.5" ry="7" fill={`url(#${id}-ear)`} />
-        <path d="M88 46 Q91 50 88 54" stroke="#8a4820" strokeWidth="1.2" fill="none" />
+        {/* Left ear */}
+        <ellipse cx="29" cy="50" rx="5.5" ry="7" fill={`url(#${id}-ear)`} />
+        <path d="M31 46 Q28 50 31 54" stroke="#703008" strokeWidth="1.1" fill="none" />
+        {/* Jhumka earring left */}
+        <circle cx="26.5" cy="55" r="4" fill={`url(#${id}-gd)`} filter={`url(#${id}-sh)`} />
+        <ellipse cx="26.5" cy="60" rx="3" ry="3.5" fill={`url(#${id}-gd)`} />
+        <path d="M24.2 63 L24.8 67 M26.5 64 L26.5 68 M28.8 63 L28.2 67"
+          stroke={`url(#${id}-gd)`} strokeWidth="0.9" strokeLinecap="round" />
 
-        {/* Head sphere */}
-        <ellipse cx="60" cy="46" rx="30" ry="32" fill={`url(#${id}-skin)`} filter={`url(#${id}-shadow)`} />
-        {/* Dark shading on far side */}
-        <ellipse cx="60" cy="46" rx="30" ry="32" fill={`url(#${id}-skin-dark)`} />
+        {/* Right ear */}
+        <ellipse cx="91" cy="50" rx="5.5" ry="7" fill={`url(#${id}-ear)`} />
+        <path d="M89 46 Q92 50 89 54" stroke="#703008" strokeWidth="1.1" fill="none" />
+        {/* Jhumka earring right */}
+        <circle cx="93.5" cy="55" r="4" fill={`url(#${id}-gd)`} filter={`url(#${id}-sh)`} />
+        <ellipse cx="93.5" cy="60" rx="3" ry="3.5" fill={`url(#${id}-gd)`} />
+        <path d="M91.2 63 L91.8 67 M93.5 64 L93.5 68 M95.8 63 L95.2 67"
+          stroke={`url(#${id}-gd)`} strokeWidth="0.9" strokeLinecap="round" />
+
+        {/* Head sphere — 3D shaded */}
+        <ellipse cx="60" cy="45" rx="31" ry="33" fill={`url(#${id}-sk)`} filter={`url(#${id}-sh)`} />
+        <ellipse cx="60" cy="45" rx="31" ry="33" fill={`url(#${id}-skd)`} />
 
         {/* ── Hair ── */}
-        {/* Main hair cap */}
-        <path d="M30 44 Q30 16 60 14 Q90 16 90 44 Q88 30 72 24 Q60 20 48 24 Q32 30 30 44Z"
-          fill={`url(#${id}-hair)`} />
-        {/* Sideburn left */}
-        <path d="M30 44 Q28 52 30 58 Q30 50 33 46Z" fill="#1e0e05" />
-        {/* Sideburn right */}
-        <path d="M90 44 Q92 52 90 58 Q90 50 87 46Z" fill="#1e0e05" />
-        {/* Hair highlight */}
-        <path d="M40 22 Q60 16 78 24 Q60 18 40 22Z" fill="#6b4020" opacity="0.5" />
+        {/* Sides and top covering */}
+        <path d="M29 43 Q29 14 60 12 Q91 14 91 43 Q89 28 74 20 Q60 16 46 20 Q31 28 29 43Z"
+          fill={`url(#${id}-hr)`} />
+        {/* Side hair flowing down to ears */}
+        <path d="M29 43 Q27 54 29 62 Q29 52 33 46Z" fill="#0a0604" />
+        <path d="M91 43 Q93 54 91 62 Q91 52 87 46Z" fill="#0a0604" />
+        {/* Centre parting line */}
+        <path d="M54 13 Q60 11 66 13" stroke="#2a1408" strokeWidth="1.2" fill="none" />
+        {/* Hair sheen highlight */}
+        <path d="M38 20 Q60 13 80 22 Q60 15 38 20Z" fill="#2e1a08" opacity="0.55" />
 
-        {/* ── Eyebrows (3D arched) ── */}
-        <path d="M40 36 Q46 32 52 34" stroke="#2c1208" strokeWidth="2.8" strokeLinecap="round" fill="none" />
-        <path d="M68 34 Q74 32 80 36" stroke="#2c1208" strokeWidth="2.8" strokeLinecap="round" fill="none" />
-        {/* Brow highlight */}
-        <path d="M40 35 Q46 31 52 33" stroke="#5a3010" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.5" />
-        <path d="M68 33 Q74 31 80 35" stroke="#5a3010" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.5" />
+        {/* Kondai (hair bun) — on top back */}
+        <ellipse cx="60" cy="9" rx="15" ry="10" fill={`url(#${id}-bn)`} filter={`url(#${id}-sh)`} />
+        {/* Bun sheen */}
+        <ellipse cx="55" cy="6" rx="6" ry="3.5" fill="#2e1808" opacity="0.5" />
+        {/* Bun spiral line */}
+        <path d="M52 8 Q60 4 68 8 Q64 12 60 13 Q56 12 52 8Z" stroke="#1a0e06" strokeWidth="0.8" fill="none" opacity="0.5" />
 
-        {/* ── Eyes ── */}
-        {/* Left eye socket shadow */}
-        <ellipse cx="46" cy="46" rx="9" ry="7" fill="#8a4818" opacity="0.2" />
-        {/* Left eyeball */}
-        <ellipse cx="46" cy="45" rx="7.5" ry="6.5" fill={`url(#${id}-eye-white)`} />
+        {/* Jasmine flowers (malli poo) */}
+        {[
+          [48, 7], [53, 4], [60, 2], [67, 4], [72, 7],
+        ].map(([x, y], i) => (
+          <g key={i}>
+            <circle cx={x} cy={y} r="2.8" fill="white" opacity="0.95" />
+            <circle cx={x} cy={y} r="1"   fill="#f0e050" />
+          </g>
+        ))}
+
+        {/* ── Bindi (pottu) ── */}
+        <circle cx="60" cy="28" r="3.2" fill="#cc1028" />
+        <circle cx="60" cy="28" r="1.6" fill="#ff3858" opacity="0.55" />
+
+        {/* ── Eyebrows — thick, well defined ── */}
+        <path d="M37 36 Q43 31 50 33" stroke="#1a0804" strokeWidth="3.2" strokeLinecap="round" fill="none" />
+        <path d="M70 33 Q77 31 83 36" stroke="#1a0804" strokeWidth="3.2" strokeLinecap="round" fill="none" />
+        <path d="M37 35.5 Q43 30.5 50 32.5" stroke="#4a2408" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.45" />
+        <path d="M70 32.5 Q77 30.5 83 35.5" stroke="#4a2408" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.45" />
+
+        {/* ── Eyes — large, almond-shaped with kohl ── */}
+        {/* Left eye shadow socket */}
+        <ellipse cx="43" cy="44" rx="11" ry="8.5" fill="#7a3008" opacity="0.18" />
+        {/* Left white */}
+        <ellipse cx="43" cy="43" rx="9" ry="7" fill={`url(#${id}-ew)`} />
         {/* Left iris */}
-        <circle cx="46" cy="45" r="4.2" fill={`url(#${id}-iris)`} />
+        <circle cx="43" cy="43" r="4.8" fill={`url(#${id}-ir)`} />
         {/* Left pupil */}
-        <circle cx="46" cy="45" r="2.2" fill="#050302" />
-        {/* Left eye shine (main) */}
-        <circle cx="44.2" cy="43.2" r="1.4" fill="white" opacity="0.9" />
-        {/* Left eye shine (secondary) */}
-        <circle cx="47.8" cy="46.5" r="0.7" fill="white" opacity="0.4" />
-        {/* Left eyelid crease */}
-        <path d="M38.5 42 Q46 39 53.5 42" stroke="#c07040" strokeWidth="0.8" fill="none" opacity="0.6" />
-        {/* Left lower lid */}
-        <path d="M38.5 48 Q46 51 53.5 48" stroke="#c07040" strokeWidth="0.6" fill="none" opacity="0.4" />
-        {/* Blink overlay */}
-        <g className="rh-blink" style={{ transformOrigin: '46px 45px' }}>
-          <ellipse cx="46" cy="45" rx="8" ry="6.5" fill="#c07040" />
-          <path d="M38 45 Q46 40 54 45" fill="#2c1208" />
+        <circle cx="43" cy="43" r="2.6" fill="#040202" />
+        {/* Left catch-lights */}
+        <circle cx="41.2" cy="41.2" r="1.6" fill="white" opacity="0.92" />
+        <circle cx="45.2" cy="44.8" r="0.8" fill="white" opacity="0.38" />
+        {/* Left kohl — upper lid */}
+        <path d="M34 40 Q43 36.5 52 40" stroke="#0c0604" strokeWidth="2" fill="none" strokeLinecap="round" />
+        {/* Kohl wing left side */}
+        <path d="M34 40 Q31.5 39.5 30 38" stroke="#0c0604" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        {/* Left kohl — lower lid */}
+        <path d="M34 46 Q43 49.5 52 46" stroke="#0c0604" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+        <path d="M34 46 Q31.5 47 30 48.5" stroke="#0c0604" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+        {/* Left blink */}
+        <g className="rh-blink" style={{ transformOrigin: '43px 43px' }}>
+          <ellipse cx="43" cy="43" rx="9.5" ry="7" fill="#9a4c18" />
+          <path d="M34 43 Q43 37 52 43" fill="#1a0804" />
         </g>
 
-        {/* Right eye socket shadow */}
-        <ellipse cx="74" cy="46" rx="9" ry="7" fill="#8a4818" opacity="0.2" />
-        {/* Right eyeball */}
-        <ellipse cx="74" cy="45" rx="7.5" ry="6.5" fill={`url(#${id}-eye-white)`} />
+        {/* Right eye shadow socket */}
+        <ellipse cx="77" cy="44" rx="11" ry="8.5" fill="#7a3008" opacity="0.18" />
+        {/* Right white */}
+        <ellipse cx="77" cy="43" rx="9" ry="7" fill={`url(#${id}-ew)`} />
         {/* Right iris */}
-        <circle cx="74" cy="45" r="4.2" fill={`url(#${id}-iris)`} />
+        <circle cx="77" cy="43" r="4.8" fill={`url(#${id}-ir)`} />
         {/* Right pupil */}
-        <circle cx="74" cy="45" r="2.2" fill="#050302" />
-        {/* Right eye shine */}
-        <circle cx="72.2" cy="43.2" r="1.4" fill="white" opacity="0.9" />
-        <circle cx="75.8" cy="46.5" r="0.7" fill="white" opacity="0.4" />
-        {/* Right eyelid crease */}
-        <path d="M66.5 42 Q74 39 81.5 42" stroke="#c07040" strokeWidth="0.8" fill="none" opacity="0.6" />
-        <path d="M66.5 48 Q74 51 81.5 48" stroke="#c07040" strokeWidth="0.6" fill="none" opacity="0.4" />
-        {/* Blink overlay */}
-        <g className="rh-blink" style={{ transformOrigin: '74px 45px' }}>
-          <ellipse cx="74" cy="45" rx="8" ry="6.5" fill="#c07040" />
-          <path d="M66 45 Q74 40 82 45" fill="#2c1208" />
+        <circle cx="77" cy="43" r="2.6" fill="#040202" />
+        {/* Right catch-lights */}
+        <circle cx="75.2" cy="41.2" r="1.6" fill="white" opacity="0.92" />
+        <circle cx="79.2" cy="44.8" r="0.8" fill="white" opacity="0.38" />
+        {/* Right kohl — upper lid */}
+        <path d="M68 40 Q77 36.5 86 40" stroke="#0c0604" strokeWidth="2" fill="none" strokeLinecap="round" />
+        <path d="M86 40 Q88.5 39.5 90 38" stroke="#0c0604" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        {/* Right kohl — lower lid */}
+        <path d="M68 46 Q77 49.5 86 46" stroke="#0c0604" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+        <path d="M86 46 Q88.5 47 90 48.5" stroke="#0c0604" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+        {/* Right blink */}
+        <g className="rh-blink" style={{ transformOrigin: '77px 43px' }}>
+          <ellipse cx="77" cy="43" rx="9.5" ry="7" fill="#9a4c18" />
+          <path d="M68 43 Q77 37 86 43" fill="#1a0804" />
         </g>
 
-        {/* ── Nose (3D with shadow) ── */}
-        {/* Nose bridge */}
-        <path d="M60 50 Q57 57 55 61 Q58 64 60 63.5 Q62 64 65 61 Q63 57 60 50Z" fill="#bf7238" opacity="0.7" />
-        {/* Nose tip sphere */}
-        <circle cx="60" cy="62" r="4.5" fill="#c87840" />
-        <circle cx="60" cy="62" r="4.5" fill="#8a4818" opacity="0.3" />
-        {/* Nostril left */}
-        <ellipse cx="56" cy="63.5" rx="2.8" ry="2" fill="#8a3a10" />
-        {/* Nostril right */}
-        <ellipse cx="64" cy="63.5" rx="2.8" ry="2" fill="#8a3a10" />
-        {/* Nose highlight */}
-        <circle cx="58.5" cy="60" r="1.2" fill="white" opacity="0.25" />
+        {/* ── Nose — broader, 3D ── */}
+        <path d="M60 49 Q57 56 55 60 Q58 63 60 62.5 Q62 63 65 60 Q63 56 60 49Z" fill="#944010" opacity="0.55" />
+        <circle cx="60" cy="61" r="5.2" fill="#ae5e22" />
+        <ellipse cx="55.5" cy="62.5" rx="3.4" ry="2.4" fill="#843010" />
+        <ellipse cx="64.5" cy="62.5" rx="3.4" ry="2.4" fill="#843010" />
+        <circle cx="58.5" cy="59" r="1.3" fill="white" opacity="0.2" />
+        {/* Nath (nose stud) on left nostril */}
+        <circle cx="54.5" cy="61.5" r="1.4" fill={`url(#${id}-gd)`} opacity="0.95" />
+        <circle cx="54.5" cy="61.5" r="0.6" fill="white" opacity="0.5" />
 
-        {/* ── Mouth ── */}
+        {/* ── Lips — full with colour ── */}
         {/* Philtrum */}
-        <path d="M57 66 Q60 68.5 63 66" stroke="#b06030" strokeWidth="0.8" fill="none" />
+        <path d="M57 65 Q60 67.5 63 65" stroke="#8a2c10" strokeWidth="0.9" fill="none" />
         {/* Upper lip */}
-        <path d="M48 69 Q54 66 60 68 Q66 66 72 69" fill="#b05830" />
-        <path d="M48 69 Q54 66.5 60 68.5 Q66 66.5 72 69" stroke="#8a3818" strokeWidth="0.5" fill="none" />
-        {/* Smile curve */}
-        <path d="M48 69 Q60 78 72 69 Q66 75 60 76 Q54 75 48 69Z" fill="#c06840" />
-        {/* Lower lip highlight */}
-        <path d="M52 73 Q60 76.5 68 73" stroke="#e09070" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.6" />
-        {/* Teeth hint */}
-        <path d="M52 69.5 Q60 72 68 69.5 Q60 70.5 52 69.5Z" fill="white" opacity="0.7" />
+        <path d="M47 68.5 Q53.5 65 60 66.5 Q66.5 65 73 68.5" fill={`url(#${id}-lp)`} />
+        {/* Lower lip */}
+        <path d="M47 68.5 Q60 77.5 73 68.5 Q66 74.5 60 75.5 Q54 74.5 47 68.5Z" fill={`url(#${id}-lp)`} opacity="0.9" />
+        {/* Lip highlight */}
+        <path d="M52 71 Q60 74.5 68 71" stroke="#e05878" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.5" />
+        {/* Teeth */}
+        <path d="M52 69 Q60 72 68 69 Q60 70.5 52 69Z" fill="white" opacity="0.65" />
 
-        {/* ── Cheek blush (subtle) ── */}
-        <ellipse cx="36" cy="60" rx="9" ry="6" fill="#e87050" opacity="0.1" />
-        <ellipse cx="84" cy="60" rx="9" ry="6" fill="#e87050" opacity="0.1" />
+        {/* Cheek blush */}
+        <ellipse cx="32" cy="57" rx="10" ry="6" fill="#d86040" opacity="0.1" />
+        <ellipse cx="88" cy="57" rx="10" ry="6" fill="#d86040" opacity="0.1" />
 
         {/* Chin shadow */}
-        <ellipse cx="60" cy="74" rx="14" ry="5" fill="#8a3810" opacity="0.2" />
+        <ellipse cx="60" cy="75" rx="15" ry="5" fill="#6a2808" opacity="0.18" />
 
-        {/* ── Global specular highlight on head ── */}
-        <ellipse cx="60" cy="46" rx="30" ry="32" fill={`url(#${id}-spec)`} />
+        {/* Global specular on head */}
+        <ellipse cx="60" cy="45" rx="31" ry="33" fill={`url(#${id}-sp)`} />
       </g>
     </svg>
   );

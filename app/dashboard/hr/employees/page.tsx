@@ -26,7 +26,7 @@ export default async function EmployeesPage() {
   const { data: employees } = await supabaseAdmin
     .from('employees')
     .select('id, employee_code, full_name, role, department, employment_type, rex_subtype, email, status, join_date')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: true });
 
   return (
     <div className="p-8 space-y-6">

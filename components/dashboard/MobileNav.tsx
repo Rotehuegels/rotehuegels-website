@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ChevronDown, LayoutDashboard, Users, UserPlus, Network, Package, Briefcase, ClipboardList, LogOut, IndianRupee, ReceiptText, ShoppingBag, FileText, TrendingUp, Wallet } from 'lucide-react';
+import { Menu, X, ChevronDown, LayoutDashboard, Users, UserPlus, Network, Package, Briefcase, ClipboardList, LogOut, IndianRupee, ReceiptText, ShoppingBag, FileText, TrendingUp, Wallet, Receipt } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
@@ -13,8 +13,11 @@ const NAV = [
   {
     label: 'HR', icon: Users,
     children: [
-      { label: 'Employees', href: '/dashboard/hr/employees', icon: Users },
-      { label: 'Add Employee', href: '/dashboard/hr/add', icon: UserPlus },
+      { label: 'Employees',    href: '/dashboard/hr/employees',  icon: Users },
+      { label: 'Add Employee', href: '/dashboard/hr/add',        icon: UserPlus },
+      { label: '─ Payroll',   href: '/dashboard/payroll',        icon: Receipt },
+      { label: 'Salary Setup', href: '/dashboard/payroll/setup', icon: Receipt },
+      { label: 'Run Payroll',  href: '/dashboard/payroll/new',   icon: Receipt },
     ],
   },
   {

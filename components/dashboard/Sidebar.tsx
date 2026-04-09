@@ -20,6 +20,7 @@ import {
   Landmark,
   TrendingUp,
   Wallet,
+  Receipt,
   Building2,
   BookOpen,
   FilePlus,
@@ -42,8 +43,11 @@ const NAV = [
     label: 'HR',
     icon: Users,
     children: [
-      { label: 'Employees', href: '/dashboard/hr/employees', icon: Users },
-      { label: 'Add Employee', href: '/dashboard/hr/add', icon: UserPlus },
+      { label: 'Employees',    href: '/dashboard/hr/employees', icon: Users },
+      { label: 'Add Employee', href: '/dashboard/hr/add',       icon: UserPlus },
+      { label: '─ Payroll',    href: '/dashboard/payroll',      icon: Receipt },
+      { label: 'Salary Setup', href: '/dashboard/payroll/setup', icon: Receipt },
+      { label: 'Run Payroll',  href: '/dashboard/payroll/new',  icon: Receipt },
     ],
   },
   {

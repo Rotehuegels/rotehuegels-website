@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, X, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, X, Loader2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
 interface Registration {
   id: string;
@@ -32,7 +32,18 @@ export default function RegistrationsTable({
   const [, startTransition] = useTransition();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading]   = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError]       = useState('');
+
+  async function deleteReg(id: string) {
+    if (!confirm('Permanently delete this registration? This cannot be undone.')) return;
+    setDeleting(id);
+    setError('');
+    const res = await fetch(`/api/supplier-registrations/${id}`, { method: 'DELETE' });
+    setDeleting(null);
+    if (!res.ok) { const j = await res.json(); setError(j.error ?? 'Failed'); return; }
+    startTransition(() => router.refresh());
+  }
 
   async function review(id: string, action: 'approved' | 'rejected', reason?: string) {
     setLoading(id);
@@ -135,28 +146,38 @@ export default function RegistrationsTable({
             )}
 
             {/* Actions */}
-            {currentStatus === 'pending' && (
-              <div className="flex items-center gap-2 mt-3">
-                <button
-                  onClick={() => review(r.id, 'approved')}
-                  disabled={loading === r.id}
-                  className="flex items-center gap-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
-                >
-                  {loading === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-                  Approve
-                </button>
-                <button
-                  onClick={() => {
-                    const reason = prompt('Reason for rejection (optional):') ?? undefined;
-                    review(r.id, 'rejected', reason);
-                  }}
-                  disabled={loading === r.id}
-                  className="flex items-center gap-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 text-xs font-medium text-rose-400 hover:bg-rose-500/20 transition-colors disabled:opacity-50"
-                >
-                  <X className="h-3 w-3" /> Reject
-                </button>
-              </div>
-            )}
+            <div className="flex items-center gap-2 mt-3">
+              {currentStatus === 'pending' && (
+                <>
+                  <button
+                    onClick={() => review(r.id, 'approved')}
+                    disabled={loading === r.id || deleting === r.id}
+                    className="flex items-center gap-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
+                  >
+                    {loading === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => {
+                      const reason = prompt('Reason for rejection (optional):') ?? undefined;
+                      review(r.id, 'rejected', reason);
+                    }}
+                    disabled={loading === r.id || deleting === r.id}
+                    className="flex items-center gap-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 text-xs font-medium text-rose-400 hover:bg-rose-500/20 transition-colors disabled:opacity-50"
+                  >
+                    <X className="h-3 w-3" /> Reject
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => deleteReg(r.id)}
+                disabled={loading === r.id || deleting === r.id}
+                className="flex items-center gap-1.5 rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/10 transition-colors disabled:opacity-50 ml-auto"
+              >
+                {deleting === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                Delete
+              </button>
+            </div>
           </div>
         );
       })}

@@ -1,5 +1,6 @@
 -- Add all columns that the employees API expects (safe to re-run — uses if not exists)
 alter table employees
+  add column if not exists role                      text not null default '',
   add column if not exists join_date                 date,
   add column if not exists status                    text not null default 'active',
   add column if not exists address                   text,

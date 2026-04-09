@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { Minimize2, ExternalLink } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import WebLLMAssistant from './WebLLMAssistant';
 
@@ -112,35 +111,90 @@ function getCtx(pathname: string): Ctx {
   return DEFAULT_CTX;
 }
 
-// ── Avatar component ────────────────────────────────────────────────────────
-function AvatarPhoto({ ring, glow, emoji, nudge }: { ring: string; glow: string; emoji: string; nudge: boolean }) {
+// ── Illustrated SVG avatar ──────────────────────────────────────────────────
+// A detailed, professional, gender-neutral illustrated face
+function IllustratedFace({ size = 56 }: { size?: number }) {
   return (
-    <div className={`relative w-14 h-14 transition-all duration-500`}>
+    <svg viewBox="0 0 100 100" width={size} height={size} fill="none" aria-hidden>
+      {/* Background circle */}
+      <circle cx="50" cy="50" r="50" fill="#1c1c22" />
+
+      {/* Jacket / shoulders */}
+      <path d="M10 100 Q10 72 50 70 Q90 72 90 100Z" fill="#1e3a5f" />
+      {/* Shirt / collar */}
+      <path d="M38 70 L50 84 L62 70 Q56 68 50 68 Q44 68 38 70Z" fill="#ffffff" />
+      {/* Tie hint */}
+      <path d="M50 72 L47 82 L50 86 L53 82Z" fill="#e11d48" />
+
+      {/* Neck */}
+      <rect x="43" y="58" width="14" height="14" rx="6" fill="#c8956c" />
+
+      {/* Head */}
+      <ellipse cx="50" cy="42" rx="22" ry="24" fill="#c8956c" />
+
+      {/* Hair — short, professional */}
+      <path d="M28 38 Q28 18 50 17 Q72 18 72 38 Q72 28 60 25 Q50 22 40 25 Q30 28 28 38Z" fill="#2c1a0e" />
+      {/* Side hair */}
+      <path d="M28 38 Q26 44 28 50 Q28 42 30 39Z" fill="#2c1a0e" />
+      <path d="M72 38 Q74 44 72 50 Q72 42 70 39Z" fill="#2c1a0e" />
+
+      {/* Ear left */}
+      <ellipse cx="28" cy="44" rx="4" ry="5.5" fill="#b87c52" />
+      <path d="M29 41 Q27 44 29 47" stroke="#a06040" strokeWidth="1" fill="none" />
+      {/* Ear right */}
+      <ellipse cx="72" cy="44" rx="4" ry="5.5" fill="#b87c52" />
+      <path d="M71 41 Q73 44 71 47" stroke="#a06040" strokeWidth="1" fill="none" />
+
+      {/* Eyebrows */}
+      <path d="M36 33 Q40 30 44 32" stroke="#2c1a0e" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+      <path d="M56 32 Q60 30 64 33" stroke="#2c1a0e" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+
+      {/* Eyes — white */}
+      <ellipse cx="40" cy="39" rx="5.5" ry="4.5" fill="white" />
+      <ellipse cx="60" cy="39" rx="5.5" ry="4.5" fill="white" />
+      {/* Iris */}
+      <circle cx="40" cy="39" r="3" fill="#3b2a1a" />
+      <circle cx="60" cy="39" r="3" fill="#3b2a1a" />
+      {/* Pupil */}
+      <circle cx="40" cy="39" r="1.5" fill="#111" />
+      <circle cx="60" cy="39" r="1.5" fill="#111" />
+      {/* Eye shine */}
+      <circle cx="41.5" cy="37.5" r="0.9" fill="white" />
+      <circle cx="61.5" cy="37.5" r="0.9" fill="white" />
+
+      {/* Nose */}
+      <path d="M50 43 Q47 50 48 52 Q50 54 52 52 Q53 50 50 43Z" fill="#b87c52" />
+      <path d="M47 52 Q44 54 45 55.5 Q47 57 50 56.5 Q53 57 55 55.5 Q56 54 53 52" stroke="#a06040" strokeWidth="1" fill="none" strokeLinecap="round" />
+
+      {/* Mouth — friendly smile */}
+      <path d="M41 60 Q50 67 59 60" stroke="#7a3c28" strokeWidth="2" strokeLinecap="round" fill="none" />
+      {/* Lip bottom */}
+      <path d="M44 62 Q50 66 56 62" stroke="#c06040" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+
+      {/* Cheek blush */}
+      <ellipse cx="33" cy="55" rx="5" ry="3" fill="#e8a090" opacity="0.25" />
+      <ellipse cx="67" cy="55" rx="5" ry="3" fill="#e8a090" opacity="0.25" />
+    </svg>
+  );
+}
+
+// ── Avatar button wrapper ───────────────────────────────────────────────────
+function AvatarBubble({ ring, glow, emoji }: { ring: string; glow: string; emoji: string }) {
+  return (
+    <div className="relative w-14 h-14">
       {/* Pulsing rings */}
       <span className={`rh-pulse  absolute inset-0 rounded-full ring-2 ${ring}`} />
-      <span className={`rh-pulse-2 absolute inset-0 rounded-full ring-1 ${ring} opacity-60`} />
-      {/* Photo */}
+      <span className={`rh-pulse-2 absolute inset-0 rounded-full ring-1 ${ring} opacity-50`} />
+      {/* Face circle */}
       <div className={`w-14 h-14 rounded-full overflow-hidden ring-2 ${ring} shadow-lg ${glow} transition-all duration-500`}>
-        <Image
-          src="/sivakumar.jpg"
-          alt="Sivakumar — Rotehügels Assist"
-          width={56}
-          height={56}
-          className="w-full h-full object-cover object-top"
-          priority
-        />
+        <IllustratedFace size={56} />
       </div>
       {/* Online dot */}
       <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-zinc-950 z-10" />
       {/* Emoji badge */}
-      <span
-        key={emoji}
-        className="rh-pop-in absolute -top-1 -right-1 w-6 h-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[13px] z-10 shadow"
-      >
+      <span key={emoji} className="rh-pop-in absolute -top-1 -right-1 w-6 h-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[13px] z-10 shadow">
         {emoji}
       </span>
-      {/* Nudge wiggle wrapper */}
-      {nudge && <span className="absolute inset-0 rounded-full rh-nudge" />}
     </div>
   );
 }
@@ -207,13 +261,12 @@ export default function AssistWidget() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900 shrink-0">
             <div className="flex items-center gap-3">
               <div className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-rose-500/50 shrink-0">
-                <Image src="/sivakumar.jpg" alt="Sivakumar" width={36} height={36}
-                  className="w-full h-full object-cover object-top" />
+                <IllustratedFace size={36} />
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-zinc-900" />
               </div>
               <div>
                 <p className="text-sm font-bold text-white leading-none">Rotehügels Assist</p>
-                <p className="text-[11px] text-emerald-400 mt-0.5">Sivakumar · Available 24 / 7</p>
+                <p className="text-[11px] text-emerald-400 mt-0.5">Available 24 / 7</p>
               </div>
             </div>
             <button onClick={() => setOpen(false)}
@@ -269,7 +322,7 @@ export default function AssistWidget() {
             aria-label="Open Rotehügels Assist"
             className={`pointer-events-auto transition-transform duration-200 hover:scale-110 active:scale-95 ${nudge ? 'rh-nudge' : ''}`}
           >
-            <AvatarPhoto ring={ctx.ring} glow={ctx.glow} emoji={ctx.emoji} nudge={false} />
+            <AvatarBubble ring={ctx.ring} glow={ctx.glow} emoji={ctx.emoji} />
           </button>
         </div>
       )}

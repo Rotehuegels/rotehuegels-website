@@ -196,11 +196,19 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <StageStatusButton stageId={s.id} orderId={id} currentStatus={s.status} />
+                  {s.stage_number > 1 && (
+                    <Link
+                      href={`/dashboard/accounts/orders/${id}/invoice?upto=${s.stage_number}`}
+                      title={`Cumulative invoice — stages 1 to ${s.stage_number}`}
+                      className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800/40 px-2 py-1 text-[10px] text-zinc-400 hover:border-amber-500 hover:text-amber-400 transition-colors">
+                      <Receipt className="h-2.5 w-2.5" /> 1–{s.stage_number}
+                    </Link>
+                  )}
                   <Link
-                    href={`/dashboard/accounts/orders/${id}/invoice?upto=${s.stage_number}`}
-                    title={`Invoice stages 1–${s.stage_number}`}
-                    className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800/40 px-2 py-1 text-[10px] text-zinc-400 hover:border-amber-500 hover:text-amber-400 transition-colors">
-                    <Receipt className="h-2.5 w-2.5" /> Inv 1–{s.stage_number}
+                    href={`/dashboard/accounts/orders/${id}/invoice?stage=${s.stage_number}`}
+                    title={`Invoice for stage ${s.stage_number} only`}
+                    className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800/40 px-2 py-1 text-[10px] text-zinc-400 hover:border-sky-500 hover:text-sky-400 transition-colors">
+                    <Receipt className="h-2.5 w-2.5" /> S{s.stage_number} only
                   </Link>
                 </div>
               </div>

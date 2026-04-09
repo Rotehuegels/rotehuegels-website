@@ -58,10 +58,16 @@ export default function SupplierList({ suppliers }: { suppliers: Supplier[] }) {
             {suppliers.length} registered supplier{suppliers.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Link href="/dashboard/suppliers/new"
-          className="flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
-          <Plus className="h-4 w-4" /> Add Supplier
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard/suppliers/registrations"
+            className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-500 transition-colors">
+            Registrations
+          </Link>
+          <Link href="/dashboard/suppliers/new"
+            className="flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
+            <Plus className="h-4 w-4" /> Add Supplier
+          </Link>
+        </div>
       </div>
 
       {/* Search */}

@@ -77,6 +77,23 @@
 .rh-panel      { animation: rh-panel 0.3s  cubic-bezier(.22,1,.36,1) forwards; }
 .rh-pop-in     { animation: rh-pop-in 0.45s cubic-bezier(.22,1,.36,1) forwards; }
 
+@keyframes rh-float {
+  0%,100% { transform: translateY(0px);   }
+  50%      { transform: translateY(-6px);  }
+}
+@keyframes rh-blink {
+  0%,90%,100% { transform: scaleY(1);   }
+  95%          { transform: scaleY(0.08); }
+}
+@keyframes rh-head-idle {
+  0%,100% { transform: rotate(0deg)   translateY(0px);  }
+  25%     { transform: rotate(1.5deg) translateY(-2px); }
+  75%     { transform: rotate(-1deg)  translateY(-1px); }
+}
+.rh-float     { animation: rh-float     3.5s ease-in-out infinite; }
+.rh-blink     { animation: rh-blink     4s   ease-in-out infinite; transform-origin: center center; }
+.rh-head-idle { animation: rh-head-idle 6s   ease-in-out infinite; }
+
 /* ── Print: hide site chrome and dashboard shell on all preview pages ── */
 @media print {
   /* Kill site header, ticker, footer, aura, any portals */

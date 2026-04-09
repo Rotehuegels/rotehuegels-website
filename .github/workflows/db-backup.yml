@@ -3,84 +3,71 @@ name: Daily Database Backup
 on:
   schedule:
     - cron: '0 1 * * *'   # 01:00 UTC = 06:30 IST every day
-  workflow_dispatch:        # allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
 
 jobs:
   backup:
     runs-on: ubuntu-latest
-    steps:
-      - name: Install pg_dump
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y postgresql-client
+    env:
+      SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
-      - name: Dump database
-        env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          PGSSLMODE: require
+    steps:
+      - name: Export tables via Supabase REST API
         run: |
           set -euo pipefail
-          FILENAME="backup-$(date +%Y-%m-%d).sql.gz"
-          echo "Testing connection..."
-          pg_isready \
-            --host=db.wprhuurrujipaphejznq.supabase.co \
-            --port=5432 \
-            --username=postgres \
-            --dbname=postgres || true
-          echo "Running pg_dump..."
-          pg_dump \
-            --host=db.wprhuurrujipaphejznq.supabase.co \
-            --port=5432 \
-            --username=postgres \
-            --dbname=postgres \
-            --no-password \
-            --format=plain \
-            --no-owner \
-            --no-acl \
-            --schema=public \
-            --verbose \
-            2>&1 | tee /tmp/pgdump.log | gzip > "$FILENAME" || {
-              echo "pg_dump failed. Last log lines:"
-              tail -20 /tmp/pgdump.log
-              exit 1
-            }
-          SIZE=$(stat -c%s "$FILENAME")
-          echo "Backup size: $SIZE bytes"
-          if [ "$SIZE" -lt 100 ]; then
-            echo "ERROR: Backup too small"
-            tail -20 /tmp/pgdump.log
-            exit 1
-          fi
-          echo "BACKUP_FILE=$FILENAME" >> $GITHUB_ENV
+          DATE=$(date +%Y-%m-%d)
+          mkdir -p backup
+
+          TABLES=(
+            employees rex_members payroll_runs payroll_entries
+            payroll_salary_structures orders order_stages invoices
+            customers suppliers finance_properties
+            accounts_transactions accounts_categories
+          )
+
+          for TABLE in "${TABLES[@]}"; do
+            echo "Exporting $TABLE..."
+            STATUS=$(curl -s -o "backup/${TABLE}.json" -w "%{http_code}" \
+              "${SUPABASE_URL}/rest/v1/${TABLE}?select=*" \
+              -H "apikey: ${SUPABASE_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_KEY}" \
+              -H "Accept: application/json")
+            echo "$TABLE → HTTP $STATUS ($(wc -c < "backup/${TABLE}.json") bytes)"
+          done
+
+          # Bundle all into one archive
+          tar -czf "backup-${DATE}.tar.gz" backup/
+          SIZE=$(stat -c%s "backup-${DATE}.tar.gz")
+          echo "Total archive size: $SIZE bytes"
+          echo "BACKUP_FILE=backup-${DATE}.tar.gz" >> $GITHUB_ENV
 
       - name: Upload to Supabase Storage
-        env:
-          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          curl -X POST \
+          # Delete existing file if it exists (upsert)
+          curl -s -X DELETE \
             "${SUPABASE_URL}/storage/v1/object/db-backups/${BACKUP_FILE}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" || true
+
+          curl -s -X POST \
+            "${SUPABASE_URL}/storage/v1/object/db-backups/${BACKUP_FILE}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
             -H "Content-Type: application/octet-stream" \
             --data-binary @"${BACKUP_FILE}"
+          echo "Backup uploaded: ${BACKUP_FILE}"
 
       - name: Delete backups older than 30 days
-        env:
-          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           CUTOFF=$(date -d '30 days ago' +%Y-%m-%d)
-          # List all backup files
           FILES=$(curl -s \
             "${SUPABASE_URL}/storage/v1/object/list/db-backups" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
             -H "Content-Type: application/json" \
             -d '{"prefix":"","limit":100}' \
             | jq -r '.[] | select(.name < "backup-'"$CUTOFF"'") | .name')
-          # Delete each old file
           for FILE in $FILES; do
-            curl -X DELETE \
+            curl -s -X DELETE \
               "${SUPABASE_URL}/storage/v1/object/db-backups/$FILE" \
-              -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
-            echo "Deleted old backup: $FILE"
+              -H "Authorization: Bearer ${SUPABASE_KEY}"
+            echo "Deleted: $FILE"
           done

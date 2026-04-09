@@ -3,11 +3,21 @@
 const EPF_BASIC_CEILING = 15000;
 const ESI_GROSS_LIMIT   = 21000;
 
-/** Maharashtra professional tax slab (monthly) */
+/**
+ * Tamil Nadu professional tax (half-yearly slab).
+ * Deducted only in April (4) and October (10) — the start of each half-year.
+ * Slab is based on gross × 6 (half-yearly equivalent).
+ * Max ₹1,250 per half-year = ₹2,500/year.
+ */
 export function professionalTax(grossMonthly: number, month: number): number {
-  if (grossMonthly <= 7500) return 0;
-  if (grossMonthly <= 10000) return 175;
-  return month === 2 ? 300 : 200; // February = ₹300
+  if (month !== 4 && month !== 10) return 0;
+  const hy = grossMonthly * 6;
+  if (hy <= 21000)  return 0;
+  if (hy <= 30000)  return 135;
+  if (hy <= 45000)  return 315;
+  if (hy <= 60000)  return 690;
+  if (hy <= 75000)  return 1025;
+  return 1250;
 }
 
 export function epfEmployee(basic: number): number {

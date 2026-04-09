@@ -1,0 +1,64 @@
+name: Daily Database Backup
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 01:00 UTC = 06:30 IST every day
+  workflow_dispatch:        # allow manual trigger from GitHub Actions UI
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install pg_dump
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Dump database
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          FILENAME="backup-$(date +%Y-%m-%d).sql.gz"
+          pg_dump \
+            --host=${{ secrets.SUPABASE_DB_HOST }} \
+            --port=5432 \
+            --username=postgres \
+            --dbname=postgres \
+            --no-password \
+            --format=plain \
+            --no-owner \
+            --no-acl \
+          | gzip > "$FILENAME"
+          echo "BACKUP_FILE=$FILENAME" >> $GITHUB_ENV
+
+      - name: Upload to Supabase Storage
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          curl -X POST \
+            "${SUPABASE_URL}/storage/v1/object/db-backups/${BACKUP_FILE}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @"${BACKUP_FILE}"
+
+      - name: Delete backups older than 30 days
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          CUTOFF=$(date -d '30 days ago' +%Y-%m-%d)
+          # List all backup files
+          FILES=$(curl -s \
+            "${SUPABASE_URL}/storage/v1/object/list/db-backups" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"prefix":"","limit":100}' \
+            | jq -r '.[] | select(.name < "backup-'"$CUTOFF"'") | .name')
+          # Delete each old file
+          for FILE in $FILES; do
+            curl -X DELETE \
+              "${SUPABASE_URL}/storage/v1/object/db-backups/$FILE" \
+              -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
+            echo "Deleted old backup: $FILE"
+          done

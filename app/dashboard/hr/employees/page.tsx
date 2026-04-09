@@ -20,7 +20,7 @@ const STATUS_STYLE: Record<string, string> = {
 export default async function EmployeesPage() {
   const { data: employees } = await supabaseAdmin
     .from('employees')
-    .select('id, full_name, role, department, employment_type, email, status, join_date')
+    .select('id, employee_code, full_name, role, department, employment_type, email, status, join_date')
     .order('created_at', { ascending: false });
 
   return (
@@ -50,6 +50,7 @@ export default async function EmployeesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-zinc-800 text-left">
+                  <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Emp ID</th>
                   <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Name</th>
                   <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Role</th>
                   <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider hidden md:table-cell">Department</th>
@@ -61,6 +62,11 @@ export default async function EmployeesPage() {
               <tbody className="divide-y divide-zinc-800/60">
                 {employees.map((emp) => (
                   <tr key={emp.id} className="hover:bg-zinc-800/20 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="font-mono text-xs font-semibold text-indigo-400 bg-indigo-500/10 rounded px-1.5 py-0.5">
+                        {emp.employee_code ?? '—'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4">
                       <p className="font-medium text-white">{emp.full_name}</p>
                       {emp.email && <p className="text-xs text-zinc-500 mt-0.5">{emp.email}</p>}

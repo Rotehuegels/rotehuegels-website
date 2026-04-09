@@ -77,6 +77,7 @@ export default async function PayslipPage({
         {/* Employee details */}
         <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm border border-zinc-200 rounded-lg p-4 mb-6">
           {[
+            ['Employee ID',    emp.employee_code ?? '—'],
             ['Employee Name',  emp.full_name],
             ['Designation',    emp.role],
             ['Department',     emp.department ?? '—'],

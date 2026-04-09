@@ -317,54 +317,71 @@ function Avatar3D({ size = 56 }: { size?: number }) {
   );
 }
 
-// ── Smooth side-wave arm ─────────────────────────────────────────────────────
-// Slides out from the right edge of the circle, waves gently, slides back in.
+// ── Side-wave arm ─────────────────────────────────────────────────────────────
+// The shoulder portion sits BEHIND the face circle (z-0); the forearm + hand
+// extend outside to the right and wave. This makes it look like the character's
+// own arm rather than a floating limb.
 function SideWaveArm({ onDone }: { onDone: () => void }) {
   return (
     <div
       className="rh-arm-appear absolute pointer-events-none"
-      style={{ top: '4px', right: '-38px' }}
+      // Sits behind the face circle (z-0). Shoulder overlaps the right side of
+      // the circle; forearm+hand extend further right.
+      style={{ top: '16px', right: '-44px', zIndex: 0 }}
       onAnimationEnd={onDone}
     >
-      <svg viewBox="0 0 52 68" width={52} height={68} fill="none" aria-hidden>
+      <svg viewBox="0 0 68 52" width={68} height={52} fill="none" aria-hidden>
         <defs>
-          <radialGradient id="rhs-skin" cx="38%" cy="30%" r="65%">
-            <stop offset="0%" stopColor="#f5cda0" />
-            <stop offset="55%" stopColor="#d4915c" />
-            <stop offset="100%" stopColor="#a0582a" />
+          <radialGradient id="rhs-skin" cx="35%" cy="28%" r="65%">
+            <stop offset="0%"   stopColor="#f5cda0" />
+            <stop offset="50%"  stopColor="#d4915c" />
+            <stop offset="100%" stopColor="#9a5220" />
           </radialGradient>
           <linearGradient id="rhs-suit" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#2563eb" />
+            <stop offset="0%"   stopColor="#2563eb" />
             <stop offset="100%" stopColor="#1e3a8a" />
           </linearGradient>
-          <filter id="rhs-sh">
-            <feDropShadow dx="1" dy="2" stdDeviation="3" floodColor="#000" floodOpacity="0.35" />
+          <filter id="rhs-sh" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="1" dy="2" stdDeviation="2.5" floodColor="#000" floodOpacity="0.3" />
           </filter>
         </defs>
 
-        {/* Upper arm — comes from the left (hidden behind circle) */}
+        {/* ── Shoulder + upper arm (hidden behind the circle face) ── */}
+        {/* Starts at left edge of this SVG which overlaps the circle */}
         <path
-          d="M4 42 Q14 30 20 18"
-          stroke="url(#rhs-suit)" strokeWidth="13" strokeLinecap="round" fill="none"
+          d="M0 34 Q10 26 22 20"
+          stroke="url(#rhs-suit)" strokeWidth="15" strokeLinecap="round" fill="none"
           filter="url(#rhs-sh)"
         />
+        {/* Sleeve edge highlight */}
+        <path
+          d="M0 34 Q10 26 22 20"
+          stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.4"
+        />
 
-        {/* Forearm + hand group — this part waves */}
-        <g className="rh-hand-wave" style={{ transformOrigin: '20px 18px' }}>
+        {/* ── Forearm + hand wave from elbow (22,20) ── */}
+        <g className="rh-hand-wave" style={{ transformOrigin: '22px 20px' }}>
           {/* Forearm */}
           <path
-            d="M20 18 Q26 8 28 2"
+            d="M22 20 Q34 12 38 4"
             stroke="url(#rhs-skin)" strokeWidth="9" strokeLinecap="round" fill="none"
+            filter="url(#rhs-sh)"
           />
-          {/* Palm */}
-          <ellipse cx="30" cy="6" rx="8" ry="6" fill="url(#rhs-skin)" transform="rotate(-20 30 6)" />
-          {/* Fingers */}
-          <path d="M25 3 Q22 -4 24 -8"  stroke="url(#rhs-skin)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-          <path d="M29 1 Q27 -7 30 -11" stroke="url(#rhs-skin)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-          <path d="M34 1 Q34 -7 37 -11" stroke="url(#rhs-skin)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-          <path d="M37 4 Q39 -3 42 -6"  stroke="url(#rhs-skin)" strokeWidth="3"   strokeLinecap="round" fill="none" />
+          {/* Wrist + palm */}
+          <ellipse
+            cx="41" cy="2" rx="8.5" ry="6"
+            fill="url(#rhs-skin)" transform="rotate(-25 41 2)"
+          />
+          {/* Index finger */}
+          <path d="M36 -1 Q33 -9 35 -13"  stroke="url(#rhs-skin)" strokeWidth="3.8" strokeLinecap="round" fill="none" />
+          {/* Middle finger */}
+          <path d="M41 -3 Q40 -11 43 -15" stroke="url(#rhs-skin)" strokeWidth="3.8" strokeLinecap="round" fill="none" />
+          {/* Ring finger */}
+          <path d="M46 -2 Q47 -10 50 -13" stroke="url(#rhs-skin)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+          {/* Pinky */}
+          <path d="M50  1 Q53 -5 56 -7"   stroke="url(#rhs-skin)" strokeWidth="3"   strokeLinecap="round" fill="none" />
           {/* Thumb */}
-          <path d="M24 9 Q18 8 16 5"    stroke="url(#rhs-skin)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+          <path d="M36  6 Q30  5 28  2"   stroke="url(#rhs-skin)" strokeWidth="3.8" strokeLinecap="round" fill="none" />
         </g>
       </svg>
     </div>
@@ -377,21 +394,27 @@ function AvatarBubble({ ring, glow, emoji, waving, onWaveDone }: {
 }) {
   return (
     <div className="rh-float relative w-16 h-16">
-      {/* Pulsing rings */}
-      <span className={`rh-pulse  absolute inset-0 rounded-full ring-2 ${ring}`} />
-      <span className={`rh-pulse-2 absolute inset-0 rounded-full ring-1 ${ring} opacity-50`} />
-      {/* Face circle */}
-      <div className={`w-16 h-16 rounded-full overflow-hidden ring-2 ${ring} shadow-xl ${glow} transition-all duration-500`}>
+      {/* Pulsing rings — behind everything */}
+      <span className={`rh-pulse  absolute inset-0 rounded-full ring-2 ${ring}`} style={{ zIndex: 0 }} />
+      <span className={`rh-pulse-2 absolute inset-0 rounded-full ring-1 ${ring} opacity-50`} style={{ zIndex: 0 }} />
+
+      {/* Arm — z-0, shoulder hidden behind face circle */}
+      {waving && <SideWaveArm onDone={onWaveDone} />}
+
+      {/* Face circle — z-10, sits on top of arm shoulder */}
+      <div
+        className={`absolute inset-0 rounded-full overflow-hidden ring-2 ${ring} shadow-xl ${glow} transition-all duration-500`}
+        style={{ zIndex: 10 }}
+      >
         <Avatar3D size={64} />
       </div>
+
       {/* Online dot */}
-      <span className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-zinc-950 z-10" />
+      <span className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-zinc-950" style={{ zIndex: 20 }} />
       {/* Emoji badge */}
-      <span key={emoji} className="rh-pop-in absolute -top-1 -right-1 w-7 h-7 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-sm z-10 shadow-lg">
+      <span key={emoji} className="rh-pop-in absolute -top-1 -right-1 w-7 h-7 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-sm shadow-lg" style={{ zIndex: 20 }}>
         {emoji}
       </span>
-      {/* Side wave arm */}
-      {waving && <SideWaveArm onDone={onWaveDone} />}
     </div>
   );
 }

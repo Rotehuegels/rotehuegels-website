@@ -94,19 +94,19 @@
 .rh-blink     { animation: rh-blink     4s   ease-in-out infinite; transform-origin: center center; }
 .rh-head-idle { animation: rh-head-idle 6s   ease-in-out infinite; }
 
-/* Smooth side-wave arm */
+/* Smooth side-wave arm — slides out from behind the face circle */
 @keyframes rh-arm-appear {
-  0%          { opacity: 0; transform: translateX(32px); }
-  22%         { opacity: 1; transform: translateX(0);    }
-  78%         { opacity: 1; transform: translateX(0);    }
-  100%        { opacity: 0; transform: translateX(32px); }
+  0%          { opacity: 0; transform: translateX(-22px); }
+  20%         { opacity: 1; transform: translateX(0);     }
+  80%         { opacity: 1; transform: translateX(0);     }
+  100%        { opacity: 0; transform: translateX(-22px); }
 }
 @keyframes rh-hand-wave {
-  0%,100%  { transform: rotate(-6deg);  }
-  50%      { transform: rotate(-32deg); }
+  0%,100%  { transform: rotate(-8deg);  }
+  50%      { transform: rotate(-34deg); }
 }
-.rh-arm-appear { animation: rh-arm-appear 5.5s ease-in-out forwards; }
-.rh-hand-wave  { animation: rh-hand-wave  1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center top; }
+.rh-arm-appear { animation: rh-arm-appear 5.8s ease-in-out forwards; }
+.rh-hand-wave  { animation: rh-hand-wave  1.5s ease-in-out infinite; transform-box: fill-box; transform-origin: 0px 0px; }
 
 /* ── Print: hide site chrome and dashboard shell on all preview pages ── */
 @media print {

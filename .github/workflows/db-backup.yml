@@ -21,9 +21,9 @@ jobs:
           FILENAME="backup-$(date +%Y-%m-%d).sql.gz"
           # Supabase requires port 5432 on the direct host (aws pooler uses 6543)
           pg_dump \
-            --host=${{ secrets.SUPABASE_DB_HOST }} \
+            --host=aws-0-ap-southeast-1.pooler.supabase.com \
             --port=5432 \
-            --username=postgres \
+            --username=postgres.wprhuurrujipaphejznq \
             --dbname=postgres \
             --no-password \
             --format=plain \

@@ -94,29 +94,19 @@
 .rh-blink     { animation: rh-blink     4s   ease-in-out infinite; transform-origin: center center; }
 .rh-head-idle { animation: rh-head-idle 6s   ease-in-out infinite; }
 
-/* Pop-out wave character */
-@keyframes rh-popout-rise {
-  0%          { opacity: 0; transform: translateY(60px) scale(0.55); }
-  18%         { opacity: 1; transform: translateY(0)    scale(1.05); }
-  22%         { transform: scale(1); }
-  78%         { opacity: 1; transform: translateY(0)    scale(1); }
-  100%        { opacity: 0; transform: translateY(60px) scale(0.55); }
+/* Smooth side-wave arm */
+@keyframes rh-arm-appear {
+  0%          { opacity: 0; transform: translateX(32px); }
+  22%         { opacity: 1; transform: translateX(0);    }
+  78%         { opacity: 1; transform: translateX(0);    }
+  100%        { opacity: 0; transform: translateX(32px); }
 }
-@keyframes rh-arm-wave-anim {
-  0%,100% { transform: rotate(0deg); }
-  15%     { transform: rotate(-52deg); }
-  35%     { transform: rotate(-15deg); }
-  55%     { transform: rotate(-58deg); }
-  75%     { transform: rotate(-10deg); }
+@keyframes rh-hand-wave {
+  0%,100%  { transform: rotate(-6deg);  }
+  50%      { transform: rotate(-32deg); }
 }
-@keyframes rh-hand-flick {
-  0%,100% { transform: rotate(0deg); }
-  25%     { transform: rotate(20deg); }
-  75%     { transform: rotate(-15deg); }
-}
-.rh-popout-rise   { animation: rh-popout-rise  4.2s cubic-bezier(.34,1.3,.64,1) forwards; }
-.rh-arm-wave-anim { animation: rh-arm-wave-anim 0.55s ease-in-out infinite; transform-box: fill-box; transform-origin: 14px 8px; }
-.rh-hand-flick    { animation: rh-hand-flick   0.55s ease-in-out infinite 0.1s; transform-box: fill-box; transform-origin: center top; }
+.rh-arm-appear { animation: rh-arm-appear 5.5s ease-in-out forwards; }
+.rh-hand-wave  { animation: rh-hand-wave  1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center top; }
 
 /* ── Print: hide site chrome and dashboard shell on all preview pages ── */
 @media print {

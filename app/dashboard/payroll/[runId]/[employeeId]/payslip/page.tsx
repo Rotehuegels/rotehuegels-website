@@ -17,7 +17,7 @@ export default async function PayslipPage({
   const [{ data: run }, { data: entry }, { data: emp }] = await Promise.all([
     supabaseAdmin.from('payroll_runs').select('*').eq('id', runId).single(),
     supabaseAdmin.from('payroll_entries').select('*').eq('run_id', runId).eq('employee_id', employeeId).single(),
-    supabaseAdmin.from('employees').select('*').eq('id', employeeId).single(),
+    supabaseAdmin.from('employees').select('*, rex_members(full_name, bank_name, bank_account, bank_ifsc)').eq('id', employeeId).single(),
   ]);
 
   if (!run || !entry || !emp) notFound();
@@ -77,15 +77,15 @@ export default async function PayslipPage({
         {/* Employee details */}
         <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm border border-zinc-200 rounded-lg p-4 mb-6">
           {[
-            ['Employee ID',    emp.employee_code ?? '—'],
-            ['Employee Name',  emp.full_name],
+            ['Employee ID',    emp.engagement_id ?? '—'],
+            ['Employee Name',  (emp.rex_members as any)?.full_name ?? emp.full_name ?? '—'],
             ['Designation',    emp.role],
             ['Department',     emp.department ?? '—'],
             ['Employee Type',  emp.employment_type?.replace('_', '-')],
             ['Date of Joining', emp.join_date ? new Date(emp.join_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'],
             ['Pay Period',     periodLabel],
             ['Working Days',   daysLabel + (lopLabel ? ` (${lopLabel})` : '')],
-            ['Bank',           emp.bank_name ? `${emp.bank_name} — ${emp.bank_account ?? ''}` : '—'],
+            ['Bank',           (emp.rex_members as any)?.bank_name ? `${(emp.rex_members as any).bank_name} — ${(emp.rex_members as any).bank_account ?? ''}` : '—'],
           ].map(([label, value]) => (
             <div key={label} className="flex gap-2">
               <span className="text-zinc-500 w-32 shrink-0">{label}:</span>

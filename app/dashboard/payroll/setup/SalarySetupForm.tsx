@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { Pencil, Check, X, Loader2 } from 'lucide-react';
 
 interface Employee {
-  id: string; full_name: string; role: string; department: string | null;
+  id: string; role: string; department: string | null;
   basic_salary: number | null; allowance: number | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rex_members: any;
 }
 interface Structure {
   employee_id: string; basic: number; hra: number;
@@ -107,7 +109,7 @@ export default function SalarySetupForm({ employees, structures }: Props) {
               return (
                 <tr key={emp.id} className={`transition-colors ${editing ? 'bg-zinc-800/40' : 'hover:bg-zinc-800/20'}`}>
                   <td className="px-4 py-2.5">
-                    <p className="font-semibold text-white">{emp.full_name}</p>
+                    <p className="font-semibold text-white">{emp.rex_members?.full_name ?? '—'}</p>
                     <p className="text-zinc-500 truncate max-w-[120px]">{emp.role}</p>
                     {!hasSetup && <span className="text-amber-400 text-xs">⚠ Not configured</span>}
                   </td>

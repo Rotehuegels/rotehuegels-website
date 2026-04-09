@@ -9,9 +9,9 @@ export default async function SalarySetupPage() {
   const [{ data: empsRaw }, { data: structsRaw }] = await Promise.all([
     supabaseAdmin
       .from('employees')
-      .select('id, full_name, role, department, basic_salary, allowance')
+      .select('id, role, department, basic_salary, allowance, rex_members(full_name)')
       .eq('status', 'active')
-      .order('full_name'),
+      .order('role'),
     supabaseAdmin.from('payroll_salary_structures').select('*'),
   ]);
 

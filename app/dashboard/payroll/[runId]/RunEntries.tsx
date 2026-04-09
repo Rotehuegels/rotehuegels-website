@@ -8,7 +8,7 @@ import { Pencil, Check, X, Loader2 } from 'lucide-react';
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
-interface Employee { id: string; full_name: string; role: string; department: string | null; bank_account: string | null; bank_ifsc: string | null; }
+interface Employee { id: string; role: string; department: string | null; rex_members: { full_name: string; bank_account: string | null; bank_ifsc: string | null } | null; }
 interface Entry {
   id: string; employee_id: string; basic: number; hra: number;
   special_allowance: number; other_allowance: number; bonus: number;
@@ -156,7 +156,7 @@ export default function RunEntries({ runId, month, year, status, entries, employ
               return (
                 <tr key={entry.id} className={`transition-colors ${editing ? 'bg-zinc-800/40' : 'hover:bg-zinc-800/20'}`}>
                   <td className="px-4 py-2.5">
-                    <p className="font-semibold text-white">{emp?.full_name ?? '—'}</p>
+                    <p className="font-semibold text-white">{emp?.rex_members?.full_name ?? '—'}</p>
                     <p className="text-zinc-500 truncate max-w-[140px]">{emp?.role}</p>
                   </td>
 
@@ -280,7 +280,7 @@ export default function RunEntries({ runId, month, year, status, entries, employ
             <div key={entry.id} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-semibold text-white">{emp?.full_name ?? '—'}</p>
+                  <p className="font-semibold text-white">{emp?.rex_members?.full_name ?? '—'}</p>
                   <p className="text-xs text-zinc-500">{emp?.role}</p>
                 </div>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${

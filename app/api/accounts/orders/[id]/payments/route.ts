@@ -65,19 +65,44 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
   }
 
-  // Update cumulative TDS on the order
+  // Update cumulative TDS on the order and check for auto-complete
   const { data: allPmts } = await supabaseAdmin
     .from('order_payments')
-    .select('tds_deducted')
+    .select('tds_deducted, amount_received')
     .eq('order_id', order_id);
 
   const totalTds = (allPmts ?? []).reduce((s, p) => s + (p.tds_deducted ?? 0), 0);
+  const totalReceived = (allPmts ?? []).reduce((s, p) => s + (p.amount_received ?? 0), 0);
+
+  // Fetch order to check total value and current status
+  const { data: orderData } = await supabaseAdmin
+    .from('orders')
+    .select('total_value_incl_gst, status')
+    .eq('id', order_id)
+    .single();
+
+  const orderUpdates: Record<string, unknown> = { tds_deducted_total: totalTds };
+
+  // Auto-complete: if fully paid and order is still active/draft
+  if (
+    orderData &&
+    orderData.status !== 'completed' &&
+    orderData.status !== 'cancelled' &&
+    (orderData.total_value_incl_gst ?? 0) > 0 &&
+    totalReceived >= (orderData.total_value_incl_gst ?? 0)
+  ) {
+    orderUpdates.status = 'completed';
+  }
+
   await supabaseAdmin
     .from('orders')
-    .update({ tds_deducted_total: totalTds })
+    .update(orderUpdates)
     .eq('id', order_id);
 
-  return NextResponse.json({ success: true, id: payment.id }, { status: 201 });
+  return NextResponse.json(
+    { success: true, id: payment.id, auto_completed: orderUpdates.status === 'completed' },
+    { status: 201 }
+  );
 }
 
 // DELETE — remove a payment record

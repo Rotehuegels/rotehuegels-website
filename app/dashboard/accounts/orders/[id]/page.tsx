@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, ShoppingBag, Wrench, Pencil, FileText, Receipt } from 'lucide-react';
 import RecordPaymentForm from './RecordPaymentForm';
 import StageStatusButton from './StageStatusButton';
+import MarkCompleteButton from './MarkCompleteButton';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const fmt = (n: number) =>
@@ -69,7 +70,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {order.client_pan && <p className="text-xs text-zinc-500 font-mono">PAN: {order.client_pan}</p>}
         </div>
         <div className="flex flex-col items-end gap-3 shrink-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {order.status !== 'completed' && order.status !== 'cancelled' && (
+              <MarkCompleteButton orderId={id} />
+            )}
             <Link href={`/dashboard/accounts/orders/${id}/invoice`}
               className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-amber-500 hover:text-amber-400 transition-colors">
               <FileText className="h-3.5 w-3.5" /> Generate Invoice

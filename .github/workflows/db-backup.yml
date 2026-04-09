@@ -19,6 +19,7 @@ jobs:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           FILENAME="backup-$(date +%Y-%m-%d).sql.gz"
+          # Supabase requires port 5432 on the direct host (aws pooler uses 6543)
           pg_dump \
             --host=${{ secrets.SUPABASE_DB_HOST }} \
             --port=5432 \
@@ -28,8 +29,16 @@ jobs:
             --format=plain \
             --no-owner \
             --no-acl \
+            --schema=public \
           | gzip > "$FILENAME"
           echo "BACKUP_FILE=$FILENAME" >> $GITHUB_ENV
+          # Fail if backup is empty
+          SIZE=$(stat -c%s "$FILENAME")
+          echo "Backup size: $SIZE bytes"
+          if [ "$SIZE" -lt 100 ]; then
+            echo "ERROR: Backup file is too small, pg_dump likely failed"
+            exit 1
+          fi
 
       - name: Upload to Supabase Storage
         env:

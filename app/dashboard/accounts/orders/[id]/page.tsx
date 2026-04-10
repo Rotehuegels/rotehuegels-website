@@ -37,6 +37,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const stages = stagesRes.data ?? [];
   const payments = paymentsRes.data ?? [];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const items = (order.items ?? []) as Array<{
+    name: string; item_type: string; hsn_code?: string; sac_code?: string;
+    unit: string; quantity: number; unit_price: number;
+    taxable_amount: number; gst_rate: number; gst_amount: number; total: number;
+  }>;
+
   const totalReceived = payments.reduce((s, p) => s + (p.amount_received ?? 0), 0);
   const totalTds = payments.reduce((s, p) => s + (p.tds_deducted ?? 0), 0);
   const totalNet = payments.reduce((s, p) => s + (p.net_received ?? 0), 0);
@@ -98,6 +105,55 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
       {order.description && (
         <p className="text-sm text-zinc-400 leading-relaxed">{order.description}</p>
+      )}
+
+      {/* Line items table */}
+      {items.length > 0 && (
+        <div className={glass}>
+          <div className="px-6 py-4 border-b border-zinc-800/60">
+            <h2 className="text-sm font-semibold text-zinc-300">Line Items</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-800 bg-zinc-900/60">
+                  <th className="px-4 py-2.5 text-center text-[11px] font-medium text-zinc-500 uppercase tracking-wide w-10">#</th>
+                  <th className="px-4 py-2.5 text-left text-[11px] font-medium text-zinc-500 uppercase tracking-wide">Description</th>
+                  <th className="px-4 py-2.5 text-center text-[11px] font-medium text-zinc-500 uppercase tracking-wide">HSN/SAC</th>
+                  <th className="px-4 py-2.5 text-right text-[11px] font-medium text-zinc-500 uppercase tracking-wide">Qty</th>
+                  <th className="px-4 py-2.5 text-center text-[11px] font-medium text-zinc-500 uppercase tracking-wide">Unit</th>
+                  <th className="px-4 py-2.5 text-right text-[11px] font-medium text-zinc-500 uppercase tracking-wide">Rate</th>
+                  <th className="px-4 py-2.5 text-right text-[11px] font-medium text-zinc-500 uppercase tracking-wide">Taxable</th>
+                  <th className="px-4 py-2.5 text-center text-[11px] font-medium text-zinc-500 uppercase tracking-wide">GST%</th>
+                  <th className="px-4 py-2.5 text-right text-[11px] font-medium text-zinc-500 uppercase tracking-wide">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/60">
+                {items.map((item, i) => (
+                  <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
+                    <td className="px-4 py-3 text-center text-zinc-500">{i + 1}</td>
+                    <td className="px-4 py-3 text-zinc-200 font-medium">{item.name}</td>
+                    <td className="px-4 py-3 text-center text-zinc-400 font-mono text-xs">{item.hsn_code || item.sac_code || '—'}</td>
+                    <td className="px-4 py-3 text-right text-zinc-300">{item.quantity}</td>
+                    <td className="px-4 py-3 text-center text-zinc-400">{item.unit}</td>
+                    <td className="px-4 py-3 text-right text-zinc-300 font-mono">{fmt(item.unit_price)}</td>
+                    <td className="px-4 py-3 text-right text-zinc-300 font-mono">{fmt(item.taxable_amount)}</td>
+                    <td className="px-4 py-3 text-center text-zinc-400">{item.gst_rate}%</td>
+                    <td className="px-4 py-3 text-right text-white font-semibold font-mono">{fmt(item.total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-zinc-700">
+                  <td colSpan={6} className="px-4 py-3 text-right text-xs font-semibold text-zinc-400 uppercase">Grand Total</td>
+                  <td className="px-4 py-3 text-right text-zinc-300 font-mono font-semibold">{fmt(items.reduce((s, i) => s + i.taxable_amount, 0))}</td>
+                  <td></td>
+                  <td className="px-4 py-3 text-right text-amber-400 font-bold font-mono">{fmt(items.reduce((s, i) => s + i.total, 0))}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
       )}
 
       {/* Financial summary */}

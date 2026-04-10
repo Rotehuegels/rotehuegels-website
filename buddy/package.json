@@ -1,0 +1,10 @@
+{
+  "name": "buddy-cli",
+  "version": "1.0.0",
+  "description": "Buddy — AI coding agent powered by Ollama/Groq",
+  "type": "module",
+  "bin": {
+    "buddy": "./cli.mjs"
+  },
+  "dependencies": {}
+}

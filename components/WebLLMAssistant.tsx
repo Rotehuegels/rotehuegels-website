@@ -47,7 +47,8 @@ export default function WebLLMAssistant() {
         }
 
         // Collect client-side metadata
-        const nav = navigator as Record<string, unknown>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const nav = navigator as any;
         const conn = (nav.connection ?? nav.mozConnection ?? nav.webkitConnection) as Record<string, string> | undefined;
 
         const clientData = {

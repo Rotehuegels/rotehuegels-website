@@ -67,12 +67,17 @@ export default async function MailPage({
             Link your Microsoft 365 account to access your emails from the dashboard.
           </p>
           <a
-            href="/api/auth/microsoft/login"
+            href="https://www.rotehuegels.com/api/auth/microsoft/login"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
           >
             <Mail className="h-4 w-4" />
             Connect Microsoft 365
           </a>
+          <p className="text-xs text-zinc-600 mt-3">
+            Opens in a new tab. After signing in, return to this page and refresh.
+          </p>
         </div>
       </div>
     );
@@ -120,7 +125,9 @@ export default async function MailPage({
             Failed to connect to Microsoft 365. Your session may have expired.
           </p>
           <a
-            href="/api/auth/microsoft/login"
+            href="https://www.rotehuegels.com/api/auth/microsoft/login"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
           >
             <RefreshCw className="h-4 w-4" />

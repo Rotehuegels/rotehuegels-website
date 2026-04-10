@@ -147,18 +147,17 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
   const logoSrc = getLogoBase64();
   const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const [ordersRes, paymentsRes, expensesRes] = await Promise.all([
+  // Mirror the exact same data-fetching logic as the main P&L page.
+  const [ordersRes, expensesRes] = await Promise.all([
     supabaseAdmin
       .from('orders')
-      .select('order_type, base_value, total_value_incl_gst, cgst_amount, sgst_amount, igst_amount, status')
+      .select('id, order_type, base_value, total_value_incl_gst, cgst_amount, sgst_amount, igst_amount, status, order_category')
       .gte('order_date', fy.from)
       .lte('order_date', fy.to)
-      .neq('status', 'cancelled'),
-    supabaseAdmin
-      .from('order_payments')
-      .select('amount_received, tds_deducted, net_received')
-      .gte('payment_date', fy.from)
-      .lte('payment_date', fy.to),
+      .neq('status', 'cancelled')
+      .neq('status', 'draft')
+      .neq('order_category', 'reimbursement')
+      .neq('order_category', 'complimentary'),
     supabaseAdmin
       .from('expenses')
       .select('expense_type, amount, gst_input_credit')
@@ -167,8 +166,18 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
   ]);
 
   const orders   = ordersRes.data   ?? [];
-  const payments = paymentsRes.data ?? [];
   const expenses = expensesRes.data ?? [];
+
+  const orderIds = orders.map(o => o.id);
+
+  const paymentsRes = orderIds.length > 0
+    ? await supabaseAdmin
+        .from('order_payments')
+        .select('amount_received, tds_deducted, net_received')
+        .in('order_id', orderIds)
+    : { data: [] };
+
+  const payments = paymentsRes.data ?? [];
 
   const goodsOrders   = orders.filter(o => o.order_type === 'goods');
   const serviceOrders = orders.filter(o => o.order_type === 'service');
@@ -181,7 +190,8 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
   const outputSGST  = orders.reduce((s, o) => s + (o.sgst_amount ?? 0), 0);
   const outputIGST  = orders.reduce((s, o) => s + (o.igst_amount ?? 0), 0);
   const totalGST    = outputCGST + outputSGST + outputIGST;
-  const totalInvoiced = totalBase + totalGST;
+  // Use stored total_value_incl_gst to avoid rounding drift from GST reverse-calculation.
+  const totalInvoiced = orders.reduce((s, o) => s + (o.total_value_incl_gst ?? 0), 0);
 
   const grossReceived = payments.reduce((s, p) => s + (p.amount_received ?? 0), 0);
   const tdsDeducted   = payments.reduce((s, p) => s + (p.tds_deducted   ?? 0), 0);
@@ -204,8 +214,10 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
   const totalOpExp      = salaries + otherExp;
   const operatingProfit = grossProfit - totalOpExp;
   const totalTax        = advanceTax + gstPaid;
-  const netProfit       = operatingProfit - advanceTax;
-  const pendingRec      = totalInvoiced - grossReceived;
+  const netProfit          = operatingProfit - advanceTax;
+  // TDS deducted by clients is legally settled — treat as received (recoverable via 26AS/ITR).
+  const effectiveReceived  = grossReceived + tdsDeducted;
+  const pendingRec         = totalInvoiced - effectiveReceived;
 
   return (
     <PDFViewer
@@ -359,16 +371,17 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
           {/* Receivables Position */}
           <div style={{ border: `1px solid ${LINE}`, borderRadius: '4px', padding: '10px 12px', marginBottom: '16px' }}>
             <div style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: AMBER, marginBottom: '4px' }}>Receivables Position</div>
-            <div style={{ fontSize: '8.5px', color: MUTED, marginBottom: '8px' }}>Cash basis — payments received within {fy.full}</div>
+            <div style={{ fontSize: '8.5px', color: MUTED, marginBottom: '8px' }}>All payments for {fy.label} orders — date recorded does not matter. TDS deducted by clients treated as settled (recoverable via 26AS / ITR).</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div>
                 <Row label="Total Invoiced (incl. GST)" value={totalInvoiced} bold noColor />
-                <Row label="Received (Gross)" value={grossReceived} indent />
+                <Row label="Cash Received from Clients" value={grossReceived} indent />
                 <Row label="TDS Deducted by Clients" value={tdsDeducted} indent />
-                <Row label="Net Received (to Bank)" value={netReceived} indent />
+                <Row label="Effective Amount Settled" value={effectiveReceived} indent />
+                <Row label="Net to Bank" value={netReceived} indent sub />
                 <HRule thick />
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderTop: `2px solid ${DARK}`, marginTop: '2px' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 800 }}>Pending Receivables</span>
+                  <span style={{ fontSize: '10px', fontWeight: 800 }}>Outstanding Receivables</span>
                   <span style={{ fontSize: '10px', fontWeight: 800, color: pendingRec > 0 ? '#991b1b' : '#166534', fontVariantNumeric: 'tabular-nums' }}>
                     {fmt(pendingRec)}
                   </span>
@@ -379,7 +392,7 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
                   <div style={{ border: `1px solid #fca5a5`, borderRadius: '6px', background: '#fff1f2', padding: '12px 16px', textAlign: 'center' as const }}>
                     <div style={{ fontSize: '8.5px', color: MUTED }}>Outstanding collection</div>
                     <div style={{ fontSize: '18px', fontWeight: 900, color: '#991b1b', marginTop: '4px', fontVariantNumeric: 'tabular-nums' }}>{fmt(pendingRec)}</div>
-                    <div style={{ fontSize: '8px', color: MUTED, marginTop: '4px' }}>incl. GST, before pending TDS</div>
+                    <div style={{ fontSize: '8px', color: MUTED, marginTop: '4px' }}>Invoiced but not yet received or TDS-settled</div>
                   </div>
                 ) : (
                   <div style={{ border: `1px solid #86efac`, borderRadius: '6px', background: '#f0fdf4', padding: '12px 16px', textAlign: 'center' as const }}>

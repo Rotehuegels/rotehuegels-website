@@ -65,6 +65,7 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
     .gte('order_date', from)
     .lte('order_date', to)
     .neq('status', 'cancelled')
+    .neq('status', 'draft')
     .neq('order_category', 'reimbursement')
     .neq('order_category', 'complimentary');
 

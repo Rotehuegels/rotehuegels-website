@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useTransition } from 'react';
 import { Clock, LogOut, RefreshCw } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabaseClient';
+import { signOutAction } from '@/app/actions/auth';
 
 // ── Timeouts ──────────────────────────────────────────────────────────────────
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes of inactivity → logout
@@ -23,6 +24,7 @@ export default function InactivityGuard({ children }: { children: React.ReactNod
   const [warningVisible, setWarningVisible]   = useState(false);
   const [secondsLeft,    setSecondsLeft]       = useState(WARN_BEFORE_MS / 1000);
   const [stayingIn,      setStayingIn]         = useState(false);
+  const [, startTransition]                    = useTransition();
 
   // Use a ref so activity-event handlers always read the latest value without
   // being re-registered on every render.
@@ -31,14 +33,14 @@ export default function InactivityGuard({ children }: { children: React.ReactNod
   const logoutTimerRef   = useRef<ReturnType<typeof setTimeout>>();
   const countdownRef     = useRef<ReturnType<typeof setInterval>>();
 
-  // ── Sign out ────────────────────────────────────────────────────────────────
-  const doLogout = useCallback(async (reason: 'timeout' | 'manual' = 'timeout') => {
+  // ── Sign out via server action (cookie cleared server-side before redirect) ─
+  const doLogout = useCallback((reason: 'timeout' | 'manual' = 'timeout') => {
     clearTimeout(warnTimerRef.current);
     clearTimeout(logoutTimerRef.current);
     clearInterval(countdownRef.current);
-    await supabaseBrowser().auth.signOut();
-    window.location.href = reason === 'timeout' ? '/login?reason=timeout' : '/login';
-  }, []);
+    const redirectTo = reason === 'timeout' ? '/login?reason=timeout' : '/login';
+    startTransition(() => signOutAction(redirectTo));
+  }, [startTransition]);
 
   // ── Schedule warn + logout timers from now ─────────────────────────────────
   const scheduleTimers = useCallback(() => {

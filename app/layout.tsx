@@ -7,6 +7,7 @@ import TickerBar from '@/components/TickerBar'
 import AuraBackground from '@/components/AuraBackground'
 import PageTracker from '@/components/PageTracker'
 import AssistWidget from '@/components/AssistWidget'
+import ChatWidget from '@/components/ChatWidget'
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.rotehuegels.com"),
@@ -93,6 +94,7 @@ export default function RootLayout({
         <main>{children}</main>
         <Footer />
         <AssistWidget />
+        <ChatWidget />
       </body>
     </html>
   )

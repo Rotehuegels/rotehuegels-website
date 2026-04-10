@@ -1,15 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabaseClient';
 
 export default function LogoutButton() {
-  const router = useRouter();
-
   async function handleLogout() {
     await supabaseBrowser().auth.signOut();
-    router.replace('/login');
+    // Hard-redirect so the Next.js router cache is fully cleared and the
+    // server sees the cleared session cookie immediately.
+    window.location.href = '/login';
   }
 
   return (

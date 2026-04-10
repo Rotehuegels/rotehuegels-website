@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { supabaseBrowser } from '@/lib/supabaseClient';
-import { Lock } from 'lucide-react';
+import { Lock, Clock } from 'lucide-react';
 
 const inputCls = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/30';
 
@@ -15,7 +15,8 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get('next') ?? '/dashboard';
+  const next   = searchParams.get('next')   ?? '/dashboard';
+  const reason = searchParams.get('reason') ?? '';
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +32,9 @@ function LoginForm() {
       return;
     }
 
+    // Refresh the server component tree so the dashboard layout sees the new
+    // session cookie before we navigate to it.
+    router.refresh();
     router.replace(next);
   };
 
@@ -49,6 +53,13 @@ function LoginForm() {
             </div>
             <h1 className="text-base font-semibold text-white">Sign in</h1>
           </div>
+
+          {reason === 'timeout' && (
+            <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400 flex items-start gap-2.5">
+              <Clock className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>You were signed out due to inactivity. Please sign in again.</span>
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">

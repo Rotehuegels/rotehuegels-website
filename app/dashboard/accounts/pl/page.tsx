@@ -54,6 +54,12 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   const fy = fyParam ?? '2025-26';
   const { from, to, label, full } = parseFY(fy);
 
+  // Derive startYear for brought-forward calculation (prev FY = startYear-1 → startYear).
+  const [startYear] = fy.split('-').map(Number);
+  const prevFYFrom  = `${startYear - 1}-04-01`;
+  const prevFYTo    = `${startYear}-03-31`;
+  const prevFYLabel = `FY ${startYear - 1}–${startYear}`;
+
   // Step 1 — billable orders in this FY.
   // Mirror the same exclusions as the Orders list financial totals:
   //   cancelled      → void, never invoiced
@@ -92,6 +98,50 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
 
   const payments = paymentsRes.data ?? [];
   const expenses = expensesRes.data ?? [];
+
+  // ── Brought-Forward Receivables from previous FY ────────────────────────────
+  // Fetch previous FY's billable orders (same exclusion rules).
+  const prevOrdersRes = await supabaseAdmin
+    .from('orders')
+    .select('id, total_value_incl_gst')
+    .gte('order_date', prevFYFrom)
+    .lte('order_date', prevFYTo)
+    .neq('status', 'cancelled')
+    .neq('status', 'draft')
+    .neq('order_category', 'reimbursement')
+    .neq('order_category', 'complimentary');
+
+  const prevOrders   = prevOrdersRes.data ?? [];
+  const prevOrderIds = prevOrders.map(o => o.id);
+  const prevInvoiced = prevOrders.reduce((s, o) => s + (o.total_value_incl_gst ?? 0), 0);
+
+  // Payments for prev FY orders received ON OR BEFORE the prev FY year-end.
+  // Opening B/F = prev invoiced − effective settled by year-end.
+  const [prevPayByYearEndRes, prevPayInCurrFYRes] = prevOrderIds.length > 0
+    ? await Promise.all([
+        supabaseAdmin
+          .from('order_payments')
+          .select('amount_received, tds_deducted')
+          .in('order_id', prevOrderIds)
+          .lte('payment_date', prevFYTo),
+        supabaseAdmin
+          .from('order_payments')
+          .select('amount_received, tds_deducted')
+          .in('order_id', prevOrderIds)
+          .gte('payment_date', from)
+          .lte('payment_date', to),
+      ])
+    : [{ data: [] }, { data: [] }];
+
+  const prevEffectiveByYearEnd = (prevPayByYearEndRes.data ?? []).reduce(
+    (s, p) => s + (p.amount_received ?? 0) + (p.tds_deducted ?? 0), 0,
+  );
+  const bfOpening = prevInvoiced - prevEffectiveByYearEnd;  // what carried forward
+
+  const bfCollectedInCurrFY = (prevPayInCurrFYRes.data ?? []).reduce(
+    (s, p) => s + (p.amount_received ?? 0) + (p.tds_deducted ?? 0), 0,
+  );
+  const bfClosing = bfOpening - bfCollectedInCurrFY;        // still outstanding B/F
 
   const goodsOrders   = orders.filter(o => o.order_type === 'goods');
   const serviceOrders = orders.filter(o => o.order_type === 'service');
@@ -273,6 +323,39 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
           </div>
         </div>
       </div>
+
+      {/* Brought-Forward Receivables — only shown when prev FY had outstanding amounts */}
+      {bfOpening > 0 && (
+        <div className={`${glass} p-6 print:border print:border-gray-300 print:rounded-none print:bg-white`}>
+          <SectionHead>Brought Forward Receivables ({prevFYLabel})</SectionHead>
+          <p className="text-[10px] text-zinc-600 mb-2">
+            Invoices raised in {prevFYLabel} that were not fully settled by 31 March {startYear}.
+            These are <em>not</em> counted as {label} revenue — they are prior-year collections only.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12">
+            <div>
+              <Row label={`Opening B/F (as at 31 Mar ${startYear})`} value={bfOpening} bold />
+              <Row label={`Collected in ${label}`} value={bfCollectedInCurrFY} indent />
+              <Divider thick />
+              <Row label="Closing B/F (still outstanding)" value={bfClosing} bold positive={bfClosing === 0} />
+            </div>
+            <div className="mt-4 sm:mt-0">
+              {bfClosing > 0 && (
+                <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4">
+                  <p className="text-xs text-zinc-400 mb-1">Still outstanding from {prevFYLabel}</p>
+                  <p className="text-2xl font-black text-rose-400">{fmt(bfClosing)}</p>
+                  <p className="text-xs text-zinc-600 mt-1">Prior-year invoices not yet received</p>
+                </div>
+              )}
+              {bfClosing === 0 && (
+                <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4">
+                  <p className="text-sm text-emerald-400 font-semibold">All brought-forward amounts collected</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 print:gap-2">

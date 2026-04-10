@@ -144,6 +144,11 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
   const fyStr = fyParam ?? '2025-26';
   const fy = parseFY(fyStr);
 
+  const [startYear] = fyStr.split('-').map(Number);
+  const prevFYFrom  = `${startYear - 1}-04-01`;
+  const prevFYTo    = `${startYear}-03-31`;
+  const prevFYLabel = `FY ${startYear - 1}–${startYear}`;
+
   const logoSrc = getLogoBase64();
   const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -218,6 +223,35 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
   // TDS deducted by clients is legally settled — treat as received (recoverable via 26AS/ITR).
   const effectiveReceived  = grossReceived + tdsDeducted;
   const pendingRec         = totalInvoiced - effectiveReceived;
+
+  // ── Brought-Forward Receivables from previous FY (same logic as main page) ──
+  const prevOrdersRes2 = await supabaseAdmin
+    .from('orders')
+    .select('id, total_value_incl_gst')
+    .gte('order_date', prevFYFrom)
+    .lte('order_date', prevFYTo)
+    .neq('status', 'cancelled')
+    .neq('status', 'draft')
+    .neq('order_category', 'reimbursement')
+    .neq('order_category', 'complimentary');
+
+  const prevOrders2   = prevOrdersRes2.data ?? [];
+  const prevOrderIds2 = prevOrders2.map(o => o.id);
+  const prevInvoiced2 = prevOrders2.reduce((s, o) => s + (o.total_value_incl_gst ?? 0), 0);
+
+  const [prevPayByYearEnd2, prevPayInCurrFY2] = prevOrderIds2.length > 0
+    ? await Promise.all([
+        supabaseAdmin.from('order_payments').select('amount_received, tds_deducted')
+          .in('order_id', prevOrderIds2).lte('payment_date', prevFYTo),
+        supabaseAdmin.from('order_payments').select('amount_received, tds_deducted')
+          .in('order_id', prevOrderIds2).gte('payment_date', fy.from).lte('payment_date', fy.to),
+      ])
+    : [{ data: [] }, { data: [] }];
+
+  const prevEffective2     = (prevPayByYearEnd2.data ?? []).reduce((s, p) => s + (p.amount_received ?? 0) + (p.tds_deducted ?? 0), 0);
+  const bfOpening2         = prevInvoiced2 - prevEffective2;
+  const bfCollected2       = (prevPayInCurrFY2.data ?? []).reduce((s, p) => s + (p.amount_received ?? 0) + (p.tds_deducted ?? 0), 0);
+  const bfClosing2         = bfOpening2 - bfCollected2;
 
   return (
     <PDFViewer
@@ -402,6 +436,44 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
               </div>
             </div>
           </div>
+
+          {/* Brought-Forward Receivables — only if prev FY had outstanding amounts */}
+          {bfOpening2 > 0 && (
+            <div style={{ border: `1px solid ${LINE}`, borderRadius: '4px', padding: '10px 12px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: AMBER, marginBottom: '4px' }}>
+                Brought Forward Receivables ({prevFYLabel})
+              </div>
+              <div style={{ fontSize: '8.5px', color: MUTED, marginBottom: '8px' }}>
+                Invoices raised in {prevFYLabel} outstanding at 31 March {startYear}.
+                Not counted as {fy.label} revenue — prior-year collections only.
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <Row label={`Opening B/F (31 Mar ${startYear})`} value={bfOpening2} bold noColor />
+                  <Row label={`Collected in ${fy.label}`} value={bfCollected2} indent />
+                  <HRule thick />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderTop: `2px solid ${DARK}`, marginTop: '2px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 800 }}>Closing B/F (still outstanding)</span>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: bfClosing2 > 0 ? '#991b1b' : '#166534', fontVariantNumeric: 'tabular-nums' }}>
+                      {fmt(bfClosing2)}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {bfClosing2 > 0 ? (
+                    <div style={{ border: `1px solid #fca5a5`, borderRadius: '6px', background: '#fff1f2', padding: '10px 14px', textAlign: 'center' as const }}>
+                      <div style={{ fontSize: '8.5px', color: MUTED }}>Still outstanding from {prevFYLabel}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 900, color: '#991b1b', marginTop: '4px', fontVariantNumeric: 'tabular-nums' }}>{fmt(bfClosing2)}</div>
+                    </div>
+                  ) : (
+                    <div style={{ border: `1px solid #86efac`, borderRadius: '6px', background: '#f0fdf4', padding: '10px 14px', textAlign: 'center' as const }}>
+                      <div style={{ fontSize: '10px', fontWeight: 700, color: '#166534' }}>✓ All B/F amounts collected</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Declaration / Disclaimer */}
           <div style={{ border: `0.5px solid ${LINE}`, borderRadius: '3px', padding: '8px 12px', background: LIGHT_BG, fontSize: '8.5px', color: MUTED }}>

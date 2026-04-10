@@ -434,20 +434,7 @@ async function main() {
   const continueMode = args.includes('--continue') || args.includes('-c');
   const promptArgs = args.filter(a => !a.startsWith('-'));
 
-  if (continueMode && handoff) {
-    log(c.blue, '  Continuing from handoff...');
-    console.log('');
-    try {
-      const reply = await agentLoop('Continue from the handoff context. Read the handoff notes and pick up where the previous session left off. Summarize what was done before and what you will do next.', history);
-      console.log('');
-      log(c.white, reply);
-    } catch (e) { log(c.red, `  Error: ${e.message}`); }
-    console.log('');
-    log(c.dim, `  [${activeBackend}]`);
-    console.log('');
-  }
-
-  // One-shot mode
+  // One-shot mode (not --continue)
   if (promptArgs.length > 0 && !continueMode) {
     const prompt = promptArgs.join(' ');
     log(c.blue, `  You: ${prompt}`);
@@ -463,11 +450,27 @@ async function main() {
     process.exit(0);
   }
 
-  // Interactive REPL
+  // Interactive REPL (also used after --continue)
   const rl = createInterface({
     input: process.stdin, output: process.stdout,
     prompt: `${c.yellow}buddy >${c.reset} `,
+    terminal: true,
   });
+
+  // If --continue, process the handoff first, then drop into REPL
+  if (continueMode && handoff) {
+    log(c.blue, '  Continuing from handoff...');
+    console.log('');
+    try {
+      const reply = await agentLoop('Continue from the handoff context. Read the handoff notes and pick up where the previous session left off. Summarize what was done before and what you will do next.', history);
+      console.log('');
+      log(c.white, reply);
+    } catch (e) { log(c.red, `  Error: ${e.message}`); }
+    console.log('');
+    log(c.dim, `  [${activeBackend}]`);
+    log(c.dim, '  Ready for your instructions. Type your request or /help.');
+    console.log('');
+  }
 
   rl.prompt();
 

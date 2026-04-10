@@ -19,3 +19,7 @@ public/uploads/
 
 /generated/prisma
 .env*.local
+
+# Buddy session files (keep handoff.md, ignore ephemeral files)
+.buddy/worklog.jsonl
+.buddy/session.json

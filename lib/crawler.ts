@@ -88,39 +88,59 @@ function sleep(ms: number): Promise<void> {
 // ── searchWeb ─────────────────────────────────────────────────────────────────
 
 export async function searchWeb(query: string): Promise<SearchResult[]> {
+  // Strategy: Use Groq LLM to generate a list of real companies for the query.
+  // DuckDuckGo blocks serverless IPs with captchas, and Google requires API keys.
+  // The LLM has training data about Indian industrial companies.
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    console.error('[searchWeb] GROQ_API_KEY not set');
+    return [];
+  }
+
   try {
-    const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-    const res = await fetch(url, {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        'User-Agent': USER_AGENT,
-        Accept: 'text/html,application/xhtml+xml',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
       },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a business intelligence researcher. Given a search query about Indian industrial companies, return a JSON array of 8-10 real companies with their websites.
+
+Return ONLY a JSON array, no other text:
+[{"title": "Company Name", "url": "https://www.company.com", "snippet": "Brief description of what they do"}]
+
+Rules:
+- Only include REAL companies that actually exist in India
+- Include their actual website URLs (not made up)
+- Focus on companies in the electrochemical, metallurgy, instrumentation, and manufacturing sectors
+- Include a mix of large and small companies
+- If you don't know the exact URL, use the most likely domain`,
+          },
+          { role: 'user', content: query },
+        ],
+        temperature: 0.3,
+        max_tokens: 1500,
+      }),
+      signal: AbortSignal.timeout(15000),
     });
-    if (!res.ok) throw new Error(`DuckDuckGo returned HTTP ${res.status}`);
-    const html = await res.text();
-    const $ = load(html);
-    const results: SearchResult[] = [];
 
-    $('.result').each((i, el) => {
-      if (i >= 10) return false;
-      const titleEl = $(el).find('.result__title a, .result__a');
-      const snippetEl = $(el).find('.result__snippet');
-      const title = titleEl.text().trim();
-      let href = titleEl.attr('href') ?? '';
+    if (!res.ok) {
+      console.error('[searchWeb] Groq error:', res.status);
+      return [];
+    }
 
-      // DuckDuckGo wraps links in a redirect — extract the real URL
-      if (href.includes('uddg=')) {
-        const m = href.match(/uddg=([^&]+)/);
-        if (m) href = decodeURIComponent(m[1]);
-      }
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content ?? '';
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return [];
 
-      const snippet = snippetEl.text().trim();
-      if (title && href && href.startsWith('http')) {
-        results.push({ title, url: href, snippet });
-      }
-    });
-
-    return results;
+    const results = JSON.parse(jsonMatch[0]) as SearchResult[];
+    return results.filter(r => r.title && r.url?.startsWith('http')).slice(0, 10);
   } catch (err: unknown) {
     console.error('[searchWeb] Error:', err instanceof Error ? err.message : err);
     return [];

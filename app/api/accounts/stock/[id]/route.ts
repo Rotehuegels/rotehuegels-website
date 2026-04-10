@@ -11,6 +11,21 @@ async function requireAuth() {
   return user;
 }
 
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await params;
+  const { data, error } = await supabaseAdmin
+    .from('stock_items')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 404 });
+  return NextResponse.json({ data });
+}
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,10 +37,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   const parsed = z.object({
-    quantity: z.number().min(0).optional(),
-    unit_cost: z.number().min(0).optional(),
-    notes: z.string().optional(),
-    category: z.string().optional(),
+    item_name:   z.string().min(1).optional(),
+    item_code:   z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
+    category:    z.string().optional().nullable(),
+    hsn_code:    z.string().optional().nullable(),
+    unit:        z.string().optional(),
+    quantity:    z.number().min(0).optional(),
+    unit_cost:   z.number().min(0).optional(),
+    order_id:    z.string().uuid().optional().nullable(),
+    notes:       z.string().optional().nullable(),
   }).safeParse(body);
 
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });

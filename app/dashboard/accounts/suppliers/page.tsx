@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import Link from 'next/link';
-import { Plus, Building2, MapPin, Hash, BadgeCheck, BadgeX } from 'lucide-react';
+import { Plus, Building2, MapPin, Hash, BadgeCheck, BadgeX, Download } from 'lucide-react';
 import { Suspense } from 'react';
 import SuppliersFilterBar from './SuppliersFilterBar';
 
@@ -37,10 +37,18 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
             {list.length} registered supplier{list.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Link href="/dashboard/accounts/suppliers/new"
-          className="flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
-          <Plus className="h-4 w-4" /> Add Supplier
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/accounts/suppliers/export"
+            className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors"
+          >
+            <Download className="h-4 w-4" /> Export CSV
+          </a>
+          <Link href="/dashboard/accounts/suppliers/new"
+            className="flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
+            <Plus className="h-4 w-4" /> Add Supplier
+          </Link>
+        </div>
       </div>
 
       {/* Filter bar */}

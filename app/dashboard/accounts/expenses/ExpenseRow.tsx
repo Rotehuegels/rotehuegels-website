@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Pencil } from 'lucide-react';
+import { Pencil, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 import EditExpenseModal from './EditExpenseModal';
 
 const TYPE_LABEL: Record<string, string> = {
@@ -46,7 +47,7 @@ export default function ExpenseRow({ expense }: { expense: Expense }) {
   return (
     <>
       <div
-        className="flex flex-col lg:grid lg:grid-cols-[1fr_120px_120px_1fr_1fr_80px_40px] gap-2 lg:gap-4 px-6 py-4 items-start lg:items-center hover:bg-zinc-800/20 transition-colors">
+        className="flex flex-col lg:grid lg:grid-cols-[1fr_120px_120px_1fr_1fr_80px_80px] gap-2 lg:gap-4 px-6 py-4 items-start lg:items-center hover:bg-zinc-800/20 transition-colors">
         <div className="min-w-0">
           <p className="text-sm font-medium text-zinc-200 truncate">{e.description}</p>
           {e.category && <p className="text-xs text-zinc-600">{e.category}</p>}
@@ -62,13 +63,20 @@ export default function ExpenseRow({ expense }: { expense: Expense }) {
         </div>
         <p className="text-sm text-zinc-400">{fmtDate(e.expense_date)}</p>
         <p className="text-xs text-zinc-600 font-mono truncate">{e.reference_no ?? '—'}</p>
-        <button
-          onClick={() => setEditing(true)}
-          className="rounded-lg border border-zinc-700 bg-zinc-800/60 p-1.5 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
-          title="Edit expense"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setEditing(true)}
+            className="rounded-lg border border-zinc-700 bg-zinc-800/60 p-1.5 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
+            title="Edit expense"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <Link href={`/dashboard/accounts/expenses/${e.id}`}
+            className="rounded-lg border border-zinc-700 bg-zinc-800/60 p-1.5 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
+            title="View details">
+            <ExternalLink className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </div>
       {editing && <EditExpenseModal expense={e} onClose={() => setEditing(false)} />}
     </>

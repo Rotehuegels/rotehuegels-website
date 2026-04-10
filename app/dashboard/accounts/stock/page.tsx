@@ -1,7 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import AddStockForm from './AddStockForm';
-import { Package } from 'lucide-react';
+import { Package, Pencil } from 'lucide-react';
 import { Suspense } from 'react';
+import Link from 'next/link';
 import StockFilterBar from './StockFilterBar';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -56,11 +57,11 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
           </div>
         ) : (
           <>
-            <div className="hidden lg:grid grid-cols-[80px_1fr_1fr_80px_80px_120px_120px_1fr] gap-4 px-6 py-3 border-b border-zinc-800/60 text-[11px] font-medium uppercase tracking-wider text-zinc-600">
+            <div className="hidden lg:grid grid-cols-[80px_1fr_1fr_80px_80px_120px_120px_1fr_40px] gap-4 px-6 py-3 border-b border-zinc-800/60 text-[11px] font-medium uppercase tracking-wider text-zinc-600">
               <span>Code</span><span>Item</span><span>Category</span>
               <span className="text-right">Qty</span><span>Unit</span>
               <span className="text-right">Unit Cost</span><span className="text-right">Total Value</span>
-              <span>Order</span>
+              <span>Order</span><span></span>
             </div>
             <div className="divide-y divide-zinc-800/60">
               {list.map(item => {
@@ -68,7 +69,7 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
                 const order = item.orders as { order_no: string; client_name: string } | null;
                 return (
                   <div key={item.id}
-                    className="flex flex-col lg:grid lg:grid-cols-[80px_1fr_1fr_80px_80px_120px_120px_1fr] gap-2 lg:gap-4 px-6 py-4 items-start lg:items-center hover:bg-zinc-800/20 transition-colors">
+                    className="flex flex-col lg:grid lg:grid-cols-[80px_1fr_1fr_80px_80px_120px_120px_1fr_40px] gap-2 lg:gap-4 px-6 py-4 items-start lg:items-center hover:bg-zinc-800/20 transition-colors">
                     <p className="text-xs font-mono text-zinc-500">{item.item_code ?? '—'}</p>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-zinc-200 truncate">{item.item_name}</p>
@@ -90,6 +91,11 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
                         </div>
                       ) : <span className="text-zinc-700">—</span>}
                     </div>
+                    <Link href={`/dashboard/accounts/stock/${item.id}/edit`}
+                      className="rounded-lg border border-zinc-700 bg-zinc-800/60 p-1.5 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
+                      title="Edit stock item">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
                 );
               })}

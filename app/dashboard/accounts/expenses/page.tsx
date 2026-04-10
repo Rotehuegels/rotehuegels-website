@@ -99,7 +99,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
           <p className="p-12 text-center text-sm text-zinc-600">No expenses found.</p>
         ) : (
           <>
-            <div className="hidden lg:grid grid-cols-[1fr_120px_120px_1fr_1fr_80px_40px] gap-4 px-6 py-3 border-b border-zinc-800/60 text-[11px] font-medium uppercase tracking-wider text-zinc-600">
+            <div className="hidden lg:grid grid-cols-[1fr_120px_120px_1fr_1fr_80px_80px] gap-4 px-6 py-3 border-b border-zinc-800/60 text-[11px] font-medium uppercase tracking-wider text-zinc-600">
               <span>Description</span><span>Type</span><span className="text-right">Amount</span>
               <span>Vendor</span><span>Date</span><span>Ref</span><span></span>
             </div>

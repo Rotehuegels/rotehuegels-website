@@ -62,3 +62,29 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, id: data.id });
 }
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await params;
+
+  // Check if item is referenced in any quotes (items stored as JSONB array with item_id field)
+  const { data: quotesUsing } = await supabaseAdmin
+    .from('quotes')
+    .select('id')
+    .filter('items', 'cs', JSON.stringify([{ item_id: id }]));
+
+  const quoteCount = quotesUsing?.length ?? 0;
+
+  if (quoteCount > 0) {
+    return NextResponse.json(
+      { error: `Cannot delete: item is referenced in ${quoteCount} quote(s). Deactivate it instead.` },
+      { status: 409 },
+    );
+  }
+
+  const { error } = await supabaseAdmin.from('items').delete().eq('id', id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}

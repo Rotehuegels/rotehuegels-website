@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Trash2, ArrowLeft, ExternalLink, Printer } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, ExternalLink, Printer, Pencil } from 'lucide-react';
 import SendEmailButton from '@/components/SendEmailButton';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -176,6 +176,14 @@ export default function PODetailPage() {
         <div className="flex items-center gap-2 shrink-0">
           <SendEmailButton type="po_confirmation" entityId={id} label="Email PO to Supplier"
             confirmMessage="Send this purchase order to the supplier via email?" />
+          {po.status !== 'completed' && (
+            <Link
+              href={`/dashboard/accounts/purchase-orders/${id}/edit`}
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-xs font-semibold text-zinc-300 hover:border-zinc-600 transition-colors"
+            >
+              <Pencil className="h-3.5 w-3.5" /> Edit PO
+            </Link>
+          )}
           <Link
             href={`/dashboard/accounts/purchase-orders/${id}/preview`}
             className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-xs font-semibold text-zinc-300 hover:border-zinc-600 transition-colors"

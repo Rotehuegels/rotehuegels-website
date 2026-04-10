@@ -2,7 +2,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, User, Mail, Phone, Building2 } from 'lucide-react';
+import { Plus, User, Mail, Phone, Building2, Download } from 'lucide-react';
 import { Suspense } from 'react';
 import CustomersFilterBar from './CustomersFilterBar';
 import Pagination from '../Pagination';
@@ -57,12 +57,20 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           <h1 className="text-xl font-bold text-white">Customers</h1>
           <p className="text-xs text-zinc-500 mt-0.5">{total} customers in master</p>
         </div>
-        <Link
-          href="/dashboard/accounts/customers/new"
-          className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
-        >
-          <Plus className="h-4 w-4" /> Add Customer
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/accounts/customers/export"
+            className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors"
+          >
+            <Download className="h-4 w-4" /> Export CSV
+          </a>
+          <Link
+            href="/dashboard/accounts/customers/new"
+            className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
+          >
+            <Plus className="h-4 w-4" /> Add Customer
+          </Link>
+        </div>
       </div>
 
       {/* Filter bar */}

@@ -3,6 +3,9 @@ import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, FileText } from 'lucide-react';
+import { Suspense } from 'react';
+import QuotesFilterBar from './QuotesFilterBar';
+import Pagination from '../Pagination';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,25 +24,86 @@ const STATUS_COLORS: Record<string, string> = {
   converted: 'bg-amber-500/10 text-amber-400',
 };
 
-export default async function QuotesPage() {
+const PAGE_SIZE = 25;
+
+export default async function QuotesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login?next=/dashboard/accounts/quotes');
 
-  const { data: quotes } = await supabaseAdmin
+  const sp = await searchParams;
+  const q = typeof sp.q === 'string' ? sp.q : '';
+  const statusFilter = typeof sp.status === 'string' ? sp.status : 'all';
+  const page = Math.max(1, parseInt(typeof sp.page === 'string' ? sp.page : '1', 10) || 1);
+
+  // Count query
+  let countQuery = supabaseAdmin
+    .from('quotes')
+    .select('id', { count: 'exact', head: true });
+
+  if (statusFilter !== 'all') {
+    countQuery = countQuery.eq('status', statusFilter);
+  }
+
+  // For search, we need to filter by quote_no or customer name
+  // Since customer name is in a joined table, we filter after fetch for search
+  // But we can filter quote_no directly
+  if (q) {
+    countQuery = countQuery.or(`quote_no.ilike.%${q}%`);
+  }
+
+  const { count: totalCount } = await countQuery;
+  const total = totalCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const from = (safePage - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  // Data query
+  let dataQuery = supabaseAdmin
     .from('quotes')
     .select(`
       id, quote_no, quote_date, valid_until, total_amount, status, created_at,
       customers(customer_id, name, state)
-    `)
+    `);
+
+  if (statusFilter !== 'all') {
+    dataQuery = dataQuery.eq('status', statusFilter);
+  }
+
+  if (q) {
+    dataQuery = dataQuery.or(`quote_no.ilike.%${q}%`);
+  }
+
+  const { data: allQuotes } = await dataQuery
     .order('created_at', { ascending: false });
+
+  // Client-side filter for customer name search (Supabase doesn't support ilike on joined columns in .or())
+  let filtered = allQuotes ?? [];
+  if (q) {
+    const lower = q.toLowerCase();
+    filtered = filtered.filter(qItem => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const customer = qItem.customers as any;
+      return (
+        qItem.quote_no?.toLowerCase().includes(lower) ||
+        customer?.name?.toLowerCase().includes(lower)
+      );
+    });
+  }
+
+  const filteredTotal = filtered.length;
+  const filteredTotalPages = Math.max(1, Math.ceil(filteredTotal / PAGE_SIZE));
+  const filteredSafePage = Math.min(safePage, filteredTotalPages);
+  const sliceFrom = (filteredSafePage - 1) * PAGE_SIZE;
+  const quotes = filtered.slice(sliceFrom, sliceFrom + PAGE_SIZE);
 
   return (
     <div className="p-6 max-w-6xl">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-white">Quotations</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">{quotes?.length ?? 0} total</p>
+          <p className="text-xs text-zinc-500 mt-0.5">{filteredTotal} total</p>
         </div>
         <Link
           href="/dashboard/accounts/quotes/new"
@@ -49,13 +113,22 @@ export default async function QuotesPage() {
         </Link>
       </div>
 
+      {/* Filter bar */}
+      <div className="mb-4">
+        <Suspense fallback={null}>
+          <QuotesFilterBar />
+        </Suspense>
+      </div>
+
       {!quotes?.length ? (
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-12 text-center">
           <FileText className="mx-auto h-8 w-8 text-zinc-700 mb-3" />
-          <p className="text-zinc-500 text-sm">No quotations yet.</p>
-          <Link href="/dashboard/accounts/quotes/new" className="mt-3 inline-block text-amber-400 text-sm hover:underline">
-            Create your first quote →
-          </Link>
+          <p className="text-zinc-500 text-sm">{q || statusFilter !== 'all' ? 'No quotations match your filters.' : 'No quotations yet.'}</p>
+          {!q && statusFilter === 'all' && (
+            <Link href="/dashboard/accounts/quotes/new" className="mt-3 inline-block text-amber-400 text-sm hover:underline">
+              Create your first quote →
+            </Link>
+          )}
         </div>
       ) : (
         <div className="rounded-2xl border border-zinc-800 overflow-hidden">
@@ -108,6 +181,11 @@ export default async function QuotesPage() {
               })}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          <Suspense fallback={null}>
+            <Pagination page={filteredSafePage} totalPages={filteredTotalPages} basePath="/dashboard/accounts/quotes" />
+          </Suspense>
         </div>
       )}
     </div>

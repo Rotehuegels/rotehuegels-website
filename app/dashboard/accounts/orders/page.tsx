@@ -1,6 +1,9 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import Link from 'next/link';
 import { Plus, ShoppingBag, Wrench } from 'lucide-react';
+import { Suspense } from 'react';
+import OrdersFilterBar from './OrdersFilterBar';
+import Pagination from '../Pagination';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const fmt = (n: number) =>
@@ -13,13 +16,65 @@ const STATUS_STYLE: Record<string, string> = {
   cancelled: 'bg-red-500/10 text-red-400 border-red-500/20',
 };
 
-export default async function OrdersListPage() {
-  const { data: orders } = await supabaseAdmin
+const PAGE_SIZE = 25;
+
+export default async function OrdersListPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const q = typeof sp.q === 'string' ? sp.q : '';
+  const statusFilter = typeof sp.status === 'string' ? sp.status : 'all';
+  const typeFilter = typeof sp.type === 'string' ? sp.type : 'all';
+  const page = Math.max(1, parseInt(typeof sp.page === 'string' ? sp.page : '1', 10) || 1);
+
+  // Build the query for total count (with filters)
+  let countQuery = supabaseAdmin
+    .from('orders')
+    .select('id', { count: 'exact', head: true })
+    .neq('order_category', 'reimbursement');
+
+  if (statusFilter !== 'all') {
+    countQuery = countQuery.eq('status', statusFilter);
+  } else {
+    countQuery = countQuery.neq('status', 'cancelled');
+  }
+
+  if (typeFilter !== 'all') {
+    countQuery = countQuery.eq('order_type', typeFilter);
+  }
+
+  if (q) {
+    countQuery = countQuery.or(`order_no.ilike.%${q}%,client_name.ilike.%${q}%,description.ilike.%${q}%`);
+  }
+
+  const { count: totalCount } = await countQuery;
+  const total = totalCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const from = (safePage - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  // Build the data query
+  let dataQuery = supabaseAdmin
     .from('orders')
     .select('id, order_no, order_type, order_category, client_name, description, order_date, entry_date, total_value_incl_gst, base_value, tds_deducted_total, status')
-    .neq('order_category', 'reimbursement')
-    .neq('status', 'cancelled')
-    .order('order_no', { ascending: true });
+    .neq('order_category', 'reimbursement');
+
+  if (statusFilter !== 'all') {
+    dataQuery = dataQuery.eq('status', statusFilter);
+  } else {
+    dataQuery = dataQuery.neq('status', 'cancelled');
+  }
+
+  if (typeFilter !== 'all') {
+    dataQuery = dataQuery.eq('order_type', typeFilter);
+  }
+
+  if (q) {
+    dataQuery = dataQuery.or(`order_no.ilike.%${q}%,client_name.ilike.%${q}%,description.ilike.%${q}%`);
+  }
+
+  const { data: orders } = await dataQuery
+    .order('order_no', { ascending: true })
+    .range(from, to);
 
   const ids = (orders ?? []).map(o => o.id);
   const { data: payments } = ids.length
@@ -37,11 +92,42 @@ export default async function OrdersListPage() {
     pending: (o.total_value_incl_gst ?? 0) - (pmtMap[o.id] ?? 0),
   }));
 
-  // Totals (exclude complimentary orders from financials)
-  const billable = enriched.filter(o => o.order_category !== 'complimentary');
-  const totalBook = billable.reduce((s, o) => s + o.total_value_incl_gst, 0);
-  const totalReceived = billable.reduce((s, o) => s + o.received, 0);
-  const totalPending = billable.reduce((s, o) => s + o.pending, 0);
+  // Totals for the current filtered set (use all matching records, not just current page)
+  // For performance we compute totals from the full filtered query
+  let totalsQuery = supabaseAdmin
+    .from('orders')
+    .select('id, total_value_incl_gst, tds_deducted_total, order_category')
+    .neq('order_category', 'reimbursement');
+
+  if (statusFilter !== 'all') {
+    totalsQuery = totalsQuery.eq('status', statusFilter);
+  } else {
+    totalsQuery = totalsQuery.neq('status', 'cancelled');
+  }
+
+  if (typeFilter !== 'all') {
+    totalsQuery = totalsQuery.eq('order_type', typeFilter);
+  }
+
+  if (q) {
+    totalsQuery = totalsQuery.or(`order_no.ilike.%${q}%,client_name.ilike.%${q}%,description.ilike.%${q}%`);
+  }
+
+  const { data: allFiltered } = await totalsQuery;
+  const allIds = (allFiltered ?? []).map(o => o.id);
+  const { data: allPayments } = allIds.length
+    ? await supabaseAdmin.from('order_payments').select('order_id, amount_received').in('order_id', allIds)
+    : { data: [] };
+
+  const allPmtMap: Record<string, number> = {};
+  for (const p of allPayments ?? []) {
+    allPmtMap[p.order_id] = (allPmtMap[p.order_id] ?? 0) + (p.amount_received ?? 0);
+  }
+
+  const billable = (allFiltered ?? []).filter(o => o.order_category !== 'complimentary');
+  const totalBook = billable.reduce((s, o) => s + (o.total_value_incl_gst ?? 0), 0);
+  const totalReceived = billable.reduce((s, o) => s + (allPmtMap[o.id] ?? 0), 0);
+  const totalPending = totalBook - totalReceived;
   const totalTds = billable.reduce((s, o) => s + (o.tds_deducted_total ?? 0), 0);
 
   return (
@@ -49,7 +135,7 @@ export default async function OrdersListPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Orders</h1>
-          <p className="mt-1 text-sm text-zinc-400">{enriched.length} total orders</p>
+          <p className="mt-1 text-sm text-zinc-400">{total} total orders</p>
         </div>
         <Link href="/dashboard/accounts/orders/new"
           className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
@@ -72,11 +158,16 @@ export default async function OrdersListPage() {
         ))}
       </div>
 
+      {/* Filter bar */}
+      <Suspense fallback={null}>
+        <OrdersFilterBar />
+      </Suspense>
+
       {/* Orders table */}
       <div className={glass}>
         {!enriched.length ? (
           <div className="p-12 text-center">
-            <p className="text-zinc-500 text-sm">No orders yet.</p>
+            <p className="text-zinc-500 text-sm">No orders found.</p>
             <Link href="/dashboard/accounts/orders/new"
               className="mt-4 inline-block rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
               Create first order
@@ -149,6 +240,11 @@ export default async function OrdersListPage() {
                 </div>
               ))}
             </div>
+
+            {/* Pagination */}
+            <Suspense fallback={null}>
+              <Pagination page={safePage} totalPages={totalPages} basePath="/dashboard/accounts/orders" />
+            </Suspense>
           </>
         )}
       </div>

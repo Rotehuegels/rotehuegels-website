@@ -90,11 +90,28 @@ export default async function InvoicePage({
   const order  = orderRes.data;
   const stages = stagesRes.data ?? [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rawItems = (order as any).items;
+  const rawItems = (order as any).items as Array<Record<string, any>> | null;
+  const isIntraOrder = (order.igst_amount ?? 0) === 0 && (order.cgst_amount ?? 0) > 0;
   const items: Array<{
-    description: string; qty?: string; hsn: string;
+    description: string; qty?: string; unit?: string; hsn: string;
     base: number; cgst: number; sgst: number; igst: number; total: number;
-  }> = Array.isArray(rawItems) ? rawItems : [];
+  }> = Array.isArray(rawItems)
+    ? rawItems.map(r => {
+        const taxable = r.taxable_amount ?? r.base ?? 0;
+        const gstAmt  = r.gst_amount ?? 0;
+        const halfGst = parseFloat((gstAmt / 2).toFixed(2));
+        return {
+          description: r.name ?? r.description ?? '',
+          qty:  r.quantity != null ? `${r.quantity} ${r.unit ?? ''}`.trim() : r.qty,
+          hsn:  r.hsn_code || r.sac_code || r.hsn || '',
+          base: taxable,
+          cgst: isIntraOrder ? halfGst : 0,
+          sgst: isIntraOrder ? halfGst : 0,
+          igst: isIntraOrder ? 0 : gstAmt,
+          total: r.total ?? (taxable + gstAmt),
+        };
+      })
+    : [];
 
   // ── Stage filtering ────────────────────────────────────────────────────────
   const uptoStage = sp.upto ? parseInt(sp.upto) : null;
@@ -117,7 +134,7 @@ export default async function InvoicePage({
     : null;
 
   // ── Effective financials (recalculate when stage-filtered) ────────────────
-  const isIntra = (order.igst_amount ?? 0) === 0 && (order.cgst_amount ?? 0) > 0;
+  const isIntra = isIntraOrder;
 
   let effectiveBase  = order.base_value ?? 0;
   let effectiveCgst  = order.cgst_amount ?? 0;

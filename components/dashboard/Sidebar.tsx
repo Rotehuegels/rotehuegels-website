@@ -15,7 +15,7 @@ import {
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
   Network,
   Shield, BarChart3, Globe, Eye, Mail, History,
-  Radar,
+  Radar, AlertTriangle,
   ChevronDown,
 } from 'lucide-react';
 import LogoutButton from './LogoutButton';
@@ -82,6 +82,7 @@ const NAV: NavItem[] = [
       { label: 'GST Report',     href: '/dashboard/accounts/gst',      icon: BadgePercent },
       { label: 'P&L Statement',  href: '/dashboard/accounts/pl',       icon: TrendingUp },
       { label: 'Investments',    href: '/dashboard/investments',        icon: BarChart2 },
+      { label: 'Stock Intelligence', href: '/dashboard/investments/intelligence', icon: AlertTriangle },
     ],
   },
 

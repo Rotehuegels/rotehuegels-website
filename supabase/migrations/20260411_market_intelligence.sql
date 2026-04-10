@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS crawl_jobs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_supplier_leads_status ON supplier_leads(status);
-CREATE INDEX idx_supplier_leads_industry ON supplier_leads(industry);
-CREATE INDEX idx_customer_leads_status ON customer_leads(status);
-CREATE INDEX idx_customer_leads_industry ON customer_leads(industry);
-CREATE INDEX idx_crawl_jobs_status ON crawl_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_supplier_leads_status ON supplier_leads(status);
+CREATE INDEX IF NOT EXISTS idx_supplier_leads_industry ON supplier_leads(industry);
+CREATE INDEX IF NOT EXISTS idx_customer_leads_status ON customer_leads(status);
+CREATE INDEX IF NOT EXISTS idx_customer_leads_industry ON customer_leads(industry);
+CREATE INDEX IF NOT EXISTS idx_crawl_jobs_status ON crawl_jobs(status);

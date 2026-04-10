@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FileDown } from 'lucide-react';
+import { FileDown, Download } from 'lucide-react';
 
 const FY_OPTIONS = [
   { value: '2026-27', label: 'FY 2026-27 (Apr 2026 – Mar 2027)' },
@@ -30,6 +30,12 @@ export default function FYSelector({ current }: { current: string }) {
       >
         <FileDown className="h-4 w-4" /> Print / Save PDF
       </Link>
+      <a
+        href={`/api/accounts/pl/export?fy=${current}`}
+        className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-medium text-zinc-300 hover:border-zinc-600 transition-colors print:hidden"
+      >
+        <Download className="h-4 w-4" /> CSV
+      </a>
     </div>
   );
 }

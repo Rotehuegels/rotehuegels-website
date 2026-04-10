@@ -1,17 +1,28 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import AddStockForm from './AddStockForm';
 import { Package } from 'lucide-react';
+import { Suspense } from 'react';
+import StockFilterBar from './StockFilterBar';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
 const fmtNum = (n: number, dec = 3) => n.toLocaleString('en-IN', { maximumFractionDigits: dec });
 
-export default async function StockPage() {
-  const { data: items } = await supabaseAdmin
+export default async function StockPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const q = typeof sp.q === 'string' ? sp.q : '';
+
+  let query = supabaseAdmin
     .from('stock_items')
     .select('*, orders(order_no, client_name)')
     .order('item_name');
+
+  if (q) {
+    query = query.or(`item_name.ilike.%${q}%,item_code.ilike.%${q}%,hsn_code.ilike.%${q}%`);
+  }
+
+  const { data: items } = await query;
 
   const list = items ?? [];
   const totalValue = list.reduce((s, i) => s + (i.quantity ?? 0) * (i.unit_cost ?? 0), 0);
@@ -31,12 +42,17 @@ export default async function StockPage() {
         <AddStockForm />
       </div>
 
+      {/* Filter bar */}
+      <Suspense fallback={null}>
+        <StockFilterBar />
+      </Suspense>
+
       {/* Stock table */}
       <div className={glass}>
         {!list.length ? (
           <div className="p-12 text-center">
             <Package className="mx-auto h-8 w-8 text-zinc-700 mb-3" />
-            <p className="text-sm text-zinc-600">No stock items yet.</p>
+            <p className="text-sm text-zinc-600">No stock items found.</p>
           </div>
         ) : (
           <>

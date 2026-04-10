@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Building2, Hash, MapPin, BadgeCheck, BadgeX, Calendar, Mail, Phone, FileText } from 'lucide-react';
+import { ArrowLeft, Building2, Hash, MapPin, BadgeCheck, BadgeX, Calendar, Mail, Phone, FileText, Pencil } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,6 +53,11 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
               <p className="text-sm text-zinc-400 mt-0.5">{supplier.trade_name}</p>
             )}
           </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link href={`/dashboard/accounts/suppliers/${id}/edit`}
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
+              <Pencil className="h-3.5 w-3.5" /> Edit
+            </Link>
           {supplier.gst_status && (
             <span className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${
               isActive
@@ -63,6 +68,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
               {supplier.gst_status}
             </span>
           )}
+          </div>
         </div>
       </div>
 

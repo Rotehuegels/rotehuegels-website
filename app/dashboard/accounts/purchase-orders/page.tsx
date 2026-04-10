@@ -3,6 +3,9 @@ import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, ShoppingCart } from 'lucide-react';
+import { Suspense } from 'react';
+import POFilterBar from './POFilterBar';
+import Pagination from '../Pagination';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,12 +25,21 @@ const STATUS_COLOR: Record<string, string> = {
   cancelled:    'bg-red-500/10 text-red-400 border-red-500/20',
 };
 
-export default async function PurchaseOrdersPage() {
+const PAGE_SIZE = 25;
+
+export default async function PurchaseOrdersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login?next=/dashboard/accounts/purchase-orders');
 
-  const { data: pos } = await supabaseAdmin
+  const sp = await searchParams;
+  const q = typeof sp.q === 'string' ? sp.q : '';
+  const statusFilter = typeof sp.status === 'string' ? sp.status : 'all';
+  const page = Math.max(1, parseInt(typeof sp.page === 'string' ? sp.page : '1', 10) || 1);
+
+  // We need to fetch with joins, then filter in-memory for supplier name search
+  // because Supabase doesn't support .or() across joined tables easily.
+  const { data: allPos } = await supabaseAdmin
     .from('purchase_orders')
     .select(`
       id, po_no, po_date, status, total_amount, supplier_ref, created_at,
@@ -36,10 +48,35 @@ export default async function PurchaseOrdersPage() {
     `)
     .order('created_at', { ascending: false });
 
-  const list = pos ?? [];
+  let filtered = allPos ?? [];
+
+  // Status filter
+  if (statusFilter !== 'all') {
+    filtered = filtered.filter(po => po.status === statusFilter);
+  }
+
+  // Search filter
+  if (q) {
+    const lower = q.toLowerCase();
+    filtered = filtered.filter(po => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const supplier = po.suppliers as any;
+      const supplierName = supplier?.legal_name ?? '';
+      return (
+        (po.po_no ?? '').toLowerCase().includes(lower) ||
+        supplierName.toLowerCase().includes(lower)
+      );
+    });
+  }
+
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const fromIdx = (safePage - 1) * PAGE_SIZE;
+  const list = filtered.slice(fromIdx, fromIdx + PAGE_SIZE);
 
   // Get total paid per PO
-  const ids = list.map(p => p.id);
+  const ids = filtered.map(p => p.id);
   const paidMap: Record<string, number> = {};
   if (ids.length) {
     const { data: pmts } = await supabaseAdmin
@@ -51,7 +88,7 @@ export default async function PurchaseOrdersPage() {
     }
   }
 
-  const totalValue = list.reduce((s, p) => s + (p.total_amount ?? 0), 0);
+  const totalValue = filtered.reduce((s, p) => s + (p.total_amount ?? 0), 0);
   const totalPaid  = Object.values(paidMap).reduce((s, v) => s + v, 0);
 
   return (
@@ -60,7 +97,7 @@ export default async function PurchaseOrdersPage() {
         <div>
           <h1 className="text-xl font-bold text-white">Purchase Orders</h1>
           <p className="text-xs text-zinc-500 mt-0.5">
-            {list.length} PO{list.length !== 1 ? 's' : ''} · Total {fmt(totalValue)} · Paid {fmt(totalPaid)}
+            {total} PO{total !== 1 ? 's' : ''} · Total {fmt(totalValue)} · Paid {fmt(totalPaid)}
           </p>
         </div>
         <Link
@@ -71,13 +108,20 @@ export default async function PurchaseOrdersPage() {
         </Link>
       </div>
 
+      {/* Filter bar */}
+      <div className="mb-6">
+        <Suspense fallback={null}>
+          <POFilterBar />
+        </Suspense>
+      </div>
+
       {!list.length ? (
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-12 text-center">
           <ShoppingCart className="mx-auto h-8 w-8 text-zinc-700 mb-3" />
-          <p className="text-zinc-500 text-sm">No purchase orders yet.</p>
+          <p className="text-zinc-500 text-sm">No purchase orders found.</p>
           <Link href="/dashboard/accounts/purchase-orders/new"
             className="mt-3 inline-block text-amber-400 text-sm hover:underline">
-            Create your first PO →
+            Create your first PO
           </Link>
         </div>
       ) : (
@@ -143,7 +187,7 @@ export default async function PurchaseOrdersPage() {
                     <td className="px-5 py-3.5 text-right">
                       <Link href={`/dashboard/accounts/purchase-orders/${po.id}`}
                         className="text-xs text-amber-400 hover:underline">
-                        View →
+                        View
                       </Link>
                     </td>
                   </tr>
@@ -151,6 +195,11 @@ export default async function PurchaseOrdersPage() {
               })}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          <Suspense fallback={null}>
+            <Pagination page={safePage} totalPages={totalPages} basePath="/dashboard/accounts/purchase-orders" />
+          </Suspense>
         </div>
       )}
     </div>

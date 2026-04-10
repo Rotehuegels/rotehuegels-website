@@ -1,15 +1,30 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import Link from 'next/link';
 import { Plus, Building2, MapPin, Hash, BadgeCheck, BadgeX } from 'lucide-react';
+import { Suspense } from 'react';
+import SuppliersFilterBar from './SuppliersFilterBar';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
-export default async function SuppliersPage() {
-  const { data: suppliers } = await supabaseAdmin
+export default async function SuppliersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const q = typeof sp.q === 'string' ? sp.q : '';
+  const statusFilter = typeof sp.status === 'string' ? sp.status : 'all';
+
+  let query = supabaseAdmin
     .from('suppliers')
     .select('*')
     .order('legal_name');
 
+  if (statusFilter !== 'all') {
+    query = query.eq('gst_status', statusFilter);
+  }
+
+  if (q) {
+    query = query.or(`legal_name.ilike.%${q}%,trade_name.ilike.%${q}%,gstin.ilike.%${q}%,vendor_code.ilike.%${q}%`);
+  }
+
+  const { data: suppliers } = await query;
   const list = suppliers ?? [];
 
   return (
@@ -28,11 +43,16 @@ export default async function SuppliersPage() {
         </Link>
       </div>
 
+      {/* Filter bar */}
+      <Suspense fallback={null}>
+        <SuppliersFilterBar />
+      </Suspense>
+
       {/* List */}
       {!list.length ? (
         <div className={`${glass} p-12 text-center`}>
           <Building2 className="h-10 w-10 text-zinc-700 mx-auto mb-3" />
-          <p className="text-zinc-500 text-sm">No suppliers yet.</p>
+          <p className="text-zinc-500 text-sm">No suppliers found.</p>
           <p className="text-zinc-600 text-xs mt-1">Add a supplier with their GSTIN to auto-fetch their details.</p>
           <Link href="/dashboard/accounts/suppliers/new"
             className="inline-flex items-center gap-2 mt-5 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition-colors">

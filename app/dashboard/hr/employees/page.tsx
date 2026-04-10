@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import Link from 'next/link';
 import { UserPlus } from 'lucide-react';
+import { Suspense } from 'react';
+import EmployeesFilterBar from './EmployeesFilterBar';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
@@ -24,21 +26,55 @@ const STATUS_STYLE: Record<string, string> = {
   completed:  'bg-sky-500/10 text-sky-400 border-sky-500/20',
 };
 
-export default async function EmployeesPage() {
+export default async function EmployeesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const q = typeof sp.q === 'string' ? sp.q : '';
+  const statusFilter = typeof sp.status === 'string' ? sp.status : 'all';
+  const typeFilter = typeof sp.type === 'string' ? sp.type : 'all';
+
   const { data: engagements } = await supabaseAdmin
     .from('employees')
     .select('id, engagement_id, rex_id, full_name, role, department, employment_type, rex_subtype, status, join_date, end_date, rex_members(full_name, email)')
     .order('created_at', { ascending: true });
 
-  const staff = (engagements ?? []).filter(e => e.employment_type !== 'board_member');
-  const board = (engagements ?? []).filter(e => e.employment_type === 'board_member');
+  let filtered = engagements ?? [];
+
+  // Status filter
+  if (statusFilter !== 'all') {
+    filtered = filtered.filter(e => e.status === statusFilter);
+  }
+
+  // Type filter
+  if (typeFilter !== 'all') {
+    filtered = filtered.filter(e => e.employment_type === typeFilter);
+  }
+
+  // Search filter
+  if (q) {
+    const lower = q.toLowerCase();
+    filtered = filtered.filter(e => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const member = e.rex_members as any;
+      const name = member?.full_name ?? e.full_name ?? '';
+      return (
+        name.toLowerCase().includes(lower) ||
+        (e.engagement_id ?? '').toLowerCase().includes(lower) ||
+        (e.rex_id ?? '').toLowerCase().includes(lower) ||
+        (e.department ?? '').toLowerCase().includes(lower) ||
+        (e.role ?? '').toLowerCase().includes(lower)
+      );
+    });
+  }
+
+  const staff = filtered.filter(e => e.employment_type !== 'board_member');
+  const board = filtered.filter(e => e.employment_type === 'board_member');
 
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Engagements</h1>
-          <p className="mt-1 text-sm text-zinc-400">{staff.length} staff · {board.length} board</p>
+          <p className="mt-1 text-sm text-zinc-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''} · {staff.length} staff · {board.length} board</p>
         </div>
         <Link href="/dashboard/hr/add"
           className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
@@ -46,13 +82,18 @@ export default async function EmployeesPage() {
         </Link>
       </div>
 
+      {/* Filter bar */}
+      <Suspense fallback={null}>
+        <EmployeesFilterBar />
+      </Suspense>
+
       {/* Staff */}
       <div className={glass}>
         <div className="border-b border-zinc-800 px-5 py-3">
           <h2 className="font-semibold text-white text-sm">Staff Engagements</h2>
           <p className="text-xs text-zinc-500 mt-0.5">Full-time and REX Network members</p>
         </div>
-        <EngagementTable engagements={staff} emptyMsg="No staff engagements yet." />
+        <EngagementTable engagements={staff} emptyMsg="No staff engagements found." />
       </div>
 
       {/* Board */}
@@ -61,7 +102,7 @@ export default async function EmployeesPage() {
           <h2 className="font-semibold text-white text-sm">Board of Directors</h2>
           <p className="text-xs text-zinc-500 mt-0.5">Shareholders & directors · 50% each · excluded from payroll runs</p>
         </div>
-        <EngagementTable engagements={board} emptyMsg="No board members." boardSection />
+        <EngagementTable engagements={board} emptyMsg="No board members found." boardSection />
       </div>
     </div>
   );
@@ -130,7 +171,9 @@ function EngagementTable({
                   </td>
                 )}
                 <td className="px-6 py-4">
-                  <p className="font-medium text-white">{name}</p>
+                  <Link href={`/dashboard/hr/employees/${eng.id}`} className="font-medium text-white hover:text-amber-400 transition-colors">
+                    {name}
+                  </Link>
                   {member?.email && <p className="text-xs text-zinc-500 mt-0.5">{member.email}</p>}
                 </td>
                 <td className="px-6 py-4 text-zinc-300">{eng.role}</td>

@@ -1,11 +1,13 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import AddExpenseForm from './AddExpenseForm';
+import ExpenseRow from './ExpenseRow';
+import { Suspense } from 'react';
+import ExpensesFilterBar from './ExpensesFilterBar';
+import Pagination from '../Pagination';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
-const fmtDate = (d: string) =>
-  new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
 const TYPE_LABEL: Record<string, string> = {
   salary: 'Salary', purchase: 'Purchase', tds_paid: 'TDS Paid',
@@ -21,27 +23,51 @@ const TYPE_COLOR: Record<string, string> = {
   other: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
 };
 
-export default async function ExpensesPage() {
-  const { data: expenses } = await supabaseAdmin
+const PAGE_SIZE = 25;
+
+export default async function ExpensesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const q = typeof sp.q === 'string' ? sp.q : '';
+  const typeFilter = typeof sp.type === 'string' ? sp.type : 'all';
+  const page = Math.max(1, parseInt(typeof sp.page === 'string' ? sp.page : '1', 10) || 1);
+
+  // Build query
+  let query = supabaseAdmin
     .from('expenses')
     .select('*')
     .order('expense_date', { ascending: false });
 
-  const list = expenses ?? [];
+  if (typeFilter !== 'all') {
+    query = query.eq('expense_type', typeFilter);
+  }
 
-  // Totals by type
-  const byType = list.reduce((acc, e) => {
+  if (q) {
+    query = query.or(`description.ilike.%${q}%,vendor_name.ilike.%${q}%`);
+  }
+
+  const { data: expenses } = await query;
+  const allFiltered = expenses ?? [];
+
+  // Pagination
+  const total = allFiltered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const fromIdx = (safePage - 1) * PAGE_SIZE;
+  const list = allFiltered.slice(fromIdx, fromIdx + PAGE_SIZE);
+
+  // Totals by type (from all filtered)
+  const byType = allFiltered.reduce((acc, e) => {
     acc[e.expense_type] = (acc[e.expense_type] ?? 0) + (e.amount ?? 0);
     return acc;
   }, {} as Record<string, number>);
 
-  const grandTotal = list.reduce((s, e) => s + (e.amount ?? 0), 0);
+  const grandTotal = allFiltered.reduce((s, e) => s + (e.amount ?? 0), 0);
 
   return (
     <div className="p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Expenses</h1>
-        <p className="mt-1 text-sm text-zinc-400">{list.length} records — Total: {fmt(grandTotal)}</p>
+        <p className="mt-1 text-sm text-zinc-400">{total} records — Total: {fmt(grandTotal)}</p>
       </div>
 
       {/* Summary by type */}
@@ -62,38 +88,31 @@ export default async function ExpensesPage() {
         <AddExpenseForm />
       </div>
 
+      {/* Filter bar */}
+      <Suspense fallback={null}>
+        <ExpensesFilterBar />
+      </Suspense>
+
       {/* Expenses table */}
       <div className={glass}>
         {!list.length ? (
-          <p className="p-12 text-center text-sm text-zinc-600">No expenses recorded yet.</p>
+          <p className="p-12 text-center text-sm text-zinc-600">No expenses found.</p>
         ) : (
           <>
-            <div className="hidden lg:grid grid-cols-[1fr_120px_120px_1fr_1fr_80px] gap-4 px-6 py-3 border-b border-zinc-800/60 text-[11px] font-medium uppercase tracking-wider text-zinc-600">
+            <div className="hidden lg:grid grid-cols-[1fr_120px_120px_1fr_1fr_80px_40px] gap-4 px-6 py-3 border-b border-zinc-800/60 text-[11px] font-medium uppercase tracking-wider text-zinc-600">
               <span>Description</span><span>Type</span><span className="text-right">Amount</span>
-              <span>Vendor</span><span>Date</span><span>Ref</span>
+              <span>Vendor</span><span>Date</span><span>Ref</span><span></span>
             </div>
             <div className="divide-y divide-zinc-800/60">
               {list.map(e => (
-                <div key={e.id}
-                  className="flex flex-col lg:grid lg:grid-cols-[1fr_120px_120px_1fr_1fr_80px] gap-2 lg:gap-4 px-6 py-4 items-start lg:items-center hover:bg-zinc-800/20 transition-colors">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-zinc-200 truncate">{e.description}</p>
-                    {e.category && <p className="text-xs text-zinc-600">{e.category}</p>}
-                    {e.notes && <p className="text-xs text-zinc-600 truncate">{e.notes}</p>}
-                  </div>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${TYPE_COLOR[e.expense_type] ?? TYPE_COLOR.other}`}>
-                    {TYPE_LABEL[e.expense_type] ?? e.expense_type}
-                  </span>
-                  <p className="text-sm font-semibold text-right text-rose-400">{fmt(e.amount)}</p>
-                  <div className="min-w-0">
-                    {e.vendor_name && <p className="text-sm text-zinc-400 truncate">{e.vendor_name}</p>}
-                    {e.vendor_gstin && <p className="text-xs text-zinc-600 font-mono">{e.vendor_gstin}</p>}
-                  </div>
-                  <p className="text-sm text-zinc-400">{fmtDate(e.expense_date)}</p>
-                  <p className="text-xs text-zinc-600 font-mono truncate">{e.reference_no ?? '—'}</p>
-                </div>
+                <ExpenseRow key={e.id} expense={e} />
               ))}
             </div>
+
+            {/* Pagination */}
+            <Suspense fallback={null}>
+              <Pagination page={safePage} totalPages={totalPages} basePath="/dashboard/accounts/expenses" />
+            </Suspense>
           </>
         )}
       </div>

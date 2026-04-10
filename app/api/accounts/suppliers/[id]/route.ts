@@ -27,6 +27,21 @@ const UpdateSupplierSchema = z.object({
   notes:       z.string().optional().nullable(),
 });
 
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await params;
+  const { data, error } = await supabaseAdmin
+    .from('suppliers')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 404 });
+  return NextResponse.json({ data });
+}
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

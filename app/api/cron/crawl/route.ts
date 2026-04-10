@@ -20,14 +20,18 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Odd days = suppliers, even days = customers
+    // Alternate: odd days = suppliers, even days = customers
     const dayOfMonth = new Date().getDate();
     const type: 'supplier' | 'customer' = dayOfMonth % 2 === 1 ? 'supplier' : 'customer';
     const allQueries = type === 'supplier' ? DEFAULT_SUPPLIER_QUERIES : DEFAULT_CUSTOMER_QUERIES;
 
-    // Pick 3 random queries
-    const shuffled = [...allQueries].sort(() => Math.random() - 0.5);
-    const queries = shuffled.slice(0, 3);
+    // Use day of month as a seed to pick different queries each day
+    // This ensures we cycle through all queries over time instead of repeating
+    const startIdx = ((dayOfMonth - 1) * 4) % allQueries.length;
+    const queries: string[] = [];
+    for (let i = 0; i < 4; i++) {
+      queries.push(allQueries[(startIdx + i) % allQueries.length]);
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await runCrawlJob(type, queries, supabaseAdmin as any);

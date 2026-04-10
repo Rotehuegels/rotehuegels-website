@@ -62,21 +62,107 @@ const COMPANY_CONTEXT = `Rotehügels is an electrochemical engineering company b
 - Target customers: metal refineries, electroplating companies, battery recyclers, mining companies, chemical plants`;
 
 export const DEFAULT_SUPPLIER_QUERIES = [
+  // Raw materials — metals
   'lead anode manufacturers India',
-  'aluminium cathode suppliers Chennai',
+  'aluminium cathode suppliers India',
+  'high purity lead ingot suppliers India',
+  'copper busbar manufacturers India',
+  'zinc ingot suppliers India',
+  'titanium mesh anode manufacturers',
+  'stainless steel electrode suppliers India',
+  // Piping & fittings
   'CPVC pipe manufacturers India',
+  'HDPE pipe suppliers India',
+  'acid resistant piping suppliers',
+  'PP FRP tank manufacturers India',
+  'rubber lined tank manufacturers India',
+  // Chemicals
+  'sulphuric acid suppliers India',
+  'zinc sulphate manufacturers India',
+  'manganese dioxide suppliers India',
+  'activated carbon suppliers India',
+  'industrial chemical suppliers Chennai Tamil Nadu',
+  // Instrumentation & sensors
   'industrial sensor suppliers India',
-  'electrochemical equipment suppliers',
-  'zinc refining equipment India',
+  'pH meter manufacturers India',
+  'temperature transmitter suppliers India',
+  'pressure gauge manufacturers India',
+  'flow meter suppliers India',
+  'ORP sensor manufacturers',
+  'level transmitter suppliers India',
+  // Electrical & automation
+  'PLC automation suppliers India',
+  'VFD drive suppliers India',
+  'rectifier manufacturers India',
+  'thyristor rectifier manufacturers India',
+  'DC power supply manufacturers India',
+  'industrial panel board manufacturers Chennai',
+  // Fabrication & machining
+  'CNC machining job work Chennai',
+  'industrial fabrication companies Chennai',
+  'SS welding job work Tamil Nadu',
+  'rubber lining contractors India',
+  'FRP fabrication companies India',
+  // Lab & testing
+  'metallurgical testing laboratory India',
+  'chemical analysis laboratory Chennai',
+  'water testing equipment suppliers India',
 ];
 
 export const DEFAULT_CUSTOMER_QUERIES = [
+  // Zinc industry
   'zinc electroplating plant India',
+  'zinc smelter India',
+  'zinc refining company India',
+  'hot dip galvanizing plant India',
+  'zinc plating job work India',
+  'zinc oxide manufacturers India',
+  // Copper industry
   'copper refining company India',
-  'battery recycling plant India',
-  'electrowinning plant',
-  'hydrometallurgy company India',
+  'copper smelter India',
+  'copper electrowinning plant',
+  'copper rod manufacturers India',
+  'copper recycling company India',
+  // Lead industry
+  'lead smelting plant India',
   'lead acid battery manufacturer India',
+  'lead recycling plant India',
+  'secondary lead smelter India',
+  // Battery recycling
+  'battery recycling plant India',
+  'lithium ion battery recycler India',
+  'e-waste recycling company India',
+  'black mass processing plant India',
+  'battery scrap dealers India',
+  // Hydrometallurgy
+  'hydrometallurgy company India',
+  'solvent extraction plant India',
+  'leaching plant India',
+  'mineral processing company India',
+  'rare earth processing India',
+  // Electrochemical
+  'electrowinning plant India',
+  'electroplating company India',
+  'anodizing plant India',
+  'chrome plating company India',
+  'nickel plating India',
+  'electrorefining company India',
+  // Water treatment
+  'effluent treatment plant company India',
+  'ETP manufacturer India',
+  'zero liquid discharge plant India',
+  'industrial water treatment company India',
+  // Mining & metals
+  'mining company India',
+  'steel plant India',
+  'aluminium smelter India',
+  'ferro alloy manufacturers India',
+  'metal recycling company India',
+  // Chemical plants
+  'chemical plant India',
+  'pharmaceutical manufacturing India',
+  'fertilizer plant India',
+  'petrochemical company India',
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

@@ -1,19 +1,20 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { supabaseBrowser } from '@/lib/supabaseClient';
-import { Lock, Clock } from 'lucide-react';
+import { Lock, Clock, CheckCircle } from 'lucide-react';
 
 const inputCls = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/30';
 
 function LoginForm() {
-  const [email, setEmail] = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [welcome,  setWelcome]  = useState(false);
+
   const searchParams = useSearchParams();
   const next   = searchParams.get('next')   ?? '/dashboard';
   const reason = searchParams.get('reason') ?? '';
@@ -32,12 +33,43 @@ function LoginForm() {
       return;
     }
 
-    // Refresh the server component tree so the dashboard layout sees the new
-    // session cookie before we navigate to it.
-    router.refresh();
-    router.replace(next);
+    // Show welcome screen briefly, then do a hard navigation so the browser
+    // picks up the fresh session cookie before rendering the dashboard.
+    setWelcome(true);
+    setTimeout(() => { window.location.href = next; }, 1800);
   };
 
+  // ── Welcome screen ──────────────────────────────────────────────────────────
+  if (welcome) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm text-center space-y-6">
+          <Image src="/logo.png" alt="Rotehügels" width={150} height={42} className="mx-auto" priority />
+
+          <div className="rounded-2xl border border-emerald-800/60 bg-emerald-900/20 p-8 space-y-4">
+            <div className="flex justify-center">
+              <div className="rounded-full bg-emerald-500/10 border border-emerald-500/30 p-4">
+                <CheckCircle className="h-8 w-8 text-emerald-400" />
+              </div>
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-white">Welcome to Rotehügels</h1>
+              <p className="mt-1 text-sm text-zinc-400">Internal Portal</p>
+            </div>
+            <p className="text-sm text-emerald-400">Signed in successfully. Taking you to your dashboard…</p>
+            {/* Loading dots */}
+            <div className="flex justify-center gap-1.5 pt-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0ms]" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:150ms]" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:300ms]" />
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Login form ──────────────────────────────────────────────────────────────
   return (
     <main className="min-h-screen flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
@@ -54,6 +86,7 @@ function LoginForm() {
             <h1 className="text-base font-semibold text-white">Sign in</h1>
           </div>
 
+          {/* Inactivity timeout notice */}
           {reason === 'timeout' && (
             <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400 flex items-start gap-2.5">
               <Clock className="h-4 w-4 shrink-0 mt-0.5" />
@@ -61,6 +94,7 @@ function LoginForm() {
             </div>
           )}
 
+          {/* Error */}
           {error && (
             <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
               {error}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,7 +15,6 @@ import {
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
   Network,
 } from 'lucide-react';
-import { signOutAction } from '@/app/actions/auth';
 
 // ── Same nav tree as Sidebar ──────────────────────────────────────────────────
 type NavLink    = { type?: 'link'; label: string; href: string; icon: React.ElementType };
@@ -145,9 +144,8 @@ function MobileGroup({ item, pathname, onNavigate }: {
 
 // ── MobileNav ─────────────────────────────────────────────────────────────────
 export default function MobileNav({ userEmail }: { userEmail: string }) {
-  const [open, setOpen]     = useState(false);
-  const pathname            = usePathname();
-  const [pending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
+  const pathname        = usePathname();
 
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
@@ -219,14 +217,13 @@ export default function MobileNav({ userEmail }: { userEmail: string }) {
                 <p className="text-xs text-zinc-500 truncate">{userEmail}</p>
                 <p className="text-xs text-rose-400 font-medium">Super Admin</p>
               </div>
-              <button
-                disabled={pending}
-                onClick={() => startTransition(() => signOutAction())}
-                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-zinc-400 hover:bg-zinc-800/60 hover:text-white transition-colors disabled:opacity-50"
+              <a
+                href="/api/auth/signout"
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-zinc-400 hover:bg-zinc-800/60 hover:text-white transition-colors"
               >
                 <LogOut className="h-4 w-4 shrink-0" />
-                {pending ? 'Signing out…' : 'Sign out'}
-              </button>
+                Sign out
+              </a>
             </div>
           </div>
         </div>

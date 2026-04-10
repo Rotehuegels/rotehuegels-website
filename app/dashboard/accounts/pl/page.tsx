@@ -54,13 +54,19 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   const fy = fyParam ?? '2025-26';
   const { from, to, label, full } = parseFY(fy);
 
-  // Step 1 — orders in this FY
+  // Step 1 — billable orders in this FY.
+  // Mirror the same exclusions as the Orders list financial totals:
+  //   cancelled      → void, never invoiced
+  //   reimbursement  → pass-through expense recovery, not revenue
+  //   complimentary  → no invoice value, not revenue
   const ordersRes = await supabaseAdmin
     .from('orders')
-    .select('id, order_type, base_value, total_value_incl_gst, cgst_amount, sgst_amount, igst_amount, status')
+    .select('id, order_type, base_value, total_value_incl_gst, cgst_amount, sgst_amount, igst_amount, status, order_category')
     .gte('order_date', from)
     .lte('order_date', to)
-    .neq('status', 'cancelled');
+    .neq('status', 'cancelled')
+    .neq('order_category', 'reimbursement')
+    .neq('order_category', 'complimentary');
 
   const orders   = ordersRes.data ?? [];
   const orderIds = orders.map(o => o.id);

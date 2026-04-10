@@ -123,7 +123,10 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   const grossProfit     = totalBase - purchases;
   const operatingProfit = grossProfit - salaries - otherExp;
   const netProfit       = operatingProfit - advanceTax;
-  const pendingRec      = totalInvoiced - grossReceived;
+  // TDS deducted by clients is legally settled — recoverable via 26AS/ITR.
+  // An invoice is fully received when: cash received + TDS deducted = total invoiced.
+  const effectiveReceived = grossReceived + tdsDeducted;
+  const pendingRec        = totalInvoiced - effectiveReceived;
 
   const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
@@ -233,22 +236,26 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
       {/* Receivables Position */}
       <div className={`${glass} p-6 print:border print:border-gray-300 print:rounded-none print:bg-white`}>
         <SectionHead>Receivables Position</SectionHead>
-        <p className="text-[10px] text-zinc-600 mb-2">All payments received against {label} orders (regardless of payment date)</p>
+        <p className="text-[10px] text-zinc-600 mb-2">
+          All payments for {label} orders — date recorded does not matter.
+          TDS deducted by clients is treated as settled (recoverable via 26AS / ITR).
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12">
           <div>
             <Row label="Total Invoiced (incl. GST)" value={totalInvoiced} bold />
-            <Row label="Received (Gross)" value={grossReceived} indent />
+            <Row label="Cash Received from Clients" value={grossReceived} indent />
             <Row label="TDS Deducted by Clients" value={tdsDeducted} indent />
-            <Row label="Net Received (to Bank)" value={netReceived} indent />
+            <Row label="Effective Amount Settled" value={effectiveReceived} indent />
+            <Row label="Net to Bank" value={netReceived} indent sub />
             <Divider thick />
-            <Row label="Pending Receivables" value={pendingRec} bold positive={pendingRec === 0} />
+            <Row label="Outstanding Receivables" value={pendingRec} bold positive={pendingRec === 0} />
           </div>
           <div className="mt-4 sm:mt-0">
             {pendingRec > 0 && (
               <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4">
                 <p className="text-xs text-zinc-400 mb-1">Outstanding collection</p>
                 <p className="text-2xl font-black text-rose-400">{fmt(pendingRec)}</p>
-                <p className="text-xs text-zinc-600 mt-1">incl. GST, before pending TDS deductions</p>
+                <p className="text-xs text-zinc-600 mt-1">Invoiced but not yet received or TDS-settled</p>
               </div>
             )}
             {pendingRec === 0 && (

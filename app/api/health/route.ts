@@ -1,0 +1,72 @@
+export const runtime = 'nodejs';
+
+import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
+
+export async function GET() {
+  const timestamp = new Date().toISOString();
+
+  // ── Database ──────────────────────────────────────────────────────────────
+  let database: { status: string; latency_ms?: number } = { status: 'down' };
+  try {
+    const t0 = Date.now();
+    const { error } = await supabaseAdmin
+      .from('audit_log')
+      .select('id', { count: 'exact', head: true });
+    if (!error) {
+      database = { status: 'up', latency_ms: Date.now() - t0 };
+    }
+  } catch {
+    database = { status: 'down' };
+  }
+
+  // ── Ollama ────────────────────────────────────────────────────────────────
+  let ai_ollama: { status: string; latency_ms?: number } = { status: 'down' };
+  try {
+    const t0 = Date.now();
+    const res = await fetch('http://localhost:11434/api/tags', {
+      signal: AbortSignal.timeout(2000),
+    });
+    if (res.ok) {
+      ai_ollama = { status: 'up', latency_ms: Date.now() - t0 };
+    }
+  } catch {
+    ai_ollama = { status: 'down' };
+  }
+
+  // ── Groq ──────────────────────────────────────────────────────────────────
+  const ai_groq = process.env.GROQ_API_KEY
+    ? { status: 'configured' }
+    : { status: 'not_configured' };
+
+  // ── SMTP ──────────────────────────────────────────────────────────────────
+  const email_smtp = process.env.SMTP_HOST
+    ? { status: 'configured' }
+    : { status: 'not_configured' };
+
+  // ── Microsoft ─────────────────────────────────────────────────────────────
+  const microsoft = process.env.MICROSOFT_CLIENT_ID
+    ? { status: 'configured' }
+    : { status: 'not_configured' };
+
+  const overallStatus = database.status === 'up' ? 'healthy' : 'degraded';
+
+  return NextResponse.json(
+    {
+      status: overallStatus,
+      timestamp,
+      services: {
+        database,
+        ai_ollama,
+        ai_groq,
+        email_smtp,
+        microsoft,
+      },
+      version: '1.0.0',
+    },
+    {
+      status: 200,
+      headers: { 'Cache-Control': 'no-store' },
+    },
+  );
+}

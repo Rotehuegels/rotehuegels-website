@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash2, Package, Wrench } from 'lucide-react';
+import AIAssistButton from '@/components/AIAssistButton';
 
 const input = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none transition-colors';
 const label = 'block text-xs font-medium text-zinc-400 mb-1.5';
@@ -270,6 +271,8 @@ export default function NewQuotePage() {
                     <input type="text" value={line.name}
                       onChange={e => updateLine(idx, 'name', e.target.value)}
                       required placeholder="Description" className={input} />
+                    <AIAssistButton description={line.name} field="description"
+                      onAccept={(r) => updateLine(idx, 'name', String(r.corrected))} />
                   </div>
                   <div>
                     <label className={label}>Type</label>
@@ -286,6 +289,11 @@ export default function NewQuotePage() {
                       value={line.item_type === 'goods' ? line.hsn_code : line.sac_code}
                       onChange={e => updateLine(idx, line.item_type === 'goods' ? 'hsn_code' : 'sac_code', e.target.value)}
                       placeholder={line.item_type === 'goods' ? 'HSN' : 'SAC'} className={input} />
+                    <AIAssistButton description={line.name} field="hsn"
+                      onAccept={(r) => {
+                        updateLine(idx, line.item_type === 'goods' ? 'hsn_code' : 'sac_code', String(r.code));
+                        if (r.gst_rate) updateLine(idx, 'gst_rate', Number(r.gst_rate));
+                      }} />
                   </div>
                   <div>
                     <label className={label}>Unit</label>

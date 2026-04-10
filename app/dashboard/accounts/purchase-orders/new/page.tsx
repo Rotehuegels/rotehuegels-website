@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash2 } from 'lucide-react';
+import AIAssistButton from '@/components/AIAssistButton';
 
 const input = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none transition-colors';
 const label = 'block text-xs font-medium text-zinc-400 mb-1.5';
@@ -259,12 +260,25 @@ export default function NewPOPage() {
                     <input type="text" value={line.description}
                       onChange={e => updateLine(idx, 'description', e.target.value)}
                       required placeholder="Item description" className={input} />
+                    <AIAssistButton
+                      description={line.description}
+                      field="description"
+                      onAccept={(r) => updateLine(idx, 'description', String(r.corrected))}
+                    />
                   </div>
                   <div>
                     <label className={label}>HSN Code</label>
                     <input type="text" value={line.hsn_code}
                       onChange={e => updateLine(idx, 'hsn_code', e.target.value)}
                       placeholder="e.g. 7407" className={input} />
+                    <AIAssistButton
+                      description={line.description}
+                      field="hsn"
+                      onAccept={(r) => {
+                        updateLine(idx, 'hsn_code', String(r.code));
+                        if (r.gst_rate) updateLine(idx, 'gst_rate', Number(r.gst_rate));
+                      }}
+                    />
                   </div>
                   <div>
                     <label className={label}>Unit</label>
@@ -315,6 +329,11 @@ export default function NewPOPage() {
                     <input type="text" value={line.notes}
                       onChange={e => updateLine(idx, 'notes', e.target.value)}
                       placeholder="Spec, grade, remarks…" className={input} />
+                    <AIAssistButton
+                      description={line.notes}
+                      field="notes"
+                      onAccept={(r) => updateLine(idx, 'notes', String(r.corrected))}
+                    />
                   </div>
                 </div>
 

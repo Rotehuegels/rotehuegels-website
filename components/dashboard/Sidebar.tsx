@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import GlobalSearch from './GlobalSearch';
 import {
   LayoutDashboard,
   Users, UserPlus, UserCheck,
@@ -172,11 +173,16 @@ export default function Sidebar({ userEmail }: { userEmail: string }) {
   return (
     <aside className="flex h-full flex-col justify-between py-6 px-4">
       <div>
-        <div className="mb-8 px-2">
+        <div className="mb-6 px-2">
           <Image src="/logo.png" alt="Rotehügels" width={130} height={36} priority />
           <p className="mt-1.5 text-[10px] text-zinc-600 uppercase tracking-widest">
             Internal Dashboard
           </p>
+        </div>
+
+        {/* Global search */}
+        <div className="mb-4 px-1">
+          <GlobalSearch />
         </div>
 
         <nav className="space-y-1">

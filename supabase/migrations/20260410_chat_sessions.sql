@@ -48,8 +48,8 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_chat_sessions_status ON chat_sessions(status);
-CREATE INDEX idx_chat_sessions_ip ON chat_sessions(ip_address);
-CREATE INDEX idx_chat_sessions_started ON chat_sessions(started_at);
-CREATE INDEX idx_chat_sessions_org ON chat_sessions(org);
-CREATE INDEX idx_chat_sessions_visitor ON chat_sessions(visitor_token);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_ip ON chat_sessions(ip_address);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_started ON chat_sessions(started_at);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_org ON chat_sessions(org);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_visitor ON chat_sessions(visitor_token);

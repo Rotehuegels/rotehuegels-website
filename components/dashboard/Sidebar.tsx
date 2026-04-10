@@ -14,6 +14,7 @@ import {
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
   Network,
   Shield, BarChart3, Globe, Eye, Mail,
+  Radar,
   ChevronDown,
 } from 'lucide-react';
 import LogoutButton from './LogoutButton';
@@ -57,6 +58,8 @@ const NAV: NavItem[] = [
       { label: 'Catalog',   href: '/dashboard/accounts/items',      icon: BookOpen },
       { label: 'Quotes',    href: '/dashboard/accounts/quotes',     icon: FileText },
       { label: 'Orders',    href: '/dashboard/accounts/orders',     icon: ReceiptText },
+      { type: 'section', label: 'Intelligence' },
+      { label: 'Market Intelligence', href: '/dashboard/intelligence', icon: Radar },
     ],
   },
 

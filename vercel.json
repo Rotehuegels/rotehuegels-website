@@ -2,5 +2,8 @@
   "rewrites": [
     { "source": "/assets/logo.png", "destination": "/assets/Logo.png" },
     { "source": "/assets/logo2.png", "destination": "/assets/Logo2.png" }
+  ],
+  "crons": [
+    { "path": "/api/cron/crawl", "schedule": "30 20 * * *" }
   ]
 }

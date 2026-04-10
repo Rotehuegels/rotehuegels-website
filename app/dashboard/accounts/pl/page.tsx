@@ -54,18 +54,28 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   const fy = fyParam ?? '2025-26';
   const { from, to, label, full } = parseFY(fy);
 
-  const [ordersRes, paymentsRes, expensesRes] = await Promise.all([
-    supabaseAdmin
-      .from('orders')
-      .select('order_type, base_value, total_value_incl_gst, cgst_amount, sgst_amount, igst_amount, status')
-      .gte('order_date', from)
-      .lte('order_date', to)
-      .neq('status', 'cancelled'),
-    supabaseAdmin
-      .from('order_payments')
-      .select('amount_received, tds_deducted, net_received')
-      .gte('payment_date', from)
-      .lte('payment_date', to),
+  // Step 1 — orders in this FY
+  const ordersRes = await supabaseAdmin
+    .from('orders')
+    .select('id, order_type, base_value, total_value_incl_gst, cgst_amount, sgst_amount, igst_amount, status')
+    .gte('order_date', from)
+    .lte('order_date', to)
+    .neq('status', 'cancelled');
+
+  const orders   = ordersRes.data ?? [];
+  const orderIds = orders.map(o => o.id);
+
+  // Step 2 — ALL payments for those orders, regardless of payment date.
+  // This is correct: if every invoice for FY 25-26 was paid by 31 Mar,
+  // pending receivables should be zero — even if some payments were
+  // recorded a day later in the system.
+  const [paymentsRes, expensesRes] = await Promise.all([
+    orderIds.length > 0
+      ? supabaseAdmin
+          .from('order_payments')
+          .select('amount_received, tds_deducted, net_received')
+          .in('order_id', orderIds)
+      : Promise.resolve({ data: [] }),
     supabaseAdmin
       .from('expenses')
       .select('expense_type, amount, gst_input_credit')
@@ -73,7 +83,6 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
       .lte('expense_date', to),
   ]);
 
-  const orders   = ordersRes.data   ?? [];
   const payments = paymentsRes.data ?? [];
   const expenses = expensesRes.data ?? [];
 
@@ -220,7 +229,7 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
       {/* Receivables Position */}
       <div className={`${glass} p-6 print:border print:border-gray-300 print:rounded-none print:bg-white`}>
         <SectionHead>Receivables Position</SectionHead>
-        <p className="text-[10px] text-zinc-600 mb-2">Cash basis — payments received in {label}</p>
+        <p className="text-[10px] text-zinc-600 mb-2">All payments received against {label} orders (regardless of payment date)</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12">
           <div>
             <Row label="Total Invoiced (incl. GST)" value={totalInvoiced} bold />

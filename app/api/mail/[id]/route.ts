@@ -25,9 +25,7 @@ export async function GET(
       { method: 'PATCH', json: { isRead: true } },
     );
 
-    const res = NextResponse.json(data);
-    if (r1 || r2) setTokenCookie(res, t2);
-    return res;
+    return NextResponse.json(data);
   } catch (e) {
     console.error('Mail detail error:', e);
     return NextResponse.json({ error: 'Failed to fetch email' }, { status: 500 });

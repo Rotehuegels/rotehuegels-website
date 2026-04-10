@@ -51,9 +51,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const res = NextResponse.json({ ok: true });
-    if (result.refreshed) setTokenCookie(res, result.tokens);
-    return res;
+    return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('Send error:', e);
     return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });

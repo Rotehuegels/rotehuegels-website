@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Mail, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
+import { Send, Mail, ArrowLeft, Loader2, CheckCircle, ShieldAlert } from 'lucide-react';
 import type { AgentId } from '@/lib/agents';
 
 type Msg = { role: 'user' | 'assistant'; content: string; agent: AgentId };
@@ -13,6 +13,8 @@ const AGENT_META: Record<AgentId, { name: string; emoji: string; color: string }
   supplier:  { name: 'Supplier Relations',   emoji: '🏭', color: '#f97316' },
   hr:        { name: 'Careers',             emoji: '👥', color: '#06b6d4' },
 };
+
+const MAX_MESSAGES_PER_MINUTE = 5;
 
 export default function WebLLMAssistant() {
   const [history, setHistory] = useState<Msg[]>([
@@ -26,11 +28,39 @@ export default function WebLLMAssistant() {
   const [summarySent, setSummarySent] = useState(false);
   const [summaryError, setSummaryError] = useState('');
   const [sendingMail, setSendingMail] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [blocked, setBlocked] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
+  const messageTimestamps = useRef<number[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // ── Create session on mount ────────────────────────────────────────────
+  useEffect(() => {
+    async function initSession() {
+      try {
+        const res = await fetch('/api/ai/session', { method: 'POST' });
+        const data = await res.json();
+        if (data.sessionToken) {
+          setSessionToken(data.sessionToken);
+        }
+      } catch {
+        console.warn('Failed to init chat session');
+      }
+    }
+    initSession();
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [history, showSummary]);
+
+  // ── Client-side rate limit check ───────────────────────────────────────
+  const isRateLimited = useCallback(() => {
+    const now = Date.now();
+    const oneMinuteAgo = now - 60_000;
+    const recent = messageTimestamps.current.filter(ts => ts > oneMinuteAgo);
+    return recent.length >= MAX_MESSAGES_PER_MINUTE;
+  }, []);
 
   const switchAgent = useCallback((newAgent: AgentId) => {
     const meta = AGENT_META[newAgent];
@@ -43,12 +73,20 @@ export default function WebLLMAssistant() {
 
   const send = async () => {
     const question = input.trim();
-    if (!question || busy) return;
+    if (!question || busy || blocked) return;
+
+    // Client-side rate limit visual feedback
+    if (isRateLimited()) {
+      setRateLimited(true);
+      setTimeout(() => setRateLimited(false), 5000);
+      return;
+    }
 
     const userMsg: Msg = { role: 'user', content: question, agent };
     setHistory(h => [...h, userMsg]);
     setInput('');
     setBusy(true);
+    messageTimestamps.current.push(Date.now());
 
     try {
       const apiMessages = [...history, userMsg]
@@ -58,7 +96,7 @@ export default function WebLLMAssistant() {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages, agent }),
+        body: JSON.stringify({ messages: apiMessages, agent, sessionToken }),
       });
 
       const data = await res.json();
@@ -67,6 +105,11 @@ export default function WebLLMAssistant() {
         setHistory(h => [...h, { role: 'assistant', content: data.error ?? 'Something went wrong. Please try again or email us at sales@rotehuegels.com.', agent }]);
       } else {
         setHistory(h => [...h, { role: 'assistant', content: data.content, agent }]);
+
+        // Handle blocked session
+        if (data.blocked) {
+          setBlocked(true);
+        }
 
         // Handle agent routing
         if (data.routeTo && data.routeTo !== agent) {
@@ -101,6 +144,19 @@ export default function WebLLMAssistant() {
       if (!res.ok) throw new Error(data.error);
 
       setSummarySent(true);
+
+      // Update session with summary sent status
+      if (sessionToken) {
+        fetch('/api/ai/session', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionToken,
+            summarySent: true,
+            summarySentTo: summaryForm.email || undefined,
+          }),
+        }).catch(() => {});
+      }
     } catch (err) {
       setSummaryError(err instanceof Error ? err.message : 'Failed to send.');
     } finally {
@@ -166,6 +222,29 @@ export default function WebLLMAssistant() {
           </div>
         )}
 
+        {/* Blocked notice */}
+        {blocked && (
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-red-400 shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-red-400">Session ended</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">
+                For genuine inquiries, please contact sales@rotehuegels.com.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Rate limit notice */}
+        {rateLimited && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0" />
+            <p className="text-xs text-amber-400">
+              You&apos;re sending messages too quickly. Please wait a moment.
+            </p>
+          </div>
+        )}
+
         {/* Email summary form */}
         {showSummary && !summarySent && (
           <div className="rounded-xl border border-zinc-700 bg-zinc-800/80 p-3 space-y-2.5">
@@ -226,24 +305,24 @@ export default function WebLLMAssistant() {
       {/* Input */}
       <div className="flex gap-2">
         <input
-          className="flex-1 rounded-xl bg-zinc-800/80 border border-zinc-700 px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
+          className="flex-1 rounded-xl bg-zinc-800/80 border border-zinc-700 px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors disabled:opacity-40"
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-          placeholder="Type your message..."
-          disabled={busy}
+          placeholder={blocked ? 'Session ended' : 'Type your message...'}
+          disabled={busy || blocked}
         />
         <button
           className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-40 transition-colors flex items-center gap-1.5 text-sm font-medium"
           onClick={send}
-          disabled={busy || !input.trim()}
+          disabled={busy || !input.trim() || blocked}
         >
           <Send className="w-4 h-4" />
         </button>
       </div>
 
       <p className="text-[9px] text-zinc-600 text-center">
-        Powered by Rotehügels AI &middot; Responses may not always be accurate
+        Powered by Rotehügels AI &middot; Responses may not always be accurate &middot; This conversation is monitored for quality and security.
       </p>
     </div>
   );

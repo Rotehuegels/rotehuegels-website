@@ -2,6 +2,8 @@ export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
 import { AGENTS, parseRouting, type AgentId } from '@/lib/agents';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { checkMessage, getStrikeResponse, checkRateLimit, type ViolationType } from '@/lib/moderation';
 
 const OLLAMA_URL = process.env.OLLAMA_URL ?? 'http://localhost:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? 'llama3.2:3b';
@@ -93,16 +95,60 @@ async function callClaude(systemPrompt: string, messages: ChatMessage[]): Promis
   return data.content?.[0]?.text ?? '';
 }
 
+// ── Helper: update session in background ──────────────────────────────────
+
+async function updateSession(
+  sessionToken: string,
+  updates: Record<string, unknown>,
+) {
+  try {
+    await supabaseAdmin
+      .from('chat_sessions')
+      .update({ ...updates, last_message_at: new Date().toISOString() })
+      .eq('session_token', sessionToken);
+  } catch (err) {
+    console.error('Failed to update chat session:', err);
+  }
+}
+
+// ── Helper: send security alert (fire-and-forget) ────────────────────────
+
+async function sendSecurityAlert(session: Record<string, unknown>, violations: unknown[], messages: unknown[], violationType: string) {
+  try {
+    // Use internal fetch to the security-alert API route
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const url = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+    await fetch(`${url}/api/ai/security-alert`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: session.id,
+        sessionToken: session.session_token,
+        ipAddress: session.ip_address,
+        city: session.city,
+        country: session.country,
+        userAgent: session.user_agent,
+        violations,
+        messages,
+        violationType,
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (err) {
+    console.error('[security-alert] Failed to send:', err);
+  }
+}
+
 // ── Main handler: Ollama → Groq → Claude ──────────────────────────────────
 export async function POST(req: Request) {
-  let body: { messages: ChatMessage[]; agent: AgentId };
+  let body: { messages: ChatMessage[]; agent: AgentId; sessionToken?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { messages, agent: agentId } = body;
+  const { messages, agent: agentId, sessionToken } = body;
   if (!messages?.length || !agentId) {
     return NextResponse.json({ error: 'messages and agent are required.' }, { status: 400 });
   }
@@ -112,6 +158,106 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unknown agent.' }, { status: 400 });
   }
 
+  // ── Fetch session (if token provided) ─────────────────────────────────
+  let session: Record<string, unknown> | null = null;
+  if (sessionToken) {
+    const { data } = await supabaseAdmin
+      .from('chat_sessions')
+      .select('*')
+      .eq('session_token', sessionToken)
+      .single();
+    session = data;
+  }
+
+  // ── Check if session is blocked ───────────────────────────────────────
+  if (session?.status === 'blocked') {
+    return NextResponse.json({
+      content: getStrikeResponse(3, 'abusive'),
+      routeTo: null,
+      agent: agentId,
+      backend: 'moderation',
+      blocked: true,
+    });
+  }
+
+  // ── Moderation: pre-check user message ────────────────────────────────
+  const lastUserMessage = messages[messages.length - 1];
+  if (lastUserMessage?.role === 'user') {
+    const moderationResult = checkMessage(lastUserMessage.content);
+
+    if (moderationResult.flagged && moderationResult.type) {
+      const currentStrikes = ((session?.strike_count as number) || 0) + 1;
+      const violationType = moderationResult.type as ViolationType;
+      const now = new Date().toISOString();
+
+      const violation = {
+        type: violationType,
+        message: lastUserMessage.content.slice(0, 200),
+        timestamp: now,
+      };
+
+      const newStatus = currentStrikes >= 3 ? 'blocked' : currentStrikes >= 2 ? 'warned' : 'active';
+
+      // Update session with strike
+      if (session && sessionToken) {
+        const existingViolations = Array.isArray(session.violations) ? session.violations : [];
+        const existingMessages = Array.isArray(session.messages) ? session.messages : [];
+        const updatedMessages = [
+          ...existingMessages,
+          { role: 'user', content: lastUserMessage.content, agent: agentId, timestamp: now },
+        ];
+
+        await updateSession(sessionToken, {
+          strike_count: currentStrikes,
+          violations: [...existingViolations, violation],
+          messages: updatedMessages,
+          message_count: (session.message_count as number || 0) + 1,
+          status: newStatus,
+          ...(newStatus === 'blocked' ? { ended_at: now } : {}),
+        });
+
+        // Send security alert on strike 3
+        if (currentStrikes >= 3) {
+          sendSecurityAlert(
+            session,
+            [...existingViolations, violation],
+            updatedMessages,
+            violationType,
+          );
+        }
+      }
+
+      const strikeResponse = getStrikeResponse(currentStrikes, violationType);
+      return NextResponse.json({
+        content: strikeResponse,
+        routeTo: null,
+        agent: agentId,
+        backend: 'moderation',
+        blocked: currentStrikes >= 3,
+        strike: currentStrikes,
+      });
+    }
+
+    // ── Rate limiting ──────────────────────────────────────────────────
+    if (session) {
+      const existingMessages = Array.isArray(session.messages) ? session.messages : [];
+      const userTimestamps = existingMessages
+        .filter((m: Record<string, unknown>) => m.role === 'user' && m.timestamp)
+        .map((m: Record<string, unknown>) => new Date(m.timestamp as string).getTime());
+      userTimestamps.push(Date.now());
+
+      if (!checkRateLimit(userTimestamps)) {
+        return NextResponse.json({
+          content: "You're sending messages too quickly. Please wait a moment before trying again.",
+          routeTo: null,
+          agent: agentId,
+          backend: 'rate_limit',
+        });
+      }
+    }
+  }
+
+  // ── Call LLM (Ollama → Groq → Claude fallback chain) ──────────────────
   const systemPrompt = agentConfig.systemPrompt;
   const fullMessages: ChatMessage[] = [
     { role: 'system', content: systemPrompt },
@@ -150,6 +296,23 @@ export async function POST(req: Request) {
 
   const routeTo = parseRouting(content);
   const cleanContent = content.replace(/\[ROUTE:\w+\]/gi, '').trim();
+
+  // ── Update session with messages ──────────────────────────────────────
+  if (session && sessionToken) {
+    const existingMessages = Array.isArray(session.messages) ? session.messages : [];
+    const now = new Date().toISOString();
+    const updatedMessages = [
+      ...existingMessages,
+      { role: 'user', content: lastUserMessage?.content, agent: agentId, timestamp: now },
+      { role: 'assistant', content: cleanContent, agent: agentId, timestamp: now, backend },
+    ];
+
+    updateSession(sessionToken, {
+      messages: updatedMessages,
+      message_count: (session.message_count as number || 0) + 2,
+      agent_id: routeTo || agentId,
+    });
+  }
 
   return NextResponse.json({
     content: cleanContent,

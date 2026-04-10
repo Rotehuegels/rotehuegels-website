@@ -97,7 +97,11 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   const outputSGST   = orders.reduce((s, o) => s + (o.sgst_amount ?? 0), 0);
   const outputIGST   = orders.reduce((s, o) => s + (o.igst_amount ?? 0), 0);
   const totalGST     = outputCGST + outputSGST + outputIGST;
-  const totalInvoiced = totalBase + totalGST;
+
+  // Use the stored total_value_incl_gst as the authoritative invoiced figure.
+  // Recomputing base + cgst + sgst + igst introduces rounding drift because
+  // the breakdown is reverse-calculated from the total using toFixed(2).
+  const totalInvoiced = orders.reduce((s, o) => s + (o.total_value_incl_gst ?? 0), 0);
 
   const grossReceived = payments.reduce((s, p) => s + (p.amount_received ?? 0), 0);
   const tdsDeducted   = payments.reduce((s, p) => s + (p.tds_deducted   ?? 0), 0);

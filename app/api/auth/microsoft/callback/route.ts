@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { TOKEN_URL, REDIRECT_URI, SCOPES, tokenCookieValue } from '@/lib/microsoft';
+import { TOKEN_URL, getRedirectUri, getSiteUrl, SCOPES, tokenCookieValue } from '@/lib/microsoft';
 import type { MsTokens } from '@/lib/microsoft';
 
 export async function GET(req: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const state = searchParams.get('state');
   const error = searchParams.get('error');
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const siteUrl = getSiteUrl();
 
   if (error) {
     return NextResponse.redirect(`${siteUrl}/dashboard/mail?error=${encodeURIComponent(error)}`);
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     client_secret: process.env.MICROSOFT_CLIENT_SECRET!,
     grant_type: 'authorization_code',
     code,
-    redirect_uri: REDIRECT_URI,
+    redirect_uri: getRedirectUri(),
     scope: SCOPES,
   });
 

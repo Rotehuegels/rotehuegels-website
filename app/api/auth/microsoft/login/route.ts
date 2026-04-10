@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { AUTH_URL, REDIRECT_URI, SCOPES } from '@/lib/microsoft';
+import { AUTH_URL, getRedirectUri, SCOPES } from '@/lib/microsoft';
 import crypto from 'crypto';
 
 export async function GET() {
@@ -8,7 +8,7 @@ export async function GET() {
   const params = new URLSearchParams({
     client_id: process.env.MICROSOFT_CLIENT_ID!,
     response_type: 'code',
-    redirect_uri: REDIRECT_URI,
+    redirect_uri: getRedirectUri(),
     response_mode: 'query',
     scope: SCOPES,
     state,

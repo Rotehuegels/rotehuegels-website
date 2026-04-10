@@ -5,12 +5,19 @@ import { NextRequest, NextResponse } from 'next/server';
 const TENANT   = process.env.MICROSOFT_TENANT_ID!;
 const CLIENT   = process.env.MICROSOFT_CLIENT_ID!;
 const SECRET   = process.env.MICROSOFT_CLIENT_SECRET!;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
 export const AUTH_URL  = `https://login.microsoftonline.com/${TENANT}/oauth2/v2.0/authorize`;
 export const TOKEN_URL = `https://login.microsoftonline.com/${TENANT}/oauth2/v2.0/token`;
-export const REDIRECT_URI = `${SITE_URL}/api/auth/microsoft/callback`;
 export const GRAPH_BASE   = 'https://graph.microsoft.com/v1.0';
+
+export function getSiteUrl() {
+  return process.env.NEXT_PUBLIC_SITE_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+    || 'http://localhost:3000';
+}
+
+export function getRedirectUri() {
+  return `${getSiteUrl()}/api/auth/microsoft/callback`;
+}
 
 export const SCOPES = [
   'openid', 'profile', 'email', 'offline_access',

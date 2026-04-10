@@ -13,7 +13,7 @@ import {
   Package, ShoppingCart, Truck,
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
   Network,
-  Shield, BarChart3, Globe, Eye,
+  Shield, BarChart3, Globe, Eye, Mail,
   ChevronDown,
 } from 'lucide-react';
 import LogoutButton from './LogoutButton';
@@ -83,10 +83,11 @@ const NAV: NavItem[] = [
   {
     label: 'IT', icon: Shield,
     children: [
-      { label: 'Chat Analytics',  href: '/dashboard/analytics',          icon: BarChart3 },
+      { label: 'Mail',             href: '/dashboard/mail',              icon: Mail },
+      { label: 'Chat Analytics',   href: '/dashboard/analytics',         icon: BarChart3 },
       { label: 'Visitor Insights', href: '/dashboard/analytics#orgs',    icon: Eye },
-      { label: 'Security Log',    href: '/dashboard/analytics#security', icon: Shield },
-      { label: 'Page Views',      href: '/dashboard/analytics#traffic',  icon: Globe },
+      { label: 'Security Log',     href: '/dashboard/analytics#security', icon: Shield },
+      { label: 'Page Views',       href: '/dashboard/analytics#traffic',  icon: Globe },
     ],
   },
 

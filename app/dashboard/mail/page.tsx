@@ -1,8 +1,6 @@
-import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { Mail, Inbox, Send, Trash2, FileText, Star, AlertCircle, Paperclip, Search, Plus, RefreshCw } from 'lucide-react';
-import { graphFetch } from '@/lib/microsoft';
-import type { MsTokens } from '@/lib/microsoft';
+import { Mail, Inbox, Send, Trash2, FileText, Star, AlertCircle, Paperclip, Plus, RefreshCw } from 'lucide-react';
+import { graphFetch, getTokens } from '@/lib/microsoft';
 import MailListClient from './MailListClient';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -35,21 +33,13 @@ const FOLDER_ICONS: Record<string, React.ElementType> = {
   'Junk Email': AlertCircle,
 };
 
-async function getTokensFromCookies(): Promise<MsTokens | null> {
-  const jar = await cookies();
-  const raw = jar.get('ms_tokens')?.value;
-  if (!raw) return null;
-  try { return JSON.parse(decodeURIComponent(raw)) as MsTokens; }
-  catch { return null; }
-}
-
 export default async function MailPage({
   searchParams,
 }: {
   searchParams: Promise<{ folder?: string; page?: string; search?: string; error?: string }>;
 }) {
   const sp = await searchParams;
-  const tokens = await getTokensFromCookies();
+  const tokens = await getTokens();
 
   if (!tokens || sp.error) {
     return (

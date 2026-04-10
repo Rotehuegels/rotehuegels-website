@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { TOKEN_URL, getRedirectUri, SCOPES, tokenCookieValue } from '@/lib/microsoft';
+import { TOKEN_URL, getRedirectUri, SCOPES, saveTokens } from '@/lib/microsoft';
+import { supabaseServer } from '@/lib/supabaseServer';
 import type { MsTokens } from '@/lib/microsoft';
 
 export async function GET(req: NextRequest) {
@@ -20,6 +21,14 @@ export async function GET(req: NextRequest) {
   const savedState = req.cookies.get('ms_oauth_state')?.value;
   if (!savedState || savedState !== state) {
     return errorPage('Security validation failed (state mismatch). Please try again.');
+  }
+
+  // Get current logged-in user
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return errorPage('You must be logged into the dashboard first. Please log in and try again.');
   }
 
   // Exchange code for tokens
@@ -52,7 +61,9 @@ export async function GET(req: NextRequest) {
     expires_at: Date.now() + (data.expires_in as number) * 1000,
   };
 
-  // Return a success page instead of redirecting (avoids Safari ITP cookie stripping)
+  // Save tokens to Supabase (not cookies)
+  await saveTokens(user.id, tokens);
+
   const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -75,7 +86,7 @@ export async function GET(req: NextRequest) {
     <h1>Microsoft 365 Connected!</h1>
     <p class="sub">Your email account has been linked successfully. Click below to open your inbox.</p>
     <a class="btn" href="/dashboard/mail">Open Mail Inbox</a>
-    <p class="close">You can close this tab if you already have the dashboard open — just refresh the Mail page.</p>
+    <p class="close">You can also close this tab and refresh the Mail page in your dashboard.</p>
   </div>
 </body>
 </html>`;
@@ -84,7 +95,6 @@ export async function GET(req: NextRequest) {
     status: 200,
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
-  res.headers.append('Set-Cookie', tokenCookieValue(tokens));
   res.headers.append('Set-Cookie', 'ms_oauth_state=; Path=/; HttpOnly; Max-Age=0');
   return res;
 }

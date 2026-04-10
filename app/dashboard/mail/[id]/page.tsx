@@ -1,8 +1,6 @@
-import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { ArrowLeft, Reply, Forward, Trash2, FolderInput, Paperclip, Star } from 'lucide-react';
-import { graphFetch } from '@/lib/microsoft';
-import type { MsTokens } from '@/lib/microsoft';
+import { graphFetch, getTokens } from '@/lib/microsoft';
 import { redirect } from 'next/navigation';
 import MailActions from './MailActions';
 
@@ -23,13 +21,6 @@ interface GEmail {
   flag: { flagStatus: string };
 }
 
-async function getTokensFromCookies(): Promise<MsTokens | null> {
-  const jar = await cookies();
-  const raw = jar.get('ms_tokens')?.value;
-  if (!raw) return null;
-  try { return JSON.parse(decodeURIComponent(raw)) as MsTokens; }
-  catch { return null; }
-}
 
 export default async function MailDetailPage({
   params,
@@ -37,7 +28,7 @@ export default async function MailDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const tokens = await getTokensFromCookies();
+  const tokens = await getTokens();
   if (!tokens) redirect('/dashboard/mail');
 
   let email: GEmail;

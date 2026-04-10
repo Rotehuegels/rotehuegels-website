@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTokensFromReq, graphFetch, setTokenCookie } from '@/lib/microsoft';
+import { getTokens, graphFetch } from '@/lib/microsoft';
 
 export async function POST(req: NextRequest) {
-  const tokens = getTokensFromReq(req);
+  const tokens = await getTokens();
   if (!tokens) return NextResponse.json({ error: 'Not connected' }, { status: 401 });
 
   const { to, cc, subject, body: htmlBody, replyToId } = await req.json();

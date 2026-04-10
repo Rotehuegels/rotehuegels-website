@@ -1,5 +1,5 @@
-import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseServer } from '@/lib/supabaseServer';
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const TENANT   = process.env.MICROSOFT_TENANT_ID!;
@@ -31,36 +31,57 @@ export interface MsTokens {
   expires_at: number; // epoch ms
 }
 
-// ── Cookie helpers ───────────────────────────────────────────────────────────
-const COOKIE = 'ms_tokens';
+// ── Get current Supabase user ID ─────────────────────────────────────────────
+export async function getCurrentUserId(): Promise<string | null> {
+  try {
+    const supabase = await supabaseServer();
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
 
-/** Read tokens from the cookie jar (server component / route handler). */
+// ── Token storage (Supabase) ─────────────────────────────────────────────────
+
+/** Read tokens for the current logged-in user. */
 export async function getTokens(): Promise<MsTokens | null> {
-  const jar = await cookies();
-  const raw = jar.get(COOKIE)?.value;
-  if (!raw) return null;
-  try { return JSON.parse(raw) as MsTokens; }
-  catch { return null; }
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
+
+  const { data } = await supabaseAdmin
+    .from('ms_tokens')
+    .select('access_token, refresh_token, expires_at')
+    .eq('user_id', userId)
+    .single();
+
+  if (!data) return null;
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at: Number(data.expires_at),
+  };
 }
 
-/** Read tokens from a NextRequest (API routes). */
-export function getTokensFromReq(req: NextRequest): MsTokens | null {
-  const raw = req.cookies.get(COOKIE)?.value;
-  if (!raw) return null;
-  try { return JSON.parse(raw) as MsTokens; }
-  catch { return null; }
+/** Save tokens for a user. */
+export async function saveTokens(userId: string, tokens: MsTokens): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from('ms_tokens')
+    .upsert({
+      user_id: userId,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.expires_at,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+
+  if (error) console.error('Failed to save MS tokens:', error.message);
 }
 
-/** Build a Set-Cookie header value. */
-export function tokenCookieValue(tokens: MsTokens): string {
-  const json = JSON.stringify(tokens);
-  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  return `${COOKIE}=${encodeURIComponent(json)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000${secure}`;
-}
-
-/** Set the token cookie on a NextResponse. */
-export function setTokenCookie(res: NextResponse, tokens: MsTokens) {
-  res.headers.append('Set-Cookie', tokenCookieValue(tokens));
+/** Update tokens after refresh. */
+async function updateStoredTokens(tokens: MsTokens): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (userId) await saveTokens(userId, tokens);
 }
 
 // ── Token refresh ────────────────────────────────────────────────────────────
@@ -105,6 +126,7 @@ export async function graphFetch(
   if (current.expires_at < Date.now() + 5 * 60 * 1000) {
     current = await refreshAccessToken(current.refresh_token);
     refreshed = true;
+    await updateStoredTokens(current);
   }
 
   const url = `${GRAPH_BASE}/${path}`;
@@ -127,6 +149,7 @@ export async function graphFetch(
   if (res.status === 401 && !refreshed) {
     current = await refreshAccessToken(current.refresh_token);
     refreshed = true;
+    await updateStoredTokens(current);
     init.headers = { ...headers, Authorization: `Bearer ${current.access_token}` };
     res = await fetch(url, init);
   }
@@ -136,7 +159,6 @@ export async function graphFetch(
     throw new Error(`Graph API ${res.status}: ${err}`);
   }
 
-  // Some endpoints return 204 No Content
   const data = res.status === 204 ? null : await res.json();
   return { data, tokens: current, refreshed };
 }

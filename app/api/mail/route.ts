@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTokensFromReq, graphFetch, setTokenCookie } from '@/lib/microsoft';
+import { getTokens, graphFetch } from '@/lib/microsoft';
 
 export async function GET(req: NextRequest) {
-  const tokens = getTokensFromReq(req);
+  const tokens = await getTokens();
   if (!tokens) return NextResponse.json({ error: 'Not connected' }, { status: 401 });
 
   const { searchParams } = req.nextUrl;
@@ -28,7 +28,6 @@ export async function GET(req: NextRequest) {
       messages: body.value,
       totalCount: body['@odata.count'] ?? body.value.length,
     });
-    if (refreshed) setTokenCookie(res, updated);
     return res;
   } catch (e) {
     console.error('Mail list error:', e);

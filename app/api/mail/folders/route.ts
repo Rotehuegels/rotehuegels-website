@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTokensFromReq, graphFetch, setTokenCookie } from '@/lib/microsoft';
+import { getTokens, graphFetch } from '@/lib/microsoft';
 
 export async function GET(req: NextRequest) {
-  const tokens = getTokensFromReq(req);
+  const tokens = await getTokens();
   if (!tokens) return NextResponse.json({ error: 'Not connected' }, { status: 401 });
 
   try {
@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
     );
     const body = data as { value: unknown[] };
     const res = NextResponse.json({ folders: body.value });
-    if (refreshed) setTokenCookie(res, updated);
     return res;
   } catch (e) {
     console.error('Folders error:', e);

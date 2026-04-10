@@ -351,6 +351,9 @@ export interface CrawlJobResult {
   errors: Array<{ query: string; error: string }>;
 }
 
+const MIN_LEADS_PER_JOB = 10;
+const MAX_QUERIES_PER_JOB = 15; // safety cap to avoid infinite loops
+
 export async function runCrawlJob(
   type: 'supplier' | 'customer',
   queries: string[],
@@ -363,6 +366,12 @@ export async function runCrawlJob(
   }
 ): Promise<CrawlJobResult> {
   const table = type === 'supplier' ? 'supplier_leads' : 'customer_leads';
+  const allQueries = type === 'supplier' ? DEFAULT_SUPPLIER_QUERIES : DEFAULT_CUSTOMER_QUERIES;
+
+  // Build a queue: start with provided queries, then add more from the full list if needed
+  const usedQueries = new Set<string>();
+  const queryQueue = [...queries];
+  queries.forEach(q => usedQueries.add(q));
 
   // Create job record
   const { data: job } = await (supabase.from('crawl_jobs') as ReturnType<typeof supabase.from>)
@@ -377,26 +386,42 @@ export async function runCrawlJob(
 
   const jobId = (job as Record<string, unknown> | null)?.id as string ?? 'unknown';
   let resultsCount = 0;
+  let queriesProcessed = 0;
+  const allQueriesUsed: string[] = [];
   const errors: Array<{ query: string; error: string }> = [];
 
-  for (const query of queries) {
-    try {
-      // Search
-      const searchResults = await searchWeb(query);
-      await sleep(1000); // respect rate limit
+  while (resultsCount < MIN_LEADS_PER_JOB && queriesProcessed < MAX_QUERIES_PER_JOB) {
+    // If queue is empty, add more queries from the full list
+    if (queryQueue.length === 0) {
+      const remaining = allQueries.filter(q => !usedQueries.has(q));
+      if (remaining.length === 0) break; // exhausted all queries
+      // Shuffle and add next batch
+      const shuffled = [...remaining].sort(() => Math.random() - 0.5);
+      const batch = shuffled.slice(0, 4);
+      batch.forEach(q => { queryQueue.push(q); usedQueries.add(q); });
+    }
 
-      // Process top 5 results
-      for (const sr of searchResults.slice(0, 5)) {
+    const query = queryQueue.shift()!;
+    allQueriesUsed.push(query);
+    queriesProcessed++;
+
+    try {
+      const searchResults = await searchWeb(query);
+      await sleep(1000);
+
+      for (const sr of searchResults.slice(0, 8)) {
+        if (resultsCount >= MIN_LEADS_PER_JOB) break;
+
         try {
           const pageText = await fetchPageContent(sr.url);
-          await sleep(2000); // respect rate limit
+          await sleep(1500);
 
           if (!pageText) continue;
 
           const info = await extractCompanyInfo(pageText, query, type);
           if (!info || !info.company_name || info.confidence_score < 10) continue;
 
-          // Check for duplicates by website or company_name
+          // Check for duplicates
           const companyNameClean = info.company_name.trim().toLowerCase();
           const websiteClean = (info.website ?? sr.url).toLowerCase();
 
@@ -405,10 +430,9 @@ export async function runCrawlJob(
             .or(`company_name.ilike.%${companyNameClean}%,website.ilike.%${websiteClean}%`)
             .maybeSingle();
 
-          if (existing) continue; // skip duplicate
+          if (existing) continue;
 
-          // Determine source type
-          let sourceType = 'google_search';
+          let sourceType = 'ai_discovery';
           if (sr.url.includes('indiamart.com')) sourceType = 'indiamart';
           else if (sr.url.includes('tradeindia.com')) sourceType = 'tradeindia';
           else if (sr.url.includes('justdial.com')) sourceType = 'justdial';
@@ -447,7 +471,7 @@ export async function runCrawlJob(
 
           resultsCount++;
         } catch (pageErr: unknown) {
-          console.error('[runCrawlJob] Page processing error:', pageErr instanceof Error ? pageErr.message : pageErr);
+          console.error('[runCrawlJob] Page error:', pageErr instanceof Error ? pageErr.message : pageErr);
         }
       }
     } catch (queryErr: unknown) {
@@ -460,9 +484,10 @@ export async function runCrawlJob(
   // Update job record
   await (supabase.from('crawl_jobs') as ReturnType<typeof supabase.from>)
     .update({
-      status: errors.length > 0 && resultsCount === 0 ? 'failed' : 'completed',
+      status: resultsCount >= MIN_LEADS_PER_JOB ? 'completed' : (errors.length > 0 && resultsCount === 0 ? 'failed' : 'completed'),
       results_count: resultsCount,
       errors: errors,
+      search_queries: allQueriesUsed,
       completed_at: new Date().toISOString(),
     })
     .eq('id', jobId);

@@ -23,7 +23,7 @@ import { resolve, relative, join, basename } from 'path';
 
 const OLLAMA_URL   = process.env.OLLAMA_URL   ?? 'http://localhost:11434';
 const OLLAMA_MODEL = process.env.BUDDY_MODEL  ?? process.env.OLLAMA_MODEL ?? 'llama3.2:3b';
-const GROQ_MODEL   = process.env.BUDDY_MODEL  ?? process.env.GROQ_MODEL   ?? 'llama-3.1-8b-instant';
+const GROQ_MODEL   = process.env.BUDDY_MODEL  ?? process.env.GROQ_MODEL   ?? 'llama-3.3-70b-versatile';
 const GROQ_API_KEY = process.env.GROQ_API_KEY ?? '';
 const CWD = process.cwd();
 const BUDDY_DIR = join(CWD, '.buddy');
@@ -211,18 +211,39 @@ const TOOL_DEFS = [
 // ── System Prompt ───────────────────────────────────────────────────────────
 
 function buildSystemPrompt() {
-  let prompt = `You are Buddy, an AI coding assistant. You work in relay with Claude Code — when Claude hits its token limit, you take over seamlessly, and vice versa.
+  let prompt = `You are Buddy, an expert AI coding assistant. You work in relay with Claude Code — when Claude hits its token limit, you take over seamlessly.
 
 Working directory: ${CWD}
 Project: ${basename(CWD)}
 
-Tools: read_file, write_file, edit_file, run_command, list_files, search_files
+## Tools
+read_file, write_file, edit_file, run_command, list_files, search_files
 
-Guidelines:
-- Read files before editing them
-- Make targeted edits (use edit_file) instead of rewriting entire files
-- Be concise — explain what you're doing briefly
-- When you finish a task, summarize what you did so Claude can continue later`;
+## How to work (IMPORTANT — follow this thinking process):
+
+1. UNDERSTAND: Before acting, make sure you understand the full request. If unclear, ask.
+2. EXPLORE: Always read relevant files first. Use list_files and search_files to find what you need. Never edit a file you haven't read.
+3. PLAN: Think step by step. For multi-file changes, plan the order of operations.
+4. EXECUTE: Make changes one file at a time. Use edit_file for targeted changes (never rewrite entire files unless creating new ones).
+5. VERIFY: After changes, run the type checker (npx tsc --noEmit) or build to verify.
+6. SUMMARIZE: Briefly explain what you did.
+
+## Rules
+- ALWAYS read a file before editing it
+- Use edit_file with exact string matches — copy the exact text from the file
+- For new files, use write_file
+- Run commands to verify your work (git status, npm run build, npx tsc --noEmit)
+- If a task is complex, break it into smaller steps
+- When you finish, summarize what was done so Claude can continue later
+- Never guess file contents — always read first
+- If you encounter an error, read the error carefully, diagnose, then fix
+
+## Tech stack
+- Next.js 16 (App Router) with TypeScript
+- Supabase (PostgreSQL + Auth)
+- Tailwind CSS (dark zinc theme)
+- React Server Components + Client Components ('use client')
+- Styling: const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm'`;
 
   // Add handoff context if available
   const handoff = readHandoff();

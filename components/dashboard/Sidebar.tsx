@@ -6,14 +6,14 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import {
   LayoutDashboard,
-  Users, UserPlus,
+  Users, UserPlus, UserCheck,
   Briefcase, FilePlus, ClipboardList,
   Receipt, Settings2,
   ShoppingBag, Building2, BookOpen, FileText, ReceiptText,
   Package, ShoppingCart, Truck,
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
   Network,
-  Shield, BarChart3, Globe, Eye, Mail,
+  Shield, BarChart3, Globe, Eye, Mail, History,
   Radar,
   ChevronDown,
 } from 'lucide-react';
@@ -46,8 +46,9 @@ const NAV: NavItem[] = [
       { label: 'Salary Setup', href: '/dashboard/payroll/setup', icon: Settings2 },
       { label: 'Run Payroll',  href: '/dashboard/payroll/new',   icon: Receipt },
       { type: 'section', label: 'Recruitment' },
-      { label: 'Job Postings', href: '/dashboard/ats/jobs',      icon: Briefcase },
-      { label: 'Post a Job',   href: '/dashboard/ats/jobs/new',  icon: FilePlus },
+      { label: 'Job Postings',  href: '/dashboard/ats/jobs',          icon: Briefcase },
+      { label: 'Applications', href: '/dashboard/ats/applications', icon: UserCheck },
+      { label: 'Post a Job',   href: '/dashboard/ats/jobs/new',    icon: FilePlus },
     ],
   },
 
@@ -91,6 +92,8 @@ const NAV: NavItem[] = [
       { label: 'Visitor Insights', href: '/dashboard/analytics#orgs',    icon: Eye },
       { label: 'Security Log',     href: '/dashboard/analytics#security', icon: Shield },
       { label: 'Page Views',       href: '/dashboard/analytics#traffic',  icon: Globe },
+      { type: 'section', label: 'Audit' },
+      { label: 'Audit Trail',     href: '/dashboard/audit',              icon: History },
     ],
   },
 

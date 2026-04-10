@@ -1,10 +1,17 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { CheckCircle, Network } from 'lucide-react';
 
 const inputCls = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/30';
+
+type Job = { id: string; title: string; department: string | null; location: string; employment_type: string };
+
+const TYPE_LABEL: Record<string, string> = {
+  full_time: 'Full-time', part_time: 'Part-time',
+  consultant: 'Consultant', contract: 'Contract',
+};
 
 export default function ApplyPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = use(params);
@@ -12,6 +19,17 @@ export default function ApplyPage({ params }: { params: Promise<{ jobId: string 
   const [errorMsg, setErrorMsg] = useState('');
   const [isRex, setIsRex] = useState(false);
   const [rexId, setRexId] = useState('');
+  const [job, setJob] = useState<Job | null>(null);
+
+  useEffect(() => {
+    fetch('/api/ats/jobs/public')
+      .then(r => r.json())
+      .then(d => {
+        const found = (d.data ?? []).find((j: Job) => j.id === jobId);
+        if (found) setJob(found);
+      })
+      .catch(() => {});
+  }, [jobId]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,7 +68,7 @@ export default function ApplyPage({ params }: { params: Promise<{ jobId: string 
             <CheckCircle className="h-12 w-12 text-emerald-400 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-white">Application submitted!</h1>
             <p className="mt-2 text-zinc-400 text-sm">
-              Thank you for applying. Our team will review your application and reach out if there&apos;s a fit.
+              Thank you for applying{job ? ` for ${job.title}` : ''}. Our team will review your application and reach out if there&apos;s a fit.
             </p>
 
             {isRex && rexId && (
@@ -80,17 +98,25 @@ export default function ApplyPage({ params }: { params: Promise<{ jobId: string 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <Link href="/careers" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
-        ← Back to Careers
+        &larr; Back to Careers
       </Link>
 
-      <h1 className="mt-4 text-3xl font-bold text-white">Apply for this role</h1>
+      {job && (
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-5 py-4">
+          <h2 className="text-lg font-bold text-white">{job.title}</h2>
+          <p className="text-sm text-zinc-400 mt-0.5">
+            {job.department && `${job.department} \u00b7 `}{job.location} \u00b7 {TYPE_LABEL[job.employment_type] ?? job.employment_type}
+          </p>
+        </div>
+      )}
+
+      <h1 className="mt-6 text-3xl font-bold text-white">Apply for this role</h1>
       <p className="mt-2 text-zinc-400 text-sm">
         Fill in your details below. If you&apos;re a REX member, your profile will be automatically linked.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-        {/* Hidden job title — filled by page, but we need it */}
-        <input type="hidden" name="job_title" value="Position" />
+        <input type="hidden" name="job_title" value={job?.title ?? 'Position'} />
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
@@ -103,9 +129,52 @@ export default function ApplyPage({ params }: { params: Promise<{ jobId: string 
           </div>
         </div>
 
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Phone</label>
+            <input name="phone" type="tel" className={inputCls} placeholder="+91 00000 00000" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Source</label>
+            <select name="source" defaultValue="website" className={`${inputCls} cursor-pointer`}>
+              <option value="website">Website</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="referral">Referral</option>
+              <option value="naukri">Naukri</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Current company</label>
+            <input name="current_company" className={inputCls} placeholder="e.g. Tata Steel" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Current role</label>
+            <input name="current_role" className={inputCls} placeholder="e.g. Process Engineer" />
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Experience (years)</label>
+            <input name="experience_years" type="number" min="0" max="50" className={inputCls} placeholder="e.g. 5" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Current CTC</label>
+            <input name="current_ctc" className={inputCls} placeholder="e.g. 12 LPA" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Expected CTC</label>
+            <input name="expected_ctc" className={inputCls} placeholder="e.g. 18 LPA" />
+          </div>
+        </div>
+
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Phone</label>
-          <input name="phone" type="tel" className={inputCls} placeholder="+91 00000 00000" />
+          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Notice period</label>
+          <input name="notice_period" className={inputCls} placeholder="e.g. 30 days / Immediate" />
         </div>
 
         <div>
@@ -122,13 +191,13 @@ export default function ApplyPage({ params }: { params: Promise<{ jobId: string 
         <div>
           <label className="block text-xs font-medium text-zinc-400 mb-1.5">Cover letter <span className="text-zinc-600">(optional)</span></label>
           <textarea name="cover_letter" rows={5} maxLength={2000} className={`${inputCls} resize-none`}
-            placeholder="Tell us why you're a great fit and what outcomes you'll own in your first 90 days…" />
+            placeholder="Tell us why you're a great fit and what outcomes you'll own in your first 90 days..." />
         </div>
 
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-4 text-xs text-zinc-500 space-y-1">
-          <p>• Your application will be reviewed by the Rotehügels team.</p>
-          <p>• If you are a REX member, your profile will be automatically linked.</p>
-          <p>• Your data is stored securely and used only for recruitment purposes.</p>
+          <p>&bull; Your application will be reviewed by the Rotehugels team.</p>
+          <p>&bull; If you are a REX member, your profile will be automatically linked.</p>
+          <p>&bull; Your data is stored securely and used only for recruitment purposes.</p>
         </div>
 
         {errorMsg && (
@@ -137,7 +206,7 @@ export default function ApplyPage({ params }: { params: Promise<{ jobId: string 
 
         <button type="submit" disabled={status === 'loading'}
           className="w-full rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          {status === 'loading' ? 'Submitting…' : 'Submit Application'}
+          {status === 'loading' ? 'Submitting...' : 'Submit Application'}
         </button>
       </form>
     </main>

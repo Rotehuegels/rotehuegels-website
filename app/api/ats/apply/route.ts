@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { sendNewApplicationEmail } from '@/lib/mailer';
 
 const ApplySchema = z.object({
   job_id: z.string().uuid(),
@@ -14,6 +15,13 @@ const ApplySchema = z.object({
   linkedin_url: z.string().url().optional().or(z.literal('')),
   cv_url: z.string().url().optional().or(z.literal('')),
   cover_letter: z.string().max(2000).optional(),
+  current_company: z.string().optional(),
+  current_role: z.string().optional(),
+  experience_years: z.coerce.number().int().min(0).max(50).optional(),
+  expected_ctc: z.string().optional(),
+  current_ctc: z.string().optional(),
+  notice_period: z.string().optional(),
+  source: z.enum(['website', 'linkedin', 'referral', 'naukri', 'other']).default('website'),
 });
 
 export async function POST(req: Request) {
@@ -39,7 +47,7 @@ export async function POST(req: Request) {
   // Check if job is published
   const { data: job } = await supabaseAdmin
     .from('job_postings')
-    .select('id, status')
+    .select('id, title, status')
     .eq('id', d.job_id)
     .single();
 
@@ -75,11 +83,33 @@ export async function POST(req: Request) {
     linkedin_url: d.linkedin_url || null,
     cv_url: d.cv_url || null,
     cover_letter: d.cover_letter || null,
+    current_company: d.current_company || null,
+    current_role: d.current_role || null,
+    experience_years: d.experience_years ?? null,
+    expected_ctc: d.expected_ctc || null,
+    current_ctc: d.current_ctc || null,
+    notice_period: d.notice_period || null,
+    source: d.source,
     rex_id: rexMember?.rex_id ?? null,
     stage: 'applied',
   }]);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Send email notification (fire-and-forget)
+  sendNewApplicationEmail({
+    candidate_name: d.full_name,
+    email: d.email,
+    phone: d.phone,
+    job_title: job.title,
+    current_company: d.current_company,
+    current_role: d.current_role,
+    experience_years: d.experience_years,
+    expected_ctc: d.expected_ctc,
+    current_ctc: d.current_ctc,
+    notice_period: d.notice_period,
+    source: d.source,
+  }).catch(err => console.error('[mailer] Failed to send application notification:', err));
 
   return NextResponse.json({
     success: true,

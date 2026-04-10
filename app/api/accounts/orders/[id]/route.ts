@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { logAudit } from '@/lib/audit';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -87,6 +88,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  logAudit({
+    userId: user.id,
+    userEmail: user.email ?? undefined,
+    action: 'update',
+    entityType: 'order',
+    entityId: id,
+    entityLabel: `Order ${id}`,
+    changes: Object.fromEntries(
+      Object.entries(parsed.data).map(([k, v]) => [k, { old: null, new: v }]),
+    ),
+  });
+
   return NextResponse.json({ success: true });
 }
 

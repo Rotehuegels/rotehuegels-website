@@ -2,7 +2,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { MONTH_NAMES } from '@/lib/payroll';
-import { ChevronLeft, Users, IndianRupee, TrendingDown, Building2 } from 'lucide-react';
+import { ChevronLeft, Users, IndianRupee, TrendingDown, Building2, Pencil, Download } from 'lucide-react';
 import RunEntries from './RunEntries';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -66,6 +66,23 @@ export default async function RunDetailPage({
                 : ' Draft — not yet processed'}
             </p>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {run.status !== 'paid' && (
+            <Link
+              href={`/dashboard/payroll/${runId}/edit`}
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+            >
+              <Pencil className="h-3.5 w-3.5" /> Edit
+            </Link>
+          )}
+          <a
+            href={`/api/payroll/${runId}/export`}
+            className="flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" /> CSV
+          </a>
         </div>
       </div>
 

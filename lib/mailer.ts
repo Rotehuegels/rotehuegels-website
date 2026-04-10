@@ -92,6 +92,72 @@ export async function sendNewSupplierEmail(payload: SupplierPayload) {
   });
 }
 
+type ApplicationPayload = {
+  candidate_name: string;
+  email: string;
+  phone?: string;
+  job_title: string;
+  current_company?: string;
+  current_role?: string;
+  experience_years?: number;
+  expected_ctc?: string;
+  current_ctc?: string;
+  notice_period?: string;
+  source?: string;
+};
+
+export async function sendNewApplicationEmail(payload: ApplicationPayload) {
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
+    console.warn("[mailer] Skipping email: SMTP env vars not set.");
+    return;
+  }
+  const to = "hr@rotehuegels.com";
+
+  const subject = `New application: ${payload.candidate_name} — ${payload.job_title}`;
+  const text = [
+    `New job application received:`,
+    `Position: ${payload.job_title}`,
+    `Candidate: ${payload.candidate_name}`,
+    `Email: ${payload.email}`,
+    `Phone: ${payload.phone || "-"}`,
+    `Current Company: ${payload.current_company || "-"}`,
+    `Current Role: ${payload.current_role || "-"}`,
+    `Experience: ${payload.experience_years != null ? `${payload.experience_years} years` : "-"}`,
+    `Current CTC: ${payload.current_ctc || "-"}`,
+    `Expected CTC: ${payload.expected_ctc || "-"}`,
+    `Notice Period: ${payload.notice_period || "-"}`,
+    `Source: ${payload.source || "website"}`,
+  ].join("\n");
+
+  const html = `
+    <h2>New job application — ${escapeHtml(payload.job_title)}</h2>
+    <table cellpadding="6" cellspacing="0" style="border-collapse:collapse">
+      <tr><td><strong>Candidate</strong></td><td>${escapeHtml(payload.candidate_name)}</td></tr>
+      <tr><td><strong>Email</strong></td><td>${escapeHtml(payload.email)}</td></tr>
+      <tr><td><strong>Phone</strong></td><td>${escapeHtml(payload.phone || "-")}</td></tr>
+      <tr><td><strong>Current Company</strong></td><td>${escapeHtml(payload.current_company || "-")}</td></tr>
+      <tr><td><strong>Current Role</strong></td><td>${escapeHtml(payload.current_role || "-")}</td></tr>
+      <tr><td><strong>Experience</strong></td><td>${payload.experience_years != null ? `${payload.experience_years} years` : "-"}</td></tr>
+      <tr><td><strong>Current CTC</strong></td><td>${escapeHtml(payload.current_ctc || "-")}</td></tr>
+      <tr><td><strong>Expected CTC</strong></td><td>${escapeHtml(payload.expected_ctc || "-")}</td></tr>
+      <tr><td><strong>Notice Period</strong></td><td>${escapeHtml(payload.notice_period || "-")}</td></tr>
+      <tr><td><strong>Source</strong></td><td>${escapeHtml(payload.source || "website")}</td></tr>
+    </table>
+    <p style="margin-top:16px">
+      <a href="https://rotehuegels.com/dashboard/ats" style="color:#e11d48">View in Dashboard</a>
+    </p>
+  `;
+
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from: EMAIL_FROM,
+    to,
+    subject,
+    text,
+    html,
+  });
+}
+
 function escapeHtml(input: string) {
   return input
     .replaceAll("&", "&amp;")

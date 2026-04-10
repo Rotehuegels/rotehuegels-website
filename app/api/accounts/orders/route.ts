@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { logAudit } from '@/lib/audit';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -122,6 +123,16 @@ export async function POST(req: Request) {
       .insert(stagesWithOrder);
     if (stageErr) return NextResponse.json({ error: stageErr.message }, { status: 500 });
   }
+
+  logAudit({
+    userId: user.id,
+    userEmail: user.email ?? undefined,
+    action: 'create',
+    entityType: 'order',
+    entityId: order.id,
+    entityLabel: `Order ${order.order_no}`,
+    metadata: { order_type: orderData.order_type, client_name: orderData.client_name, total: orderData.total_value_incl_gst },
+  });
 
   return NextResponse.json({ success: true, id: order.id, order_no: order.order_no }, { status: 201 });
 }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import QuoteActions from './QuoteActions';
 import QuotePrintButton from './QuotePrintButton';
+import SendEmailButton from '@/components/SendEmailButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,6 +99,8 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
           </p>
         </div>
         <div className="flex gap-2">
+          <SendEmailButton type="quote_email" entityId={id} label="Email Quote"
+            confirmMessage="Send this quotation to the customer via email?" />
           <QuotePrintButton quoteId={id} />
           <QuoteActions
             quoteId={id}

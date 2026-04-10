@@ -78,6 +78,21 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           </h2>
         </div>
 
+        {/* Share link & view pipeline */}
+        <div className="px-6 py-3 border-b border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+          {job.status === 'published' && (
+            <p className="text-xs text-zinc-500">
+              Share: <code className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-zinc-400">https://rotehuegels.com/careers/{id}/apply</code>
+            </p>
+          )}
+          {(applications?.length ?? 0) > 0 && (
+            <Link href={`/dashboard/ats/applications?job_id=${id}`}
+              className="text-xs text-rose-400 hover:text-rose-300 font-medium">
+              View in Pipeline &rarr;
+            </Link>
+          )}
+        </div>
+
         {!applications?.length ? (
           <div className="p-12 text-center">
             <p className="text-sm text-zinc-600">No applications yet.</p>
@@ -94,7 +109,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-white">{app.full_name}</p>
+                      <Link href={`/dashboard/ats/applications/${app.id}`} className="font-semibold text-white hover:text-rose-400 transition-colors">{app.full_name}</Link>
                       {app.rex_id && (
                         <span className="flex items-center gap-1 text-[10px] rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 px-2 py-0.5">
                           <Network className="h-2.5 w-2.5" /> {app.rex_id}

@@ -104,6 +104,9 @@ export default async function AtsOverviewPage() {
               <Users className="h-4 w-4 text-rose-400" />
               <h2 className="text-sm font-semibold text-zinc-300">Recent Applications</h2>
             </div>
+            <Link href="/dashboard/ats/applications" className="flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300">
+              View Pipeline <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
           {!applications?.length ? (
             <div className="p-8 text-center">
@@ -112,7 +115,8 @@ export default async function AtsOverviewPage() {
           ) : (
             <div className="divide-y divide-zinc-800/60">
               {applications.map(app => (
-                <div key={app.id} className="flex items-center justify-between px-6 py-4">
+                <Link key={app.id} href={`/dashboard/ats/applications/${app.id}`}
+                  className="flex items-center justify-between px-6 py-4 hover:bg-zinc-800/20 transition-colors">
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-white">{app.full_name}</p>
@@ -125,7 +129,7 @@ export default async function AtsOverviewPage() {
                   <span className={`text-xs rounded-full border px-2.5 py-0.5 font-medium capitalize ${STAGE_STYLE[app.stage] ?? STAGE_STYLE.applied}`}>
                     {app.stage}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           )}

@@ -24,7 +24,7 @@ export async function PATCH(
   const { data: run } = await supabaseAdmin
     .from('payroll_runs').select('status, month').eq('id', runId).single();
   if (!run) return NextResponse.json({ error: 'Run not found' }, { status: 404 });
-  if (run.status !== 'draft') return NextResponse.json({ error: 'Run is already processed.' }, { status: 400 });
+  if (run.status === 'paid') return NextResponse.json({ error: 'Run is already paid and cannot be edited.' }, { status: 400 });
 
   const body = await req.json();
 

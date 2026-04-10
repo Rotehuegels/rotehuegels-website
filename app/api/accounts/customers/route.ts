@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { logAudit } from '@/lib/audit';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -79,5 +80,16 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  logAudit({
+    userId: user.id,
+    userEmail: user.email ?? undefined,
+    action: 'create',
+    entityType: 'customer',
+    entityId: data.id,
+    entityLabel: `Customer ${parsed.data.name}`,
+    metadata: { customer_id: data.customer_id, gstin: parsed.data.gstin },
+  });
+
   return NextResponse.json({ success: true, id: data.id, customer_id: data.customer_id }, { status: 201 });
 }

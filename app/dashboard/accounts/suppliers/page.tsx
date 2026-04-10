@@ -48,6 +48,9 @@ export default async function SuppliersPage() {
               {/* Name + status */}
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0">
+                  {s.vendor_code && (
+                    <p className="text-[10px] font-mono text-zinc-500 mb-0.5">{s.vendor_code}</p>
+                  )}
                   <p className="text-sm font-bold text-white leading-snug truncate">{s.legal_name}</p>
                   {s.trade_name && s.trade_name !== s.legal_name && (
                     <p className="text-xs text-zinc-500 truncate mt-0.5">{s.trade_name}</p>

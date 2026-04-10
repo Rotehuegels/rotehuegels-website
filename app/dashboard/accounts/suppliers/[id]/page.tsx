@@ -45,6 +45,9 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
         </Link>
         <div className="flex items-start justify-between gap-4">
           <div>
+            {supplier.vendor_code && (
+              <p className="text-xs font-mono text-zinc-500 mb-1">{supplier.vendor_code}</p>
+            )}
             <h1 className="text-2xl font-black text-white">{supplier.legal_name}</h1>
             {supplier.trade_name && supplier.trade_name !== supplier.legal_name && (
               <p className="text-sm text-zinc-400 mt-0.5">{supplier.trade_name}</p>

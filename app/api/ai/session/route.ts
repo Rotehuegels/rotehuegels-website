@@ -4,27 +4,69 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-// ── Geo-lookup (best-effort, non-blocking) ───────────────────────────────────
+// ── IP geolocation (ip-api.com returns ISP, org, city, country, etc.) ───────
 
-async function geoLookup(ip: string): Promise<{ city?: string; country?: string }> {
-  // Skip private / localhost IPs
+interface GeoData {
+  city?: string;
+  region?: string;
+  country?: string;
+  timezone?: string;
+  isp?: string;
+  org?: string;
+}
+
+async function geoLookup(ip: string): Promise<GeoData> {
   if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
     return {};
   }
 
   try {
-    const res = await fetch(`http://ip-api.com/json/${ip}?fields=city,country`, {
-      signal: AbortSignal.timeout(3000),
-    });
+    const res = await fetch(
+      `http://ip-api.com/json/${ip}?fields=city,regionName,country,timezone,isp,org`,
+      { signal: AbortSignal.timeout(3000) },
+    );
     if (!res.ok) return {};
-    const data = await res.json();
-    return { city: data.city || undefined, country: data.country || undefined };
+    const d = await res.json();
+    return {
+      city:     d.city || undefined,
+      region:   d.regionName || undefined,
+      country:  d.country || undefined,
+      timezone: d.timezone || undefined,
+      isp:      d.isp || undefined,
+      org:      d.org || undefined,
+    };
   } catch {
     return {};
   }
 }
 
-// ── POST: Create a new session ───────────────────────────────────────────────
+// ── Parse user agent into device_type, browser, os ──────────────────────────
+
+function parseUserAgent(ua: string): { device_type: string; browser: string; os: string } {
+  let device_type = 'desktop';
+  if (/Mobile|Android|iPhone|iPod/i.test(ua)) device_type = 'mobile';
+  else if (/iPad|Tablet/i.test(ua)) device_type = 'tablet';
+
+  let browser = 'Unknown';
+  if (/Edg\/(\d+)/i.test(ua))           browser = `Edge ${ua.match(/Edg\/(\d+)/i)?.[1]}`;
+  else if (/OPR\/(\d+)/i.test(ua))      browser = `Opera ${ua.match(/OPR\/(\d+)/i)?.[1]}`;
+  else if (/Chrome\/(\d+)/i.test(ua))    browser = `Chrome ${ua.match(/Chrome\/(\d+)/i)?.[1]}`;
+  else if (/Safari\/.*Version\/(\d+)/i.test(ua)) browser = `Safari ${ua.match(/Version\/(\d+)/i)?.[1]}`;
+  else if (/Firefox\/(\d+)/i.test(ua))   browser = `Firefox ${ua.match(/Firefox\/(\d+)/i)?.[1]}`;
+
+  let os = 'Unknown';
+  if (/Windows NT 10/i.test(ua))         os = 'Windows 10/11';
+  else if (/Windows/i.test(ua))          os = 'Windows';
+  else if (/Mac OS X (\d+[._]\d+)/i.test(ua)) os = `macOS ${ua.match(/Mac OS X (\d+[._]\d+)/i)?.[1]?.replace('_', '.')}`;
+  else if (/Android (\d+)/i.test(ua))    os = `Android ${ua.match(/Android (\d+)/i)?.[1]}`;
+  else if (/iPhone OS (\d+)/i.test(ua))  os = `iOS ${ua.match(/iPhone OS (\d+)/i)?.[1]}`;
+  else if (/iPad.*OS (\d+)/i.test(ua))   os = `iPadOS ${ua.match(/OS (\d+)/i)?.[1]}`;
+  else if (/Linux/i.test(ua))            os = 'Linux';
+
+  return { device_type, browser, os };
+}
+
+// ── POST: Create a new session ──────────────────────────────────────────────
 
 export async function POST(req: Request) {
   const ip =
@@ -32,18 +74,57 @@ export async function POST(req: Request) {
     req.headers.get('x-real-ip') ||
     null;
 
-  const userAgent = req.headers.get('user-agent') || null;
+  const userAgent = req.headers.get('user-agent') || '';
+
+  // Parse client-sent metadata
+  let clientData: Record<string, unknown> = {};
+  try {
+    clientData = await req.json();
+  } catch {
+    // No body is fine — client metadata is optional
+  }
+
+  // If body has sessionToken, this is a beacon update (sendBeacon sends POST)
+  if (clientData.sessionToken) {
+    const updates: Record<string, unknown> = {};
+    if (clientData.sessionDuration) updates.session_duration_secs = clientData.sessionDuration;
+    if (clientData.status) {
+      updates.status = clientData.status;
+      updates.ended_at = new Date().toISOString();
+    }
+    if (Object.keys(updates).length > 0) {
+      await supabaseAdmin.from('chat_sessions')
+        .update(updates)
+        .eq('session_token', clientData.sessionToken as string);
+    }
+    return NextResponse.json({ success: true });
+  }
+
   const sessionToken = crypto.randomUUID();
 
-  // Geo-lookup in background (don't block response)
   const geo = ip ? await geoLookup(ip) : {};
+  const uaParsed = userAgent ? parseUserAgent(userAgent) : { device_type: null, browser: null, os: null };
 
   const { error } = await supabaseAdmin.from('chat_sessions').insert({
-    session_token: sessionToken,
-    ip_address: ip,
-    city: geo.city || null,
-    country: geo.country || null,
-    user_agent: userAgent,
+    session_token:     sessionToken,
+    ip_address:        ip,
+    city:              geo.city || null,
+    region:            geo.region || null,
+    country:           geo.country || null,
+    timezone:          geo.timezone || clientData.timezone || null,
+    isp:               geo.isp || null,
+    org:               geo.org || null,
+    user_agent:        userAgent || null,
+    device_type:       uaParsed.device_type,
+    browser:           uaParsed.browser,
+    os:                uaParsed.os,
+    screen_resolution: clientData.screenResolution || null,
+    browser_language:  clientData.browserLanguage || null,
+    connection_type:   clientData.connectionType || null,
+    referrer:          clientData.referrer || null,
+    landing_page:      clientData.landingPage || null,
+    pages_visited:     clientData.pagesVisited || [],
+    visitor_token:     clientData.visitorToken || null,
   });
 
   if (error) {
@@ -54,7 +135,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ sessionToken });
 }
 
-// ── PATCH: Update session ────────────────────────────────────────────────────
+// ── PATCH: Update session ───────────────────────────────────────────────────
 
 export async function PATCH(req: Request) {
   let body: {
@@ -65,6 +146,8 @@ export async function PATCH(req: Request) {
     status?: string;
     summarySent?: boolean;
     summarySentTo?: string;
+    pagesVisited?: string[];
+    sessionDuration?: number;
   };
 
   try {
@@ -78,7 +161,6 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: 'sessionToken is required.' }, { status: 400 });
   }
 
-  // Fetch current session
   const { data: session, error: fetchError } = await supabaseAdmin
     .from('chat_sessions')
     .select('*')
@@ -89,14 +171,11 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: 'Session not found.' }, { status: 404 });
   }
 
-  // Build update payload
   const updates: Record<string, unknown> = {
     last_message_at: new Date().toISOString(),
   };
 
-  if (body.agentId) {
-    updates.agent_id = body.agentId;
-  }
+  if (body.agentId) updates.agent_id = body.agentId;
 
   if (body.message) {
     const messages = Array.isArray(session.messages) ? session.messages : [];
@@ -119,12 +198,10 @@ export async function PATCH(req: Request) {
     }
   }
 
-  if (body.summarySent !== undefined) {
-    updates.summary_sent = body.summarySent;
-  }
-  if (body.summarySentTo) {
-    updates.summary_sent_to = body.summarySentTo;
-  }
+  if (body.summarySent !== undefined) updates.summary_sent = body.summarySent;
+  if (body.summarySentTo) updates.summary_sent_to = body.summarySentTo;
+  if (body.pagesVisited) updates.pages_visited = body.pagesVisited;
+  if (body.sessionDuration) updates.session_duration_secs = body.sessionDuration;
 
   const { error: updateError } = await supabaseAdmin
     .from('chat_sessions')

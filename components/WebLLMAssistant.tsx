@@ -32,13 +32,39 @@ export default function WebLLMAssistant() {
   const [blocked, setBlocked] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
   const messageTimestamps = useRef<number[]>([]);
+  const sessionStartRef = useRef<number>(Date.now());
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // ── Create session on mount ────────────────────────────────────────────
+  // ── Create session on mount with full client analytics ─────────────────
   useEffect(() => {
     async function initSession() {
       try {
-        const res = await fetch('/api/ai/session', { method: 'POST' });
+        // Get or create a persistent visitor token for return-visitor detection
+        let visitorToken = localStorage.getItem('rh_visitor_token');
+        if (!visitorToken) {
+          visitorToken = crypto.randomUUID();
+          localStorage.setItem('rh_visitor_token', visitorToken);
+        }
+
+        // Collect client-side metadata
+        const nav = navigator as Record<string, unknown>;
+        const conn = (nav.connection ?? nav.mozConnection ?? nav.webkitConnection) as Record<string, string> | undefined;
+
+        const clientData = {
+          screenResolution: `${window.screen.width}x${window.screen.height}`,
+          browserLanguage:  navigator.language || '',
+          timezone:         Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+          referrer:         document.referrer || '',
+          landingPage:      window.location.pathname,
+          connectionType:   conn?.effectiveType || conn?.type || '',
+          visitorToken,
+        };
+
+        const res = await fetch('/api/ai/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(clientData),
+        });
         const data = await res.json();
         if (data.sessionToken) {
           setSessionToken(data.sessionToken);
@@ -48,7 +74,23 @@ export default function WebLLMAssistant() {
       }
     }
     initSession();
-  }, []);
+    sessionStartRef.current = Date.now();
+
+    // Send session duration on page unload
+    const handleUnload = () => {
+      const token = sessionToken;
+      if (!token) return;
+      const duration = Math.round((Date.now() - sessionStartRef.current) / 1000);
+      navigator.sendBeacon('/api/ai/session', JSON.stringify({
+        sessionToken: token,
+        sessionDuration: duration,
+        status: 'completed',
+      }));
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionToken]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

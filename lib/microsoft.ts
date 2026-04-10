@@ -54,7 +54,8 @@ export function getTokensFromReq(req: NextRequest): MsTokens | null {
 /** Build a Set-Cookie header value. */
 export function tokenCookieValue(tokens: MsTokens): string {
   const json = JSON.stringify(tokens);
-  return `${COOKIE}=${encodeURIComponent(json)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`;
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  return `${COOKIE}=${encodeURIComponent(json)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000${secure}`;
 }
 
 /** Set the token cookie on a NextResponse. */

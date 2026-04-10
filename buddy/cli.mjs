@@ -400,7 +400,7 @@ async function main() {
   }
 
   console.log('');
-  log(c.dim, '  Commands: /quit  /clear  /handoff  /worklog  /continue');
+  log(c.dim, '  Commands: /bye  /reset  /baton  /log  /resume  /status');
   console.log('');
 
   const history = [];
@@ -450,27 +450,27 @@ async function main() {
     const input = line.trim();
     if (!input) { rl.prompt(); return; }
 
-    if (input === '/quit' || input === '/exit' || input === '/q') {
+    if (input === '/bye' || input === '/b') {
       generateHandoff(history);
-      log(c.yellow, '\n  👋 Handoff saved. Claude can continue with: buddy --continue');
+      log(c.yellow, '\n  👋 Baton saved. Claude can continue with: buddy --continue');
       process.exit(0);
     }
 
-    if (input === '/clear') {
+    if (input === '/reset') {
       history.length = 0;
       filesModifiedThisSession.clear();
       log(c.green, '  ✓ Conversation cleared');
       rl.prompt(); return;
     }
 
-    if (input === '/handoff') {
+    if (input === '/baton') {
       generateHandoff(history);
-      log(c.green, '  ✓ Handoff saved to .buddy/handoff.md');
-      log(c.dim, '  Claude will read this automatically on next session.');
+      log(c.green, '  ✓ Baton saved to .buddy/handoff.md');
+      log(c.dim, '  Claude will pick this up automatically on next session.');
       rl.prompt(); return;
     }
 
-    if (input === '/worklog') {
+    if (input === '/log') {
       const recent = getRecentWorklog(15);
       if (!recent.length) { log(c.dim, '  No worklog entries.'); }
       else {
@@ -483,10 +483,10 @@ async function main() {
       rl.prompt(); return;
     }
 
-    if (input === '/continue') {
+    if (input === '/resume') {
       const h = readHandoff();
-      if (!h) { log(c.dim, '  No handoff found.'); rl.prompt(); return; }
-      log(c.magenta, '  📋 Reading handoff...');
+      if (!h) { log(c.dim, '  No baton found.'); rl.prompt(); return; }
+      log(c.magenta, '  📋 Reading baton...');
       console.log('');
       try {
         const reply = await agentLoop('Continue from the handoff context. Read the handoff and pick up where the previous session left off.', history);
@@ -496,6 +496,30 @@ async function main() {
       console.log('');
       log(c.dim, `  [${activeBackend}]`);
       console.log('');
+      rl.prompt(); return;
+    }
+
+    if (input === '/status') {
+      log(c.cyan, `  Backend: ${activeBackend ?? 'not connected'}`);
+      log(c.dim, `  Messages: ${history.length}`);
+      log(c.dim, `  Files modified: ${filesModifiedThisSession.size}`);
+      if (filesModifiedThisSession.size > 0) {
+        [...filesModifiedThisSession].forEach(f => log(c.dim, `    ${f}`));
+      }
+      const h = readHandoff();
+      log(c.dim, `  Baton: ${h ? 'available' : 'none'}`);
+      rl.prompt(); return;
+    }
+
+    if (input === '/help') {
+      log(c.yellow, '  Buddy Commands:');
+      log(c.dim, '  /bye     — Save baton and exit');
+      log(c.dim, '  /reset   — Clear conversation');
+      log(c.dim, '  /baton   — Save handoff for Claude (without exiting)');
+      log(c.dim, '  /resume  — Continue from Claude\'s handoff');
+      log(c.dim, '  /log     — View recent actions from both agents');
+      log(c.dim, '  /status  — Show backend, messages, modified files');
+      log(c.dim, '  /help    — Show this help');
       rl.prompt(); return;
     }
 

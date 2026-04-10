@@ -282,7 +282,26 @@ read_file, write_file, edit_file, run_command, list_files, search_files
 let activeBackend = null;
 
 async function callLLM(messages) {
-  // Try Ollama first
+  // Try Groq first (70B model, faster and smarter than local 7B)
+  if (GROQ_API_KEY) {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model: GROQ_MODEL, messages, tools: TOOL_DEFS,
+          tool_choice: 'auto', temperature: 0.3, max_tokens: 4096,
+        }),
+        signal: AbortSignal.timeout(60000),
+      });
+      if (res.ok) {
+        activeBackend = `groq/${GROQ_MODEL}`;
+        return (await res.json()).choices[0].message;
+      }
+    } catch {}
+  }
+
+  // Fallback to Ollama (local, works offline)
   try {
     const res = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: 'POST',
@@ -291,7 +310,7 @@ async function callLLM(messages) {
         model: OLLAMA_MODEL, messages, tools: TOOL_DEFS,
         stream: false, options: { temperature: 0.3, num_predict: 4096 },
       }),
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(120000),
     });
     if (res.ok) {
       activeBackend = `ollama/${OLLAMA_MODEL}`;
@@ -299,22 +318,7 @@ async function callLLM(messages) {
     }
   } catch {}
 
-  // Fallback to Groq
-  if (!GROQ_API_KEY) throw new Error('Ollama not running and GROQ_API_KEY not set.');
-
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
-    body: JSON.stringify({
-      model: GROQ_MODEL, messages, tools: TOOL_DEFS,
-      tool_choice: 'auto', temperature: 0.3, max_tokens: 4096,
-    }),
-    signal: AbortSignal.timeout(60000),
-  });
-
-  if (!res.ok) throw new Error(`Groq error ${res.status}: ${await res.text()}`);
-  activeBackend = `groq/${GROQ_MODEL}`;
-  return (await res.json()).choices[0].message;
+  throw new Error('Both Groq and Ollama failed. Check your internet or run: ollama serve');
 }
 
 // ── Agent Loop ──────────────────────────────────────────────────────────────

@@ -96,7 +96,7 @@ export default async function StockIntelligencePage({ params, searchParams }: Pr
     <div className="space-y-6">
       {/* Back + Header */}
       <div>
-        <Link href="/dashboard/investments/intelligence" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-white transition-colors mb-4">
+        <Link href="/dashboard/stock-intelligence" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-white transition-colors mb-4">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Intelligence
         </Link>
 
@@ -146,7 +146,7 @@ export default async function StockIntelligencePage({ params, searchParams }: Pr
         {tabs.map((t) => (
           <Link
             key={t.key}
-            href={`/dashboard/investments/intelligence/${symbol}?tab=${t.key}`}
+            href={`/dashboard/stock-intelligence/${symbol}?tab=${t.key}`}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
               tab === t.key
                 ? 'bg-zinc-800 text-white border-b-2 border-rose-500'

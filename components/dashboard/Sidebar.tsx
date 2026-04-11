@@ -81,8 +81,8 @@ const NAV: NavItem[] = [
       { label: 'Bank Statement', href: '/dashboard/accounts/bank',     icon: Landmark },
       { label: 'GST Report',     href: '/dashboard/accounts/gst',      icon: BadgePercent },
       { label: 'P&L Statement',  href: '/dashboard/accounts/pl',       icon: TrendingUp },
-      { label: 'Investments',    href: '/dashboard/investments',        icon: BarChart2 },
-      { label: 'Stock Intelligence', href: '/dashboard/investments/intelligence', icon: AlertTriangle },
+      { label: 'Investments',        href: '/dashboard/investments',          icon: BarChart2 },
+      { label: 'Stock Intelligence', href: '/dashboard/stock-intelligence', icon: AlertTriangle },
     ],
   },
 

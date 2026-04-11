@@ -152,7 +152,7 @@ export default async function IntelligenceDashboard() {
                   return (
                     <tr key={h.symbol} className="hover:bg-zinc-800/30 transition-colors">
                       <td className="px-4 py-2">
-                        <Link href={`/dashboard/investments/intelligence/${h.symbol}`} className="hover:text-amber-400 transition-colors">
+                        <Link href={`/dashboard/stock-intelligence/${h.symbol}`} className="hover:text-amber-400 transition-colors">
                           <span className="font-mono font-semibold text-white text-xs">{h.symbol}</span>
                           <span className="text-[10px] text-zinc-600 ml-2 hidden xl:inline">{h.company_name.split(' ').slice(0, 3).join(' ')}</span>
                         </Link>
@@ -172,7 +172,7 @@ export default async function IntelligenceDashboard() {
                         {worst !== 'none' && <span className={`inline-block h-2.5 w-2.5 rounded-full ${severityDot[worst] ?? 'bg-zinc-600'}`} />}
                       </td>
                       <td className="px-3 py-2">
-                        <Link href={`/dashboard/investments/intelligence/${h.symbol}`}>
+                        <Link href={`/dashboard/stock-intelligence/${h.symbol}`}>
                           <ChevronRight className="h-3.5 w-3.5 text-zinc-700 hover:text-zinc-400 transition-colors" />
                         </Link>
                       </td>
@@ -200,7 +200,7 @@ export default async function IntelligenceDashboard() {
                       <summary className="flex items-center gap-3 px-4 py-2.5 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-zinc-800/30 transition-colors">
                         <span className={`h-2 w-2 rounded-full shrink-0 ${severityDot[s.severity] ?? 'bg-zinc-600'}`} />
                         <Icon className={`h-3.5 w-3.5 shrink-0 ${severityColor[s.severity]?.split(' ')[0] ?? 'text-zinc-400'}`} />
-                        <Link href={`/dashboard/investments/intelligence/${s.symbol}`}
+                        <Link href={`/dashboard/stock-intelligence/${s.symbol}`}
                           className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:text-white shrink-0">
                           {s.symbol}
                         </Link>

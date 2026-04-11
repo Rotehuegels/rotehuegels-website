@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import SavePDFButton from '@/components/SavePDFButton';
+import ReportContainer from '@/components/ReportContainer';
 import StatementFYSelector from './StatementFYSelector';
 import QRCode from 'qrcode';
 import fs from 'fs';
@@ -252,12 +252,11 @@ export default async function CustomerStatementPage({
         </div>
         <div className="flex items-center gap-3">
           <StatementFYSelector customerId={id} current={selectedFY} />
-          <SavePDFButton targetId="statement-doc" filename="Customer-Statement" />
         </div>
       </div>
 
-      <div className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
-        <div id="rh-statement-doc" className="bg-white text-zinc-900">
+      <ReportContainer filename={`Statement-${customer.name.replace(/\s+/g, '-')}`}>
+        <div className="bg-white text-zinc-900">
 
           {/* ══════════════════════ PAGE 1 — SOA ══════════════════════ */}
           <div style={docStyle}>
@@ -899,7 +898,7 @@ export default async function CustomerStatementPage({
           })}
 
         </div>
-      </div>
+      </ReportContainer>
     </div>
   );
 }

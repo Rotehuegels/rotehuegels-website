@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import FYSelector from './FYSelector';
 import { BadgePercent } from 'lucide-react';
-import PrintButton from '../pl/PrintButton';
+import ReportContainer from '@/components/ReportContainer';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -101,12 +101,12 @@ export default async function GSTPage({ searchParams }: { searchParams: Promise<
         </div>
         <div className="flex items-center gap-3">
           <FYSelector current={fy} />
-          <SavePDFButton targetId="gst-report" filename="GST-Report" />
         </div>
       </div>
 
       {/* A4 Document */}
-      <div className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
+      <ReportContainer filename={`GST-Report-${fy}`}>
+      <div className="bg-white overflow-hidden">
 
         {/* Letterhead */}
         <div className="bg-gray-900 px-8 py-5 flex items-center justify-between">
@@ -267,6 +267,7 @@ export default async function GSTPage({ searchParams }: { searchParams: Promise<
           <span>This is an internal management report. Not audited.</span>
         </div>
       </div>
+      </ReportContainer>
 
     </div>
   );

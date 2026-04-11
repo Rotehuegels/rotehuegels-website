@@ -4,7 +4,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import QuoteActions from './QuoteActions';
-import SavePDFButton from '@/components/SavePDFButton';
+import ReportContainer from '@/components/ReportContainer';
 import SendEmailButton from '@/components/SendEmailButton';
 
 export const dynamic = 'force-dynamic';
@@ -101,7 +101,6 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
         <div className="flex gap-2">
           <SendEmailButton type="quote_email" entityId={id} label="Email Quote"
             confirmMessage="Send this quotation to the customer via email?" />
-          <SavePDFButton targetId="quote-doc" filename="Quote" />
           <QuoteActions
             quoteId={id}
             currentStatus={quote.status}
@@ -136,8 +135,8 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
       )}
 
       {/* Letterhead document */}
-      <div className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
-        <div id="rh-quote-doc" className="bg-white text-zinc-900"
+      <ReportContainer filename={`Quote-${quote.quote_no}`}>
+        <div className="bg-white text-zinc-900"
           style={{ padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}>
 
           {/* Header */}
@@ -356,7 +355,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
           </div>
 
         </div>
-      </div>
+      </ReportContainer>
     </div>
   );
 }

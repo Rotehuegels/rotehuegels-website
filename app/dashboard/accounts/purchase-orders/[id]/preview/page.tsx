@@ -2,7 +2,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
-import SavePDFButton from '@/components/SavePDFButton';
+import ReportContainer from '@/components/ReportContainer';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,12 +94,11 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
           <span className="text-xs text-zinc-500">Purchase Order</span>
           <span className="font-mono text-sm text-amber-400 font-bold">{po.po_no}</span>
         </div>
-        <SavePDFButton targetId="po-doc" filename="Purchase-Order" />
       </div>
 
       {/* A4 Document */}
-      <div id="po-doc" className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
-        <div id="rh-po" className="bg-white text-zinc-900"
+      <ReportContainer filename={`PO-${po.po_no}`}>
+        <div className="bg-white text-zinc-900"
           style={{ padding: '10mm 14mm', fontFamily: 'Arial, sans-serif', fontSize: '10px', display: 'flex', flexDirection: 'column' }}>
 
           {/* ── Header ───────────────────────────────────────── */}
@@ -317,7 +316,7 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
           </div>
 
         </div>
-      </div>
+      </ReportContainer>
     </div>
   );
 }

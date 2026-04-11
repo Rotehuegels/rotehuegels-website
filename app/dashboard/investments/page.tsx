@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { TrendingUp, TrendingDown, BarChart3, Sparkles, Gem } from 'lucide-react';
-import RefreshButton from './RefreshButton';
+import PriceRefresher from './PriceRefresher';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const fmt = (n: number) =>
@@ -19,6 +19,9 @@ interface Holding {
   avg_buy_price: number;
   total_invested: number;
   sector: string;
+  last_price: number | null;
+  last_day_change_pct: number | null;
+  price_updated_at: string | null;
 }
 
 interface EnrichedHolding extends Holding {
@@ -258,45 +261,7 @@ async function fetchLive22KRate(): Promise<number | null> {
   }
 }
 
-// ─── Yahoo Finance price fetching (faster than NSE, no cookies needed) ───────
-async function fetchYahooPrices(
-  holdings: Array<{ symbol: string; yahoo_symbol: string }>,
-): Promise<Record<string, { price: number; dayChangePct: number }>> {
-  const priceMap: Record<string, { price: number; dayChangePct: number }> = {};
-
-  // Batch fetch — 5 at a time for speed
-  const batches: Array<typeof holdings> = [];
-  for (let i = 0; i < holdings.length; i += 5) {
-    batches.push(holdings.slice(i, i + 5));
-  }
-
-  for (const batch of batches) {
-    const results = await Promise.all(
-      batch.map(async (h) => {
-        try {
-          const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(h.yahoo_symbol)}?interval=1d&range=1d`;
-          const res = await fetch(url, {
-            headers: { 'User-Agent': 'Mozilla/5.0' },
-            next: { revalidate: 300 }, // Cache for 5 minutes
-          });
-          if (!res.ok) return null;
-          const data = await res.json();
-          const meta = data.chart?.result?.[0]?.meta;
-          if (!meta?.regularMarketPrice) return null;
-          const price = meta.regularMarketPrice;
-          const prev = meta.chartPreviousClose ?? meta.previousClose;
-          const changePct = prev ? ((price - prev) / prev) * 100 : 0;
-          return { symbol: h.symbol, price, dayChangePct: changePct };
-        } catch { return null; }
-      }),
-    );
-    for (const r of results) {
-      if (r) priceMap[r.symbol] = { price: r.price, dayChangePct: r.dayChangePct };
-    }
-  }
-
-  return priceMap;
-}
+// Prices are loaded from cached DB values (instant). Background refresh via PriceRefresher component.
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default async function InvestmentsPage() {
@@ -323,18 +288,16 @@ export default async function InvestmentsPage() {
 
   const currentDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  // Fetch Yahoo prices, gold rate, and AI ideas in parallel
-  // Yahoo Finance is faster (no cookie dance) and cached for 5 min
-  const [priceMap, live22kRate, ideasResult] = await Promise.all([
-    fetchYahooPrices(rows.map(h => ({ symbol: h.symbol, yahoo_symbol: h.yahoo_symbol }))),
+  // Use cached prices from DB (instant) + gold rate + AI ideas
+  // Prices are refreshed in background by PriceRefresher component
+  const [live22kRate, ideasResult] = await Promise.all([
     fetchLive22KRate(),
     generateInvestmentIdeas(sectorAllocations, currentDate),
   ]);
 
   const enriched: EnrichedHolding[] = rows.map((h) => {
-    const live         = priceMap[h.symbol];
-    const currentPrice = live?.price ?? null;
-    const dayChangePct = live?.dayChangePct ?? null;
+    const currentPrice = h.last_price ? Number(h.last_price) : null;
+    const dayChangePct = h.last_day_change_pct ? Number(h.last_day_change_pct) : null;
     const currentValue = currentPrice !== null ? currentPrice * h.quantity : null;
     const pnl          = currentValue !== null ? currentValue - h.total_invested : null;
     const pnlPct       = pnl !== null ? (pnl / h.total_invested) * 100 : null;
@@ -346,6 +309,9 @@ export default async function InvestmentsPage() {
   const totalPnl      = totalCurrent - totalInvested;
   const totalPnlPct   = (totalPnl / totalInvested) * 100;
   const liveCount     = enriched.filter((h) => h.currentPrice !== null).length;
+  const priceAge      = rows[0]?.price_updated_at
+    ? Math.floor((Date.now() - new Date(rows[0].price_updated_at).getTime()) / 1000)
+    : null;
 
   const sectorMap: Record<string, EnrichedHolding[]> = {};
   for (const h of enriched) {
@@ -397,10 +363,10 @@ export default async function InvestmentsPage() {
         <div>
           <h1 className="text-xl font-bold text-white">Investments</h1>
           <p className="text-xs text-zinc-500">
-            ICICI Direct Demat · {liveCount}/{enriched.length} live · NSE
+            ICICI Direct Demat · {liveCount}/{enriched.length} priced{priceAge !== null && priceAge < 600 ? ' · live' : ''}
           </p>
         </div>
-        <RefreshButton />
+        <PriceRefresher lastUpdated={rows[0]?.price_updated_at ?? null} />
       </div>
 
       {/* Summary Strip — 5 cols compact */}

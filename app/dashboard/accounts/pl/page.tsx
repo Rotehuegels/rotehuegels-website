@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import FYSelector from './FYSelector';
 import { FileText } from 'lucide-react';
-import ReportViewer from '@/components/ReportViewer';
+import SavePDFButton from '@/components/SavePDFButton';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -216,11 +216,15 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
           <FileText className="h-5 w-5 text-amber-400" />
           <h1 className="text-lg font-bold text-white">P&amp;L Statement</h1>
         </div>
-        <FYSelector current={fy} />
+        <div className="flex items-center gap-2">
+          <FYSelector current={fy} />
+          <SavePDFButton targetId="pl-doc" filename={`PL-Statement-${fy}`} />
+        </div>
       </div>
 
       {/* A4 Document */}
-      <ReportViewer filename={`PL-Statement-${fy}`}>
+      <div className="mx-auto max-w-[800px]">
+      <div id="pl-doc" className="bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden">
 
         {/* Letterhead */}
         <div className="bg-gray-900 px-8 py-5 flex items-center justify-between">
@@ -380,7 +384,8 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
           <span>Generated on {today} &nbsp;|&nbsp; {CO.name}</span>
           <span>This is an internal management report. Not audited.</span>
         </div>
-      </ReportViewer>
+      </div>
+      </div>
 
       {orders.length === 0 && expenses.length === 0 && (
         <div className="mx-auto max-w-[800px] mt-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-12 text-center">

@@ -72,7 +72,7 @@ export async function GET() {
 
   if (!holdings?.length) return NextResponse.json({ error: 'No holdings' }, { status: 404 });
 
-  // Separate SGB bonds (NSE-only) from regular stocks (Yahoo)
+  // SGB bonds share the same NSE quote — fetch once, apply to all SGB symbols
   const sgbHoldings = holdings.filter(h => h.symbol.startsWith('SGB'));
   const regularHoldings = holdings.filter(h => !h.symbol.startsWith('SGB'));
 
@@ -84,15 +84,13 @@ export async function GET() {
     return { ...h, quote };
   });
 
-  // Fetch SGB from NSE (needs cookie, but only 1-2 bonds)
+  // Fetch SGB price once from NSE, apply to all SGB holdings (they share the same price)
   const nsePromise = (async () => {
     if (!sgbHoldings.length) return [];
     const cookie = await getNSECookie();
-    return Promise.all(sgbHoldings.map(async h => {
-      const nseSymbol = NSE_SYMBOL_MAP[h.symbol] ?? h.symbol;
-      const quote = await nseQuote(nseSymbol, cookie);
-      return { ...h, quote };
-    }));
+    // Fetch one SGB quote — all SGB bonds have the same market price
+    const sgbQuote = await nseQuote('SGBSEP31II', cookie);
+    return sgbHoldings.map(h => ({ ...h, quote: sgbQuote }));
   })();
 
   // Run Yahoo + NSE in parallel

@@ -1,9 +1,17 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import FYSelector from './FYSelector';
-import { FileText } from 'lucide-react';
+import { FileText, Printer } from 'lucide-react';
+import Link from 'next/link';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
+
+const CO = {
+  name:  'Rotehuegel Research Business Consultancy Private Limited',
+  cin:   'U70200TN2025PTC184573',
+  gstin: '33AAPCR0554G1ZE',
+  pan:   'AAPCR0554G',
+};
 
 function parseFY(fy: string) {
   const [startYear] = fy.split('-').map(Number);
@@ -16,21 +24,21 @@ function parseFY(fy: string) {
   };
 }
 
-// ── P&L Row components ────────────────────────────────────────
-function Row({ label, value, indent = false, bold = false, sub = false, positive }: {
-  label: string; value: number; indent?: boolean; bold?: boolean; sub?: boolean; positive?: boolean;
+// ── Document-style P&L Row components ────────────────────────────
+function Row({ label, value, indent = false, bold = false, sub = false, positive, highlight = false }: {
+  label: string; value: number; indent?: boolean; bold?: boolean; sub?: boolean; positive?: boolean; highlight?: boolean;
 }) {
   const isNeg = value < 0;
-  const color = positive !== undefined
-    ? (positive ? 'text-emerald-400' : 'text-rose-400')
-    : (isNeg ? 'text-rose-400' : 'text-white');
+  const valColor = positive !== undefined
+    ? (positive ? 'text-green-700' : 'text-red-700')
+    : (isNeg ? 'text-red-700' : 'text-gray-900');
 
   return (
-    <div className={`flex items-center justify-between py-2 ${indent ? 'pl-6' : ''} ${sub ? 'text-zinc-400' : ''}`}>
-      <span className={`text-sm ${bold ? 'font-semibold text-zinc-100' : sub ? 'text-zinc-400' : 'text-zinc-300'}`}>
+    <div className={`flex items-center justify-between py-1.5 ${indent ? 'pl-8' : ''} ${highlight ? 'bg-gray-50 -mx-6 px-6' : ''}`}>
+      <span className={`text-[13px] ${bold ? 'font-bold text-gray-900' : sub ? 'text-gray-400 text-[12px]' : 'text-gray-700'}`}>
         {label}
       </span>
-      <span className={`text-sm font-mono tabular-nums ${bold ? 'font-bold' : ''} ${color}`}>
+      <span className={`text-[13px] font-mono tabular-nums ${bold ? 'font-bold' : ''} ${valColor}`}>
         {isNeg ? `(${fmt(Math.abs(value))})` : fmt(value)}
       </span>
     </div>
@@ -38,13 +46,25 @@ function Row({ label, value, indent = false, bold = false, sub = false, positive
 }
 
 function Divider({ thick = false }: { thick?: boolean }) {
-  return <div className={`border-t ${thick ? 'border-zinc-500 my-1' : 'border-zinc-800 my-0.5'}`} />;
+  return <div className={`${thick ? 'border-t-2 border-gray-800 my-1' : 'border-t border-gray-200 my-0.5'}`} />;
 }
 
 function SectionHead({ children }: { children: React.ReactNode }) {
   return (
-    <div className="pt-4 pb-1">
-      <p className="text-xs font-bold uppercase tracking-widest text-amber-400">{children}</p>
+    <div className="pt-5 pb-1">
+      <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-amber-700 border-b border-amber-200 pb-1">{children}</p>
+    </div>
+  );
+}
+
+function NetProfitBox({ label, value }: { label: string; value: number }) {
+  const positive = value >= 0;
+  return (
+    <div className={`flex items-center justify-between py-2.5 px-4 -mx-6 mt-2 ${positive ? 'bg-green-50 border-y-2 border-green-600' : 'bg-red-50 border-y-2 border-red-600'}`}>
+      <span className="text-[14px] font-black text-gray-900">{label}</span>
+      <span className={`text-[16px] font-black font-mono tabular-nums ${positive ? 'text-green-700' : 'text-red-700'}`}>
+        {value < 0 ? `(${fmt(Math.abs(value))})` : fmt(value)}
+      </span>
     </div>
   );
 }
@@ -185,76 +205,95 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   const effectiveReceived = grossReceived + tdsDeducted;
   const pendingRec        = totalInvoiced - effectiveReceived;
 
-  const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
+  const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="p-8 space-y-6 print:p-0 print:space-y-4">
+    <div className="p-6 print:p-0">
 
-      {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-4 print:hidden">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <FileText className="h-6 w-6 text-amber-400" />
-            P&amp;L Statement
-          </h1>
-          <p className="mt-1 text-sm text-zinc-400">{full}</p>
+      {/* Toolbar — print:hidden */}
+      <div className="flex items-center justify-between mb-5 print:hidden">
+        <div className="flex items-center gap-3">
+          <FileText className="h-5 w-5 text-amber-400" />
+          <h1 className="text-lg font-bold text-white">P&amp;L Statement</h1>
         </div>
-        <FYSelector current={fy} />
+        <div className="flex items-center gap-3">
+          <FYSelector current={fy} />
+          <Link href={`/dashboard/accounts/pl/preview?fy=${fy}`}
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-xs font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
+            <Printer className="h-3.5 w-3.5" /> Print / Save PDF
+          </Link>
+        </div>
       </div>
 
-      {/* Print header — only shows when printing */}
-      <div className="hidden print:block mb-6">
-        <p className="text-lg font-bold text-black">Rotehügels</p>
-        <p className="text-base font-semibold text-black">Profit &amp; Loss Statement</p>
-        <p className="text-sm text-gray-600">{full}</p>
-        <p className="text-xs text-gray-400 mt-1">Generated {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-      </div>
+      {/* A4 Document */}
+      <div className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
 
-      {/* Main P&L */}
-      <div className={`${glass} p-6 print:border print:border-gray-300 print:rounded-none print:bg-white print:text-black`}>
+        {/* Letterhead */}
+        <div className="bg-gray-900 px-8 py-5 flex items-center justify-between">
+          <div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/Logo.png" alt="Rotehügels" className="h-8 mb-2" />
+            <p className="text-[10px] text-gray-400">{CO.name}</p>
+            <p className="text-[9px] text-gray-500">CIN: {CO.cin} &nbsp;|&nbsp; GSTIN: {CO.gstin} &nbsp;|&nbsp; PAN: {CO.pan}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-black text-amber-400 uppercase tracking-widest">Profit &amp; Loss</p>
+            <p className="text-sm font-black text-amber-400 uppercase tracking-widest">Statement</p>
+            <p className="text-[11px] text-gray-300 mt-1 font-mono">{label}</p>
+          </div>
+        </div>
 
-        {/* INCOME */}
-        <SectionHead>A — Income (Revenue)</SectionHead>
-        <p className="text-[10px] text-zinc-600 mb-2">Accrual basis — orders raised in {label}</p>
-        <Row label="Sales of Goods" value={goodsBase} indent />
-        <Row label="Sales of Services" value={serviceBase} indent />
-        <Divider />
-        <Row label="Total Revenue (excl. GST)" value={totalBase} bold positive={totalBase >= 0} />
+        {/* Period bar */}
+        <div className="bg-gray-50 px-8 py-2 border-b border-gray-200 flex items-center justify-between">
+          <p className="text-[11px] text-gray-600">
+            For the period <strong>{full}</strong>
+          </p>
+          <p className="text-[10px] text-gray-400">
+            Prepared on accrual basis · All amounts in INR
+          </p>
+        </div>
 
-        {/* COST OF GOODS / DIRECT COSTS */}
-        <SectionHead>B — Direct Costs</SectionHead>
-        <Row label="Purchases / Raw Materials" value={purchases} indent />
-        <Divider />
-        <Row label="Gross Profit  (A − B)" value={grossProfit} bold positive={grossProfit >= 0} />
+        {/* P&L Body */}
+        <div className="px-8 py-4">
 
-        {/* OPERATING EXPENSES */}
-        <SectionHead>C — Operating Expenses</SectionHead>
-        <Row label="Salaries & Wages" value={salaries} indent />
-        <Row label="Other Expenses" value={otherExp} indent />
-        <Divider />
-        <Row label="Total Operating Expenses" value={salaries + otherExp} bold />
+          {/* INCOME */}
+          <SectionHead>A — Income (Revenue)</SectionHead>
+          <Row label="Sales of Goods" value={goodsBase} indent />
+          <Row label="Sales of Services" value={serviceBase} indent />
+          <Divider />
+          <Row label="Total Revenue (excl. GST)" value={totalBase} bold positive={totalBase >= 0} highlight />
 
-        <Divider thick />
-        <Row label="Operating Profit  (Gross Profit − C)" value={operatingProfit} bold positive={operatingProfit >= 0} />
+          {/* DIRECT COSTS */}
+          <SectionHead>B — Direct Costs</SectionHead>
+          <Row label="Purchases / Raw Materials" value={purchases} indent />
+          <Divider />
+          <Row label="Gross Profit  (A − B)" value={grossProfit} bold positive={grossProfit >= 0} highlight />
 
-        {/* TAX & STATUTORY */}
-        <SectionHead>D — Tax & Statutory Payments</SectionHead>
-        <Row label="Advance Tax Paid" value={advanceTax} indent />
-        <Row label="GST Paid to Govt (net of ITC)" value={gstPaid} indent />
-        <Divider />
-        <Row label="Total Tax Payments" value={advanceTax + gstPaid} bold />
+          {/* OPERATING EXPENSES */}
+          <SectionHead>C — Operating Expenses</SectionHead>
+          <Row label="Salaries & Wages" value={salaries} indent />
+          <Row label="Other Expenses" value={otherExp} indent />
+          <Divider />
+          <Row label="Total Operating Expenses" value={salaries + otherExp} bold />
 
-        <Divider thick />
-        <Row label="Net Profit / (Loss) after Tax" value={netProfit} bold positive={netProfit >= 0} />
-      </div>
+          <Divider thick />
+          <Row label="Operating Profit  (Gross Profit − C)" value={operatingProfit} bold positive={operatingProfit >= 0} highlight />
 
-      {/* Two-col: GST + TDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 print:gap-4">
+          {/* TAX */}
+          <SectionHead>D — Tax &amp; Statutory Payments</SectionHead>
+          <Row label="Advance Tax Paid" value={advanceTax} indent />
+          <Row label="GST Paid to Govt (net of ITC)" value={gstPaid} indent />
+          <Divider />
+          <Row label="Total Tax Payments" value={advanceTax + gstPaid} bold />
 
-        {/* GST Summary */}
-        <div className={`${glass} p-6 print:border print:border-gray-300 print:rounded-none print:bg-white`}>
-          <SectionHead>GST Summary</SectionHead>
-          <div className="mt-2 space-y-0.5">
+          {/* NET PROFIT */}
+          <NetProfitBox label="Net Profit / (Loss) after Tax" value={netProfit} />
+        </div>
+
+        {/* GST + TDS — two columns */}
+        <div className="grid grid-cols-2 divide-x divide-gray-200 border-t border-gray-200">
+          <div className="px-8 py-4">
+            <SectionHead>GST Summary</SectionHead>
             <Row label="Output GST (Liability)" value={totalGST} bold />
             <Row label="CGST" value={outputCGST} indent sub />
             <Row label="SGST" value={outputSGST} indent sub />
@@ -264,118 +303,94 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
             <Row label="GST Paid to Govt" value={gstPaid} indent />
             <Divider thick />
             <Row label="Net GST Position" value={netGSTLiability} bold positive={netGSTLiability <= 0} />
-            {netGSTLiability > 0 && (
-              <p className="text-xs text-amber-400 pt-1">⚠ GST payable to government</p>
-            )}
-            {netGSTLiability <= 0 && (
-              <p className="text-xs text-emerald-400 pt-1">✓ GST liability cleared</p>
-            )}
+            <p className={`text-[10px] mt-1 ${netGSTLiability > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+              {netGSTLiability > 0 ? '⚠ GST payable to government' : '✓ GST liability cleared'}
+            </p>
           </div>
-        </div>
-
-        {/* TDS Summary */}
-        <div className={`${glass} p-6 print:border print:border-gray-300 print:rounded-none print:bg-white`}>
-          <SectionHead>TDS Summary</SectionHead>
-          <div className="mt-2 space-y-0.5">
+          <div className="px-8 py-4">
+            <SectionHead>TDS Summary</SectionHead>
             <Row label="TDS Deducted by Clients" value={tdsDeducted} bold />
-            <p className="text-xs text-zinc-600 pl-1 pb-1">Recoverable via Form 26AS / AIS</p>
+            <p className="text-[10px] text-gray-400 pl-1 pb-1">Recoverable via Form 26AS / AIS</p>
             <Divider />
             <Row label="TDS Paid to Govt" value={tdsPaid} bold />
             <Divider thick />
             <Row label="Net TDS Refundable" value={tdsDeducted - tdsPaid} bold positive={(tdsDeducted - tdsPaid) >= 0} />
             {(tdsDeducted - tdsPaid) > 0 && (
-              <p className="text-xs text-emerald-400 pt-1">✓ Refundable / adjustable in ITR</p>
+              <p className="text-[10px] text-green-600 mt-1">✓ Refundable / adjustable in ITR</p>
             )}
           </div>
         </div>
-      </div>
 
-      {/* Receivables Position */}
-      <div className={`${glass} p-6 print:border print:border-gray-300 print:rounded-none print:bg-white`}>
-        <SectionHead>Receivables Position</SectionHead>
-        <p className="text-[10px] text-zinc-600 mb-2">
-          All payments for {label} orders — date recorded does not matter.
-          TDS deducted by clients is treated as settled (recoverable via 26AS / ITR).
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12">
-          <div>
-            <Row label="Total Invoiced (incl. GST)" value={totalInvoiced} bold />
-            <Row label="Cash Received from Clients" value={grossReceived} indent />
-            <Row label="TDS Deducted by Clients" value={tdsDeducted} indent />
-            <Row label="Effective Amount Settled" value={effectiveReceived} indent />
-            <Row label="Net to Bank" value={netReceived} indent sub />
-            <Divider thick />
-            <Row label="Outstanding Receivables" value={pendingRec} bold positive={pendingRec === 0} />
-          </div>
-          <div className="mt-4 sm:mt-0">
-            {pendingRec > 0 && (
-              <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4">
-                <p className="text-xs text-zinc-400 mb-1">Outstanding collection</p>
-                <p className="text-2xl font-black text-rose-400">{fmt(pendingRec)}</p>
-                <p className="text-xs text-zinc-600 mt-1">Invoiced but not yet received or TDS-settled</p>
-              </div>
-            )}
-            {pendingRec === 0 && (
-              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4">
-                <p className="text-sm text-emerald-400 font-semibold">All invoices collected</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Brought-Forward Receivables — only shown when prev FY had outstanding amounts */}
-      {bfOpening > 0 && (
-        <div className={`${glass} p-6 print:border print:border-gray-300 print:rounded-none print:bg-white`}>
-          <SectionHead>Brought Forward Receivables ({prevFYLabel})</SectionHead>
-          <p className="text-[10px] text-zinc-600 mb-2">
-            Invoices raised in {prevFYLabel} that were not fully settled by 31 March {startYear}.
-            These are <em>not</em> counted as {label} revenue — they are prior-year collections only.
+        {/* Receivables */}
+        <div className="px-8 py-4 border-t border-gray-200">
+          <SectionHead>Receivables Position</SectionHead>
+          <p className="text-[10px] text-gray-400 mb-2">
+            TDS deducted by clients treated as settled (recoverable via 26AS / ITR).
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12">
+          <div className="grid grid-cols-2 gap-8">
             <div>
-              <Row label={`Opening B/F (as at 31 Mar ${startYear})`} value={bfOpening} bold />
-              <Row label={`Collected in ${label}`} value={bfCollectedInCurrFY} indent />
+              <Row label="Total Invoiced (incl. GST)" value={totalInvoiced} bold />
+              <Row label="Cash Received from Clients" value={grossReceived} indent />
+              <Row label="TDS Deducted by Clients" value={tdsDeducted} indent />
+              <Row label="Effective Amount Settled" value={effectiveReceived} indent />
+              <Row label="Net to Bank" value={netReceived} indent sub />
               <Divider thick />
-              <Row label="Closing B/F (still outstanding)" value={bfClosing} bold positive={bfClosing === 0} />
+              <Row label="Outstanding Receivables" value={pendingRec} bold positive={pendingRec === 0} />
             </div>
-            <div className="mt-4 sm:mt-0">
-              {bfClosing > 0 && (
-                <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4">
-                  <p className="text-xs text-zinc-400 mb-1">Still outstanding from {prevFYLabel}</p>
-                  <p className="text-2xl font-black text-rose-400">{fmt(bfClosing)}</p>
-                  <p className="text-xs text-zinc-600 mt-1">Prior-year invoices not yet received</p>
+            <div className="flex items-center justify-center">
+              {pendingRec > 0 ? (
+                <div className="text-center border border-red-200 rounded-lg bg-red-50 p-5">
+                  <p className="text-[10px] text-gray-500">Outstanding</p>
+                  <p className="text-2xl font-black text-red-700 mt-1">{fmt(pendingRec)}</p>
                 </div>
-              )}
-              {bfClosing === 0 && (
-                <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4">
-                  <p className="text-sm text-emerald-400 font-semibold">All brought-forward amounts collected</p>
+              ) : (
+                <div className="text-center border border-green-200 rounded-lg bg-green-50 p-5">
+                  <p className="text-sm font-bold text-green-700">✓ All Collected</p>
                 </div>
               )}
             </div>
           </div>
         </div>
-      )}
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 print:gap-2">
-        {[
-          { label: 'Total Revenue', value: totalBase, color: 'text-amber-400' },
-          { label: 'Gross Profit', value: grossProfit, color: grossProfit >= 0 ? 'text-emerald-400' : 'text-rose-400' },
-          { label: 'Net Profit', value: netProfit, color: netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400' },
-          { label: 'Pending Receivables', value: pendingRec, color: pendingRec > 0 ? 'text-rose-400' : 'text-emerald-400' },
-        ].map(({ label: l, value, color }) => (
-          <div key={l} className={`${glass} p-4 print:border print:border-gray-200 print:rounded-none print:bg-white`}>
-            <p className="text-xs text-zinc-500">{l}</p>
-            <p className={`text-lg font-black mt-1 ${color}`}>{fmt(value)}</p>
+        {/* Brought Forward */}
+        {bfOpening > 0 && (
+          <div className="px-8 py-4 border-t border-gray-200">
+            <SectionHead>Brought Forward Receivables ({prevFYLabel})</SectionHead>
+            <p className="text-[10px] text-gray-400 mb-2">
+              Prior-year invoices outstanding at 31 March {startYear}. Not counted as {label} revenue.
+            </p>
+            <Row label={`Opening B/F (31 Mar ${startYear})`} value={bfOpening} bold />
+            <Row label={`Collected in ${label}`} value={bfCollectedInCurrFY} indent />
+            <Divider thick />
+            <Row label="Closing B/F (still outstanding)" value={bfClosing} bold positive={bfClosing === 0} />
           </div>
-        ))}
+        )}
+
+        {/* KPI strip */}
+        <div className="grid grid-cols-4 divide-x divide-gray-200 border-t border-gray-200">
+          {[
+            { l: 'Total Revenue', v: totalBase, c: 'text-amber-700' },
+            { l: 'Gross Profit', v: grossProfit, c: grossProfit >= 0 ? 'text-green-700' : 'text-red-700' },
+            { l: 'Net Profit', v: netProfit, c: netProfit >= 0 ? 'text-green-700' : 'text-red-700' },
+            { l: 'Receivables', v: pendingRec, c: pendingRec > 0 ? 'text-red-700' : 'text-green-700' },
+          ].map(({ l, v, c }) => (
+            <div key={l} className="px-6 py-3 text-center">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide">{l}</p>
+              <p className={`text-sm font-black mt-0.5 ${c}`}>{fmt(v)}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 px-8 py-3 border-t border-gray-200 flex items-center justify-between text-[9px] text-gray-400">
+          <span>Generated on {today} &nbsp;|&nbsp; {CO.name}</span>
+          <span>This is an internal management report. Not audited.</span>
+        </div>
       </div>
 
       {orders.length === 0 && expenses.length === 0 && (
-        <div className={`${glass} p-12 text-center`}>
+        <div className="mx-auto max-w-[800px] mt-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-12 text-center">
           <p className="text-zinc-500 text-sm">No transactions found for {label}.</p>
-          <p className="text-zinc-600 text-xs mt-1">Orders and expenses are filtered by their date within the financial year.</p>
         </div>
       )}
     </div>

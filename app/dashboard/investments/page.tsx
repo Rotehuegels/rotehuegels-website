@@ -29,12 +29,6 @@ interface EnrichedHolding extends Holding {
   dayChangePct: number | null;
 }
 
-const NSE_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
-
-const NSE_SYMBOL_MAP: Record<string, string> = {
-  SGBT65:       'SGBSEP31II',
-  'SGB-DIRECT': 'SGBSEP31II',
-};
 
 const SECTOR_ORDER = [
   'Gold & Sovereign Bonds',
@@ -162,6 +156,23 @@ async function generateInvestmentIdeas(
   sectorAllocations: Array<{ sector: string; pct: number }>,
   currentDate: string,
 ): Promise<{ ideas: IdeaItem[]; generatedAt: string; isAI: boolean }> {
+  // Check cache first (regenerate only once per day)
+  try {
+    const { data: cached } = await supabaseAdmin
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'investment_ideas_cache')
+      .single();
+
+    if (cached?.value) {
+      const cache = JSON.parse(cached.value);
+      // Use cache if less than 24 hours old
+      if (cache.generatedAt && (Date.now() - new Date(cache.generatedAt).getTime()) < 24 * 60 * 60 * 1000) {
+        return { ideas: cache.ideas, generatedAt: cache.generatedAt, isAI: cache.isAI };
+      }
+    }
+  } catch { /* no cache, generate fresh */ }
+
   try {
     const client = new Anthropic();
     const portfolioSummary = sectorAllocations.map((s) => `${s.sector}: ${s.pct.toFixed(1)}%`).join(', ');
@@ -198,7 +209,12 @@ Rules: real NSE symbols only, no duplicates with portfolio sectors already over 
     if (!jsonMatch) return { ideas: FALLBACK_IDEAS, generatedAt: currentDate, isAI: false };
 
     const parsed = JSON.parse(jsonMatch[0]) as IdeaItem[];
-    return { ideas: parsed.slice(0, 6), generatedAt: currentDate, isAI: true };
+    const result = { ideas: parsed.slice(0, 6), generatedAt: new Date().toISOString(), isAI: true };
+
+    // Cache the result
+    supabaseAdmin.from('app_settings').upsert({ key: 'investment_ideas_cache', value: JSON.stringify(result) }).then(() => {});
+
+    return result;
   } catch {
     return { ideas: FALLBACK_IDEAS, generatedAt: currentDate, isAI: false };
   }
@@ -242,60 +258,44 @@ async function fetchLive22KRate(): Promise<number | null> {
   }
 }
 
-// ─── NSE price fetching ───────────────────────────────────────────────────────
-async function getNSECookie(): Promise<string> {
-  const res = await fetch('https://www.nseindia.com', {
-    headers: {
-      'User-Agent': NSE_UA,
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.5',
-    },
-    cache: 'no-store',
-  });
-  const raw: string[] =
-    typeof (res.headers as { getSetCookie?: () => string[] }).getSetCookie === 'function'
-      ? (res.headers as { getSetCookie: () => string[] }).getSetCookie()
-      : [(res.headers.get('set-cookie') ?? '')];
-  return raw.map((c) => c.split(';')[0].trim()).filter(Boolean).join('; ');
-}
+// ─── Yahoo Finance price fetching (faster than NSE, no cookies needed) ───────
+async function fetchYahooPrices(
+  holdings: Array<{ symbol: string; yahoo_symbol: string }>,
+): Promise<Record<string, { price: number; dayChangePct: number }>> {
+  const priceMap: Record<string, { price: number; dayChangePct: number }> = {};
 
-async function nseQuote(symbol: string, cookie: string): Promise<{ price: number; dayChangePct: number } | null> {
-  try {
-    const res = await fetch(
-      `https://www.nseindia.com/api/quote-equity?symbol=${encodeURIComponent(symbol)}`,
-      {
-        headers: {
-          Cookie: cookie,
-          'User-Agent': NSE_UA,
-          Referer: 'https://www.nseindia.com/',
-          Accept: 'application/json, text/plain, */*',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        cache: 'no-store',
-      },
+  // Batch fetch — 5 at a time for speed
+  const batches: Array<typeof holdings> = [];
+  for (let i = 0; i < holdings.length; i += 5) {
+    batches.push(holdings.slice(i, i + 5));
+  }
+
+  for (const batch of batches) {
+    const results = await Promise.all(
+      batch.map(async (h) => {
+        try {
+          const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(h.yahoo_symbol)}?interval=1d&range=1d`;
+          const res = await fetch(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            next: { revalidate: 300 }, // Cache for 5 minutes
+          });
+          if (!res.ok) return null;
+          const data = await res.json();
+          const meta = data.chart?.result?.[0]?.meta;
+          if (!meta?.regularMarketPrice) return null;
+          const price = meta.regularMarketPrice;
+          const prev = meta.chartPreviousClose ?? meta.previousClose;
+          const changePct = prev ? ((price - prev) / prev) * 100 : 0;
+          return { symbol: h.symbol, price, dayChangePct: changePct };
+        } catch { return null; }
+      }),
     );
-    if (!res.ok) return null;
-    const json = await res.json();
-    const price = json.priceInfo?.lastPrice;
-    if (!price) return null;
-    return { price: Number(price), dayChangePct: Number(json.priceInfo?.pChange ?? 0) };
-  } catch {
-    return null;
+    for (const r of results) {
+      if (r) priceMap[r.symbol] = { price: r.price, dayChangePct: r.dayChangePct };
+    }
   }
-}
 
-async function fetchNSEPrices(symbols: string[]): Promise<Record<string, { price: number; dayChangePct: number }>> {
-  if (!symbols.length) return {};
-  try {
-    const cookie = await getNSECookie();
-    if (!cookie) return {};
-    const results = await Promise.all(symbols.map((s) => nseQuote(s, cookie)));
-    const priceMap: Record<string, { price: number; dayChangePct: number }> = {};
-    symbols.forEach((sym, i) => { const r = results[i]; if (r) priceMap[sym] = r; });
-    return priceMap;
-  } catch {
-    return {};
-  }
+  return priceMap;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -308,9 +308,7 @@ export default async function InvestmentsPage() {
   const rows = (holdings ?? []) as Holding[];
   const goldItems = (goldRaw ?? []) as GoldItem[];
 
-  const nseSymbols = [...new Set(rows.map((h) => NSE_SYMBOL_MAP[h.symbol] ?? h.symbol))];
-
-  // Group by sector (needed before enrichment for ideas call)
+  // Group by sector
   const rawSectorMap: Record<string, Holding[]> = {};
   for (const h of rows) {
     const s = h.sector ?? 'Other';
@@ -325,16 +323,16 @@ export default async function InvestmentsPage() {
 
   const currentDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  // Fetch NSE prices, gold rate, and AI ideas in parallel
+  // Fetch Yahoo prices, gold rate, and AI ideas in parallel
+  // Yahoo Finance is faster (no cookie dance) and cached for 5 min
   const [priceMap, live22kRate, ideasResult] = await Promise.all([
-    fetchNSEPrices(nseSymbols),
+    fetchYahooPrices(rows.map(h => ({ symbol: h.symbol, yahoo_symbol: h.yahoo_symbol }))),
     fetchLive22KRate(),
     generateInvestmentIdeas(sectorAllocations, currentDate),
   ]);
 
   const enriched: EnrichedHolding[] = rows.map((h) => {
-    const nseSymbol    = NSE_SYMBOL_MAP[h.symbol] ?? h.symbol;
-    const live         = priceMap[nseSymbol];
+    const live         = priceMap[h.symbol];
     const currentPrice = live?.price ?? null;
     const dayChangePct = live?.dayChangePct ?? null;
     const currentValue = currentPrice !== null ? currentPrice * h.quantity : null;

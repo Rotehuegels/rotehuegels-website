@@ -16,6 +16,7 @@ import {
   Network,
   Shield, BarChart3, Globe, Eye, Mail, History,
   Radar, AlertTriangle,
+  FileCheck,
   ChevronDown,
 } from 'lucide-react';
 import LogoutButton from './LogoutButton';
@@ -96,6 +97,13 @@ const NAV: NavItem[] = [
       { label: 'Page Views',       href: '/dashboard/analytics#traffic',  icon: Globe },
       { type: 'section', label: 'Audit' },
       { label: 'Audit Trail',     href: '/dashboard/audit',              icon: History },
+    ],
+  },
+
+  {
+    label: 'Quality', icon: FileCheck,
+    children: [
+      { label: 'Documents', href: '/dashboard/documents', icon: FileCheck },
     ],
   },
 

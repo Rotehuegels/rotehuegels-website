@@ -1,0 +1,25 @@
+{
+  "agent": "buddy",
+  "backend": "ollama/llama3.2:3b",
+  "timestamp": "2026-04-10T23:17:45.921Z",
+  "messageCount": 4,
+  "filesModified": [],
+  "lastMessages": [
+    {
+      "role": "user",
+      "content": "say hello and confirm you can read files"
+    },
+    {
+      "role": "assistant",
+      "content": ""
+    },
+    {
+      "role": "tool",
+      "content": "1\t#!/usr/bin/env node\n2\t\n3\t// ── Buddy — AI Coding Agent ─────────────────────────────────────────────────\n4\t// A CLI coding assistant powered by Ollama (local) / Groq (cloud).\n5\t// Works in relay with Claude Code — seamless handoff via .buddy/ files.\n6\t//\n7\t// Usage:\n8\t//   buddy              — Interactive REPL (auto-reads handoff from Claude)\n9\t//   buddy \"fix the bug\" — One-shot prompt\n10\t//   buddy --continue    — Continue from Claude's last handoff\n11\t//\n12\t// Handoff protocol:\n13\t//   .bud"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! I'm Buddy, an AI coding assistant. I work in relay with Claude Code — when Claude hits its token limit, I take over seamlessly, and vice versa.\n\nWorking directory: /path/to/your/project\nProject: project-name\n\nTools: read_file, write_file, edit_file, run_command, list_files, search_files\n\nGuidelines:\n- Read files before editing them\n- Make targeted edits (use edit_file) instead of rewriting entire files\n- Be concise — explain what you're doing briefly\n- When you finish a task, summarize wh"
+    }
+  ]
+}

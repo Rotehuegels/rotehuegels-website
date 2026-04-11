@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import FYSelector from './FYSelector';
-import { FileText, Printer } from 'lucide-react';
-import Link from 'next/link';
+import { FileText } from 'lucide-react';
+import PrintButton from './PrintButton';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -210,18 +210,15 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   return (
     <div className="p-6 print:p-0">
 
-      {/* Toolbar — print:hidden */}
-      <div className="flex items-center justify-between mb-5 print:hidden">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-5 no-print">
         <div className="flex items-center gap-3">
           <FileText className="h-5 w-5 text-amber-400" />
           <h1 className="text-lg font-bold text-white">P&amp;L Statement</h1>
         </div>
         <div className="flex items-center gap-3">
           <FYSelector current={fy} />
-          <Link href={`/dashboard/accounts/pl/preview?fy=${fy}`}
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-xs font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
-            <Printer className="h-3.5 w-3.5" /> Print / Save PDF
-          </Link>
+          <PrintButton />
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import FYSelector from './FYSelector';
 import { FileText } from 'lucide-react';
-import PrintButton from './PrintButton';
+import ReportViewer from '@/components/ReportViewer';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -216,14 +216,11 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
           <FileText className="h-5 w-5 text-amber-400" />
           <h1 className="text-lg font-bold text-white">P&amp;L Statement</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <FYSelector current={fy} />
-          <PrintButton />
-        </div>
+        <FYSelector current={fy} />
       </div>
 
       {/* A4 Document */}
-      <div className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
+      <ReportViewer filename={`PL-Statement-${fy}`}>
 
         {/* Letterhead */}
         <div className="bg-gray-900 px-8 py-5 flex items-center justify-between">
@@ -383,7 +380,7 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
           <span>Generated on {today} &nbsp;|&nbsp; {CO.name}</span>
           <span>This is an internal management report. Not audited.</span>
         </div>
-      </div>
+      </ReportViewer>
 
       {orders.length === 0 && expenses.length === 0 && (
         <div className="mx-auto max-w-[800px] mt-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-12 text-center">

@@ -393,78 +393,67 @@ export default async function InvestmentsPage() {
   const goldTotalGainPct  = (goldTotalGain / goldTotalInvested) * 100;
 
   return (
-    <div className="space-y-5">
+    <div className="p-6 space-y-4 max-w-[1400px]">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Investments</h1>
-          <p className="mt-0.5 text-sm text-zinc-500">
-            ICICI Direct — Demat Portfolio &nbsp;·&nbsp; {liveCount}/{enriched.length} live · NSE
+          <h1 className="text-xl font-bold text-white">Investments</h1>
+          <p className="text-xs text-zinc-500">
+            ICICI Direct Demat · {liveCount}/{enriched.length} live · NSE
           </p>
         </div>
         <RefreshButton />
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className={`${glass} p-4`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Total Invested</p>
-          <p className="mt-2 text-xl font-bold text-indigo-400">{fmtCompact(totalInvested)}</p>
-          <p className="mt-0.5 text-xs text-zinc-600">{fmt(totalInvested)}</p>
+      {/* Summary Strip — 5 cols compact */}
+      <div className="grid grid-cols-5 gap-2">
+        <div className={`${glass} px-4 py-2.5`}>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Invested</p>
+          <p className="text-lg font-black text-indigo-400">{fmtCompact(totalInvested)}</p>
         </div>
-        <div className={`${glass} p-4`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Current Value</p>
-          <p className="mt-2 text-xl font-bold text-indigo-300">{fmtCompact(totalCurrent)}</p>
-          <p className="mt-0.5 text-xs text-zinc-600">{fmt(totalCurrent)}</p>
+        <div className={`${glass} px-4 py-2.5`}>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Current</p>
+          <p className="text-lg font-black text-indigo-300">{fmtCompact(totalCurrent)}</p>
         </div>
-        <div className={`${glass} p-4`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Total P&amp;L</p>
-          <p className={`mt-2 text-xl font-bold ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+        <div className={`${glass} px-4 py-2.5`}>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">P&amp;L</p>
+          <p className={`text-lg font-black ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {totalPnl >= 0 ? '+' : ''}{fmtCompact(totalPnl)}
           </p>
-          <p className="mt-0.5 text-xs text-zinc-600">{fmt(Math.abs(totalPnl))}</p>
         </div>
-        <div className={`${glass} p-4`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">P&amp;L %</p>
-          <div className="mt-2 flex items-center gap-1.5">
-            {totalPnl >= 0
-              ? <TrendingUp className="h-5 w-5 text-emerald-400" />
-              : <TrendingDown className="h-5 w-5 text-rose-400" />}
-            <p className={`text-xl font-bold ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+        <div className={`${glass} px-4 py-2.5`}>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Return</p>
+          <div className="flex items-center gap-1">
+            {totalPnl >= 0 ? <TrendingUp className="h-4 w-4 text-emerald-400" /> : <TrendingDown className="h-4 w-4 text-rose-400" />}
+            <p className={`text-lg font-black ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
               {totalPnl >= 0 ? '+' : ''}{totalPnlPct.toFixed(2)}%
             </p>
           </div>
-          <p className="mt-0.5 text-xs text-zinc-600">{enriched.length} holdings</p>
+        </div>
+        <div className={`${glass} px-4 py-2.5`}>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Positions</p>
+          <p className="text-lg font-black text-white">{enriched.length}</p>
         </div>
       </div>
 
       {/* Sector Allocation — Donut + Bars */}
-      <div className={`${glass} p-5`}>
-        <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">Sector Allocation</h2>
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-
-          {/* Donut chart */}
-          <div className="flex flex-col items-center gap-3 shrink-0">
+      <div className={`${glass} p-4`}>
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          <div className="flex flex-col items-center gap-1 shrink-0">
             <DonutChart slices={sectorStats.map((s) => ({ sector: s.sector, pct: s.pct }))} />
-            <p className="text-xs text-zinc-500">{orderedSectors.length} sectors</p>
+            <p className="text-[10px] text-zinc-600">{orderedSectors.length} sectors</p>
           </div>
-
-          {/* Bar list */}
-          <div className="flex-1 space-y-2 w-full">
+          <div className="flex-1 space-y-1.5 w-full">
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">Sector Allocation</p>
             {sectorStats.map(({ sector, pct, gain }) => (
-              <div key={sector} className="flex items-center gap-2.5">
-                <div className="w-36 shrink-0 flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${SECTOR_DOT[sector] ?? 'bg-zinc-400'}`} />
-                  <span className="text-xs text-zinc-300 truncate">{sector}</span>
+              <div key={sector} className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${SECTOR_DOT[sector] ?? 'bg-zinc-400'}`} />
+                <span className="text-[11px] text-zinc-300 truncate w-32">{sector}</span>
+                <div className="flex-1 h-1 rounded-full bg-zinc-800 overflow-hidden">
+                  <div className={`h-full rounded-full ${SECTOR_DOT[sector] ?? 'bg-zinc-400'}`} style={{ width: `${pct}%`, opacity: 0.7 }} />
                 </div>
-                <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${SECTOR_DOT[sector] ?? 'bg-zinc-400'}`}
-                    style={{ width: `${pct.toFixed(1)}%`, opacity: 0.75 }}
-                  />
-                </div>
-                <span className="w-9 text-right text-xs text-zinc-400 font-mono">{pct.toFixed(1)}%</span>
-                <span className={`w-16 text-right text-xs font-mono ${gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                <span className="w-8 text-right text-[10px] text-zinc-400 font-mono">{pct.toFixed(0)}%</span>
+                <span className={`w-14 text-right text-[10px] font-mono ${gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {gain >= 0 ? '+' : ''}{fmtCompact(gain)}
                 </span>
               </div>
@@ -473,12 +462,12 @@ export default async function InvestmentsPage() {
         </div>
       </div>
 
-      {/* Holdings Table — compact, grouped by sector */}
+      {/* Holdings Table */}
       <div className={glass}>
-        <div className="flex items-center gap-3 border-b border-zinc-800 px-5 py-3">
-          <BarChart3 className="h-4 w-4 text-indigo-400" />
-          <h2 className="font-semibold text-white text-sm">Holdings</h2>
-          <span className="text-xs text-zinc-500 ml-auto">{enriched.length} positions</span>
+        <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-2">
+          <BarChart3 className="h-3.5 w-3.5 text-indigo-400" />
+          <h2 className="font-semibold text-white text-xs uppercase tracking-wide">Holdings</h2>
+          <span className="text-[10px] text-zinc-600 ml-auto">{enriched.length} positions</span>
         </div>
 
         {/* Desktop Table */}

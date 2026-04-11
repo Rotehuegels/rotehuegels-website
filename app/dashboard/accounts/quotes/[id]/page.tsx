@@ -4,7 +4,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import QuoteActions from './QuoteActions';
-import QuotePrintButton from './QuotePrintButton';
+import SavePDFButton from '@/components/SavePDFButton';
 import SendEmailButton from '@/components/SendEmailButton';
 
 export const dynamic = 'force-dynamic';
@@ -79,9 +79,9 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
   const th: React.CSSProperties   = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
 
   return (
-    <div className="p-6 max-w-5xl space-y-4">
+    <div className="p-6 print:p-0">
       {/* Top bar */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between mb-5 no-print">
         <div>
           <Link href="/dashboard/accounts/quotes"
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
@@ -101,7 +101,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
         <div className="flex gap-2">
           <SendEmailButton type="quote_email" entityId={id} label="Email Quote"
             confirmMessage="Send this quotation to the customer via email?" />
-          <QuotePrintButton quoteId={id} />
+          <SavePDFButton targetId="quote-doc" filename="Quote" />
           <QuoteActions
             quoteId={id}
             currentStatus={quote.status}
@@ -114,7 +114,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
 
       {/* Converted notice */}
       {convertedOrder && (
-        <div className="rounded-xl border border-amber-600/30 bg-amber-500/5 p-4 flex items-center justify-between">
+        <div className="no-print rounded-xl border border-amber-600/30 bg-amber-500/5 p-4 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-amber-400">Converted to Order</p>
             <p className="text-xs text-zinc-500 mt-0.5">
@@ -136,8 +136,8 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
       )}
 
       {/* Letterhead document */}
-      <div className="rounded-2xl border border-zinc-700 bg-zinc-100 p-2 shadow-xl">
-        <div id="rh-quote-doc" className="bg-white text-zinc-900 rounded-xl"
+      <div className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
+        <div id="rh-quote-doc" className="bg-white text-zinc-900"
           style={{ padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}>
 
           {/* Header */}

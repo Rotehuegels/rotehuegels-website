@@ -1,7 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
-import PDFViewer from '@/components/PDFViewer';
+import Link from 'next/link';
 import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
+import SavePDFButton from '@/components/SavePDFButton';
 import QRCode from 'qrcode';
 
 // ── Company constants ───────────────────────────────────────────────────────
@@ -199,15 +200,15 @@ export default async function InvoicePage({
   const upiQr = await QRCode.toDataURL(upiString, { width: 90, margin: 1, color: { dark: '#111111', light: '#ffffff' } });
 
   return (
-    <PDFViewer
-      contentId="rh-invoice"
-      filename={`${invoiceNo.replace(/\//g, '-')}${stageLabel ? `-${stageLabel.replace(/\s/g, '')}` : ''}.pdf`}
-      toolbar={
+    <div className="p-6 print:p-0">
+
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-5 no-print">
         <div className="flex items-center gap-3">
-          <a href={`/dashboard/accounts/orders/${id}`}
+          <Link href={`/dashboard/accounts/orders/${id}`}
             className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
             ← Back to Order
-          </a>
+          </Link>
           <span className="text-zinc-700">|</span>
           <span className="text-xs text-zinc-500">Invoice</span>
           <span className="font-mono text-sm text-amber-400 font-bold">{invoiceNo}</span>
@@ -215,13 +216,15 @@ export default async function InvoicePage({
             <span className="text-xs text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-full">{stageLabel}</span>
           )}
         </div>
-      }
-    >
-      <div>
+        <SavePDFButton targetId="rh-invoice" filename="Invoice" />
+      </div>
+
+      {/* A4 Document */}
+      <div className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
         <div
           id="rh-invoice"
           className="bg-white text-zinc-900"
-          style={{ width: '210mm', minHeight: '297mm', padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}
+          style={{ padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}
         >
 
           {/* ── Header ─────────────────────────────────────────────────── */}
@@ -499,6 +502,6 @@ export default async function InvoicePage({
 
         </div>
       </div>
-    </PDFViewer>
+    </div>
   );
 }

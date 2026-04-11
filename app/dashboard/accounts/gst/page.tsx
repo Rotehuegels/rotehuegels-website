@@ -1,9 +1,17 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import FYSelector from './FYSelector';
 import { BadgePercent } from 'lucide-react';
+import PrintButton from '../pl/PrintButton';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
+
+const CO = {
+  name:  'Rotehuegel Research Business Consultancy Private Limited',
+  cin:   'U70200TN2025PTC184573',
+  gstin: '33AAPCR0554G1ZE',
+  pan:   'AAPCR0554G',
+};
 
 function parseFY(fy: string) {
   const [startYear] = fy.split('-').map(Number);
@@ -12,6 +20,7 @@ function parseFY(fy: string) {
     from:      `${startYear}-04-01`,
     to:        `${endYear}-03-31`,
     full:      `1 April ${startYear} to 31 March ${endYear}`,
+    label:     `FY ${startYear}–${endYear}`,
     startYear,
     endYear,
   };
@@ -24,10 +33,18 @@ function fyMonths(startYear: number, endYear: number) {
   return months;
 }
 
+function SectionHead({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="pt-5 pb-1">
+      <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-amber-700 border-b border-amber-200 pb-1">{children}</p>
+    </div>
+  );
+}
+
 export default async function GSTPage({ searchParams }: { searchParams: Promise<{ fy?: string }> }) {
   const { fy: fyParam } = await searchParams;
   const fy = fyParam ?? '2025-26';
-  const { from, to, full, startYear, endYear } = parseFY(fy);
+  const { from, to, full, label, startYear, endYear } = parseFY(fy);
 
   const [ordersRes, expensesRes] = await Promise.all([
     supabaseAdmin
@@ -70,156 +87,184 @@ export default async function GSTPage({ searchParams }: { searchParams: Promise<
   const totalITC    = expenses.reduce((s, e) => s + (e.gst_input_credit ?? 0), 0);
   const netPayable  = totalOutput - totalITC;
 
-  const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
   const months = fyMonths(startYear, endYear);
+  const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="p-8 space-y-6 print:p-0 print:space-y-4">
+    <div className="p-6 print:p-0">
 
-      {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-4 print:hidden">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <BadgePercent className="h-6 w-6 text-amber-400" />
-            GST Report
-          </h1>
-          <p className="mt-1 text-sm text-zinc-400">{full}</p>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-5 no-print">
+        <div className="flex items-center gap-3">
+          <BadgePercent className="h-5 w-5 text-amber-400" />
+          <h1 className="text-lg font-bold text-white">GST Report</h1>
         </div>
-        <FYSelector current={fy} />
+        <div className="flex items-center gap-3">
+          <FYSelector current={fy} />
+          <SavePDFButton targetId="gst-report" filename="GST-Report" />
+        </div>
       </div>
 
-      <div className="hidden print:block mb-6">
-        <p className="text-lg font-bold text-black">Rotehügels</p>
-        <p className="text-base font-semibold text-black">GST Report</p>
-        <p className="text-sm text-gray-600">{full}</p>
-      </div>
+      {/* A4 Document */}
+      <div className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-
-        <div className={`${glass} p-6`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Output GST (Liability)</p>
-          <p className="text-xs text-zinc-600 mt-0.5 mb-4">Collected from customers on invoices</p>
-          <p className="text-2xl font-black text-amber-400">{fmt(totalOutput)}</p>
-          <div className="mt-3 space-y-1.5 border-t border-zinc-800 pt-3">
-            <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">CGST (9%)</span>
-              <span className="font-mono text-zinc-300">{fmt(totalCGST)}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">SGST (9%)</span>
-              <span className="font-mono text-zinc-300">{fmt(totalSGST)}</span>
-            </div>
-            {totalIGST > 0 && (
-              <div className="flex justify-between text-xs">
-                <span className="text-zinc-500">IGST (18%)</span>
-                <span className="font-mono text-zinc-300">{fmt(totalIGST)}</span>
-              </div>
-            )}
+        {/* Letterhead */}
+        <div className="bg-gray-900 px-8 py-5 flex items-center justify-between">
+          <div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/Logo.png" alt="Rotehügels" className="h-8 mb-2" />
+            <p className="text-[10px] text-gray-400">{CO.name}</p>
+            <p className="text-[9px] text-gray-500">CIN: {CO.cin} &nbsp;|&nbsp; GSTIN: {CO.gstin} &nbsp;|&nbsp; PAN: {CO.pan}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-black text-amber-400 uppercase tracking-widest">GST Summary</p>
+            <p className="text-sm font-black text-amber-400 uppercase tracking-widest">Report</p>
+            <p className="text-[11px] text-gray-300 mt-1 font-mono">{label}</p>
           </div>
         </div>
 
-        <div className={`${glass} p-6`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Input Tax Credit (ITC)</p>
-          <p className="text-xs text-zinc-600 mt-0.5 mb-4">GST paid on purchases — claimable</p>
-          <p className="text-2xl font-black text-emerald-400">{fmt(totalITC)}</p>
-          <p className="text-xs text-zinc-600 mt-3 border-t border-zinc-800 pt-3">
-            Offset against output GST liability
+        {/* Period bar */}
+        <div className="bg-gray-50 px-8 py-2 border-b border-gray-200 flex items-center justify-between">
+          <p className="text-[11px] text-gray-600">
+            For the period <strong>{full}</strong>
+          </p>
+          <p className="text-[10px] text-gray-400">
+            GSTIN: {CO.gstin} · All amounts in INR
           </p>
         </div>
 
-        <div className={`${glass} p-6`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Net GST Payable</p>
-          <p className="text-xs text-zinc-600 mt-0.5 mb-4">Output GST − ITC</p>
-          <p className={`text-2xl font-black ${netPayable > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
-            {fmt(Math.abs(netPayable))}
-          </p>
-          <p className={`text-xs mt-3 border-t border-zinc-800 pt-3 ${netPayable > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
-            {netPayable > 0 ? 'Payable to government' : 'ITC surplus / carry forward'}
-          </p>
+        {/* Summary section */}
+        <div className="px-8 py-4">
+
+          <div className="grid grid-cols-3 divide-x divide-gray-200 border border-gray-200 rounded-lg mb-4">
+            <div className="px-5 py-4">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Output GST (Liability)</p>
+              <p className="text-[10px] text-gray-400 mt-0.5 mb-2">Collected from customers on invoices</p>
+              <p className="text-xl font-black text-amber-700">{fmt(totalOutput)}</p>
+              <div className="mt-2 space-y-1 border-t border-gray-100 pt-2">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-gray-500">CGST (9%)</span>
+                  <span className="font-mono text-gray-700">{fmt(totalCGST)}</span>
+                </div>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-gray-500">SGST (9%)</span>
+                  <span className="font-mono text-gray-700">{fmt(totalSGST)}</span>
+                </div>
+                {totalIGST > 0 && (
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-gray-500">IGST (18%)</span>
+                    <span className="font-mono text-gray-700">{fmt(totalIGST)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="px-5 py-4">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Input Tax Credit (ITC)</p>
+              <p className="text-[10px] text-gray-400 mt-0.5 mb-2">GST paid on purchases — claimable</p>
+              <p className="text-xl font-black text-green-700">{fmt(totalITC)}</p>
+              <p className="text-[11px] text-gray-400 mt-2 border-t border-gray-100 pt-2">
+                Offset against output GST liability
+              </p>
+            </div>
+
+            <div className="px-5 py-4">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Net GST Payable</p>
+              <p className="text-[10px] text-gray-400 mt-0.5 mb-2">Output GST − ITC</p>
+              <p className={`text-xl font-black ${netPayable > 0 ? 'text-red-700' : 'text-green-700'}`}>
+                {fmt(Math.abs(netPayable))}
+              </p>
+              <p className={`text-[11px] mt-2 border-t border-gray-100 pt-2 ${netPayable > 0 ? 'text-amber-700' : 'text-green-700'}`}>
+                {netPayable > 0 ? '⚠ Payable to government' : '✓ ITC surplus / carry forward'}
+              </p>
+            </div>
+          </div>
+
+          {/* Monthly breakdown */}
+          <SectionHead>Monthly Breakdown</SectionHead>
+          <p className="text-[10px] text-gray-400 mb-2">Output GST by order date · ITC by expense date</p>
+
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <table className="w-full text-[11px]">
+              <thead>
+                <tr className="bg-gray-800 text-white">
+                  <th className="text-left px-4 py-2.5 font-semibold w-24">Month</th>
+                  <th className="text-right px-3 py-2.5 font-semibold">CGST</th>
+                  <th className="text-right px-3 py-2.5 font-semibold">SGST</th>
+                  <th className="text-right px-3 py-2.5 font-semibold">IGST</th>
+                  <th className="text-right px-3 py-2.5 font-semibold">Total Output</th>
+                  <th className="text-right px-3 py-2.5 font-semibold">ITC</th>
+                  <th className="text-right px-4 py-2.5 font-semibold">Net Payable</th>
+                </tr>
+              </thead>
+              <tbody>
+                {months.map(({ year, month }) => {
+                  const key = `${year}-${String(month).padStart(2, '0')}`;
+                  const out = outputByMonth[key] ?? { cgst: 0, sgst: 0, igst: 0 };
+                  const itc = itcByMonth[key] ?? 0;
+                  const totalOut = out.cgst + out.sgst + out.igst;
+                  const net = totalOut - itc;
+                  const hasActivity = totalOut > 0 || itc > 0;
+                  const monthLabel = new Date(year, month - 1, 1)
+                    .toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+
+                  return (
+                    <tr key={key} className={`border-t border-gray-100 ${!hasActivity ? 'opacity-40' : ''}`}>
+                      <td className="px-4 py-2 text-gray-700 font-medium">{monthLabel}</td>
+                      <td className="px-3 py-2 text-right font-mono text-gray-600">
+                        {out.cgst > 0 ? fmt(out.cgst) : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-gray-600">
+                        {out.sgst > 0 ? fmt(out.sgst) : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-gray-600">
+                        {out.igst > 0 ? fmt(out.igst) : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono font-semibold text-amber-700">
+                        {totalOut > 0 ? fmt(totalOut) : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-green-700">
+                        {itc > 0 ? fmt(itc) : '—'}
+                      </td>
+                      <td className={`px-4 py-2 text-right font-mono font-bold ${
+                        !hasActivity ? 'text-gray-400'
+                        : net > 0   ? 'text-red-700'
+                        : net < 0   ? 'text-green-700'
+                        : 'text-gray-500'
+                      }`}>
+                        {!hasActivity ? '—'
+                          : net > 0 ? fmt(net)
+                          : net < 0 ? `(${fmt(Math.abs(net))})`
+                          : '₹0'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-gray-800 bg-gray-50">
+                  <td className="px-4 py-3 text-gray-900 font-bold text-[12px]">Total</td>
+                  <td className="px-3 py-3 text-right font-mono text-gray-700 font-bold">{fmt(totalCGST)}</td>
+                  <td className="px-3 py-3 text-right font-mono text-gray-700 font-bold">{fmt(totalSGST)}</td>
+                  <td className="px-3 py-3 text-right font-mono text-gray-700 font-bold">
+                    {totalIGST > 0 ? fmt(totalIGST) : '—'}
+                  </td>
+                  <td className="px-3 py-3 text-right font-mono text-amber-700 font-black text-[12px]">{fmt(totalOutput)}</td>
+                  <td className="px-3 py-3 text-right font-mono text-green-700 font-black text-[12px]">{fmt(totalITC)}</td>
+                  <td className={`px-4 py-3 text-right font-mono font-black text-[12px] ${netPayable > 0 ? 'text-red-700' : 'text-green-700'}`}>
+                    {netPayable > 0 ? fmt(netPayable) : `(${fmt(Math.abs(netPayable))})`}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
         </div>
 
-      </div>
-
-      {/* Monthly breakdown */}
-      <div className={`${glass} overflow-hidden`}>
-        <div className="px-6 pt-5 pb-3">
-          <p className="text-xs font-bold uppercase tracking-widest text-amber-400">Monthly Breakdown</p>
-          <p className="text-xs text-zinc-600 mt-0.5">Output GST by order date · ITC by expense date</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-t border-zinc-800 text-zinc-500 text-xs">
-                <th className="text-left px-6 py-3 font-medium w-28">Month</th>
-                <th className="text-right px-4 py-3 font-medium">CGST</th>
-                <th className="text-right px-4 py-3 font-medium">SGST</th>
-                <th className="text-right px-4 py-3 font-medium">IGST</th>
-                <th className="text-right px-4 py-3 font-medium">Total Output</th>
-                <th className="text-right px-4 py-3 font-medium">ITC</th>
-                <th className="text-right px-6 py-3 font-medium">Net Payable</th>
-              </tr>
-            </thead>
-            <tbody>
-              {months.map(({ year, month }) => {
-                const key = `${year}-${String(month).padStart(2, '0')}`;
-                const out = outputByMonth[key] ?? { cgst: 0, sgst: 0, igst: 0 };
-                const itc = itcByMonth[key] ?? 0;
-                const totalOut = out.cgst + out.sgst + out.igst;
-                const net = totalOut - itc;
-                const hasActivity = totalOut > 0 || itc > 0;
-                const monthLabel = new Date(year, month - 1, 1)
-                  .toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
-
-                return (
-                  <tr key={key} className={`border-t border-zinc-800/60 ${!hasActivity ? 'opacity-30' : ''}`}>
-                    <td className="px-6 py-3 text-zinc-300 font-medium text-xs">{monthLabel}</td>
-                    <td className="px-4 py-3 text-right font-mono text-zinc-400 text-xs">
-                      {out.cgst > 0 ? fmt(out.cgst) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-zinc-400 text-xs">
-                      {out.sgst > 0 ? fmt(out.sgst) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-zinc-400 text-xs">
-                      {out.igst > 0 ? fmt(out.igst) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-xs font-semibold text-amber-400">
-                      {totalOut > 0 ? fmt(totalOut) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-xs text-emerald-400">
-                      {itc > 0 ? fmt(itc) : '—'}
-                    </td>
-                    <td className={`px-6 py-3 text-right font-mono text-xs font-bold ${
-                      !hasActivity ? 'text-zinc-700'
-                      : net > 0   ? 'text-rose-400'
-                      : net < 0   ? 'text-emerald-400'
-                      : 'text-zinc-500'
-                    }`}>
-                      {!hasActivity ? '—'
-                        : net > 0 ? fmt(net)
-                        : net < 0 ? `(${fmt(Math.abs(net))})`
-                        : '₹0'}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            <tfoot>
-              <tr className="border-t-2 border-zinc-600">
-                <td className="px-6 py-3.5 text-white font-bold text-sm">Total</td>
-                <td className="px-4 py-3.5 text-right font-mono text-zinc-200 text-xs font-bold">{fmt(totalCGST)}</td>
-                <td className="px-4 py-3.5 text-right font-mono text-zinc-200 text-xs font-bold">{fmt(totalSGST)}</td>
-                <td className="px-4 py-3.5 text-right font-mono text-zinc-200 text-xs font-bold">
-                  {totalIGST > 0 ? fmt(totalIGST) : '—'}
-                </td>
-                <td className="px-4 py-3.5 text-right font-mono text-amber-400 text-xs font-black">{fmt(totalOutput)}</td>
-                <td className="px-4 py-3.5 text-right font-mono text-emerald-400 text-xs font-black">{fmt(totalITC)}</td>
-                <td className={`px-6 py-3.5 text-right font-mono text-xs font-black ${netPayable > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                  {netPayable > 0 ? fmt(netPayable) : `(${fmt(Math.abs(netPayable))})`}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+        {/* Footer */}
+        <div className="bg-gray-50 px-8 py-3 border-t border-gray-200 flex items-center justify-between text-[9px] text-gray-400">
+          <span>Generated on {today} &nbsp;|&nbsp; {CO.name}</span>
+          <span>This is an internal management report. Not audited.</span>
         </div>
       </div>
 

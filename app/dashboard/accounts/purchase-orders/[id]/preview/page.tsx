@@ -1,7 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
-import PDFViewer from '@/components/PDFViewer';
+import Link from 'next/link';
 import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
+import SavePDFButton from '@/components/SavePDFButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,25 +81,26 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
   const th: React.CSSProperties   = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
 
   return (
-    <PDFViewer
-      contentId="rh-po"
-      filename={`${po.po_no}.pdf`}
-      toolbar={
+    <div className="p-6 print:p-0">
+
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-5 no-print">
         <div className="flex items-center gap-3">
-          <a href={`/dashboard/accounts/purchase-orders/${id}`}
+          <Link href={`/dashboard/accounts/purchase-orders/${id}`}
             className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
             ← Back to PO
-          </a>
+          </Link>
           <span className="text-zinc-700">|</span>
           <span className="text-xs text-zinc-500">Purchase Order</span>
           <span className="font-mono text-sm text-amber-400 font-bold">{po.po_no}</span>
         </div>
-      }
-    >
+        <SavePDFButton targetId="po-doc" filename="Purchase-Order" />
+      </div>
 
-      <div>
+      {/* A4 Document */}
+      <div id="po-doc" className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
         <div id="rh-po" className="bg-white text-zinc-900"
-          style={{ width: '210mm', minHeight: '297mm', padding: '10mm 14mm', fontFamily: 'Arial, sans-serif', fontSize: '10px', display: 'flex', flexDirection: 'column' }}>
+          style={{ padding: '10mm 14mm', fontFamily: 'Arial, sans-serif', fontSize: '10px', display: 'flex', flexDirection: 'column' }}>
 
           {/* ── Header ───────────────────────────────────────── */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '8px', marginBottom: '10px' }}>
@@ -316,6 +318,6 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
 
         </div>
       </div>
-    </PDFViewer>
+    </div>
   );
 }

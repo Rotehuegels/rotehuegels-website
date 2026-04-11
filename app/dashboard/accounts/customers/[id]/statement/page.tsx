@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import StatementPrintButton from './StatementPrintButton';
+import SavePDFButton from '@/components/SavePDFButton';
 import StatementFYSelector from './StatementFYSelector';
 import QRCode from 'qrcode';
 import fs from 'fs';
@@ -237,8 +237,9 @@ export default async function CustomerStatementPage({
   const pageBreak: React.CSSProperties = { pageBreakBefore: 'always', paddingTop: '12mm' };
 
   return (
-    <div className="p-6 max-w-5xl space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div className="p-6 print:p-0">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-5 no-print">
         <div>
           <Link href={`/dashboard/accounts/customers/${id}`}
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
@@ -251,12 +252,12 @@ export default async function CustomerStatementPage({
         </div>
         <div className="flex items-center gap-3">
           <StatementFYSelector customerId={id} current={selectedFY} />
-          <StatementPrintButton customerId={id} fy={selectedFY} />
+          <SavePDFButton targetId="statement-doc" filename="Customer-Statement" />
         </div>
       </div>
 
-      <div className="rounded-2xl border border-zinc-700 bg-zinc-100 p-2 shadow-xl">
-        <div id="rh-statement-doc" className="bg-white text-zinc-900 rounded-xl">
+      <div className="mx-auto max-w-[800px] bg-white rounded-xl shadow-2xl shadow-black/30 overflow-hidden print:shadow-none print:rounded-none">
+        <div id="rh-statement-doc" className="bg-white text-zinc-900">
 
           {/* ══════════════════════ PAGE 1 — SOA ══════════════════════ */}
           <div style={docStyle}>

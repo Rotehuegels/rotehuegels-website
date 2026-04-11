@@ -508,7 +508,22 @@ export default async function CustomerStatementPage({
             const halfRate = gstRate / 2;
             const sacHsn = o.hsn_sac_code ?? (o.order_type === 'service' ? '9983' : '—');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const items: Array<{ description: string; qty?: string; hsn: string; base: number; cgst: number; sgst: number; igst: number; total: number }> = Array.isArray((o as any).items) ? (o as any).items : [];
+            const rawItems = Array.isArray((o as any).items) ? (o as any).items as Array<Record<string, any>> : [];
+            const items = rawItems.map(r => {
+              const taxable = r.taxable_amount ?? r.base ?? 0;
+              const gstAmt = r.gst_amount ?? 0;
+              const halfGst = parseFloat((gstAmt / 2).toFixed(2));
+              return {
+                description: r.name ?? r.description ?? '',
+                qty: r.quantity != null ? `${r.quantity} ${r.unit ?? ''}`.trim() : (r.qty ?? undefined),
+                hsn: r.hsn_code || r.sac_code || r.hsn || '',
+                base: taxable,
+                cgst: isIntra ? halfGst : 0,
+                sgst: isIntra ? halfGst : 0,
+                igst: isIntra ? 0 : gstAmt,
+                total: r.total ?? (taxable + gstAmt),
+              };
+            });
             const stages = (o.stages ?? []) as Array<{ id: string; stage_name: string; amount_due: number; gst_on_stage: number; tds_amount?: number }>;
             const descColspan = items.length > 0 ? 4 : 3;
 

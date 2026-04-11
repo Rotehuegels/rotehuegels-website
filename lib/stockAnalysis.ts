@@ -110,6 +110,116 @@ risk_score: 0 = no risk, 100 = extreme risk. Be precise and cite specific number
   };
 }
 
+// ── Fetch Company Intelligence from Web ──────────────────────────────────────
+// Uses Groq LLM's training data + web knowledge to generate forensic analysis
+// without needing to scrape NSE (which blocks serverless IPs).
+
+export async function fetchAndAnalyzeStock(
+  symbol: string,
+  companyName: string,
+): Promise<AnalysisResult> {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error('GROQ_API_KEY not set');
+
+  const systemPrompt = `You are a forensic accountant and equity research analyst specializing in Indian equities listed on NSE/BSE.
+
+Company: ${companyName} (NSE: ${symbol})
+
+Based on your knowledge of this company's public filings, quarterly results, annual reports, corporate announcements, and publicly known information up to your training cutoff:
+
+Perform a detailed forensic analysis covering:
+
+1. ACCOUNTING RED FLAGS
+- Any history of auditor qualifications or emphasis of matter
+- Related party transaction patterns
+- Revenue recognition concerns
+- Contingent liabilities or off-balance-sheet items
+- Changes in accounting policies
+- Inventory/receivables growing faster than revenue
+
+2. GOVERNANCE SIGNALS
+- Board independence and composition
+- Auditor changes in recent years
+- KMP resignations or unusual turnover
+- Promoter pledge patterns
+- Shareholder dissent on key resolutions
+- Related party dealings with promoter group
+
+3. MANAGEMENT CREDIBILITY
+- Track record of guidance vs actual delivery
+- Consistency of narrative across quarters
+- Capital allocation decisions
+- History of promise vs performance
+
+4. CAPITAL ALLOCATION
+- Buyback history and timing (did they buy at peaks?)
+- Dividend policy consistency
+- Capex execution vs announcements
+- Debt management track record
+
+5. DIVERGENCES
+- Cash flow from operations vs reported profit trends
+- Revenue vs trade receivables trajectory
+- Margin expansion/contraction vs peers
+- Working capital changes
+
+6. POSITIVE SIGNALS
+- Consistent execution track record
+- Strong governance practices
+- Transparent and detailed disclosures
+- Improving financial metrics
+
+Be SPECIFIC — cite actual financial periods (Q3FY26, FY24-25), approximate numbers, and known public events.
+If you're not confident about a specific data point, say so and assign a lower confidence score.
+
+Respond ONLY with valid JSON:
+{
+  "signals": [{ "type": "string", "severity": "string", "title": "string", "description": "string", "evidence": "string", "confidence": 0 }],
+  "claims": [{ "claim": "string", "source": "string", "target_date": "string or null" }],
+  "summary": "2-3 paragraph forensic summary of the company",
+  "risk_score": 0
+}
+
+Generate at least 5-8 signals per company. Be thorough.`;
+
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Perform a complete forensic analysis of ${companyName} (NSE: ${symbol}). Be thorough and specific.` },
+      ],
+      temperature: 0.3,
+      max_tokens: 4000,
+      response_format: { type: 'json_object' },
+    }),
+    signal: AbortSignal.timeout(60000),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Groq API error ${res.status}: ${err}`);
+  }
+
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('Empty response from Groq');
+
+  const parsed = JSON.parse(content) as AnalysisResult;
+
+  return {
+    signals: Array.isArray(parsed.signals) ? parsed.signals : [],
+    claims: Array.isArray(parsed.claims) ? parsed.claims : [],
+    summary: parsed.summary ?? 'No summary generated.',
+    risk_score: typeof parsed.risk_score === 'number' ? parsed.risk_score : 50,
+  };
+}
+
 // ── Yahoo Finance Price Fetch ────────────────────────────────────────────────
 
 export async function fetchStockPrice(yahooSymbol: string): Promise<StockPrice> {

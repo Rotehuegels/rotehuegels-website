@@ -4,6 +4,7 @@ import {
   AlertTriangle, Shield, UserCheck, TrendingUp, GitBranch, CheckCircle,
   Activity, Flame, BarChart3, Eye,
 } from 'lucide-react';
+import ScanButton from './ScanButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,9 +99,12 @@ export default async function IntelligenceDashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Stock Intelligence</h1>
-        <p className="mt-1 text-sm text-zinc-500">Forensic analysis and signal tracking across your portfolio</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Stock Intelligence</h1>
+          <p className="mt-1 text-sm text-zinc-500">Forensic analysis and signal tracking across your portfolio</p>
+        </div>
+        <ScanButton />
       </div>
 
       {/* Summary Cards */}

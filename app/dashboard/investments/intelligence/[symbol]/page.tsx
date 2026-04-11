@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { fetchStockPrice } from '@/lib/stockAnalysis';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import ScanStockButton from './ScanStockButton';
 import {
   AlertTriangle, Shield, UserCheck, TrendingUp, GitBranch, CheckCircle,
   ArrowLeft, TrendingDown, FileText, Clock,
@@ -105,6 +106,7 @@ export default async function StockIntelligencePage({ params, searchParams }: Pr
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-white">{holding.company_name}</h1>
                 <span className="text-sm font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">{symbol}</span>
+                <ScanStockButton symbol={symbol} />
                 {holding.sector && (
                   <span className="text-xs px-2 py-0.5 rounded bg-zinc-800/60 text-zinc-500">{holding.sector}</span>
                 )}

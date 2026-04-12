@@ -46,18 +46,24 @@ export default async function SampleDetailPage({
 
   if (!project) notFound();
 
-  // Fetch sample detail from API
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const res = await fetch(
-    `${baseUrl}/api/portal/projects/${projectId}/operations/lab/${sampleId}`,
-    { cache: 'no-store', headers: { 'x-portal-customer': portalUser.customerId } },
-  );
+  // Fetch sample with results directly
+  const { data: sample } = await supabaseAdmin
+    .from('lab_samples')
+    .select('*, lab_results(*, lab_parameters(name, unit))')
+    .eq('id', sampleId)
+    .single();
 
-  if (!res.ok) notFound();
+  if (!sample) notFound();
 
-  const data: any = await res.json();
-  const sample = data.sample ?? data;
-  const results: any[] = data.results ?? [];
+  const rawResults = (sample.lab_results ?? []) as any[];
+  const results = rawResults.map((r: any) => ({
+    parameter_name: r.lab_parameters?.name ?? 'Unknown',
+    value: r.value,
+    unit: r.unit || r.lab_parameters?.unit || '',
+    min_spec: r.min_spec,
+    max_spec: r.max_spec,
+    within_spec: r.is_within_spec,
+  }));
 
   const withinSpecCount = results.filter((r: any) => r.within_spec === true).length;
   const totalResults = results.length;
@@ -70,7 +76,7 @@ export default async function SampleDetailPage({
 
       {/* Back Link */}
       <Link
-        href={`/portal/${projectId}/operations/lab`}
+        href={`/p/${projectId}/operations/lab`}
         className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300"
       >
         <ArrowLeft className="h-3 w-3" /> Back to LabREX Dashboard

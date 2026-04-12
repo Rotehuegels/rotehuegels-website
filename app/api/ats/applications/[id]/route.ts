@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { sendCandidateStageEmail } from '@/lib/notifications';
 
 const UpdateSchema = z.object({
   stage: z.enum(['applied', 'shortlisted', 'interview', 'offer', 'hired', 'rejected']).optional(),
@@ -60,5 +61,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Send candidate email on stage change
+  if (parsed.data.stage && parsed.data.stage !== 'applied') {
+    sendCandidateStageEmail(id, parsed.data.stage).catch(err =>
+      console.error('[ats] Failed to send stage email:', err)
+    );
+  }
+
   return NextResponse.json({ success: true });
 }

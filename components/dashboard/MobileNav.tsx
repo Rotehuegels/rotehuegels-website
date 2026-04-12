@@ -7,13 +7,15 @@ import Image from 'next/image';
 import {
   Menu, X, ChevronDown, LogOut,
   LayoutDashboard,
-  Users, UserPlus,
+  Users, UserPlus, UserCheck,
   Briefcase, FilePlus, ClipboardList,
   Receipt, Settings2,
   ShoppingBag, Building2, BookOpen, FileText, ReceiptText,
   Package, ShoppingCart, Truck,
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
   Network, FolderKanban, FolderPlus, CalendarDays, Factory, FlaskConical,
+  Shield, BarChart3, Globe, Eye, Mail, History,
+  Radar, AlertTriangle, FileCheck,
 } from 'lucide-react';
 
 // ── Same nav tree as Sidebar ──────────────────────────────────────────────────
@@ -62,10 +64,14 @@ const NAV: NavItem[] = [
   {
     label: 'Sales', icon: ShoppingBag,
     children: [
-      { label: 'Customers', href: '/d/customers',  icon: Building2 },
-      { label: 'Catalog',   href: '/d/catalog',      icon: BookOpen },
-      { label: 'Quotes',    href: '/d/quotes',     icon: FileText },
-      { label: 'Orders',    href: '/d/orders',     icon: ReceiptText },
+      { label: 'Customers',      href: '/d/customers',                icon: Building2 },
+      { label: 'Registrations',  href: '/d/customers/registrations',  icon: UserCheck },
+      { label: 'Leads',          href: '/d/customers/leads',          icon: Users },
+      { label: 'Catalog',        href: '/d/catalog',                  icon: BookOpen },
+      { label: 'Quotes',         href: '/d/quotes',                   icon: FileText },
+      { label: 'Orders',         href: '/d/orders',                   icon: ReceiptText },
+      { type: 'section', label: 'Intelligence' },
+      { label: 'Market Intelligence', href: '/d/intelligence',        icon: Radar },
     ],
   },
 
@@ -81,24 +87,44 @@ const NAV: NavItem[] = [
   {
     label: 'Finance', icon: Wallet,
     children: [
-      { label: 'Expenses',       href: '/d/expenses', icon: Receipt },
-      { label: 'Bank Statement', href: '/d/bank',     icon: Landmark },
-      { label: 'GST Report',     href: '/d/gst',          icon: BadgePercent },
-      { label: 'GST Filing',     href: '/d/gst/filing', icon: BadgePercent },
-      { label: 'P&L Statement',  href: '/d/pl',       icon: TrendingUp },
-      { label: 'Investments',    href: '/d/investments',        icon: BarChart2 },
+      { label: 'Expenses',          href: '/d/expenses',     icon: Receipt },
+      { label: 'Bank Statement',    href: '/d/bank',         icon: Landmark },
+      { label: 'GST Report',        href: '/d/gst',          icon: BadgePercent },
+      { label: 'GST Filing',        href: '/d/gst/filing',   icon: BadgePercent },
+      { label: 'P&L Statement',     href: '/d/pl',           icon: TrendingUp },
+      { label: 'Investments',       href: '/d/investments',   icon: BarChart2 },
+      { label: 'Stock Intelligence', href: '/d/stock-intel',  icon: AlertTriangle },
+    ],
+  },
+
+  {
+    label: 'IT', icon: Shield,
+    children: [
+      { label: 'Mail',             href: '/d/mail',              icon: Mail },
+      { label: 'Chat Analytics',   href: '/d/analytics',         icon: BarChart3 },
+      { label: 'Visitor Insights', href: '/d/analytics#orgs',    icon: Eye },
+      { label: 'Page Views',       href: '/d/analytics#traffic', icon: Globe },
+      { type: 'section', label: 'Audit' },
+      { label: 'Audit Trail',      href: '/d/audit',             icon: History },
+    ],
+  },
+
+  {
+    label: 'Quality', icon: FileCheck,
+    children: [
+      { label: 'Documents', href: '/d/documents', icon: FileCheck },
     ],
   },
 
   {
     label: 'Network', icon: Network,
     children: [
-      { label: 'REX Members',            href: '/d/rex',       icon: Network },
+      { label: 'REX Members',            href: '/d/rex',          icon: Network },
       { label: 'Supplier Registrations', href: '/d/supplier-reg', icon: Building2 },
     ],
   },
 
-  { label: 'Settings', href: '/dashboard/settings', icon: Settings2 },
+  { label: 'Settings', href: '/d/settings', icon: Settings2 },
 ];
 
 function isGroup(item: NavItem): item is NavGroup {

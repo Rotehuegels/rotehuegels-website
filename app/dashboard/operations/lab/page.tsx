@@ -22,6 +22,16 @@ export default function LabConfigPage() {
   // Filters
   const [industryFilter, setIndustryFilter] = useState('all');
   const [sampleTypeFilter, setSampleTypeFilter] = useState('all');
+  const [addMsg, setAddMsg] = useState('');
+  const [adding, setAdding] = useState(false);
+
+  const addItem = async (endpoint: string, body: Record<string, unknown>) => {
+    setAdding(true); setAddMsg('');
+    const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    setAdding(false);
+    if (res.ok) { setAddMsg('Added!'); load(); setTimeout(() => setAddMsg(''), 2000); return true; }
+    const d = await res.json(); setAddMsg(`Error: ${d.error}`); return false;
+  };
 
   const load = async () => {
     const [inst, ind, st, params] = await Promise.all([
@@ -92,8 +102,27 @@ export default function LabConfigPage() {
         ))}
       </div>
 
+      {addMsg && <p className="text-xs text-zinc-400 bg-zinc-800 rounded-lg px-3 py-2 mb-4">{addMsg}</p>}
+
       {/* Instruments Tab */}
       {tab === 'instruments' && (
+        <div className="space-y-4">
+        <form onSubmit={e => { e.preventDefault(); const fd = new FormData(e.currentTarget);
+          addItem('/api/lab/instruments', { code: fd.get('code'), name: fd.get('name'), category: fd.get('category'), description: fd.get('desc') })
+            .then(ok => { if (ok) (e.target as HTMLFormElement).reset(); });
+        }} className={`${glass} p-4`}>
+          <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Add Instrument</h2>
+          <div className="flex flex-wrap gap-2 items-end">
+            <input name="code" required placeholder="Code (e.g. ICP-MS)" className={inputCls + ' w-28'} />
+            <input name="name" required placeholder="Full name" className={inputCls + ' flex-1 min-w-[150px]'} />
+            <select name="category" required className={inputCls + ' w-40'}>
+              <option value="spectroscopy">Spectroscopy</option><option value="wet_chemistry">Wet Chemistry</option>
+              <option value="thermal">Thermal</option><option value="mineral_processing">Mineral Processing</option><option value="other">Other</option>
+            </select>
+            <input name="desc" placeholder="Description" className={inputCls + ' flex-1 min-w-[150px]'} />
+            <button type="submit" disabled={adding} className="rounded-lg bg-rose-600 px-3 py-2 text-xs text-white hover:bg-rose-500 disabled:opacity-50">Add</button>
+          </div>
+        </form>
         <div className={`${glass} p-5`}>
           <h2 className="text-sm font-semibold text-white mb-4">Analytical Instruments ({instruments.length})</h2>
           <div className="overflow-x-auto">
@@ -120,6 +149,7 @@ export default function LabConfigPage() {
               </tbody>
             </table>
           </div>
+        </div>
         </div>
       )}
 
@@ -155,6 +185,22 @@ export default function LabConfigPage() {
       {/* Sample Types Tab */}
       {tab === 'sample_types' && (
         <div>
+          <form onSubmit={e => { e.preventDefault(); const fd = new FormData(e.currentTarget);
+            addItem('/api/lab/sample-types', { code: fd.get('code'), name: fd.get('name'), industry_id: fd.get('industry_id') || null, description: fd.get('desc') })
+              .then(ok => { if (ok) (e.target as HTMLFormElement).reset(); });
+          }} className={`${glass} p-4 mb-4`}>
+            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Add Sample Type</h2>
+            <div className="flex flex-wrap gap-2 items-end">
+              <input name="code" required placeholder="Code (e.g. cu-ore)" className={inputCls + ' w-28'} />
+              <input name="name" required placeholder="Name" className={inputCls + ' flex-1 min-w-[120px]'} />
+              <select name="industry_id" className={inputCls + ' w-44'}>
+                <option value="">No industry</option>
+                {industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+              </select>
+              <input name="desc" placeholder="Description" className={inputCls + ' flex-1 min-w-[120px]'} />
+              <button type="submit" disabled={adding} className="rounded-lg bg-rose-600 px-3 py-2 text-xs text-white hover:bg-rose-500 disabled:opacity-50">Add</button>
+            </div>
+          </form>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-xs text-zinc-500">Industry:</span>
             <select value={industryFilter} onChange={e => setIndustryFilter(e.target.value)}
@@ -196,6 +242,36 @@ export default function LabConfigPage() {
       {/* Parameters Tab */}
       {tab === 'parameters' && (
         <div>
+          <form onSubmit={e => { e.preventDefault(); const fd = new FormData(e.currentTarget);
+            addItem('/api/lab/parameters', {
+              name: fd.get('name'), unit: fd.get('unit'), category: fd.get('category'),
+              sample_type: fd.get('sample_type') || null, industry_id: fd.get('industry_id') || null,
+              element_symbol: fd.get('element') || null,
+              default_min: fd.get('min') ? Number(fd.get('min')) : null,
+              default_max: fd.get('max') ? Number(fd.get('max')) : null,
+            }).then(ok => { if (ok) (e.target as HTMLFormElement).reset(); });
+          }} className={`${glass} p-4 mb-4`}>
+            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-3">Add Parameter</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+              <input name="name" required placeholder="Name *" className={inputCls} />
+              <input name="unit" required placeholder="Unit (%, ppm, g/L)" className={inputCls} />
+              <input name="element" placeholder="Element (Cu, Zn...)" className={inputCls} />
+              <select name="category" required className={inputCls}>
+                <option value="composition">Composition</option><option value="purity">Purity</option>
+                <option value="water">Water</option><option value="other">Other</option>
+              </select>
+            </div>
+            <div className="flex flex-wrap gap-2 items-end">
+              <input name="sample_type" placeholder="Sample type code" className={inputCls + ' w-36'} />
+              <select name="industry_id" className={inputCls + ' w-44'}>
+                <option value="">No industry</option>
+                {industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+              </select>
+              <input name="min" type="number" step="any" placeholder="Min spec" className={inputCls + ' w-24'} />
+              <input name="max" type="number" step="any" placeholder="Max spec" className={inputCls + ' w-24'} />
+              <button type="submit" disabled={adding} className="rounded-lg bg-rose-600 px-3 py-2 text-xs text-white hover:bg-rose-500 disabled:opacity-50">Add</button>
+            </div>
+          </form>
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <span className="text-xs text-zinc-500">Industry:</span>
             <select value={industryFilter} onChange={e => setIndustryFilter(e.target.value)}

@@ -23,39 +23,34 @@ export default async function ProductionLogPage({ params }: { params: Promise<{ 
   const { projectId } = await params;
 
   const { data: project } = await supabaseAdmin
-    .from('projects')
-    .select('id, name')
-    .eq('id', projectId)
-    .eq('customer_id', portalUser.customerId)
-    .single();
-
+    .from('projects').select('id, name').eq('id', projectId).eq('customer_id', portalUser.customerId).single();
   if (!project) notFound();
 
-  // Fetch production data
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const res = await fetch(
-    `${baseUrl}/api/portal/projects/${projectId}/operations/production?limit=90`,
-    { cache: 'no-store', headers: { 'x-portal-customer': portalUser.customerId } },
-  );
+  const { data: contract } = await supabaseAdmin
+    .from('operations_contracts').select('id').eq('project_id', projectId).single();
 
-  const entries: any[] = res.ok ? await res.json() : [];
+  const entries: any[] = [];
+  if (contract) {
+    const { data } = await supabaseAdmin
+      .from('production_logs')
+      .select('log_date, dross_input_kg, zinc_recovered_kg, recovery_rate, power_kwh, power_per_kg, revenue')
+      .eq('contract_id', contract.id)
+      .order('log_date', { ascending: false })
+      .limit(90);
+    if (data) entries.push(...data);
+  }
 
-  // Compute summary
   const totalEntries = entries.length;
-  const totalZinc = entries.reduce((s: number, e: any) => s + (e.zinc_out_kg ?? 0), 0);
-  const totalDross = entries.reduce((s: number, e: any) => s + (e.dross_in_kg ?? 0), 0);
+  const totalZinc = entries.reduce((s, e) => s + (e.zinc_recovered_kg ?? 0), 0);
+  const totalDross = entries.reduce((s, e) => s + (e.dross_input_kg ?? 0), 0);
   const avgRecovery = totalDross > 0 ? (totalZinc / totalDross) * 100 : 0;
-  const totalRevenue = entries.reduce((s: number, e: any) => s + (e.revenue ?? 0), 0);
+  const totalRevenue = entries.reduce((s, e) => s + (e.revenue ?? 0), 0);
+  const totalPower = entries.reduce((s, e) => s + (e.power_kwh ?? 0), 0);
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
-
-      {/* Back + Header */}
       <div>
-        <Link
-          href={`/portal/${projectId}/operations`}
-          className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 mb-3"
-        >
+        <Link href={`/p/${projectId}/operations`} className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 mb-3">
           <ArrowLeft className="h-3 w-3" /> Back to Operations
         </Link>
         <div className="flex items-center gap-2">
@@ -65,31 +60,14 @@ export default async function ProductionLogPage({ params }: { params: Promise<{ 
         <p className="text-sm text-zinc-500 mt-0.5">{project.name}</p>
       </div>
 
-      {/* Summary Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className={`${glass} p-4`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">Entries</p>
-          <p className="text-lg font-bold text-white mt-1">{totalEntries}</p>
-        </div>
-        <div className={`${glass} p-4`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">Total Zinc</p>
-          <p className="text-lg font-bold text-emerald-400 mt-1">{fmtKg(totalZinc)} kg</p>
-        </div>
-        <div className={`${glass} p-4`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">Total Dross</p>
-          <p className="text-lg font-bold text-white mt-1">{fmtKg(totalDross)} kg</p>
-        </div>
-        <div className={`${glass} p-4`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">Avg Recovery</p>
-          <p className="text-lg font-bold text-white mt-1">{avgRecovery.toFixed(1)}%</p>
-        </div>
-        <div className={`${glass} p-4`}>
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">Total Revenue</p>
-          <p className="text-lg font-bold text-emerald-400 mt-1">{fmt(totalRevenue)}</p>
-        </div>
+        <div className={`${glass} p-4`}><p className="text-xs text-zinc-500">Entries</p><p className="text-lg font-bold text-white mt-1">{totalEntries}</p></div>
+        <div className={`${glass} p-4`}><p className="text-xs text-zinc-500">Total Zinc</p><p className="text-lg font-bold text-emerald-400 mt-1">{fmtKg(totalZinc)} kg</p></div>
+        <div className={`${glass} p-4`}><p className="text-xs text-zinc-500">Total Dross</p><p className="text-lg font-bold text-white mt-1">{fmtKg(totalDross)} kg</p></div>
+        <div className={`${glass} p-4`}><p className="text-xs text-zinc-500">Avg Recovery</p><p className="text-lg font-bold text-amber-400 mt-1">{avgRecovery.toFixed(1)}%</p></div>
+        <div className={`${glass} p-4`}><p className="text-xs text-zinc-500">Total Revenue</p><p className="text-lg font-bold text-emerald-400 mt-1">{fmt(totalRevenue)}</p></div>
       </div>
 
-      {/* Full Table */}
       {entries.length === 0 ? (
         <div className={`${glass} p-12 text-center`}>
           <Factory className="h-10 w-10 text-zinc-600 mx-auto mb-3" />
@@ -101,41 +79,36 @@ export default async function ProductionLogPage({ params }: { params: Promise<{ 
             <table className="w-full text-sm min-w-[640px]">
               <thead>
                 <tr className="border-b border-zinc-800 text-xs text-zinc-500 uppercase tracking-wide">
-                  <th className="text-left py-2 pr-4">Date</th>
-                  <th className="text-right py-2 pr-4">Dross In (kg)</th>
-                  <th className="text-right py-2 pr-4">Zinc Out (kg)</th>
-                  <th className="text-right py-2 pr-4">Recovery (%)</th>
-                  <th className="text-right py-2 pr-4">Power (kWh)</th>
-                  <th className="text-right py-2 pr-4">kWh/kg</th>
+                  <th className="text-left py-2 pr-3">Date</th>
+                  <th className="text-right py-2 pr-3">Dross In</th>
+                  <th className="text-right py-2 pr-3">Zinc Out</th>
+                  <th className="text-right py-2 pr-3">Recovery</th>
+                  <th className="text-right py-2 pr-3">Power</th>
+                  <th className="text-right py-2 pr-3">kWh/kg</th>
                   <th className="text-right py-2">Revenue</th>
                 </tr>
               </thead>
               <tbody>
-                {entries.map((e: any, i: number) => {
-                  const kwhPerKg = e.zinc_out_kg > 0 ? (e.power_kwh ?? 0) / e.zinc_out_kg : 0;
-                  return (
-                    <tr key={i} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                      <td className="py-2.5 pr-4 text-zinc-300">{fmtDate(e.date)}</td>
-                      <td className="py-2.5 pr-4 text-right text-zinc-400">{fmtKg(e.dross_in_kg)}</td>
-                      <td className="py-2.5 pr-4 text-right text-emerald-400 font-medium">{fmtKg(e.zinc_out_kg)}</td>
-                      <td className="py-2.5 pr-4 text-right text-zinc-300">{(e.recovery_pct ?? 0).toFixed(1)}%</td>
-                      <td className="py-2.5 pr-4 text-right text-zinc-400">{fmtKg(e.power_kwh ?? 0)}</td>
-                      <td className="py-2.5 pr-4 text-right text-zinc-500">{kwhPerKg.toFixed(2)}</td>
-                      <td className="py-2.5 text-right text-emerald-400 font-medium">{fmt(e.revenue ?? 0)}</td>
-                    </tr>
-                  );
-                })}
+                {entries.map((e, i) => (
+                  <tr key={i} className="border-t border-zinc-800/30">
+                    <td className="py-2.5 pr-3 text-zinc-300">{fmtDate(e.log_date)}</td>
+                    <td className="py-2.5 pr-3 text-right font-mono text-zinc-400">{fmtKg(e.dross_input_kg)} kg</td>
+                    <td className="py-2.5 pr-3 text-right font-mono text-emerald-400">{fmtKg(e.zinc_recovered_kg)} kg</td>
+                    <td className="py-2.5 pr-3 text-right font-mono text-amber-400">{(e.recovery_rate ?? 0).toFixed(1)}%</td>
+                    <td className="py-2.5 pr-3 text-right font-mono text-zinc-400">{fmtKg(e.power_kwh ?? 0)}</td>
+                    <td className="py-2.5 pr-3 text-right font-mono text-zinc-500">{(e.power_per_kg ?? 0).toFixed(2)}</td>
+                    <td className="py-2.5 text-right font-mono text-emerald-400">{fmt(e.revenue ?? 0)}</td>
+                  </tr>
+                ))}
               </tbody>
               <tfoot>
-                <tr className="border-t border-zinc-700 font-semibold">
-                  <td className="py-3 pr-4 text-zinc-400">Total</td>
-                  <td className="py-3 pr-4 text-right text-zinc-300">{fmtKg(totalDross)}</td>
-                  <td className="py-3 pr-4 text-right text-emerald-400">{fmtKg(totalZinc)}</td>
-                  <td className="py-3 pr-4 text-right text-zinc-300">{avgRecovery.toFixed(1)}%</td>
-                  <td className="py-3 pr-4 text-right text-zinc-400">
-                    {fmtKg(entries.reduce((s: number, e: any) => s + (e.power_kwh ?? 0), 0))}
-                  </td>
-                  <td className="py-3 pr-4 text-right text-zinc-500">—</td>
+                <tr className="border-t-2 border-zinc-700 font-semibold">
+                  <td className="py-3 pr-3 text-zinc-400">Total</td>
+                  <td className="py-3 pr-3 text-right text-zinc-300">{fmtKg(totalDross)} kg</td>
+                  <td className="py-3 pr-3 text-right text-emerald-400">{fmtKg(totalZinc)} kg</td>
+                  <td className="py-3 pr-3 text-right text-amber-400">{avgRecovery.toFixed(1)}%</td>
+                  <td className="py-3 pr-3 text-right text-zinc-400">{fmtKg(totalPower)}</td>
+                  <td className="py-3 pr-3 text-right text-zinc-500">—</td>
                   <td className="py-3 text-right text-emerald-400">{fmt(totalRevenue)}</td>
                 </tr>
               </tfoot>

@@ -560,3 +560,63 @@ export async function sendPOConfirmation(poId: string) {
     text
   );
 }
+
+/* ── 6. ATS — Candidate Stage Update Email ─────────────────────────────── */
+
+const STAGE_MESSAGES: Record<string, { subject: string; body: string }> = {
+  shortlisted: {
+    subject: 'Your application has been shortlisted',
+    body: 'We are pleased to inform you that your application has been shortlisted for the next stage. Our team will be in touch shortly with further details.',
+  },
+  interview: {
+    subject: 'Interview scheduled',
+    body: 'Congratulations! You have been selected for an interview. Our HR team will contact you shortly with the date, time, and mode of interview.',
+  },
+  offer: {
+    subject: 'Job offer from Rotehügels',
+    body: 'We are excited to extend an offer to you! Our HR team will share the detailed offer letter and next steps with you shortly.',
+  },
+  hired: {
+    subject: 'Welcome to Rotehügels!',
+    body: 'Congratulations and welcome aboard! We are thrilled to have you join the Rotehügels team. Our HR team will reach out with your onboarding details.',
+  },
+  rejected: {
+    subject: 'Application update',
+    body: 'Thank you for your interest in Rotehügels. After careful consideration, we have decided to move forward with other candidates for this position. We appreciate your time and encourage you to apply for future openings.',
+  },
+};
+
+export async function sendCandidateStageEmail(applicationId: string, newStage: string) {
+  const CO = await getCompanyCO();
+  const { data: app, error } = await supabaseAdmin
+    .from("applications")
+    .select("applicant_name, email, job_id, job_postings(title)")
+    .eq("id", applicationId)
+    .single();
+
+  if (error || !app) throw new Error(`Application not found: ${applicationId}`);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const jobTitle = (app as any).job_postings?.title ?? "the position";
+  const candidateEmail = app.email;
+  if (!candidateEmail) return;
+
+  const msg = STAGE_MESSAGES[newStage];
+  if (!msg) return;
+
+  const html = `${letterhead(CO, msg.subject)}
+    <p style="font-size:13px;">Dear <strong>${esc(app.applicant_name)}</strong>,</p>
+    <p style="font-size:12px;color:#444;">${msg.body}</p>
+    <table style="font-size:12px;line-height:1.8;margin:16px 0;">
+      <tr><td style="color:#666;padding-right:14px;">Position</td><td style="font-weight:700;">${esc(jobTitle)}</td></tr>
+      <tr><td style="color:#666;padding-right:14px;">Status</td><td style="font-weight:700;text-transform:capitalize;">${esc(newStage)}</td></tr>
+    </table>
+    <p style="font-size:12px;color:#444;">If you have any questions, please reply to this email or contact us at ${CO.phone}.</p>
+  ${footer(CO)}`;
+
+  await send(
+    candidateEmail,
+    `${msg.subject} — ${jobTitle} | ${CO.name}`,
+    html,
+    `Dear ${app.applicant_name},\n\n${msg.body}\n\nPosition: ${jobTitle}\nStatus: ${newStage}\n\nBest regards,\nRotehügels HR Team`
+  );
+}

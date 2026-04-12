@@ -11,3 +11,15 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
+
+export async function POST(req: Request) {
+  const body = await req.json();
+  const { data, error } = await supabaseAdmin
+    .from('lab_instruments')
+    .insert({ code: body.code, name: body.name, category: body.category, description: body.description || null })
+    .select()
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data, { status: 201 });
+}

@@ -17,3 +17,15 @@ export async function GET(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
+
+export async function POST(req: Request) {
+  const body = await req.json();
+  const { data, error } = await supabaseAdmin
+    .from('lab_sample_types')
+    .insert({ code: body.code, name: body.name, industry_id: body.industry_id || null, description: body.description || null })
+    .select()
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data, { status: 201 });
+}

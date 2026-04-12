@@ -18,6 +18,14 @@ export function getLogoBase64(): string {
   );
 }
 
+/** Light/color logo for dark backgrounds (P&L header, GST header) */
+export function getLogoDarkBgBase64(): string {
+  return (
+    b64(path.join(process.cwd(), 'public', 'assets', 'Logo.png'), 'image/png') ??
+    '/assets/Logo.png'
+  );
+}
+
 export function getSignatureBase64(): string {
   return (
     b64(path.join(process.cwd(), 'private', 'signature.jpg'), 'image/jpeg') ??

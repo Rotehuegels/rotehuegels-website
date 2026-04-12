@@ -3,6 +3,7 @@ import FYSelector from './FYSelector';
 import { FileText } from 'lucide-react';
 import ReportContainer from '@/components/ReportContainer';
 import { getCompanyCO } from '@/lib/company';
+import { getLogoDarkBgBase64 } from '@/lib/serverAssets';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -68,6 +69,7 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   const fy = fyParam ?? '2025-26';
   const { from, to, label, full } = parseFY(fy);
   const CO = await getCompanyCO();
+  const logoSrc = getLogoDarkBgBase64();
 
   // Derive startYear for brought-forward calculation (prev FY = startYear-1 → startYear).
   const [startYear] = fy.split('-').map(Number);
@@ -224,7 +226,7 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
         <div className="bg-gray-900 px-8 py-5 flex items-center justify-between">
           <div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/Logo.png" alt="Rotehügels" className="h-8 mb-2" />
+            <img src={logoSrc} alt="Rotehügels" className="h-8 mb-2" />
             <p className="text-[10px] text-gray-400">{CO.name}</p>
             <p className="text-[9px] text-gray-500">CIN: {CO.cin} &nbsp;|&nbsp; GSTIN: {CO.gstin} &nbsp;|&nbsp; PAN: {CO.pan}</p>
           </div>

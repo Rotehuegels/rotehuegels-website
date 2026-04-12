@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import nodemailer from 'nodemailer';
+
+function getTransporter() {
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) return null;
+  return nodemailer.createTransport({
+    host: SMTP_HOST, port: Number(SMTP_PORT || 587), secure: false,
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+  });
+}
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -87,6 +97,45 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         customer_id: customer.id,
       })
       .eq('id', id);
+
+    // Send approval email with customer ID
+    const transporter = getTransporter();
+    if (transporter) {
+      try {
+        await transporter.sendMail({
+          from: 'Rotehügels Sales <sales@rotehuegels.com>',
+          to: reg.email,
+          subject: `KYC Approved — Your Customer ID: ${customer_id}`,
+          html: `
+            <div style="max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#1a1a1a;">
+              <div style="border-bottom:3px solid #b45309;padding-bottom:14px;margin-bottom:20px;">
+                <div style="font-size:17px;font-weight:900;text-transform:uppercase;">Rotehügels</div>
+              </div>
+              <p>Dear <strong>${reg.contact_person}</strong>,</p>
+              <p>Great news! Your KYC verification for <strong>${reg.company_name}</strong> has been approved.</p>
+              <div style="margin:20px 0;padding:16px 20px;border:2px solid #b45309;border-radius:8px;text-align:center;background:#fffbeb;">
+                <p style="font-size:12px;color:#92400e;margin:0 0 6px;">Your Customer ID</p>
+                <p style="font-size:24px;font-weight:900;color:#b45309;margin:0;font-family:monospace;">${customer_id}</p>
+              </div>
+              <p>Please quote this ID in all future communications, orders, and invoices.</p>
+              <p>You can now:</p>
+              <ul style="color:#444;font-size:13px;line-height:1.8;">
+                <li>Request quotations for projects and services</li>
+                <li>Place orders and track deliveries</li>
+                <li>Access the Client Portal for project monitoring</li>
+              </ul>
+              <p style="margin-top:24px;">Welcome aboard!<br/><strong>Sales Team</strong><br/>Rotehügels<br/>
+              <a href="https://www.rotehuegels.com" style="color:#b45309;">www.rotehuegels.com</a> · +91-90044 91275</p>
+              <div style="border-top:1px solid #ddd;padding-top:12px;margin-top:24px;font-size:10px;color:#999;">
+                Rotehuegel Research Business Consultancy Private Limited, Chennai, Tamil Nadu, India
+              </div>
+            </div>
+          `,
+        });
+      } catch (e) {
+        console.error('[customer-reg] Failed to send approval email:', e);
+      }
+    }
 
     return NextResponse.json({
       success: true,

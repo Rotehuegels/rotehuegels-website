@@ -199,7 +199,9 @@ function GroupItem({ item, pathname }: { item: NavGroup; pathname: string }) {
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
-export default function Sidebar({ userEmail }: { userEmail: string }) {
+const ROLE_LABEL: Record<string, string> = { admin: 'Super Admin', client: 'Client' };
+
+export default function Sidebar({ userEmail, userRole = 'admin' }: { userEmail: string; userRole?: string }) {
   const pathname = usePathname();
 
   return (
@@ -245,7 +247,7 @@ export default function Sidebar({ userEmail }: { userEmail: string }) {
       <div className="border-t border-zinc-800 pt-4">
         <div className="mb-2 px-4 py-2 rounded-xl bg-zinc-900/60">
           <p className="text-xs text-zinc-500 truncate">{userEmail}</p>
-          <p className="text-xs text-rose-400 font-medium">Super Admin</p>
+          <p className="text-xs text-rose-400 font-medium">{ROLE_LABEL[userRole] ?? userRole}</p>
         </div>
         <LogoutButton />
       </div>

@@ -29,13 +29,13 @@ export default async function DashboardLayout({
       <div className="flex min-h-screen">
         {/* Desktop sidebar */}
         <div className="hidden md:flex w-64 shrink-0 flex-col border-r border-zinc-800 bg-black/30 backdrop-blur-sm sticky top-0 h-screen overflow-y-auto">
-          <Sidebar userEmail={user.email ?? ''} />
+          <Sidebar userEmail={user.email ?? ''} userRole={role ?? 'admin'} />
         </div>
 
         {/* Main content */}
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Mobile top bar + drawer */}
-          <MobileNav userEmail={user.email ?? ''} />
+          <MobileNav userEmail={user.email ?? ''} userRole={role ?? 'admin'} />
           <div className="flex-1">
             {children}
           </div>

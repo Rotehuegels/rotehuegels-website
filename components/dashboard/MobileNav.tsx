@@ -163,7 +163,9 @@ function MobileGroup({ item, pathname, onNavigate }: {
 }
 
 // ── MobileNav ─────────────────────────────────────────────────────────────────
-export default function MobileNav({ userEmail }: { userEmail: string }) {
+const ROLE_LABEL: Record<string, string> = { admin: 'Super Admin', client: 'Client' };
+
+export default function MobileNav({ userEmail, userRole = 'admin' }: { userEmail: string; userRole?: string }) {
   const [open, setOpen] = useState(false);
   const pathname        = usePathname();
 
@@ -235,7 +237,7 @@ export default function MobileNav({ userEmail }: { userEmail: string }) {
             <div className="border-t border-zinc-800 px-3 py-4 space-y-2">
               <div className="px-4 py-2 rounded-xl bg-zinc-900/60">
                 <p className="text-xs text-zinc-500 truncate">{userEmail}</p>
-                <p className="text-xs text-rose-400 font-medium">Super Admin</p>
+                <p className="text-xs text-rose-400 font-medium">{ROLE_LABEL[userRole] ?? userRole}</p>
               </div>
               <a
                 href="/api/auth/signout"

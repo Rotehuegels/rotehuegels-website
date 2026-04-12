@@ -119,8 +119,15 @@ export default function TradingPartnersPage() {
                   </div>
                 )}
 
-                {p.status === 'verified' && p.verified_by && (
-                  <p className="text-xs text-emerald-400">Verified by {p.verified_by}</p>
+                {p.status === 'verified' && (
+                  <div className="flex items-center gap-3 text-xs">
+                    {p.partner_id && (
+                      <span className="font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+                        {p.partner_id}
+                      </span>
+                    )}
+                    {p.verified_by && <span className="text-zinc-500">Verified by {p.verified_by}</span>}
+                  </div>
                 )}
               </div>
             );

@@ -9,7 +9,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (body.status) update.status = body.status;
   if (body.verified_by) update.verified_by = body.verified_by;
   if (body.rejection_reason) update.rejection_reason = body.rejection_reason;
-  if (body.status === 'verified') update.verified_at = new Date().toISOString();
+  if (body.status === 'verified') {
+    update.verified_at = new Date().toISOString();
+    // Generate permanent partner ID on approval (random alphanumeric, not sequential)
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const rand = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    update.partner_id = `RTP-${rand}`;
+  }
 
   const { data, error } = await supabaseAdmin
     .from('trading_partners')

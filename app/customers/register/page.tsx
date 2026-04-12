@@ -295,7 +295,7 @@ export default function CustomerRegisterPage() {
         </form>
 
         <p className="text-center text-xs text-zinc-600 mt-6">
-          Already a customer? <Link href="/login" className="text-rose-400 hover:text-rose-300">Sign in to the portal</Link>
+          Need help? Contact us at <a href="mailto:sales@rotehuegels.com" className="text-rose-400 hover:text-rose-300">sales@rotehuegels.com</a>
         </p>
       </div>
     </main>

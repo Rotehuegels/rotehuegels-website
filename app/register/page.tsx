@@ -2,14 +2,19 @@
 import { useState } from 'react';
 import { supabaseBrowser } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
+import { validatePassword } from '@/lib/passwordValidation';
 
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [pwErrors, setPwErrors] = useState<string[]>([]);
   const r = useRouter();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const check = validatePassword(password);
+    if (!check.valid) { setPwErrors(check.errors); return; }
+    setPwErrors([]);
     const { error } = await supabaseBrowser().auth.signUp({ email, password });
     if (error) return alert(error.message);
     alert('Account created. Please log in.');

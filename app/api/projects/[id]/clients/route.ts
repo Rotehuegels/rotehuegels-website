@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { validatePassword } from '@/lib/passwordValidation';
 
 // POST — create a client user for this project's customer
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -9,6 +10,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   if (!email || !password) {
     return NextResponse.json({ error: 'email and password are required' }, { status: 400 });
+  }
+
+  const pwCheck = validatePassword(password);
+  if (!pwCheck.valid) {
+    return NextResponse.json({ error: `Weak password: ${pwCheck.errors.join(', ')}` }, { status: 400 });
   }
 
   // Get the project's customer_id

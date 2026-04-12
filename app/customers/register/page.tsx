@@ -143,7 +143,7 @@ export default function CustomerRegisterPage() {
 
   return (
     <main className="min-h-screen px-4 py-12 sm:px-6">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-6xl">
         <div className="text-center mb-8">
           <Link href="/"><Image src="/logo.png" alt="Rotehügels" width={150} height={42} className="mx-auto" priority /></Link>
           <h1 className="mt-4 text-xl font-bold text-white flex items-center justify-center gap-2">

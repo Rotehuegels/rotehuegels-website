@@ -92,6 +92,7 @@ const NAV: NavItem[] = [
     children: [
       { label: 'Purchase Orders',  href: '/d/purchase-orders', icon: ShoppingCart },
       { label: 'Suppliers',        href: '/d/suppliers',       icon: Truck },
+      { label: 'Shipments',        href: '/d/shipments',       icon: Package },
       { label: 'Stock & Inventory',href: '/d/stock',           icon: Package },
     ],
   },

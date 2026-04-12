@@ -6,7 +6,7 @@ export async function GET(req: Request) {
   const status = searchParams.get('status');
 
   let query = supabaseAdmin
-    .from('customer_leads')
+    .from('sales_leads')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -22,13 +22,13 @@ export async function POST(req: Request) {
 
   const year = new Date().getFullYear();
   const { count } = await supabaseAdmin
-    .from('customer_leads')
+    .from('sales_leads')
     .select('id', { count: 'exact', head: true });
 
   const leadCode = `LEAD-${year}-${String((count ?? 0) + 1).padStart(3, '0')}`;
 
   const { data, error } = await supabaseAdmin
-    .from('customer_leads')
+    .from('sales_leads')
     .insert({
       lead_code: leadCode,
       company_name: body.company_name,

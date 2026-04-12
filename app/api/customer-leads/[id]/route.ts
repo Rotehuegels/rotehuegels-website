@@ -10,7 +10,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   delete body.lead_code;
 
   const { data, error } = await supabaseAdmin
-    .from('customer_leads')
+    .from('sales_leads')
     .update(body)
     .eq('id', id)
     .select()

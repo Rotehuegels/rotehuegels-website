@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS customer_registrations (
 );
 
 -- Customer leads (discussions, no registration yet)
-CREATE TABLE IF NOT EXISTS customer_leads (
+CREATE TABLE IF NOT EXISTS sales_leads (
   id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   lead_code        TEXT UNIQUE NOT NULL,             -- LEAD-2026-001
   company_name     TEXT NOT NULL,
@@ -73,11 +73,11 @@ CREATE TABLE IF NOT EXISTS customer_leads (
 CREATE INDEX idx_cust_reg_email ON customer_registrations(email);
 CREATE INDEX idx_cust_reg_status ON customer_registrations(status);
 CREATE INDEX idx_cust_reg_gstin ON customer_registrations(gstin);
-CREATE INDEX idx_cust_leads_status ON customer_leads(status);
-CREATE INDEX idx_cust_leads_followup ON customer_leads(next_follow_up);
+CREATE INDEX idx_cust_leads_status ON sales_leads(status);
+CREATE INDEX idx_cust_leads_followup ON sales_leads(next_follow_up);
 
 -- Triggers
 CREATE TRIGGER cust_reg_updated_at
   BEFORE UPDATE ON customer_registrations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER cust_leads_updated_at
-  BEFORE UPDATE ON customer_leads FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+  BEFORE UPDATE ON sales_leads FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

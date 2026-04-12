@@ -3,7 +3,7 @@ import {
   Users, Network, Package, UserPlus, ArrowRight, Eye,
   MousePointerClick, Globe, Monitor, ReceiptText, Wallet,
   Briefcase, AlertCircle, Clock, CheckCircle2, Activity,
-  Landmark, TrendingUp,
+  Landmark, TrendingUp, UserCheck, GitPullRequest, CalendarDays, Milestone,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -91,7 +91,7 @@ async function getStats() {
 async function getActionItems() {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  const [overdueOrders, newApplications] = await Promise.all([
+  const [overdueOrders, newApplications, pendingKYC, pendingChanges, pendingLeave, upcomingMilestones] = await Promise.all([
     // Orders with pending payments and oldest payment stage > 30 days
     supabaseAdmin
       .from('orders')
@@ -107,6 +107,39 @@ async function getActionItems() {
       .select('id, applicant_name, job_id, created_at, stage')
       .eq('stage', 'applied')
       .order('created_at', { ascending: true })
+      .limit(5),
+
+    // Customer registrations pending KYC review
+    supabaseAdmin
+      .from('customer_registrations')
+      .select('id, reg_no, company_name, created_at')
+      .eq('status', 'kyc_submitted')
+      .order('created_at', { ascending: true })
+      .limit(5),
+
+    // Change requests awaiting review
+    supabaseAdmin
+      .from('change_requests')
+      .select('id, change_no, title, project_id, created_at, projects(name)')
+      .eq('status', 'requested')
+      .order('created_at', { ascending: true })
+      .limit(5),
+
+    // Leave applications pending approval
+    supabaseAdmin
+      .from('leave_applications')
+      .select('id, from_date, days, employees(full_name), leave_types(short_code)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true })
+      .limit(5),
+
+    // Project milestones due within next 14 days
+    supabaseAdmin
+      .from('project_milestones')
+      .select('id, title, target_date, project_id, projects(name)')
+      .in('status', ['pending', 'in_progress'])
+      .lte('target_date', new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0])
+      .order('target_date', { ascending: true })
       .limit(5),
   ]);
 
@@ -126,6 +159,10 @@ async function getActionItems() {
   return {
     overdueOrders: overdue,
     newApplications: newApplications.data ?? [],
+    pendingKYC: pendingKYC.data ?? [],
+    pendingChanges: pendingChanges.data ?? [],
+    pendingLeave: pendingLeave.data ?? [],
+    upcomingMilestones: upcomingMilestones.data ?? [],
   };
 }
 
@@ -327,7 +364,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* ── Action Items ─────────────────────────────────────────────────────── */}
-      {(stats.payrollDrafts.length > 0 || actions.overdueOrders.length > 0 || actions.newApplications.length > 0 || stats.unreconciledBank > 0) && (
+      {(stats.payrollDrafts.length > 0 || actions.overdueOrders.length > 0 || actions.newApplications.length > 0 || stats.unreconciledBank > 0 || actions.pendingKYC.length > 0 || actions.pendingChanges.length > 0 || actions.pendingLeave.length > 0 || actions.upcomingMilestones.length > 0) && (
         <section className={`${glass} p-6`}>
           <div className="flex items-center gap-2 mb-5">
             <AlertCircle className="h-4 w-4 text-amber-400" />
@@ -394,6 +431,62 @@ export default async function DashboardPage() {
                 <ArrowRight className="h-3.5 w-3.5 text-violet-600 shrink-0" />
               </Link>
             )}
+
+            {/* Pending KYC reviews */}
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {actions.pendingKYC.map((r: any) => (
+              <Link key={r.id} href="/dashboard/accounts/customers/registrations"
+                className="flex items-center gap-3 rounded-xl border border-emerald-900/30 bg-emerald-500/5 px-4 py-3 hover:bg-emerald-500/10 transition-colors">
+                <UserCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-emerald-200">{r.company_name}</p>
+                  <p className="text-xs text-emerald-600">KYC review pending · {r.reg_no} · {relativeTime(r.created_at)}</p>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+              </Link>
+            ))}
+
+            {/* Pending change requests */}
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {actions.pendingChanges.map((cr: any) => (
+              <Link key={cr.id} href={`/dashboard/projects/${cr.project_id}`}
+                className="flex items-center gap-3 rounded-xl border border-orange-900/30 bg-orange-500/5 px-4 py-3 hover:bg-orange-500/10 transition-colors">
+                <GitPullRequest className="h-4 w-4 text-orange-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-orange-200">{cr.change_no} — {cr.title}</p>
+                  <p className="text-xs text-orange-600">{cr.projects?.name} · {relativeTime(cr.created_at)}</p>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 text-orange-600 shrink-0" />
+              </Link>
+            ))}
+
+            {/* Pending leave approvals */}
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {actions.pendingLeave.map((l: any) => (
+              <Link key={l.id} href="/dashboard/hr/leave"
+                className="flex items-center gap-3 rounded-xl border border-cyan-900/30 bg-cyan-500/5 px-4 py-3 hover:bg-cyan-500/10 transition-colors">
+                <CalendarDays className="h-4 w-4 text-cyan-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-cyan-200">{l.employees?.full_name} — {l.leave_types?.short_code}</p>
+                  <p className="text-xs text-cyan-600">{l.days} day(s) from {new Date(l.from_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 text-cyan-600 shrink-0" />
+              </Link>
+            ))}
+
+            {/* Upcoming milestones */}
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {actions.upcomingMilestones.map((m: any) => (
+              <Link key={m.id} href={`/dashboard/projects/${m.project_id}`}
+                className="flex items-center gap-3 rounded-xl border border-pink-900/30 bg-pink-500/5 px-4 py-3 hover:bg-pink-500/10 transition-colors">
+                <Milestone className="h-4 w-4 text-pink-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-pink-200">{m.title}</p>
+                  <p className="text-xs text-pink-600">{m.projects?.name} · due {new Date(m.target_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 text-pink-600 shrink-0" />
+              </Link>
+            ))}
           </div>
         </section>
       )}

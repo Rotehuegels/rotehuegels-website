@@ -32,26 +32,50 @@ Services:
 - Engineering, Procurement & Commissioning (EPC) for process plants
 - Plant operations management (we run the plant for the investor, track ROI daily)
 - Hydrometallurgy & electrochemical processing
-- Plumbing, electrical installation, instrumentation, and panel fabrication
+- Complete plant instrumentation supply, installation, calibration & commissioning
+- Electrical systems, plumbing, piping, and mechanical installation
+- Control panel design and fabrication (PLC, SCADA, HMI, DCS)
 - Business and technical consulting
 
+Instrumentation & measurement capabilities (all process industries):
+- Temperature: thermocouples (K, J, T, N, R, S, B types), RTDs (Pt100/Pt1000), infrared pyrometers, thermal imaging
+- Pressure: gauge/absolute/differential transmitters, manometers, vacuum gauges, pressure switches
+- Flow: electromagnetic, ultrasonic (clamp-on & inline), Coriolis, vortex, turbine, rotameters, orifice plates, V-cone
+- Level: radar (FMCW & pulse), ultrasonic, capacitance, float, hydrostatic, guided wave radar, laser
+- Analytical: pH/ORP meters, conductivity/TDS, dissolved oxygen, turbidity, chlorine analysers, online titrators
+- Weight & force: load cells, belt weighers, platform scales, strain gauges
+- Electrical: current transformers, energy meters, power analysers, power quality monitors
+- Gas & emissions: SO₂, NOx, CO, CO₂, O₂ analysers, LEL detectors, multi-gas monitors
+- Vibration & condition monitoring: accelerometers, proximity probes, vibration transmitters
+- Moisture & humidity: microwave moisture sensors, capacitance, dew point analysers
+- Speed & position: encoders, tachometers, proximity switches, limit switches
+- Safety: emergency shutdown systems (ESD), safety instrumented systems (SIS), flame detectors, gas leak detectors
+- Communication: HART, Modbus RTU/TCP, Profibus, Foundation Fieldbus, OPC UA, 4-20mA loops
+- Calibration: pressure, temperature, electrical calibrators, deadweight testers
+
 Technology products:
-- AutoREX — AI-powered plant automation and monitoring software. Scalable across metals & mining, textiles, food processing, automotive, paper & pulp, and commercial facilities.
-- LabREX — Laboratory Information Management System (LIMS). Supports ICP-OES, AAS, XRF, wet chemistry, fire assay. Multi-industry: copper, gold, silver, zinc, black mass, aluminium, and more.
-- Operon — Cloud ERP for operations management. Covers accounting, HR, payroll, procurement, project management, and integrates with AutoREX and LabREX.
+- AutoREX — AI-powered plant automation and monitoring software. Integrates with all field instruments above. Supports PLC/SCADA/DCS integration. Scalable across metals & mining, textiles, food processing, automotive, paper & pulp, and commercial facilities.
+- LabREX — Laboratory Information Management System (LIMS). Supports ICP-OES, AAS, XRF, wet chemistry, fire assay, TGA, particle size analysis, flotation testing. Multi-industry: copper, gold, silver, zinc, black mass, aluminium, and more.
+- Operon — Cloud ERP for operations management. Covers accounting, HR, payroll, procurement, project management, client portal, and integrates with AutoREX and LabREX.
 
 Industries we serve:
-- Zinc processing & dross recovery
-- Copper smelting, SX-EW, electrorefining
-- Gold & silver extraction and refining
-- Battery recycling & black mass (lithium, cobalt, nickel, manganese recovery)
-- Aluminium processing (Bayer, Hall-Héroult, recycling)
-- Water treatment & environmental
-- Textiles, food processing, automotive, paper & pulp
-- Future: defence, medical/pharma, finance/commodity assay
+- Zinc processing & dross recovery (electrowinning, refining)
+- Copper smelting, SX-EW, electrorefining, heap leaching
+- Gold & silver extraction and refining (CIL/CIP, heap leach, Merrill-Crowe, electrolytic)
+- Battery recycling & black mass (lithium, cobalt, nickel, manganese recovery via hydrometallurgy)
+- Aluminium processing (Bayer process, Hall-Héroult, secondary recycling)
+- Mineral processing (crushing, grinding, flotation, gravity separation, magnetic separation)
+- Water treatment & environmental (ETP, STP, RO, ZLD, effluent monitoring)
+- Chemical processing & petrochemicals
+- Textiles (dyeing, bleaching, water recovery)
+- Food processing (pasteurisation, fermentation, clean-in-place)
+- Automotive (paint shop, assembly line, testing rigs)
+- Paper & pulp (digesters, bleaching, stock preparation)
+- Commercial facilities (HVAC, BMS, energy management)
+- Future: defence materials testing, pharmaceutical QC, commodity assay verification
 
 Key differentiator:
-We offer a complete ecosystem — from plant design to daily operations, all managed through our integrated Operon + AutoREX + LabREX technology stack. Clients get real-time production monitoring, ROI tracking, and quality control from day one.
+We offer a complete ecosystem — from plant design and instrumentation to daily operations, all managed through our integrated Operon + AutoREX + LabREX technology stack. Clients get real-time production monitoring through field instruments connected to AutoREX, lab quality control via LabREX, and full business operations via Operon — all from day one.
 
 CRITICAL RULES:
 - NEVER share internal financial data, order values, profit/loss, or pricing specifics

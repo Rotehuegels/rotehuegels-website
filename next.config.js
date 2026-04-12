@@ -126,6 +126,7 @@ const nextConfig = {
       { source: '/p/:projectId/payments', destination: '/portal/:projectId/payments' },
       { source: '/p/:projectId/changes', destination: '/portal/:projectId/changes' },
       { source: '/p/:projectId/changes/new', destination: '/portal/:projectId/changes/new' },
+      { source: '/p/:projectId/deliveries', destination: '/portal/:projectId/deliveries' },
       { source: '/p/:projectId/documents', destination: '/portal/:projectId/documents' },
       { source: '/p/:projectId/activity', destination: '/portal/:projectId/activity' },
       { source: '/p/:projectId/operations', destination: '/portal/:projectId/operations' },

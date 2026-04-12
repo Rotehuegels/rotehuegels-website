@@ -5,7 +5,7 @@ import { usePathname, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  LayoutDashboard, Milestone, CreditCard, FileText,
+  LayoutDashboard, Milestone, CreditCard, FileText, Package,
   Activity, GitPullRequest, LogOut, Menu, X, ChevronDown,
   Factory, BarChart3, TrendingUp, FlaskConical,
 } from 'lucide-react';
@@ -21,6 +21,7 @@ function getNav(projectId: string, hasOperations: boolean): NavItem[] {
     { label: 'Overview',         href: base,                icon: LayoutDashboard },
     { label: 'Milestones',       href: `${base}/milestones`, icon: Milestone },
     { label: 'Payments',         href: `${base}/payments`,   icon: CreditCard },
+    { label: 'Deliveries',       href: `${base}/deliveries`,  icon: Package },
     { label: 'Change Requests',  href: `${base}/changes`,    icon: GitPullRequest },
     { label: 'Documents',        href: `${base}/documents`,  icon: FileText },
     { label: 'Activity',         href: `${base}/activity`,   icon: Activity },

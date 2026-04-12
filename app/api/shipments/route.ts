@@ -12,6 +12,11 @@ const CARRIER_URLS: Record<string, string> = {
   'Gati':     'https://www.gati.com/tracking/',
   'Safexpress': 'https://www.safexpress.com/trackshipment',
   'VRL':      'https://www.vrlgroup.in/track_consignment.aspx',
+  'Maruti Courier': 'https://www.maruticourier.com/Tracking/tracking.aspx',
+  'Professional Courier': 'https://www.tpcindia.com/track.aspx',
+  'Trackon':  'https://www.trackoncourier.com/track',
+  'Ecom Express': 'https://ecomexpress.in/tracking/',
+  'Xpressbees': 'https://www.xpressbees.com/track',
   'Other':    '',
 };
 

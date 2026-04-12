@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { CheckCircle2, Truck, Loader2 } from 'lucide-react';
 
 const CATEGORIES: { group: string; items: string[] }[] = [
   { group: 'Raw Materials & Metals', items: [
@@ -92,60 +94,57 @@ export default function SupplierRegisterPage() {
 
   if (status === 'success') {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6">
-        <div className="max-w-md w-full text-center space-y-4">
-          <div className="text-5xl">✓</div>
-          <h1 className="text-2xl font-bold text-white">Registration Submitted</h1>
-          <p className="text-zinc-400 text-sm">
-            Thank you for registering as a supplier with Rotehügels. Our team will review your
-            submission and reach out when your categories match our procurement requirements.
-          </p>
-          <Link href="/" className="inline-block mt-4 text-sm text-rose-400 hover:text-rose-300 transition-colors">
+      <main className="min-h-screen flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md text-center">
+          <Image src="/logo.png" alt="Rotehügels" width={150} height={42} className="mx-auto mb-6" priority />
+          <div className="rounded-2xl border border-emerald-800/60 bg-emerald-900/20 p-8 space-y-4">
+            <CheckCircle2 className="h-12 w-12 text-emerald-400 mx-auto" />
+            <h1 className="text-lg font-bold text-white">Registration Submitted!</h1>
+            <p className="text-sm text-zinc-400">
+              Thank you for registering as a supplier with Rotehügels. Our procurement team will review your
+              submission and reach out when your categories match our requirements.
+            </p>
+          </div>
+          <Link href="/" className="inline-block mt-6 text-sm text-zinc-400 hover:text-white transition-colors">
             ← Back to Home
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Header */}
-      <div className="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-white">Rotehügels</Link>
-        <span className="text-xs text-zinc-500">Supplier Registration</span>
-      </div>
-
-      <div className="max-w-3xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Register as a Supplier</h1>
-          <p className="mt-2 text-zinc-400 text-sm">
-            Join our supplier network. When your categories match our procurement needs,
-            we'll reach out directly with enquiries.
-          </p>
+    <main className="min-h-screen px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-2xl">
+        <div className="text-center mb-8">
+          <Link href="/"><Image src="/logo.png" alt="Rotehügels" width={150} height={42} className="mx-auto" priority /></Link>
+          <h1 className="mt-4 text-xl font-bold text-white flex items-center justify-center gap-2">
+            <Truck className="h-5 w-5 text-rose-400" /> Supplier Registration
+          </h1>
+          <p className="mt-2 text-sm text-zinc-500">Join our supplier network to receive procurement enquiries</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm p-6 sm:p-8">
 
           {/* Company Info */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-5">
-            <h2 className="font-semibold text-white text-sm border-b border-zinc-800 pb-3">Company Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="md:col-span-2">
-                <label className={labelCls}>Company Name <span className="text-rose-400">*</span></label>
-                <input name="company_name" required className={inputCls} placeholder="Legal or trade name" />
+          <div>
+            <h2 className="text-sm font-semibold text-white mb-4">Company Information</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className={labelCls}>Company Name *</label>
+                <input name="company_name" required placeholder="Legal or trade name" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Contact Person <span className="text-rose-400">*</span></label>
-                <input name="contact_person" required className={inputCls} placeholder="Full name" />
+                <label className={labelCls}>Contact Person *</label>
+                <input name="contact_person" required placeholder="Full name" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Email <span className="text-rose-400">*</span></label>
-                <input name="email" type="email" required className={inputCls} placeholder="business@example.com" />
+                <label className={labelCls}>Email *</label>
+                <input name="email" type="email" required placeholder="business@example.com" className={inputCls} />
               </div>
               <div>
                 <label className={labelCls}>Phone</label>
-                <input name="phone" type="tel" className={inputCls} placeholder="+91 00000 00000" />
+                <input name="phone" type="tel" className={inputCls} placeholder="+91-XXXXX XXXXX" />
               </div>
               <div>
                 <label className={labelCls}>City</label>
@@ -153,30 +152,28 @@ export default function SupplierRegisterPage() {
               </div>
               <div>
                 <label className={labelCls}>State</label>
-                <select name="state" className={`${inputCls} cursor-pointer`} defaultValue="">
-                  <option value="">Select state…</option>
+                <select name="state" className={inputCls} defaultValue="">
+                  <option value="">Select…</option>
                   {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
                 <label className={labelCls}>GSTIN</label>
-                <input name="gstin" className={inputCls} placeholder="22AAAAA0000A1Z5" />
+                <input name="gstin" className={inputCls} placeholder="e.g., 33AABCU9603R1ZM" maxLength={15} />
               </div>
               <div>
                 <label className={labelCls}>PAN</label>
-                <input name="pan" className={inputCls} placeholder="AAAAA0000A" />
+                <input name="pan" className={inputCls} placeholder="e.g., AABCU9603R" maxLength={10} />
               </div>
             </div>
           </div>
 
           {/* Categories */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-5">
-            <div className="border-b border-zinc-800 pb-3">
-              <h2 className="font-semibold text-white text-sm">Supply Categories <span className="text-rose-400">*</span></h2>
-              <p className="text-xs text-zinc-500 mt-0.5">Select all that apply — we'll match you to relevant enquiries</p>
-            </div>
+          <div>
+            <h2 className="text-sm font-semibold text-white mb-1">Supply Categories *</h2>
+            <p className="text-xs text-zinc-500 mb-4">Select all that apply — we'll match you to relevant enquiries</p>
             {CATEGORIES.map(group => (
-              <div key={group.group}>
+              <div key={group.group} className="mb-4">
                 <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">{group.group}</p>
                 <div className="flex flex-wrap gap-2">
                   {group.items.map(item => {
@@ -205,30 +202,35 @@ export default function SupplierRegisterPage() {
           </div>
 
           {/* Additional Info */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-5">
-            <h2 className="font-semibold text-white text-sm border-b border-zinc-800 pb-3">Additional Information</h2>
-            <div>
-              <label className={labelCls}>Certifications (ISO, BIS, etc.)</label>
-              <input name="certifications" className={inputCls} placeholder="e.g. ISO 9001:2015, BIS" />
-            </div>
-            <div>
-              <label className={labelCls}>Notes</label>
-              <textarea name="notes" rows={3} className={`${inputCls} resize-none`}
-                placeholder="Anything else you'd like us to know — capacity, specialisation, export experience, etc." />
+          <div>
+            <h2 className="text-sm font-semibold text-white mb-4">Additional Information</h2>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className={labelCls}>Certifications (ISO, BIS, etc.)</label>
+                <input name="certifications" className={inputCls} placeholder="e.g., ISO 9001:2015, BIS" />
+              </div>
+              <div>
+                <label className={labelCls}>Notes</label>
+                <textarea name="notes" rows={3} className={inputCls}
+                  placeholder="Capacity, specialisation, export experience, etc." />
+              </div>
             </div>
           </div>
 
+          {/* Error */}
           {errorMsg && (
             <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
               {errorMsg}
             </div>
           )}
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="w-full rounded-xl bg-rose-600 py-3 text-sm font-semibold text-white hover:bg-rose-500 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-500 disabled:opacity-50 transition-colors"
           >
+            {status === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />}
             {status === 'loading' ? 'Submitting…' : 'Submit Registration'}
           </button>
 
@@ -236,7 +238,11 @@ export default function SupplierRegisterPage() {
             By submitting, you agree to be contacted by Rotehügels for procurement enquiries matching your categories.
           </p>
         </form>
+
+        <p className="text-center text-xs text-zinc-600 mt-6">
+          Need help? Contact us at <a href="mailto:procurements@rotehuegels.com" className="text-rose-400 hover:text-rose-300">procurements@rotehuegels.com</a>
+        </p>
       </div>
-    </div>
+    </main>
   );
 }

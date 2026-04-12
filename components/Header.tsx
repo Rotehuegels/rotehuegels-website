@@ -31,6 +31,7 @@ const NAV = [
       { label: 'REX Network',             href: '/rex',                 highlight: true },
       { label: 'Customer Registration',   href: '/customers/register' },
       { label: 'Supplier Registration',   href: '/suppliers/register' },
+      { label: 'Trading Partner',         href: '/trading/register' },
       { label: 'Careers',                 href: '/careers' },
     ],
   },

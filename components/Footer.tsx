@@ -36,6 +36,7 @@ export default function Footer() {
           <ul className="space-y-0.5">
             <li><a href="/customers/register" className="hover:underline text-rose-300 hover:text-rose-200">Customer Registration</a></li>
             <li><a href="/suppliers/register" className="hover:underline hover:text-white">Supplier Registration</a></li>
+            <li><a href="/trading/register" className="hover:underline hover:text-white">Trading Partner</a></li>
             <li><a href="/rex" className="hover:underline hover:text-white">REX Network</a></li>
           </ul>
         </div>

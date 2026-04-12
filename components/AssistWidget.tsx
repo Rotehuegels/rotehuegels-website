@@ -405,8 +405,10 @@ export default function AssistWidget() {
   const idleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const greetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Don't render inside the dashboard
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) return null;
+  // Don't render inside internal dashboard or client portal
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/d/') || pathname === '/d'
+    || pathname.startsWith('/portal') || pathname.startsWith('/p/') || pathname === '/p'
+    || pathname.startsWith('/admin')) return null;
 
   // Update context and re-trigger greeting on route change
   useEffect(() => {

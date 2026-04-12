@@ -7,6 +7,7 @@ import TickerBar from '@/components/TickerBar'
 import AuraBackground from '@/components/AuraBackground'
 import PageTracker from '@/components/PageTracker'
 import AssistWidget from '@/components/AssistWidget'
+import PublicShell from '@/components/PublicShell'
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.rotehuegels.com"),
@@ -87,12 +88,16 @@ export default function RootLayout({
     <html lang="en">
       <body suppressHydrationWarning>
         <Suspense fallback={null}><PageTracker /></Suspense>
-        <AuraBackground />
-        <Header />
-        <TickerBar />
+        <PublicShell>
+          <AuraBackground />
+          <Header />
+          <TickerBar />
+        </PublicShell>
         <main>{children}</main>
-        <Footer />
-        <AssistWidget />
+        <PublicShell>
+          <Footer />
+          <AssistWidget />
+        </PublicShell>
       </body>
     </html>
   )

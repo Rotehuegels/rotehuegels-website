@@ -295,7 +295,52 @@ export async function POST(req: Request) {
   }
 
   const routeTo = parseRouting(content);
-  const cleanContent = content.replace(/\[ROUTE:\w+\]/gi, '').trim();
+  const cleanContent = content
+    .replace(/\[ROUTE:\w+\]/gi, '')
+    .replace(/\[FLAG:.*?\]/gi, '')
+    .trim();
+
+  // ── Check if AI flagged the question for internal review ──────────────
+  const flagMatch = content.match(/\[FLAG:(.*?)\]/i);
+  if (flagMatch) {
+    const flagReason = flagMatch[1] || 'Unknown topic';
+    // Log to market intelligence / crawl_leads as a new lead
+    try {
+      await supabaseAdmin.from('project_activities').insert({
+        project_id: null,
+        activity_type: 'note',
+        title: `Chat flag: ${flagReason}`,
+        description: `Visitor asked: "${lastUserMessage?.content?.slice(0, 300)}"\nAgent: ${agentId}\nSession: ${sessionToken || 'unknown'}`,
+        actor: 'AI Chat System',
+        visible_to_client: false,
+      }).then(() => {});
+    } catch { /* non-critical */ }
+
+    // Email notification
+    try {
+      const nodemailer = await import('nodemailer');
+      const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+      if (SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS) {
+        const t = nodemailer.default.createTransport({
+          host: SMTP_HOST, port: Number(SMTP_PORT), secure: false,
+          auth: { user: SMTP_USER, pass: SMTP_PASS },
+        });
+        await t.sendMail({
+          from: 'Rotehügels <noreply@rotehuegels.com>',
+          to: process.env.EMAIL_TO || 'sivakumar@rotehuegels.com',
+          subject: `Chat Flag: ${flagReason}`,
+          html: `
+            <h3>AI Chat — Flagged for Review</h3>
+            <p><strong>Reason:</strong> ${flagReason}</p>
+            <p><strong>Visitor asked:</strong> ${lastUserMessage?.content?.slice(0, 500)}</p>
+            <p><strong>Agent:</strong> ${agentId}</p>
+            <p><strong>Session:</strong> ${sessionToken || 'unknown'}</p>
+            <p style="margin-top:16px;font-size:12px;color:#666;">This may represent a new business opportunity, market trend, or topic to add to the knowledge base.</p>
+          `,
+        });
+      }
+    } catch { /* non-critical */ }
+  }
 
   // ── Update session with messages ──────────────────────────────────────
   if (session && sessionToken) {

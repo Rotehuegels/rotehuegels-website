@@ -97,9 +97,7 @@ export default async function DocumentsPage({ params }: { params: Promise<{ proj
                         </div>
                       </div>
                       <a
-                        href={doc.storage_path}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/api/projects/${projectId}/documents/${doc.id}/download`}
                         className="shrink-0 flex items-center gap-1.5 rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
                       >
                         <Download className="h-3.5 w-3.5" />

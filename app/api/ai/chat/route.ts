@@ -298,7 +298,55 @@ export async function POST(req: Request) {
   const cleanContent = content
     .replace(/\[ROUTE:\w+\]/gi, '')
     .replace(/\[FLAG:.*?\]/gi, '')
+    .replace(/\[LEAD:.*?\]/gi, '')
     .trim();
+
+  // ── Parse and save lead info ──────────────────────────────────────────
+  const leadMatch = content.match(/\[LEAD:(.*?)\]/i);
+  if (leadMatch) {
+    const leadData: Record<string, string> = {};
+    leadMatch[1].split('|').forEach(pair => {
+      const [key, val] = pair.split('=');
+      if (key && val) leadData[key.trim()] = val.trim();
+    });
+
+    if (leadData.name || leadData.email) {
+      const isSupplier = routeTo === 'supplier';
+      try {
+        if (isSupplier) {
+          // Save to supplier_registrations
+          await supabaseAdmin.from('supplier_registrations').insert({
+            company_name: leadData.name || 'Unknown',
+            contact_person: leadData.name || '',
+            email: leadData.email || '',
+            phone: leadData.phone || null,
+            categories: ['Chat inquiry'],
+            status: 'pending',
+          });
+        } else {
+          // Save to sales_leads (customer lead)
+          const year = new Date().getFullYear();
+          const { count } = await supabaseAdmin
+            .from('sales_leads')
+            .select('id', { count: 'exact', head: true });
+          const leadCode = `LEAD-${year}-${String((count ?? 0) + 1).padStart(3, '0')}`;
+
+          await supabaseAdmin.from('sales_leads').insert({
+            lead_code: leadCode,
+            company_name: leadData.company || leadData.name || 'Chat visitor',
+            contact_person: leadData.name || null,
+            email: leadData.email || null,
+            phone: leadData.phone || null,
+            source: 'chat',
+            status: 'new',
+            notes: `Via website chat. Routed to: ${routeTo || agentId}`,
+          });
+        }
+      } catch (e) {
+        console.error('[chat-lead] Failed to save lead:', e);
+      }
+    }
+  }
 
   // ── Check if AI flagged the question for internal review ──────────────
   const flagMatch = content.match(/\[FLAG:(.*?)\]/i);

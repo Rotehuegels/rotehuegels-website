@@ -18,7 +18,8 @@ export async function GET() {
   const { data, error } = await supabaseAdmin
     .from('bank_transactions')
     .select('*')
-    .order('txn_date', { ascending: false });
+    .order('txn_date', { ascending: false })
+    .order('seq', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ data: data ?? [] });
@@ -48,7 +49,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'No transactions provided.' }, { status: 400 });
   }
 
-  const rows = transactions.map((t) => ({
+  // Get current max seq so new rows continue the sequence
+  const { data: maxRow } = await supabaseAdmin
+    .from('bank_transactions')
+    .select('seq')
+    .order('seq', { ascending: false })
+    .limit(1)
+    .single();
+  const baseSeq = (maxRow?.seq ?? 0) + 1;
+
+  const rows = transactions.map((t, idx) => ({
     account_no:     account_no ?? null,
     statement_from: statement_from || null,
     statement_to:   statement_to || null,
@@ -60,6 +70,7 @@ export async function POST(req: Request) {
     debit:          t.debit,
     credit:         t.credit,
     balance:        t.balance,
+    seq:            baseSeq + idx,
   }));
 
   const { data, error } = await supabaseAdmin

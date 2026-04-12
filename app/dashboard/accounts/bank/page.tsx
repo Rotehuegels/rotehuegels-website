@@ -34,7 +34,8 @@ export default async function BankPage() {
   const { data, error } = await supabaseAdmin
     .from('bank_transactions')
     .select('*')
-    .order('txn_date', { ascending: false });
+    .order('txn_date', { ascending: false })
+    .order('seq', { ascending: false });
 
   const txns: BankTxn[] = data ?? [];
 

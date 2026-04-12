@@ -16,7 +16,7 @@ function LoginForm() {
   const [welcome,  setWelcome]  = useState(false);
 
   const searchParams = useSearchParams();
-  const next   = searchParams.get('next')   ?? '/dashboard';
+  const next   = searchParams.get('next')   ?? '/d';
   const reason = searchParams.get('reason') ?? '';
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -39,7 +39,7 @@ function LoginForm() {
     try {
       const res = await fetch('/api/auth/role');
       const { role } = await res.json();
-      if (role === 'client') target = '/portal';
+      if (role === 'client') target = '/p';
     } catch { /* fallback to default next */ }
 
     // Hard navigation so the browser picks up the fresh session cookie.

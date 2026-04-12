@@ -18,7 +18,7 @@ export default async function DashboardLayout({
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect('/login?next=/dashboard');
+  if (!user) redirect('/login?next=/d');
 
   // Client users belong in the portal, not the admin dashboard
   const role = await getUserRole();

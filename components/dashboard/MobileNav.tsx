@@ -25,76 +25,76 @@ type NavTop     = { label: string; href: string; icon: React.ElementType };
 type NavItem    = NavTop | NavGroup;
 
 const NAV: NavItem[] = [
-  { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Overview', href: '/d', icon: LayoutDashboard },
 
   {
     label: 'Projects', icon: FolderKanban,
     children: [
-      { label: 'All Projects',  href: '/dashboard/projects',     icon: FolderKanban },
-      { label: 'New Project',   href: '/dashboard/projects/new', icon: FolderPlus },
+      { label: 'All Projects',  href: '/d/projects',     icon: FolderKanban },
+      { label: 'New Project',   href: '/d/projects/new', icon: FolderPlus },
     ],
   },
 
   {
     label: 'Operations', icon: Factory,
     children: [
-      { label: 'Contracts', href: '/dashboard/operations', icon: Factory },
+      { label: 'Contracts', href: '/d/operations', icon: Factory },
     ],
   },
 
   {
     label: 'People', icon: Users,
     children: [
-      { label: 'Employees',    href: '/dashboard/hr/employees',  icon: Users },
-      { label: 'Add Employee', href: '/dashboard/hr/add',        icon: UserPlus },
+      { label: 'Employees',    href: '/d/employees',  icon: Users },
+      { label: 'Add Employee', href: '/d/employees/add',        icon: UserPlus },
       { type: 'section', label: 'Leave' },
-      { label: 'Leave Management', href: '/dashboard/hr/leave', icon: CalendarDays },
+      { label: 'Leave Management', href: '/d/leave', icon: CalendarDays },
       { type: 'section', label: 'Payroll' },
-      { label: 'History',      href: '/dashboard/payroll',       icon: ClipboardList },
-      { label: 'Salary Setup', href: '/dashboard/payroll/setup', icon: Settings2 },
-      { label: 'Run Payroll',  href: '/dashboard/payroll/new',   icon: Receipt },
+      { label: 'History',      href: '/d/payroll',       icon: ClipboardList },
+      { label: 'Salary Setup', href: '/d/payroll/setup', icon: Settings2 },
+      { label: 'Run Payroll',  href: '/d/payroll/new',   icon: Receipt },
       { type: 'section', label: 'Recruitment' },
-      { label: 'Job Postings', href: '/dashboard/ats/jobs',      icon: Briefcase },
-      { label: 'Post a Job',   href: '/dashboard/ats/jobs/new',  icon: FilePlus },
+      { label: 'Job Postings', href: '/d/jobs',      icon: Briefcase },
+      { label: 'Post a Job',   href: '/d/jobs/new',  icon: FilePlus },
     ],
   },
 
   {
     label: 'Sales', icon: ShoppingBag,
     children: [
-      { label: 'Customers', href: '/dashboard/accounts/customers',  icon: Building2 },
-      { label: 'Catalog',   href: '/dashboard/accounts/items',      icon: BookOpen },
-      { label: 'Quotes',    href: '/dashboard/accounts/quotes',     icon: FileText },
-      { label: 'Orders',    href: '/dashboard/accounts/orders',     icon: ReceiptText },
+      { label: 'Customers', href: '/d/customers',  icon: Building2 },
+      { label: 'Catalog',   href: '/d/catalog',      icon: BookOpen },
+      { label: 'Quotes',    href: '/d/quotes',     icon: FileText },
+      { label: 'Orders',    href: '/d/orders',     icon: ReceiptText },
     ],
   },
 
   {
     label: 'Procurement', icon: Package,
     children: [
-      { label: 'Purchase Orders',   href: '/dashboard/accounts/purchase-orders', icon: ShoppingCart },
-      { label: 'Suppliers',         href: '/dashboard/accounts/suppliers',       icon: Truck },
-      { label: 'Stock & Inventory', href: '/dashboard/accounts/stock',           icon: Package },
+      { label: 'Purchase Orders',   href: '/d/purchase-orders', icon: ShoppingCart },
+      { label: 'Suppliers',         href: '/d/suppliers',       icon: Truck },
+      { label: 'Stock & Inventory', href: '/d/stock',           icon: Package },
     ],
   },
 
   {
     label: 'Finance', icon: Wallet,
     children: [
-      { label: 'Expenses',       href: '/dashboard/accounts/expenses', icon: Receipt },
-      { label: 'Bank Statement', href: '/dashboard/accounts/bank',     icon: Landmark },
-      { label: 'GST Report',     href: '/dashboard/accounts/gst',          icon: BadgePercent },
-      { label: 'GST Filing',     href: '/dashboard/accounts/gst/filing', icon: BadgePercent },
-      { label: 'P&L Statement',  href: '/dashboard/accounts/pl',       icon: TrendingUp },
-      { label: 'Investments',    href: '/dashboard/investments',        icon: BarChart2 },
+      { label: 'Expenses',       href: '/d/expenses', icon: Receipt },
+      { label: 'Bank Statement', href: '/d/bank',     icon: Landmark },
+      { label: 'GST Report',     href: '/d/gst',          icon: BadgePercent },
+      { label: 'GST Filing',     href: '/d/gst/filing', icon: BadgePercent },
+      { label: 'P&L Statement',  href: '/d/pl',       icon: TrendingUp },
+      { label: 'Investments',    href: '/d/investments',        icon: BarChart2 },
     ],
   },
 
   {
     label: 'Network', icon: Network,
     children: [
-      { label: 'REX Members',            href: '/dashboard/rex',       icon: Network },
-      { label: 'Supplier Registrations', href: '/dashboard/suppliers', icon: Building2 },
+      { label: 'REX Members',            href: '/d/rex',       icon: Network },
+      { label: 'Supplier Registrations', href: '/d/supplier-reg', icon: Building2 },
     ],
   },
 

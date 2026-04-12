@@ -340,7 +340,7 @@ export default async function DashboardPage() {
           </Link>
 
           {/* Bank unreconciled */}
-          <Link href="/dashboard/accounts/bank"
+          <Link href="/d/bank"
             className={`${glass} p-5 hover:border-zinc-700 transition-colors`}>
             <div className="flex items-center gap-2 mb-2">
               <Landmark className="h-4 w-4 text-violet-400" />
@@ -374,7 +374,7 @@ export default async function DashboardPage() {
           <div className="space-y-3">
             {/* Draft payroll runs */}
             {stats.payrollDrafts.map((run: { id: string; month: number; year: number; status: string }) => (
-              <Link key={run.id} href={`/dashboard/payroll/${run.id}`}
+              <Link key={run.id} href={`/d/payroll/${run.id}`}
                 className="flex items-center gap-3 rounded-xl border border-amber-900/30 bg-amber-500/5 px-4 py-3 hover:bg-amber-500/10 transition-colors">
                 <Clock className="h-4 w-4 text-amber-400 shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -392,7 +392,7 @@ export default async function DashboardPage() {
               const received = (o.order_payments ?? []).reduce((s: number, p: { amount_received: number }) => s + (p.amount_received ?? 0), 0);
               const pending = o.total_value_incl_gst - received;
               return (
-                <Link key={o.id} href={`/dashboard/accounts/orders/${o.id}`}
+                <Link key={o.id} href={`/d/orders/${o.id}`}
                   className="flex items-center gap-3 rounded-xl border border-rose-900/30 bg-rose-500/5 px-4 py-3 hover:bg-rose-500/10 transition-colors">
                   <TrendingUp className="h-4 w-4 text-rose-400 shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -408,7 +408,7 @@ export default async function DashboardPage() {
 
             {/* Applications needing screening */}
             {actions.newApplications.map((a: { id: string; applicant_name: string; job_id: string; created_at: string }) => (
-              <Link key={a.id} href={`/dashboard/ats/applications/${a.id}`}
+              <Link key={a.id} href={`/d/applications/${a.id}`}
                 className="flex items-center gap-3 rounded-xl border border-sky-900/30 bg-sky-500/5 px-4 py-3 hover:bg-sky-500/10 transition-colors">
                 <Briefcase className="h-4 w-4 text-sky-400 shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -421,7 +421,7 @@ export default async function DashboardPage() {
 
             {/* Unreconciled bank transactions */}
             {stats.unreconciledBank > 0 && (
-              <Link href="/dashboard/accounts/bank"
+              <Link href="/d/bank"
                 className="flex items-center gap-3 rounded-xl border border-violet-900/30 bg-violet-500/5 px-4 py-3 hover:bg-violet-500/10 transition-colors">
                 <Landmark className="h-4 w-4 text-violet-400 shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -435,7 +435,7 @@ export default async function DashboardPage() {
             {/* Pending KYC reviews */}
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {actions.pendingKYC.map((r: any) => (
-              <Link key={r.id} href="/dashboard/accounts/customers/registrations"
+              <Link key={r.id} href="/d/customers/registrations"
                 className="flex items-center gap-3 rounded-xl border border-emerald-900/30 bg-emerald-500/5 px-4 py-3 hover:bg-emerald-500/10 transition-colors">
                 <UserCheck className="h-4 w-4 text-emerald-400 shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -449,7 +449,7 @@ export default async function DashboardPage() {
             {/* Pending change requests */}
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {actions.pendingChanges.map((cr: any) => (
-              <Link key={cr.id} href={`/dashboard/projects/${cr.project_id}`}
+              <Link key={cr.id} href={`/d/projects/${cr.project_id}`}
                 className="flex items-center gap-3 rounded-xl border border-orange-900/30 bg-orange-500/5 px-4 py-3 hover:bg-orange-500/10 transition-colors">
                 <GitPullRequest className="h-4 w-4 text-orange-400 shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -463,7 +463,7 @@ export default async function DashboardPage() {
             {/* Pending leave approvals */}
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {actions.pendingLeave.map((l: any) => (
-              <Link key={l.id} href="/dashboard/hr/leave"
+              <Link key={l.id} href="/d/leave"
                 className="flex items-center gap-3 rounded-xl border border-cyan-900/30 bg-cyan-500/5 px-4 py-3 hover:bg-cyan-500/10 transition-colors">
                 <CalendarDays className="h-4 w-4 text-cyan-400 shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -477,7 +477,7 @@ export default async function DashboardPage() {
             {/* Upcoming milestones */}
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {actions.upcomingMilestones.map((m: any) => (
-              <Link key={m.id} href={`/dashboard/projects/${m.project_id}`}
+              <Link key={m.id} href={`/d/projects/${m.project_id}`}
                 className="flex items-center gap-3 rounded-xl border border-pink-900/30 bg-pink-500/5 px-4 py-3 hover:bg-pink-500/10 transition-colors">
                 <Milestone className="h-4 w-4 text-pink-400 shrink-0" />
                 <div className="flex-1 min-w-0">

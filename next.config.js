@@ -3,5 +3,118 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/api/private/signature': ['./private/**'],
   },
+
+  // ── Clean URL rewrites — hide internal folder structure ──────────────
+  async rewrites() {
+    return [
+      // ── Dashboard shortcuts (/d/...) ──────────────────────────────
+      // Overview
+      { source: '/d', destination: '/dashboard' },
+      { source: '/d/settings', destination: '/dashboard/settings' },
+
+      // Sales
+      { source: '/d/customers', destination: '/dashboard/accounts/customers' },
+      { source: '/d/customers/new', destination: '/dashboard/accounts/customers/new' },
+      { source: '/d/customers/:id', destination: '/dashboard/accounts/customers/:id' },
+      { source: '/d/customers/:id/edit', destination: '/dashboard/accounts/customers/:id/edit' },
+      { source: '/d/customers/:id/statement', destination: '/dashboard/accounts/customers/:id/statement' },
+      { source: '/d/customers/:id/statement/preview', destination: '/dashboard/accounts/customers/:id/statement/preview' },
+      { source: '/d/customers/registrations', destination: '/dashboard/accounts/customers/registrations' },
+      { source: '/d/customers/leads', destination: '/dashboard/accounts/customers/leads' },
+      { source: '/d/catalog', destination: '/dashboard/accounts/items' },
+      { source: '/d/catalog/new', destination: '/dashboard/accounts/items/new' },
+      { source: '/d/catalog/:id', destination: '/dashboard/accounts/items/:id' },
+      { source: '/d/quotes', destination: '/dashboard/accounts/quotes' },
+      { source: '/d/quotes/new', destination: '/dashboard/accounts/quotes/new' },
+      { source: '/d/quotes/:id', destination: '/dashboard/accounts/quotes/:id' },
+      { source: '/d/quotes/:id/edit', destination: '/dashboard/accounts/quotes/:id/edit' },
+      { source: '/d/quotes/:id/preview', destination: '/dashboard/accounts/quotes/:id/preview' },
+      { source: '/d/quotes/:id/proforma', destination: '/dashboard/accounts/quotes/:id/proforma' },
+      { source: '/d/orders', destination: '/dashboard/accounts/orders' },
+      { source: '/d/orders/new', destination: '/dashboard/accounts/orders/new' },
+      { source: '/d/orders/:id', destination: '/dashboard/accounts/orders/:id' },
+      { source: '/d/orders/:id/edit', destination: '/dashboard/accounts/orders/:id/edit' },
+      { source: '/d/orders/:id/invoice', destination: '/dashboard/accounts/orders/:id/invoice' },
+
+      // Procurement
+      { source: '/d/purchase-orders', destination: '/dashboard/accounts/purchase-orders' },
+      { source: '/d/purchase-orders/new', destination: '/dashboard/accounts/purchase-orders/new' },
+      { source: '/d/purchase-orders/:id', destination: '/dashboard/accounts/purchase-orders/:id' },
+      { source: '/d/purchase-orders/:id/edit', destination: '/dashboard/accounts/purchase-orders/:id/edit' },
+      { source: '/d/purchase-orders/:id/preview', destination: '/dashboard/accounts/purchase-orders/:id/preview' },
+      { source: '/d/suppliers', destination: '/dashboard/accounts/suppliers' },
+      { source: '/d/suppliers/new', destination: '/dashboard/accounts/suppliers/new' },
+      { source: '/d/suppliers/:id', destination: '/dashboard/accounts/suppliers/:id' },
+      { source: '/d/suppliers/:id/edit', destination: '/dashboard/accounts/suppliers/:id/edit' },
+      { source: '/d/stock', destination: '/dashboard/accounts/stock' },
+      { source: '/d/stock/:id/edit', destination: '/dashboard/accounts/stock/:id/edit' },
+
+      // Finance
+      { source: '/d/expenses', destination: '/dashboard/accounts/expenses' },
+      { source: '/d/expenses/new', destination: '/dashboard/accounts/expenses/new' },
+      { source: '/d/expenses/:id', destination: '/dashboard/accounts/expenses/:id' },
+      { source: '/d/bank', destination: '/dashboard/accounts/bank' },
+      { source: '/d/gst', destination: '/dashboard/accounts/gst' },
+      { source: '/d/gst/filing', destination: '/dashboard/accounts/gst/filing' },
+      { source: '/d/pl', destination: '/dashboard/accounts/pl' },
+      { source: '/d/pl/preview', destination: '/dashboard/accounts/pl/preview' },
+      { source: '/d/investments', destination: '/dashboard/investments' },
+      { source: '/d/stock-intel', destination: '/dashboard/stock-intelligence' },
+      { source: '/d/stock-intel/:symbol', destination: '/dashboard/stock-intelligence/:symbol' },
+
+      // People
+      { source: '/d/employees', destination: '/dashboard/hr/employees' },
+      { source: '/d/employees/add', destination: '/dashboard/hr/add' },
+      { source: '/d/employees/:id', destination: '/dashboard/hr/employees/:id' },
+      { source: '/d/employees/:id/edit', destination: '/dashboard/hr/employees/:id/edit' },
+      { source: '/d/leave', destination: '/dashboard/hr/leave' },
+      { source: '/d/payroll', destination: '/dashboard/payroll' },
+      { source: '/d/payroll/new', destination: '/dashboard/payroll/new' },
+      { source: '/d/payroll/setup', destination: '/dashboard/payroll/setup' },
+      { source: '/d/payroll/:id', destination: '/dashboard/payroll/:id' },
+      { source: '/d/payroll/:id/edit', destination: '/dashboard/payroll/:id/edit' },
+      { source: '/d/jobs', destination: '/dashboard/ats/jobs' },
+      { source: '/d/jobs/new', destination: '/dashboard/ats/jobs/new' },
+      { source: '/d/jobs/:id', destination: '/dashboard/ats/jobs/:id' },
+      { source: '/d/applications', destination: '/dashboard/ats/applications' },
+      { source: '/d/applications/:id', destination: '/dashboard/ats/applications/:id' },
+
+      // Projects & Operations
+      { source: '/d/projects', destination: '/dashboard/projects' },
+      { source: '/d/projects/new', destination: '/dashboard/projects/new' },
+      { source: '/d/projects/:id', destination: '/dashboard/projects/:id' },
+      { source: '/d/operations', destination: '/dashboard/operations' },
+      { source: '/d/operations/lab', destination: '/dashboard/operations/lab' },
+      { source: '/d/operations/:id', destination: '/dashboard/operations/:id' },
+
+      // IT & Quality
+      { source: '/d/mail', destination: '/dashboard/mail' },
+      { source: '/d/mail/compose', destination: '/dashboard/mail/compose' },
+      { source: '/d/mail/:id', destination: '/dashboard/mail/:id' },
+      { source: '/d/analytics', destination: '/dashboard/analytics' },
+      { source: '/d/audit', destination: '/dashboard/audit' },
+      { source: '/d/documents', destination: '/dashboard/documents' },
+      { source: '/d/documents/:id', destination: '/dashboard/documents/:id' },
+      { source: '/d/intelligence', destination: '/dashboard/intelligence' },
+      { source: '/d/rex', destination: '/dashboard/rex' },
+      { source: '/d/supplier-reg', destination: '/dashboard/suppliers' },
+      { source: '/d/supplier-reg/registrations', destination: '/dashboard/suppliers/registrations' },
+
+      // ── Portal shortcuts (/p/...) ─────────────────────────────────
+      { source: '/p', destination: '/portal' },
+      { source: '/p/:projectId', destination: '/portal/:projectId' },
+      { source: '/p/:projectId/milestones', destination: '/portal/:projectId/milestones' },
+      { source: '/p/:projectId/payments', destination: '/portal/:projectId/payments' },
+      { source: '/p/:projectId/changes', destination: '/portal/:projectId/changes' },
+      { source: '/p/:projectId/changes/new', destination: '/portal/:projectId/changes/new' },
+      { source: '/p/:projectId/documents', destination: '/portal/:projectId/documents' },
+      { source: '/p/:projectId/activity', destination: '/portal/:projectId/activity' },
+      { source: '/p/:projectId/operations', destination: '/portal/:projectId/operations' },
+      { source: '/p/:projectId/operations/production', destination: '/portal/:projectId/operations/production' },
+      { source: '/p/:projectId/operations/roi', destination: '/portal/:projectId/operations/roi' },
+      { source: '/p/:projectId/operations/lab', destination: '/portal/:projectId/operations/lab' },
+      { source: '/p/:projectId/operations/lab/:sampleId', destination: '/portal/:projectId/operations/lab/:sampleId' },
+    ];
+  },
 };
 module.exports = nextConfig;

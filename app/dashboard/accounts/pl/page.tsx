@@ -3,7 +3,7 @@ import FYSelector from './FYSelector';
 import { FileText } from 'lucide-react';
 import ReportContainer from '@/components/ReportContainer';
 import { getCompanyCO } from '@/lib/company';
-import { getLogoDarkBgBase64 } from '@/lib/serverAssets';
+import { getLogoBase64 } from '@/lib/serverAssets';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -69,7 +69,7 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   const fy = fyParam ?? '2025-26';
   const { from, to, label, full } = parseFY(fy);
   const CO = await getCompanyCO();
-  const logoSrc = getLogoDarkBgBase64();
+  const logoSrc = getLogoBase64();
 
   // Derive startYear for brought-forward calculation (prev FY = startYear-1 → startYear).
   const [startYear] = fy.split('-').map(Number);
@@ -223,17 +223,19 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
       <div className="bg-white overflow-hidden">
 
         {/* Letterhead */}
-        <div className="bg-gray-900 px-8 py-5 flex items-center justify-between">
-          <div>
+        <div className="bg-white px-8 py-5 flex items-center justify-between border-b-2 border-gray-900">
+          <div className="flex items-start gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoSrc} alt="Rotehügels" className="h-8 mb-2" />
-            <p className="text-[10px] text-gray-400">{CO.name}</p>
-            <p className="text-[9px] text-gray-500">CIN: {CO.cin} &nbsp;|&nbsp; GSTIN: {CO.gstin} &nbsp;|&nbsp; PAN: {CO.pan}</p>
+            <img src={logoSrc} alt="Rotehügels" className="h-12 w-auto object-contain" />
+            <div>
+              <p className="text-[11px] font-bold text-gray-900 uppercase">{CO.name}</p>
+              <p className="text-[9px] text-gray-500 mt-1">CIN: {CO.cin} &nbsp;|&nbsp; GSTIN: {CO.gstin} &nbsp;|&nbsp; PAN: {CO.pan}</p>
+            </div>
           </div>
           <div className="text-right">
-            <p className="text-sm font-black text-amber-400 uppercase tracking-widest">Profit &amp; Loss</p>
-            <p className="text-sm font-black text-amber-400 uppercase tracking-widest">Statement</p>
-            <p className="text-[11px] text-gray-300 mt-1 font-mono">{label}</p>
+            <p className="text-sm font-black text-amber-700 uppercase tracking-widest">Profit &amp; Loss</p>
+            <p className="text-sm font-black text-amber-700 uppercase tracking-widest">Statement</p>
+            <p className="text-[11px] text-gray-500 mt-1 font-mono">{label}</p>
           </div>
         </div>
 

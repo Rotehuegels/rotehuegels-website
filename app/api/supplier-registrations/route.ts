@@ -39,11 +39,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
+  // Random registration reference
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const regNo = `SR-${rand}`;
+
   const { error } = await supabaseAdmin
     .from('supplier_registrations')
-    .insert([{ ...parsed.data, status: 'pending' }]);
+    .insert([{ ...parsed.data, reg_no: regNo, status: 'pending' }]);
 
   if (error) return NextResponse.json({ error: 'Failed to save registration.' }, { status: 500 });
 
-  return NextResponse.json({ success: true }, { status: 201 });
+  return NextResponse.json({ success: true, reg_no: regNo }, { status: 201 });
 }

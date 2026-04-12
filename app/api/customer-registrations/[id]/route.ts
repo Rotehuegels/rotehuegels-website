@@ -48,12 +48,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   if (action === 'approve') {
-    // Generate customer_id
-    const { count } = await supabaseAdmin
-      .from('customers')
-      .select('*', { count: 'exact', head: true });
-    const seq = String((count ?? 0) + 1).padStart(3, '0');
-    const customer_id = `CUST-${seq}`;
+    // Generate random customer_id (not sequential)
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const rand = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const customer_id = `CUST-${rand}`;
 
     // Derive state/PAN from GSTIN
     let state_code: string | null = null;

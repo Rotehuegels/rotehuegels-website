@@ -127,12 +127,10 @@ export async function POST(req: Request) {
     }
   }
 
-  // Generate reg_no
-  const year = new Date().getFullYear();
-  const { count } = await supabaseAdmin
-    .from('customer_registrations')
-    .select('id', { count: 'exact', head: true });
-  const regNo = `REG-${year}-${String((count ?? 0) + 1).padStart(3, '0')}`;
+  // Generate random reg reference (not sequential)
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const regNo = `CR-${rand}`;
 
   // Generate email verification token
   const verifyToken = crypto.randomBytes(32).toString('hex');

@@ -1,68 +1,78 @@
 # Buddy Handoff → Claude
-Generated: 2026-04-12
+Generated: 2026-04-12 (end of marathon session)
 Agent: Claude
 
-## What was done (12 Apr 2026)
+## Session Summary — 12 Apr 2026
 
-### 1. Settings/Config Module
-- `company_settings` table in Supabase with all company details
-- `lib/company.ts` — centralized settings loader with 5-min cache
-- `/dashboard/settings` page — full UI for managing company details
-- Replaced hardcoded CO objects in 12+ files (invoices, statements, reports, emails)
-- API: GET/PUT `/api/settings/company`
+### 27 commits. 120+ files. 8,000+ lines. One session.
 
-### 2. Client Project Portal (complete)
-- `user_profiles` table — role-based auth (admin vs client)
-- `projects` + project_orders, project_milestones, change_requests, project_documents, project_activities tables
-- India Zinc zinc dross project seeded with 5 milestones
-- Portal at `/portal/[projectId]/` — 7 pages: dashboard, milestones, payments, changes (with new request form), documents, activity
-- Admin at `/dashboard/projects/` — list, create, detail with tabs for overview, milestones, changes, client management
-- Login redirects clients to /portal, admins to /dashboard
-- 14 API routes (7 portal + 7 admin)
+### ERP Modules (all at 100%)
+1. Company Settings — centralized config, 12+ files migrated
+2. Leave Management — 7 leave types, balances, apply/approve
+3. GST Filing — GSTR-1 + GSTR-3B + CSV export
+4. Employee Termination — type/date/reason, conditional UI
+5. Mobile Responsiveness — padding, headers, grids, tables
 
-### 3. Operations Portal + LabREX
-- `operations_contracts` + `production_logs` tables
-- `lab_instruments`, `lab_industries`, `lab_sample_types`, `lab_parameters`, `lab_samples`, `lab_results` tables
-- LabREX upgraded to multi-industry: Copper, Gold, Silver, Zinc, Black Mass, Aluminium
-- 12 analytical instruments seeded (ICP-OES, AAS, XRF, Wet Chem, Furnace, etc.)
-- 30+ sample types across 7 industries
-- 50+ lab parameters seeded
-- Portal at `/portal/[projectId]/operations/` — 5 pages: dashboard, production log, ROI tracker, LabREX dashboard, sample detail
-- Admin at `/dashboard/operations/` — contracts list, detail with production + lab tabs
-- 11 API routes (5 portal + 6 admin)
+### Client Portal (100%)
+- 7 portal pages: dashboard, milestones, payments, changes, documents, activity
+- Role-based auth (admin vs client), user_profiles table
+- Change request submission, document upload via Supabase Storage
 
-### 4. Leave Management
-- `leave_types`, `leave_balances`, `leave_applications` tables
-- 7 leave types seeded (CL, SL, EL, LOP, CO, ML, PL)
-- `/dashboard/hr/leave` — applications, balances, apply tabs
-- 4 API routes with auto-balance update on approve/cancel
+### Operations Portal + LabREX (100%)
+- Operations: production logging, ROI tracker with chart, bar chart
+- LabREX: multi-industry LIMS, 12 instruments, 36 sample types, 50+ parameters
+- Admin config page with add forms for instruments/params/sample types
 
-### 5. Employee Termination
-- Added termination_type, termination_date, termination_reason columns
-- Updated API and edit page with conditional termination section
+### Customer Onboarding (100%)
+- Registration with email verification + KYC (150+ countries)
+- Admin approval auto-creates CUST-ID, sends approval email
+- Sales leads management
 
-### 6. GST Filing Preparation
-- GSTR-1 API (B2B, B2C Small, B2C Large, HSN summary)
-- GSTR-3B API (outward supplies, ITC, net payable)
-- `/dashboard/accounts/gst/filing` page with month selector, CSV export
+### Trading Partners (NEW)
+- Commodity broker model with sample verification
+- Full disclaimer and 8-point terms
+- 25 commodities, origin countries, verification workflow
 
-### 7. Mobile Responsiveness
-- Fixed padding (p-8 → p-4 md:p-8) on orders, expenses, customers pages
-- Fixed header flex layouts for mobile stacking
-- Added overflow-x-auto to tables with min-w for scrolling
-- Fixed grid breakpoints across dashboard and portal
+### Website Overhaul
+- Homepage rewritten: products-first, action-oriented
+- About page rewritten: products, industries, instrumentation, founder bio
+- Footer compacted: 4-column, Chennai only
+- Supplier registration redesigned to match customer page
+- SEO updated: keywords, descriptions, sitemap expanded
+
+### Security & URLs
+- All URLs shortened (/d/, /p/) via Next.js rewrites
+- 69 files migrated to short URLs
+- Security headers (CSP, X-Frame, HSTS, etc.)
+- Password strength validation
+- Rate limiting helper
+- Public chrome hidden on dashboard/portal (PublicShell)
+
+### Chatbot
+- Full knowledge base: all products, industries, instrumentation
+- Lead collection: name/email/phone before routing
+- Flagging: unknown questions emailed to admin
+- Off-topic blocking, no future plans disclosure
 
 ## Migrations to run
-All migrations have been run in Supabase SQL editor except:
-- `20260412_labrex_upgrade.sql` — LabREX multi-industry upgrade (NEW, needs to be run)
+- `20260412_trading_partners.sql` — trading partners table
+- `20260412_storage_bucket.sql` — Supabase Storage bucket (if not done)
 
-## Current state
-Build passes cleanly. All new routes compile.
+## NEXT SESSION — Priority #1: Market Intelligence Crawler Rewrite
 
-## Pending / Next steps
-- Run `20260412_labrex_upgrade.sql` migration
-- Test all portal flows with a real client user
-- Build LabREX admin config page for managing instruments/parameters/sample-types
-- Operations Portal: add chart visualizations (production trends, ROI graph)
-- AutoREX integration (real-time plant data → operations dashboard)
-- Continue ERP stabilization for Operon productization
+### Requirements (user's exact ask)
+Build an aggressive crawler that:
+1. Finds ALL company details: legal name, address, all units/plants, contacts (name/phone/email), GSTIN/CIN
+2. Classifies as supplier (what they can supply us) or customer (what we can supply them)
+3. Runs every 30 mins on cron
+4. Auto-enriches incomplete leads (crawl company website for missing email/phone)
+5. Sources: Google, company websites, IndiaMart, TradeIndia, JustDial, MCA registry, LinkedIn, industry directories
+6. Name, email, and phone are MANDATORY — keep crawling until found
+7. Must cover all publicly available information
+
+### Current crawler state
+- `/api/crawl/route.ts` — basic Groq-powered discovery
+- `/api/cron/crawl/route.ts` — cron trigger
+- `crawl_leads` table — existing leads (customer_leads table)
+- 14 supplier leads, 3 customer leads — most missing email/phone
+- Needs major upgrade to find contact details

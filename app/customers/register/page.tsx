@@ -46,10 +46,13 @@ const COUNTRIES = [
 ];
 
 const INDUSTRIES = [
-  'Metals & Mining', 'Electrochemical Processing', 'Water Treatment',
-  'Manufacturing', 'Construction', 'Energy & Power', 'Chemicals',
-  'Automobile', 'Defence', 'Pharmaceuticals', 'Food & Beverage',
-  'Battery Recycling', 'Waste Management', 'Research & Education', 'Other',
+  'Metals & Mining', 'Copper Processing', 'Gold & Silver Refining', 'Zinc Processing',
+  'Aluminium Processing', 'Electrochemical Processing', 'Battery Recycling & Black Mass',
+  'Textiles', 'Food Processing', 'Automotive', 'Paper & Pulp',
+  'Water Treatment', 'Chemicals & Petrochemicals', 'Energy & Power',
+  'Manufacturing', 'Construction & Infrastructure', 'Commercial Facilities',
+  'Defence & Aerospace', 'Pharmaceuticals & Medical', 'Waste Management & Recycling',
+  'Research & Education', 'Finance & Commodities', 'Other',
 ];
 
 const inputCls = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/30';

@@ -4,19 +4,9 @@ import Link from 'next/link';
 import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
 import ReportContainer from '@/components/ReportContainer';
 
-export const dynamic = 'force-dynamic';
+import { getCompanyCO } from '@/lib/company';
 
-const CO = {
-  name:  'Rotehuegel Research Business Consultancy Private Limited',
-  addr1: 'No. 1/584, 7th Street, Jothi Nagar, Padianallur,',
-  addr2: 'Near Gangaiamman Kovil, Redhills, Chennai – 600052, Tamil Nadu, India',
-  gstin: '33AAPCR0554G1ZE',
-  pan:   'AAPCR0554G',
-  cin:   'U70200TN2025PTC184573',
-  email: 'procurements@rotehuegels.com',
-  phone: '+91-90044 91275',
-  web:   'www.rotehuegels.com',
-};
+export const dynamic = 'force-dynamic';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -45,6 +35,7 @@ function numToWords(n: number): string {
 
 export default async function POPreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const CO = await getCompanyCO();
 
   const logoSrc = getLogoBase64();
   const sigSrc  = getSignatureBase64();
@@ -117,7 +108,7 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
                 <div style={{ marginTop: '4px', fontSize: '8.5px', color: '#666', lineHeight: 1.5 }}>
                   <div>{CO.addr1}</div>
                   <div>{CO.addr2}</div>
-                  <div>✉ {CO.email} | 📞 {CO.phone} | 🌐 {CO.web}</div>
+                  <div>✉ {CO.procurementEmail} | 📞 {CO.phone} | 🌐 {CO.web}</div>
                 </div>
               </div>
             </div>

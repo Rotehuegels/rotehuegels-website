@@ -4,6 +4,7 @@
 
 import nodemailer from "nodemailer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getCompanyCO } from "@/lib/company";
 
 /* ── SMTP setup (mirrors lib/mailer.ts) ──────────────────────────────────── */
 
@@ -31,23 +32,9 @@ function getTransporter() {
   return transporter;
 }
 
-/* ── Company constants ───────────────────────────────────────────────────── */
-
-const CO = {
-  name: "Rotehuegel Research Business Consultancy Private Limited",
-  addr1: "No. 1/584, 7th Street, Jothi Nagar, Padianallur,",
-  addr2: "Near Gangaiamman Kovil, Redhills, Chennai – 600052, Tamil Nadu, India",
-  gstin: "33AAPCR0554G1ZE",
-  pan: "AAPCR0554G",
-  cin: "U70200TN2025PTC184573",
-  email: "sales@rotehuegels.com",
-  phone: "+91-90044 91275",
-  web: "www.rotehuegels.com",
-  bankName: "HDFC Bank",
-  bankAccount: "50200095372553",
-  bankIfsc: "HDFC0000123",
-  bankBranch: "Redhills, Chennai",
-};
+/* ─��� Company settings (loaded from DB) ─────────────────────────────────── */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type CO = Awaited<ReturnType<typeof getCompanyCO>>;
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
 
@@ -74,7 +61,7 @@ const fmtDate = (d: string) =>
     year: "numeric",
   });
 
-function letterhead(title: string) {
+function letterhead(CO: CO, title: string) {
   return `
     <div style="max-width:640px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;">
       <!-- header -->
@@ -89,7 +76,7 @@ function letterhead(title: string) {
       </div>`;
 }
 
-function footer() {
+function footer(CO: CO) {
   return `
       <!-- footer -->
       <div style="border-top:1px solid #ddd;padding-top:12px;margin-top:24px;font-size:9px;color:#999;line-height:1.6;">
@@ -100,7 +87,7 @@ function footer() {
     </div>`;
 }
 
-function bankDetailsHtml() {
+function bankDetailsHtml(CO: CO) {
   return `
     <div style="margin-top:16px;padding:10px 14px;border:1px solid #ddd;border-radius:4px;background:#fafafa;">
       <div style="font-weight:700;font-size:11px;margin-bottom:6px;">Bank Details for Payment</div>
@@ -122,6 +109,7 @@ async function send(to: string, subject: string, html: string, text: string) {
 /* ── 1. Order Confirmation / Invoice Email ───────────────────────────────── */
 
 export async function sendOrderConfirmation(orderId: string) {
+  const CO = await getCompanyCO();
   const { data: order, error } = await supabaseAdmin
     .from("orders")
     .select("*")
@@ -152,7 +140,7 @@ export async function sendOrderConfirmation(orderId: string) {
     )
     .join("");
 
-  const html = `${letterhead("Order Confirmation")}
+  const html = `${letterhead(CO, "Order Confirmation")}
     <p style="font-size:13px;">Dear <strong>${esc(order.client_name)}</strong>,</p>
     <p style="font-size:12px;color:#444;">Thank you for your order. Please find the details below.</p>
 
@@ -184,10 +172,10 @@ export async function sendOrderConfirmation(orderId: string) {
 
     ${order.payment_terms ? `<p style="font-size:11px;color:#444;"><strong>Payment Terms:</strong> ${esc(order.payment_terms)}</p>` : ""}
 
-    ${bankDetailsHtml()}
+    ${bankDetailsHtml(CO)}
 
     <p style="font-size:11px;color:#666;margin-top:16px;">If you have any questions regarding this order, please reply to this email or contact us at ${CO.email}.</p>
-  ${footer()}`;
+  ${footer(CO)}`;
 
   const itemsText = items
     .map((it, i) => `  ${i + 1}. ${it.name} — ${it.quantity} ${it.unit} x ${fmt(it.unit_price)} = ${fmt(it.total)}`)
@@ -223,6 +211,7 @@ export async function sendOrderConfirmation(orderId: string) {
 /* ── 2. Payment Receipt ──────────────────────────────────────────────────── */
 
 export async function sendPaymentReceipt(paymentId: string) {
+  const CO = await getCompanyCO();
   const { data: payment, error: pErr } = await supabaseAdmin
     .from("order_payments")
     .select("*")
@@ -251,7 +240,7 @@ export async function sendPaymentReceipt(paymentId: string) {
   );
   const balance = (order.total_value_incl_gst ?? 0) - totalReceived;
 
-  const html = `${letterhead("Payment Receipt")}
+  const html = `${letterhead(CO, "Payment Receipt")}
     <p style="font-size:13px;">Dear <strong>${esc(order.client_name)}</strong>,</p>
     <p style="font-size:12px;color:#444;">We have received your payment. Thank you!</p>
 
@@ -269,7 +258,7 @@ export async function sendPaymentReceipt(paymentId: string) {
     </table>
 
     <p style="font-size:11px;color:#666;">For queries, contact ${CO.email} or ${CO.phone}.</p>
-  ${footer()}`;
+  ${footer(CO)}`;
 
   const text = [
     `PAYMENT RECEIPT — ${order.order_no}`,
@@ -297,6 +286,7 @@ export async function sendPaymentReceipt(paymentId: string) {
 /* ── 3. Payment Reminder ─────────────────────────────────────────────────── */
 
 export async function sendPaymentReminder(orderId: string) {
+  const CO = await getCompanyCO();
   const { data: order, error } = await supabaseAdmin
     .from("orders")
     .select("*")
@@ -319,7 +309,7 @@ export async function sendPaymentReminder(orderId: string) {
 
   if (pending <= 0) throw new Error("No outstanding balance for this order.");
 
-  const html = `${letterhead("Payment Reminder")}
+  const html = `${letterhead(CO, "Payment Reminder")}
     <p style="font-size:13px;">Dear <strong>${esc(order.client_name)}</strong>,</p>
     <p style="font-size:12px;color:#444;">This is a friendly reminder regarding the outstanding payment for the following order:</p>
 
@@ -336,10 +326,10 @@ export async function sendPaymentReminder(orderId: string) {
 
     <p style="font-size:12px;color:#444;">We request you to kindly arrange the payment at the earliest. Please use the bank details below:</p>
 
-    ${bankDetailsHtml()}
+    ${bankDetailsHtml(CO)}
 
     <p style="font-size:11px;color:#666;margin-top:16px;">If you have already made the payment, please disregard this reminder. For any questions, contact us at ${CO.email} or ${CO.phone}.</p>
-  ${footer()}`;
+  ${footer(CO)}`;
 
   const text = [
     `PAYMENT REMINDER — ${order.order_no}`,
@@ -369,6 +359,7 @@ export async function sendPaymentReminder(orderId: string) {
 /* ── 4. Quote Email ──────────────────────────────────────────────────────── */
 
 export async function sendQuoteEmail(quoteId: string) {
+  const CO = await getCompanyCO();
   const { data: quote, error } = await supabaseAdmin
     .from("quotes")
     .select("*, customers(*)")
@@ -400,7 +391,7 @@ export async function sendQuoteEmail(quoteId: string) {
     )
     .join("");
 
-  const html = `${letterhead("Quotation")}
+  const html = `${letterhead(CO, "Quotation")}
     <p style="font-size:13px;">Dear <strong>${esc(customer?.name ?? "Customer")}</strong>,</p>
     <p style="font-size:12px;color:#444;">Thank you for your interest. Please find our quotation below.</p>
 
@@ -434,7 +425,7 @@ export async function sendQuoteEmail(quoteId: string) {
     ${quote.terms ? `<p style="font-size:11px;color:#444;"><strong>Terms:</strong> ${esc(quote.terms)}</p>` : ""}
 
     <p style="font-size:12px;color:#444;margin-top:16px;">Please feel free to reach out if you have any questions or would like to discuss this quotation further. You can reply to this email or call us at ${CO.phone}.</p>
-  ${footer()}`;
+  ${footer(CO)}`;
 
   const itemsText = items
     .map((it, i) => `  ${i + 1}. ${it.name} — ${it.quantity} ${it.unit} x ${fmt(it.unit_price)} = ${fmt(it.total)}`)
@@ -470,6 +461,7 @@ export async function sendQuoteEmail(quoteId: string) {
 /* ── 5. Purchase Order Confirmation to Supplier ──────────────────────────── */
 
 export async function sendPOConfirmation(poId: string) {
+  const CO = await getCompanyCO();
   const { data: po, error } = await supabaseAdmin
     .from("purchase_orders")
     .select("*, suppliers(legal_name, trade_name, email, phone, gstin, address, state)")
@@ -502,7 +494,7 @@ export async function sendPOConfirmation(poId: string) {
     )
     .join("");
 
-  const html = `${letterhead("Purchase Order")}
+  const html = `${letterhead(CO, "Purchase Order")}
     <p style="font-size:13px;">Dear <strong>${esc(supplier?.legal_name ?? "Supplier")}</strong>,</p>
     <p style="font-size:12px;color:#444;">Please find the purchase order details below. Kindly acknowledge receipt of this PO.</p>
 
@@ -537,7 +529,7 @@ export async function sendPOConfirmation(poId: string) {
     ${po.terms ? `<p style="font-size:11px;color:#444;"><strong>Terms:</strong> ${esc(po.terms)}</p>` : ""}
 
     <p style="font-size:12px;color:#444;margin-top:16px;">Please confirm receipt and expected delivery schedule. For queries, contact ${CO.email} or call ${CO.phone}.</p>
-  ${footer()}`;
+  ${footer(CO)}`;
 
   const itemsText = items
     .map((it) => `  ${it.sl_no}. ${it.description} — ${it.quantity} ${it.unit} x ${fmt(it.unit_price)} = ${fmt(it.total)}`)

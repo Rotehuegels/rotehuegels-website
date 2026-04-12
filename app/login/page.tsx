@@ -33,10 +33,17 @@ function LoginForm() {
       return;
     }
 
-    // Show welcome screen briefly, then do a hard navigation so the browser
-    // picks up the fresh session cookie before rendering the dashboard.
+    // Check user role to determine redirect target
     setWelcome(true);
-    setTimeout(() => { window.location.href = next; }, 1800);
+    let target = next;
+    try {
+      const res = await fetch('/api/auth/role');
+      const { role } = await res.json();
+      if (role === 'client') target = '/portal';
+    } catch { /* fallback to default next */ }
+
+    // Hard navigation so the browser picks up the fresh session cookie.
+    setTimeout(() => { window.location.href = target; }, 1800);
   };
 
   // ── Welcome screen ──────────────────────────────────────────────────────────
@@ -54,7 +61,7 @@ function LoginForm() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-white">Welcome to Rotehügels</h1>
-              <p className="mt-1 text-sm text-zinc-400">Internal Portal</p>
+              <p className="mt-1 text-sm text-zinc-400">Secure Portal</p>
             </div>
             <p className="text-sm text-emerald-400">Signed in successfully. Taking you to your dashboard…</p>
             {/* Loading dots */}
@@ -75,7 +82,7 @@ function LoginForm() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <Image src="/logo.png" alt="Rotehügels" width={150} height={42} className="mx-auto" priority />
-          <p className="mt-3 text-xs text-zinc-500 uppercase tracking-widest">Internal Portal</p>
+          <p className="mt-3 text-xs text-zinc-500 uppercase tracking-widest">Secure Portal</p>
         </div>
 
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm p-8">

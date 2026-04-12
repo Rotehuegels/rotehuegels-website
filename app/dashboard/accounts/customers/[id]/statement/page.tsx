@@ -10,23 +10,9 @@ import QRCode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
 
-export const dynamic = 'force-dynamic';
+import { getCompanyCO } from '@/lib/company';
 
-const CO = {
-  name:  'Rotehuegel Research Business Consultancy Private Limited',
-  addr1: 'No. 1/584, 7th Street, Jothi Nagar, Padianallur,',
-  addr2: 'Near Gangaiamman Kovil, Redhills, Chennai – 600052, Tamil Nadu, India',
-  gstin: '33AAPCR0554G1ZE',
-  pan:   'AAPCR0554G',
-  cin:   'U70200TN2025PTC184573',
-  tan:   'CHER28694B',
-  email: 'sales@rotehuegels.com',
-  phone: '+91-90044 91275',
-  web:   'www.rotehuegels.com',
-  bank:  'State Bank of India, Padianallur Branch',
-  acc:   '44512115640',
-  ifsc:  'SBIN0014160',
-};
+export const dynamic = 'force-dynamic';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -62,6 +48,7 @@ export default async function CustomerStatementPage({
   const { id } = await params;
   const { fy: fyParam } = await searchParams;
   const selectedFY = fyParam ?? 'all';
+  const CO = await getCompanyCO();
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
@@ -76,7 +63,7 @@ export default async function CustomerStatementPage({
     ? `data:image/jpeg;base64,${fs.readFileSync(sigPath).toString('base64')}` : null;
 
   const upiQr = await QRCode.toDataURL(
-    `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel+Research+Business+Consultancy+Pvt+Ltd&cu=INR`,
+    `upi://pay?pa=${CO.upi}&pn=${encodeURIComponent(CO.name)}&cu=INR`,
     { width: 80, margin: 1, color: { dark: '#111111', light: '#ffffff' } }
   );
 
@@ -469,7 +456,7 @@ export default async function CustomerStatementPage({
                   <div><strong>Bank:</strong> {CO.bank}</div>
                   <div><strong>Account No:</strong> <span style={{ fontFamily:'monospace' }}>{CO.acc}</span></div>
                   <div><strong>IFSC:</strong> <span style={{ fontFamily:'monospace' }}>{CO.ifsc}</span></div>
-                  <div><strong>UPI:</strong> <span style={{ fontFamily:'monospace' }}>rotehuegels@sbi</span></div>
+                  <div><strong>UPI:</strong> <span style={{ fontFamily:'monospace' }}>{CO.upi}</span></div>
                 </div>
                 <div style={{ textAlign:'center' as const, flexShrink:0 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -681,7 +668,7 @@ export default async function CustomerStatementPage({
                     <div style={{ display:'flex', gap:'10px', alignItems:'flex-start' }}>
                       <table style={{ fontSize:'9px', borderCollapse:'collapse', flex:1 }}>
                         <tbody>
-                          {[['A/c No.', CO.acc],['IFSC', CO.ifsc],['Bank', CO.bank],['UPI', 'rotehuegels@sbi']].map(([l,v]) => (
+                          {[['A/c No.', CO.acc],['IFSC', CO.ifsc],['Bank', CO.bank],['UPI', '{CO.upi}']].map(([l,v]) => (
                             <tr key={l}><td style={{ color:'#888', paddingRight:'8px', paddingBottom:'3px', whiteSpace:'nowrap' as const, fontWeight:600 }}>{l}</td><td style={{ paddingBottom:'3px', fontFamily: l==='A/c No.'||l==='IFSC'||l==='UPI'?'monospace':'inherit' }}>{v}</td></tr>
                           ))}
                         </tbody>

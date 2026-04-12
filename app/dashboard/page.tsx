@@ -255,7 +255,7 @@ export default async function DashboardPage() {
       {/* ── Quick Stats ──────────────────────────────────────────────────────── */}
       <section>
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-600">This month</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           {/* Orders */}
           <Link href="/dashboard/accounts/orders"
             className={`${glass} p-5 hover:border-zinc-700 transition-colors`}>

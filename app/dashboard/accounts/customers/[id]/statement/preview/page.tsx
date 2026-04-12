@@ -5,23 +5,9 @@ import PDFViewer from '@/components/PDFViewer';
 import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
 import QRCode from 'qrcode';
 
-export const dynamic = 'force-dynamic';
+import { getCompanyCO } from '@/lib/company';
 
-const CO = {
-  name:  'Rotehuegel Research Business Consultancy Private Limited',
-  addr1: 'No. 1/584, 7th Street, Jothi Nagar, Padianallur,',
-  addr2: 'Near Gangaiamman Kovil, Redhills, Chennai – 600052, Tamil Nadu, India',
-  gstin: '33AAPCR0554G1ZE',
-  pan:   'AAPCR0554G',
-  cin:   'U70200TN2025PTC184573',
-  tan:   'CHER28694B',
-  email: 'sales@rotehuegels.com',
-  phone: '+91-90044 91275',
-  web:   'www.rotehuegels.com',
-  bank:  'State Bank of India, Padianallur Branch',
-  acc:   '44512115640',
-  ifsc:  'SBIN0014160',
-};
+export const dynamic = 'force-dynamic';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -57,6 +43,7 @@ export default async function StatementPreviewPage({
   const { id } = await params;
   const { fy: fyParam } = await searchParams;
   const selectedFY = fyParam ?? 'all';
+  const CO = await getCompanyCO();
 
   const { data: customer, error: custErr } = await supabaseAdmin
     .from('customers').select('*').eq('id', id).single();
@@ -66,7 +53,7 @@ export default async function StatementPreviewPage({
   const sigSrc  = getSignatureBase64();
 
   const upiQr = await QRCode.toDataURL(
-    `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel+Research+Business+Consultancy+Pvt+Ltd&cu=INR`,
+    `upi://pay?pa=${CO.upi}&pn=${encodeURIComponent(CO.name)}&cu=INR`,
     { width: 80, margin: 1, color: { dark: '#111111', light: '#ffffff' } }
   );
 
@@ -530,7 +517,7 @@ export default async function StatementPreviewPage({
                     ['Bank',       CO.bank],
                     ['Account No', CO.acc],
                     ['IFSC Code',  CO.ifsc],
-                    ['UPI ID',     'rotehuegels@sbi'],
+                    ['UPI ID',     '{CO.upi}'],
                   ].map(([l, v]) => (
                     <tr key={l}>
                       <td style={{ color:'#666', paddingRight:'16px', paddingBottom:'5px', fontWeight:600, whiteSpace:'nowrap' as const }}>{l}</td>
@@ -755,7 +742,7 @@ export default async function StatementPreviewPage({
                   <div style={{ display:'flex', gap:'10px', alignItems:'flex-start' }}>
                     <table style={{ fontSize:'9px', borderCollapse:'collapse', flex:1 }}>
                       <tbody>
-                        {[['A/c No.', CO.acc],['IFSC', CO.ifsc],['Bank', CO.bank],['UPI', 'rotehuegels@sbi']].map(([l,v]) => (
+                        {[['A/c No.', CO.acc],['IFSC', CO.ifsc],['Bank', CO.bank],['UPI', '{CO.upi}']].map(([l,v]) => (
                           <tr key={l}><td style={{ color:'#555', paddingRight:'8px', paddingBottom:'3px', whiteSpace:'nowrap' as const, fontWeight:600 }}>{l}</td><td style={{ paddingBottom:'3px', fontFamily: l==='A/c No.'||l==='IFSC'||l==='UPI'?'monospace':'inherit' }}>{v}</td></tr>
                         ))}
                       </tbody>

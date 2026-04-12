@@ -1,21 +1,9 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import PDFViewer from '@/components/PDFViewer';
 import { getLogoBase64 } from '@/lib/serverAssets';
+import { getCompanyCO } from '@/lib/company';
 
 export const dynamic = 'force-dynamic';
-
-const CO = {
-  name:  'Rotehuegel Research Business Consultancy Private Limited',
-  addr1: 'No. 1/584, 7th Street, Jothi Nagar, Padianallur,',
-  addr2: 'Near Gangaiamman Kovil, Redhills, Chennai – 600052, Tamil Nadu, India',
-  gstin: '33AAPCR0554G1ZE',
-  pan:   'AAPCR0554G',
-  cin:   'U70200TN2025PTC184573',
-  tan:   'CHER28694B',
-  email: 'sales@rotehuegels.com',
-  phone: '+91-90044 91275',
-  web:   'www.rotehuegels.com',
-};
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -50,7 +38,8 @@ const MUTED = '#555555';
 const LINE  = '#cccccc';
 const LIGHT_BG = '#f8f7f4';
 
-function Letterhead({ logoSrc, fy }: { logoSrc: string; fy: ReturnType<typeof parseFY> }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function Letterhead({ logoSrc, fy, CO }: { logoSrc: string; fy: ReturnType<typeof parseFY>; CO: any }) {
   return (
     <div style={{ borderBottom: `2.5px solid ${DARK}`, paddingBottom: '10px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
       {/* Left: logo + company */}
@@ -143,6 +132,7 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
   const { fy: fyParam } = await searchParams;
   const fyStr = fyParam ?? '2025-26';
   const fy = parseFY(fyStr);
+  const CO = await getCompanyCO();
 
   const [startYear] = fyStr.split('-').map(Number);
   const prevFYFrom  = `${startYear - 1}-04-01`;
@@ -276,7 +266,7 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
         {/* ══════════════════════════════ PAGE 1 — Main P&L ══════════════════════════════ */}
         <div id="pl-page-1" style={doc}>
 
-          <Letterhead logoSrc={logoSrc} fy={fy} />
+          <Letterhead logoSrc={logoSrc} fy={fy} CO={CO} />
 
           {/* Basis note */}
           <div style={{ background: LIGHT_BG, border: `0.5px solid ${LINE}`, borderRadius: '3px', padding: '5px 10px', marginBottom: '10px', fontSize: '9px', color: MUTED }}>
@@ -345,13 +335,13 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
           </div>
 
           {/* Page footer */}
-          <PageFooter today={today} page={1} total={2} />
+          <PageFooter today={today} CO={CO} page={1} total={2} />
         </div>
 
         {/* ══════════════════════════════ PAGE 2 — Supplementary Schedules ══════════════════════════════ */}
         <div id="pl-page-2" style={doc}>
 
-          <Letterhead logoSrc={logoSrc} fy={fy} />
+          <Letterhead logoSrc={logoSrc} fy={fy} CO={CO} />
 
           <div style={{ fontSize: '13px', fontWeight: 800, marginBottom: '14px', color: DARK, borderBottom: `1px solid ${LINE}`, paddingBottom: '6px' }}>
             Supplementary Schedules
@@ -493,7 +483,7 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
             </div>
           </div>
 
-          <PageFooter today={today} page={2} total={2} />
+          <PageFooter today={today} CO={CO} page={2} total={2} />
         </div>
 
       </div>
@@ -501,7 +491,8 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
   );
 }
 
-function PageFooter({ today, page, total }: { today: string; page: number; total: number }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function PageFooter({ today, page, total, CO }: { today: string; page: number; total: number; CO: any }) {
   return (
     <div style={{ borderTop: `0.5px solid ${LINE}`, marginTop: '20px', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '8px', color: '#999' }}>
       <span>Generated on {today} &nbsp;|&nbsp; {CO.name} &nbsp;|&nbsp; CIN: {CO.cin}</span>

@@ -131,10 +131,10 @@ export default async function OrdersListPage({ searchParams }: { searchParams: P
   const totalTds = billable.reduce((s, o) => s + (o.tds_deducted_total ?? 0), 0);
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Orders</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-white">Orders</h1>
           <p className="mt-1 text-sm text-zinc-400">{total} total orders</p>
         </div>
         <Link href="/dashboard/accounts/orders/new"
@@ -144,7 +144,7 @@ export default async function OrdersListPage({ searchParams }: { searchParams: P
       </div>
 
       {/* Summary strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {[
           { label: 'Order Book', value: totalBook, color: 'text-amber-400' },
           { label: 'Received', value: totalReceived, color: 'text-emerald-400' },

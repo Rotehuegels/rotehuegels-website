@@ -4,23 +4,7 @@ import Link from 'next/link';
 import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
 import ReportContainer from '@/components/ReportContainer';
 import QRCode from 'qrcode';
-
-// ── Company constants ───────────────────────────────────────────────────────
-const CO = {
-  name: 'Rotehuegel Research Business Consultancy Private Limited',
-  addr1: 'No. 1/584, 7th Street, Jothi Nagar, Padianallur,',
-  addr2: 'Near Gangaiamman Kovil, Redhills, Chennai – 600052, Tamil Nadu, India',
-  gstin: '33AAPCR0554G1ZE',
-  pan:   'AAPCR0554G',
-  cin:   'U70200TN2025PTC184573',
-  tan:   'CHER28694B',
-  email: 'sales@rotehuegels.com',
-  phone: '+91-90044 91275',
-  web:   'www.rotehuegels.com',
-  bank:  'State Bank of India, Padianallur Branch',
-  acc:   '44512115640',
-  ifsc:  'SBIN0014160',
-};
+import { getCompanyCO } from '@/lib/company';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const fmt = (n: number) =>
@@ -77,6 +61,7 @@ export default async function InvoicePage({
 }) {
   const { id } = await params;
   const sp = await searchParams;
+  const CO = await getCompanyCO();
 
   const logoSrc   = getLogoBase64();
   const sigBase64 = getSignatureBase64();
@@ -196,7 +181,7 @@ export default async function InvoicePage({
   const upiAmountParam = balanceDue > 0 && balanceDue <= 100000
     ? `&am=${balanceDue.toFixed(2)}`
     : '';
-  const upiString = `upi://pay?pa=rotehuegels@sbi&pn=Rotehuegel Research Business Consultancy Pvt Ltd${upiAmountParam}&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNo)}`;
+  const upiString = `upi://pay?pa=${CO.upi}&pn=${encodeURIComponent(CO.name)}${upiAmountParam}&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNo)}`;
   const upiQr = await QRCode.toDataURL(upiString, { width: 90, margin: 1, color: { dark: '#111111', light: '#ffffff' } });
 
   return (
@@ -445,7 +430,7 @@ export default async function InvoicePage({
                       ['A/c No.', CO.acc],
                       ['IFSC',    CO.ifsc],
                       ['Bank',    CO.bank],
-                      ['UPI',     'rotehuegels@sbi'],
+                      ['UPI',     CO.upi],
                     ].map(([l, v]) => (
                       <tr key={l}>
                         <td style={{ color: '#888', paddingRight: '8px', paddingBottom: '3px', whiteSpace: 'nowrap', fontWeight: 600 }}>{l}</td>

@@ -3,19 +3,9 @@ import { notFound } from 'next/navigation';
 import PDFViewer from '@/components/PDFViewer';
 import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
 
-export const dynamic = 'force-dynamic';
+import { getCompanyCO } from '@/lib/company';
 
-const CO = {
-  name:  'Rotehuegel Research Business Consultancy Private Limited',
-  addr1: 'No. 1/584, 7th Street, Jothi Nagar, Padianallur,',
-  addr2: 'Near Gangaiamman Kovil, Redhills, Chennai – 600052, Tamil Nadu, India',
-  gstin: '33AAPCR0554G1ZE',
-  pan:   'AAPCR0554G',
-  cin:   'U70200TN2025PTC184573',
-  email: 'sales@rotehuegels.com',
-  phone: '+91-90044 91275',
-  web:   'www.rotehuegels.com',
-};
+export const dynamic = 'force-dynamic';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
@@ -26,6 +16,7 @@ const fmtDate = (d: string) =>
 export default async function QuotePreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
+  const CO = await getCompanyCO();
   const logoSrc = getLogoBase64();
   const sigSrc  = getSignatureBase64();
 

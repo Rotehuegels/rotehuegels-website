@@ -2,16 +2,10 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import FYSelector from './FYSelector';
 import { FileText } from 'lucide-react';
 import ReportContainer from '@/components/ReportContainer';
+import { getCompanyCO } from '@/lib/company';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
-
-const CO = {
-  name:  'Rotehuegel Research Business Consultancy Private Limited',
-  cin:   'U70200TN2025PTC184573',
-  gstin: '33AAPCR0554G1ZE',
-  pan:   'AAPCR0554G',
-};
 
 function parseFY(fy: string) {
   const [startYear] = fy.split('-').map(Number);
@@ -73,6 +67,7 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
   const { fy: fyParam } = await searchParams;
   const fy = fyParam ?? '2025-26';
   const { from, to, label, full } = parseFY(fy);
+  const CO = await getCompanyCO();
 
   // Derive startYear for brought-forward calculation (prev FY = startYear-1 → startYear).
   const [startYear] = fy.split('-').map(Number);

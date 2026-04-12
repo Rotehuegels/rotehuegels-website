@@ -30,6 +30,9 @@ export default function EditEmployeePage() {
     status: '',
     join_date: '',
     end_date: '',
+    termination_type: '',
+    termination_date: '',
+    termination_reason: '',
     basic_salary: '',
     allowance: '',
     bonus: '',
@@ -67,6 +70,9 @@ export default function EditEmployeePage() {
           status: data.status ?? 'active',
           join_date: data.join_date ?? '',
           end_date: data.end_date ?? '',
+          termination_type: data.termination_type ?? '',
+          termination_date: data.termination_date ?? '',
+          termination_reason: data.termination_reason ?? '',
           basic_salary: data.basic_salary != null ? String(data.basic_salary) : '',
           allowance: data.allowance != null ? String(data.allowance) : '',
           bonus: data.bonus != null ? String(data.bonus) : '',
@@ -200,6 +206,30 @@ export default function EditEmployeePage() {
                 <option value="completed">Completed</option>
               </select>
             </div>
+            {(form.status === 'terminated' || form.status === 'completed') && (
+              <>
+                <div>
+                  <label className={label}>Termination Type</label>
+                  <select name="termination_type" value={form.termination_type} onChange={handleChange} className={inputCls}>
+                    <option value="">Select…</option>
+                    <option value="resignation">Resignation</option>
+                    <option value="termination">Termination</option>
+                    <option value="contract_end">Contract End</option>
+                    <option value="retirement">Retirement</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={label}>Termination Date</label>
+                  <input type="date" name="termination_date" value={form.termination_date} onChange={handleChange} className={inputCls} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={label}>Termination Reason</label>
+                  <textarea name="termination_reason" value={form.termination_reason} onChange={handleChange}
+                    rows={2} placeholder="Reason for separation…" className={inputCls} />
+                </div>
+              </>
+            )}
             <div>
               <label className={label}>Role / Designation *</label>
               <input type="text" name="role" value={form.role} onChange={handleChange}

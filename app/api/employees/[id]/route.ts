@@ -20,6 +20,9 @@ const UpdateEngagementSchema = z.object({
   status: z.enum(['active', 'inactive', 'terminated', 'completed']).optional(),
   join_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  termination_reason: z.string().optional().nullable(),
+  termination_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  termination_type: z.enum(['resignation', 'termination', 'contract_end', 'retirement', 'other']).optional().nullable(),
   basic_salary: z.coerce.number().nonnegative().optional().nullable(),
   allowance: z.coerce.number().nonnegative().optional().nullable(),
   bonus: z.coerce.number().nonnegative().optional().nullable(),
@@ -72,7 +75,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const engagementFields: Record<string, unknown> = {};
   const memberFields: Record<string, unknown> = {};
 
-  const engKeys = ['role', 'department', 'reporting_manager', 'employment_type', 'rex_subtype', 'status', 'join_date', 'end_date', 'basic_salary', 'allowance', 'bonus'];
+  const engKeys = ['role', 'department', 'reporting_manager', 'employment_type', 'rex_subtype', 'status', 'join_date', 'end_date', 'basic_salary', 'allowance', 'bonus', 'termination_reason', 'termination_date', 'termination_type'];
   const memberKeys = ['full_name', 'phone', 'email', 'address', 'national_id', 'date_of_birth', 'bank_name', 'bank_account', 'bank_ifsc', 'emergency_contact_name', 'emergency_contact_phone'];
 
   for (const [key, value] of Object.entries(d)) {

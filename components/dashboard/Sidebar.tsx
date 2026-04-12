@@ -16,7 +16,7 @@ import {
   Network,
   Shield, BarChart3, Globe, Eye, Mail, History,
   Radar, AlertTriangle,
-  FileCheck,
+  FileCheck, FolderKanban, FolderPlus, CalendarDays, Factory, FlaskConical,
   ChevronDown,
 } from 'lucide-react';
 import LogoutButton from './LogoutButton';
@@ -39,10 +39,28 @@ const NAV: NavItem[] = [
   { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
 
   {
+    label: 'Projects', icon: FolderKanban,
+    children: [
+      { label: 'All Projects',  href: '/dashboard/projects',     icon: FolderKanban },
+      { label: 'New Project',   href: '/dashboard/projects/new', icon: FolderPlus },
+    ],
+  },
+
+  {
+    label: 'Operations', icon: Factory,
+    children: [
+      { label: 'Contracts',       href: '/dashboard/operations',     icon: Factory },
+      { label: 'Lab Parameters',  href: '/dashboard/operations/lab', icon: FlaskConical },
+    ],
+  },
+
+  {
     label: 'People', icon: Users,
     children: [
       { label: 'Employees',    href: '/dashboard/hr/employees',  icon: Users },
       { label: 'Add Employee', href: '/dashboard/hr/add',        icon: UserPlus },
+      { type: 'section', label: 'Leave' },
+      { label: 'Leave Management', href: '/dashboard/hr/leave', icon: CalendarDays },
       { type: 'section', label: 'Payroll' },
       { label: 'History',      href: '/dashboard/payroll',       icon: ClipboardList },
       { label: 'Salary Setup', href: '/dashboard/payroll/setup', icon: Settings2 },
@@ -80,7 +98,8 @@ const NAV: NavItem[] = [
     children: [
       { label: 'Expenses',       href: '/dashboard/accounts/expenses', icon: Receipt },
       { label: 'Bank Statement', href: '/dashboard/accounts/bank',     icon: Landmark },
-      { label: 'GST Report',     href: '/dashboard/accounts/gst',      icon: BadgePercent },
+      { label: 'GST Report',     href: '/dashboard/accounts/gst',          icon: BadgePercent },
+      { label: 'GST Filing',     href: '/dashboard/accounts/gst/filing', icon: BadgePercent },
       { label: 'P&L Statement',  href: '/dashboard/accounts/pl',       icon: TrendingUp },
       { label: 'Investments',        href: '/dashboard/investments',          icon: BarChart2 },
       { label: 'Stock Intelligence', href: '/dashboard/stock-intelligence', icon: AlertTriangle },
@@ -114,6 +133,8 @@ const NAV: NavItem[] = [
       { label: 'Supplier Registrations', href: '/dashboard/suppliers',              icon: Building2 },
     ],
   },
+
+  { label: 'Settings', href: '/dashboard/settings', icon: Settings2 },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

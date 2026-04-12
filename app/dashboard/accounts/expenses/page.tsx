@@ -64,14 +64,14 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const grandTotal = allFiltered.reduce((s, e) => s + (e.amount ?? 0), 0);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Expenses</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-white">Expenses</h1>
         <p className="mt-1 text-sm text-zinc-400">{total} records — Total: {fmt(grandTotal)}</p>
       </div>
 
       {/* Summary by type */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {Object.entries(TYPE_LABEL).map(([key, label]) => (
           <div key={key} className={`${glass} p-4`}>
             <p className="text-xs text-zinc-500">{label}</p>

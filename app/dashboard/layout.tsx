@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { getUserRole } from '@/lib/portalAuth';
 import Sidebar from '@/components/dashboard/Sidebar';
 import MobileNav from '@/components/dashboard/MobileNav';
 import InactivityGuard from '@/components/dashboard/InactivityGuard';
@@ -18,6 +19,10 @@ export default async function DashboardLayout({
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect('/login?next=/dashboard');
+
+  // Client users belong in the portal, not the admin dashboard
+  const role = await getUserRole();
+  if (role === 'client') redirect('/portal');
 
   return (
     <InactivityGuard>

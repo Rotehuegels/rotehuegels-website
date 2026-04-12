@@ -128,13 +128,15 @@ export default function TradingPartnerRegisterPage() {
               </p>
               <p className="mt-1">
                 <strong>Sample verification required:</strong> Upon client interest, trading partners must submit
-                representative commodity samples to our office for independent laboratory analysis and verification
-                of all claims (grade, composition, origin). Trades proceed only after sample results are satisfactory.
+                representative commodity samples to our office. Samples are sent to internationally accredited
+                third-party laboratories (SGS, Bureau Veritas, Intertek, ALS Global, or equivalent NABL/ISO 17025
+                accredited labs) for independent analysis and certification of all claims (grade, composition, origin).
+                Trades proceed only after certified lab results are satisfactory.
               </p>
               <p className="mt-1">
                 Buyers are responsible for independent verification and inspection before placing orders.
                 Disputes arising from trades are between the buyer and seller — Rotehügels' role is limited
-                to coordination, facilitation, and sample verification through our LabREX platform.
+                to coordination, facilitation, and arranging third-party sample verification.
               </p>
             </div>
           </div>

@@ -25,7 +25,7 @@ export default async function SalarySetupPage() {
   return (
     <div className="p-5 md:p-8 space-y-5">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/payroll" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+        <Link href="/d/payroll" className="text-zinc-500 hover:text-zinc-300 transition-colors">
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <div>

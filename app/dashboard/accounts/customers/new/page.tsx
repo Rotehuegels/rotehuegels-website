@@ -83,7 +83,7 @@ export default function NewCustomerPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(data.error));
-      router.push(`/dashboard/accounts/customers/${data.id}`);
+      router.push(`/d/customers/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create customer.');
       setLoading(false);
@@ -240,7 +240,7 @@ export default function NewCustomerPage() {
             className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-50 transition-colors">
             {loading ? 'Saving…' : 'Save Customer'}
           </button>
-          <a href="/dashboard/accounts/customers"
+          <a href="/d/customers"
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
             Cancel
           </a>

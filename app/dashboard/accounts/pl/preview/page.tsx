@@ -250,7 +250,7 @@ export default async function PLPreviewPage({ searchParams }: { searchParams: Pr
       toolbar={
         <div className="flex items-center gap-3">
           <a
-            href={`/dashboard/accounts/pl?fy=${fyStr}`}
+            href={`/d/pl?fy=${fyStr}`}
             className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
           >
             ← Back to P&amp;L

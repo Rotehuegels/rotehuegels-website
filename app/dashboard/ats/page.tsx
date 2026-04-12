@@ -36,7 +36,7 @@ export default async function AtsOverviewPage() {
           <h1 className="text-2xl font-bold text-white">ATS — Applicant Tracking</h1>
           <p className="mt-1 text-sm text-zinc-400">Manage job postings and candidate pipeline</p>
         </div>
-        <Link href="/dashboard/ats/jobs/new"
+        <Link href="/d/jobs/new"
           className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
           <Plus className="h-4 w-4" /> Post a Job
         </Link>
@@ -65,14 +65,14 @@ export default async function AtsOverviewPage() {
               <Briefcase className="h-4 w-4 text-rose-400" />
               <h2 className="text-sm font-semibold text-zinc-300">Job Postings</h2>
             </div>
-            <Link href="/dashboard/ats/jobs" className="flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300">
+            <Link href="/d/jobs" className="flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300">
               View all <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           {!jobs?.length ? (
             <div className="p-8 text-center">
               <p className="text-sm text-zinc-600">No jobs posted yet.</p>
-              <Link href="/dashboard/ats/jobs/new"
+              <Link href="/d/jobs/new"
                 className="mt-3 inline-block rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
                 Post your first job
               </Link>
@@ -80,7 +80,7 @@ export default async function AtsOverviewPage() {
           ) : (
             <div className="divide-y divide-zinc-800/60">
               {jobs.slice(0, 5).map(job => (
-                <Link key={job.id} href={`/dashboard/ats/jobs/${job.id}`}
+                <Link key={job.id} href={`/d/jobs/${job.id}`}
                   className="flex items-center justify-between px-6 py-4 hover:bg-zinc-800/20 transition-colors">
                   <div>
                     <p className="text-sm font-medium text-white">{job.title}</p>
@@ -104,7 +104,7 @@ export default async function AtsOverviewPage() {
               <Users className="h-4 w-4 text-rose-400" />
               <h2 className="text-sm font-semibold text-zinc-300">Recent Applications</h2>
             </div>
-            <Link href="/dashboard/ats/applications" className="flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300">
+            <Link href="/d/applications" className="flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300">
               View Pipeline <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
@@ -115,7 +115,7 @@ export default async function AtsOverviewPage() {
           ) : (
             <div className="divide-y divide-zinc-800/60">
               {applications.map(app => (
-                <Link key={app.id} href={`/dashboard/ats/applications/${app.id}`}
+                <Link key={app.id} href={`/d/applications/${app.id}`}
                   className="flex items-center justify-between px-6 py-4 hover:bg-zinc-800/20 transition-colors">
                   <div>
                     <div className="flex items-center gap-2">

@@ -58,14 +58,14 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
     <div className="p-8 space-y-8 max-w-5xl">
       {/* Header */}
       <div>
-        <Link href="/dashboard/ats/applications" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+        <Link href="/d/applications" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           &larr; Back to Pipeline
         </Link>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-white">{app.full_name}</h1>
             <p className="mt-1 text-sm text-zinc-400">
-              Applied for <Link href={`/dashboard/ats/jobs/${app.job_id}`} className="text-rose-400 hover:text-rose-300">{app.job_title}</Link>
+              Applied for <Link href={`/d/jobs/${app.job_id}`} className="text-rose-400 hover:text-rose-300">{app.job_title}</Link>
             </p>
           </div>
           <span className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${

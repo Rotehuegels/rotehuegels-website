@@ -8,7 +8,7 @@ export default function POPreviewActions({ poId, poNo }: { poId: string; poNo: s
     <div className="po-no-print flex items-center justify-between px-6 py-3 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800 sticky top-0 z-10">
       <div className="flex items-center gap-3">
         <button
-          onClick={() => router.push(`/dashboard/accounts/purchase-orders/${poId}`)}
+          onClick={() => router.push(`/d/purchase-orders/${poId}`)}
           className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" /> Back to PO

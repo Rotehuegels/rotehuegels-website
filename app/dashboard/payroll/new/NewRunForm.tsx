@@ -34,14 +34,14 @@ export default function NewRunForm({ activeCount }: { activeCount: number }) {
 
     if (!res.ok) {
       if (res.status === 409 && json.runId) {
-        router.push(`/dashboard/payroll/${json.runId}`);
+        router.push(`/d/payroll/${json.runId}`);
         return;
       }
       setError(json.error ?? 'Failed to create run.');
       return;
     }
 
-    router.push(`/dashboard/payroll/${json.runId}`);
+    router.push(`/d/payroll/${json.runId}`);
   }
 
   return (
@@ -91,7 +91,7 @@ export default function NewRunForm({ activeCount }: { activeCount: number }) {
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {loading ? 'Creating…' : 'Create Payroll Run'}
         </button>
-        <a href="/dashboard/payroll" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+        <a href="/d/payroll" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           Cancel
         </a>
       </div>

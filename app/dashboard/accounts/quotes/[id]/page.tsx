@@ -74,7 +74,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
       {/* Top bar */}
       <div className="flex items-start justify-between mb-5 no-print">
         <div>
-          <Link href="/dashboard/accounts/quotes"
+          <Link href="/d/quotes"
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
             <ArrowLeft className="h-3 w-3" /> Quotations
           </Link>
@@ -115,10 +115,10 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
             </p>
           </div>
           <div className="flex gap-2">
-            <Link href={`/dashboard/accounts/orders/${convertedOrder.id}`}
+            <Link href={`/d/orders/${convertedOrder.id}`}
               className="text-xs text-amber-400 hover:underline">Order →</Link>
             {proformaInvoice && (
-              <Link href={`/dashboard/accounts/quotes/${id}/proforma`} target="_blank"
+              <Link href={`/d/quotes/${id}/proforma`} target="_blank"
                 className="text-xs text-amber-400 hover:underline">Proforma →</Link>
             )}
           </div>

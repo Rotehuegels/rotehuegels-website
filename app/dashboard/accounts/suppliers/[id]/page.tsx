@@ -39,7 +39,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
     <div className="p-8 space-y-6 max-w-4xl">
       {/* Header */}
       <div>
-        <Link href="/dashboard/accounts/suppliers"
+        <Link href="/d/suppliers"
           className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-3">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Suppliers
         </Link>
@@ -54,7 +54,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
             )}
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <Link href={`/dashboard/accounts/suppliers/${id}/edit`}
+            <Link href={`/d/suppliers/${id}/edit`}
               className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
               <Pencil className="h-3.5 w-3.5" /> Edit
             </Link>
@@ -175,7 +175,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
         ) : (
           <div className="divide-y divide-zinc-800/60">
             {poList.map(po => (
-              <Link key={po.id} href={`/dashboard/accounts/purchase-orders/${po.id}`}
+              <Link key={po.id} href={`/d/purchase-orders/${po.id}`}
                 className="flex items-center justify-between px-6 py-3.5 hover:bg-zinc-800/30 transition-colors">
                 <div>
                   <span className="font-mono text-xs text-amber-400 font-semibold">{po.po_no}</span>

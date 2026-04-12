@@ -153,7 +153,7 @@ export default function NewPOPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(data.error));
-      router.push(`/dashboard/accounts/purchase-orders/${data.id}`);
+      router.push(`/d/purchase-orders/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create PO.');
       setLoading(false);
@@ -407,7 +407,7 @@ export default function NewPOPage() {
             className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-50 transition-colors">
             {loading ? 'Saving…' : 'Create PO'}
           </button>
-          <a href="/dashboard/accounts/purchase-orders"
+          <a href="/d/purchase-orders"
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
             Cancel
           </a>

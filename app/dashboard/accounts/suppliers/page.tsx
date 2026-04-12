@@ -44,7 +44,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
           >
             <Download className="h-4 w-4" /> Export CSV
           </a>
-          <Link href="/dashboard/accounts/suppliers/new"
+          <Link href="/d/suppliers/new"
             className="flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
             <Plus className="h-4 w-4" /> Add Supplier
           </Link>
@@ -62,7 +62,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
           <Building2 className="h-10 w-10 text-zinc-700 mx-auto mb-3" />
           <p className="text-zinc-500 text-sm">No suppliers found.</p>
           <p className="text-zinc-600 text-xs mt-1">Add a supplier with their GSTIN to auto-fetch their details.</p>
-          <Link href="/dashboard/accounts/suppliers/new"
+          <Link href="/d/suppliers/new"
             className="inline-flex items-center gap-2 mt-5 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition-colors">
             <Plus className="h-4 w-4" /> Add First Supplier
           </Link>
@@ -70,7 +70,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {list.map(s => (
-            <Link key={s.id} href={`/dashboard/accounts/suppliers/${s.id}`}
+            <Link key={s.id} href={`/d/suppliers/${s.id}`}
               className={`${glass} p-5 hover:border-zinc-700 transition-colors block`}>
 
               {/* Name + status */}

@@ -71,7 +71,7 @@ export default async function ProformaPage({ params }: { params: Promise<{ id: s
       filename={`${pi.pi_no}.pdf`}
       toolbar={
         <div className="flex items-center gap-3">
-          <a href={`/dashboard/accounts/quotes/${id}`}
+          <a href={`/d/quotes/${id}`}
             className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
             ← Back to Quote
           </a>

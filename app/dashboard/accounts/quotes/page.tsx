@@ -106,7 +106,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
           <p className="text-xs text-zinc-500 mt-0.5">{filteredTotal} total</p>
         </div>
         <Link
-          href="/dashboard/accounts/quotes/new"
+          href="/d/quotes/new"
           className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
         >
           <Plus className="h-4 w-4" /> New Quote
@@ -125,7 +125,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
           <FileText className="mx-auto h-8 w-8 text-zinc-700 mb-3" />
           <p className="text-zinc-500 text-sm">{q || statusFilter !== 'all' ? 'No quotations match your filters.' : 'No quotations yet.'}</p>
           {!q && statusFilter === 'all' && (
-            <Link href="/dashboard/accounts/quotes/new" className="mt-3 inline-block text-amber-400 text-sm hover:underline">
+            <Link href="/d/quotes/new" className="mt-3 inline-block text-amber-400 text-sm hover:underline">
               Create your first quote →
             </Link>
           )}
@@ -172,7 +172,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <Link href={`/dashboard/accounts/quotes/${q.id}`} className="text-xs text-amber-400 hover:underline">
+                      <Link href={`/d/quotes/${q.id}`} className="text-xs text-amber-400 hover:underline">
                         View →
                       </Link>
                     </td>

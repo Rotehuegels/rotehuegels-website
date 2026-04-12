@@ -293,7 +293,7 @@ export default function AddSupplierForm() {
           className="rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 px-6 py-2.5 text-sm font-semibold text-white transition-colors">
           {loading ? 'Saving…' : 'Add Supplier'}
         </button>
-        <a href="/dashboard/accounts/suppliers"
+        <a href="/d/suppliers"
           className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
           Cancel
         </a>

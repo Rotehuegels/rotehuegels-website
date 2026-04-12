@@ -29,7 +29,7 @@ export default async function AdminProjectsPage() {
           <span className="text-xs text-zinc-500 bg-zinc-800 rounded-full px-2 py-0.5">{list.length}</span>
         </div>
         <Link
-          href="/dashboard/projects/new"
+          href="/d/projects/new"
           className="flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 transition-colors"
         >
           <Plus className="h-4 w-4" />
@@ -48,7 +48,7 @@ export default async function AdminProjectsPage() {
           {list.map((p: any) => (
               <Link
                 key={p.id}
-                href={`/dashboard/projects/${p.id}`}
+                href={`/d/projects/${p.id}`}
                 className={`${glass} p-5 block hover:border-zinc-700 transition-colors group`}
               >
                 <div className="flex items-center justify-between mb-2">

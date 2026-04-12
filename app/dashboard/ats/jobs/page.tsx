@@ -23,7 +23,7 @@ export default async function JobsListPage() {
           <h1 className="text-2xl font-bold text-white">Job Postings</h1>
           <p className="mt-1 text-sm text-zinc-400">{jobs?.length ?? 0} total</p>
         </div>
-        <Link href="/dashboard/ats/jobs/new"
+        <Link href="/d/jobs/new"
           className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
           <Plus className="h-4 w-4" /> New Job
         </Link>
@@ -33,7 +33,7 @@ export default async function JobsListPage() {
         {!jobs?.length ? (
           <div className="p-12 text-center">
             <p className="text-zinc-500 text-sm">No job postings yet.</p>
-            <Link href="/dashboard/ats/jobs/new"
+            <Link href="/d/jobs/new"
               className="mt-4 inline-block rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
               Create your first job posting
             </Link>
@@ -43,7 +43,7 @@ export default async function JobsListPage() {
             {jobs.map(job => (
               <div key={job.id} className="flex items-center justify-between px-6 py-5 hover:bg-zinc-800/20 transition-colors">
                 <div className="min-w-0 flex-1">
-                  <Link href={`/dashboard/ats/jobs/${job.id}`} className="text-sm font-semibold text-white hover:text-rose-400 transition-colors">
+                  <Link href={`/d/jobs/${job.id}`} className="text-sm font-semibold text-white hover:text-rose-400 transition-colors">
                     {job.title}
                   </Link>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
@@ -58,7 +58,7 @@ export default async function JobsListPage() {
                 </div>
                 <div className="flex items-center gap-3 ml-4 shrink-0">
                   <JobStatusToggle jobId={job.id} currentStatus={job.status} />
-                  <Link href={`/dashboard/ats/jobs/${job.id}`}
+                  <Link href={`/d/jobs/${job.id}`}
                     className="rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
                     View
                   </Link>

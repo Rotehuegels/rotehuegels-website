@@ -91,7 +91,7 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
                         </div>
                       ) : <span className="text-zinc-700">—</span>}
                     </div>
-                    <Link href={`/dashboard/accounts/stock/${item.id}/edit`}
+                    <Link href={`/d/stock/${item.id}/edit`}
                       className="rounded-lg border border-zinc-700 bg-zinc-800/60 p-1.5 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
                       title="Edit stock item">
                       <Pencil className="h-3.5 w-3.5" />

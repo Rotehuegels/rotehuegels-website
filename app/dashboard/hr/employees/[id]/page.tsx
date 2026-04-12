@@ -54,7 +54,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
     <div className="p-8 space-y-6 max-w-4xl">
       {/* Header */}
       <div>
-        <Link href="/dashboard/hr/employees"
+        <Link href="/d/employees"
           className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-3">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Engagements
         </Link>
@@ -80,7 +80,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
             <p className="text-sm text-zinc-400 mt-0.5">{eng.role}</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <Link href={`/dashboard/hr/employees/${id}/edit`}
+            <Link href={`/d/employees/${id}/edit`}
               className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
               <Pencil className="h-3.5 w-3.5" /> Edit
             </Link>

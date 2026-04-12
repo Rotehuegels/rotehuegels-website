@@ -259,7 +259,7 @@ export default function RunEntries({ runId, month, year, status, entries, employ
                         </button>
                       )
                     ) : (
-                      <Link href={`/dashboard/payroll/${runId}/${entry.employee_id}/payslip`}
+                      <Link href={`/d/payroll/${runId}/${entry.employee_id}/payslip`}
                         className="text-indigo-400 hover:text-indigo-300 transition-colors">
                         Payslip
                       </Link>
@@ -295,7 +295,7 @@ export default function RunEntries({ runId, month, year, status, entries, employ
                 <div><p className="text-zinc-500">Net Pay</p><p className="text-emerald-400 font-mono font-bold">{fmt(entry.net_pay)}</p></div>
               </div>
               {status !== 'draft' && (
-                <Link href={`/dashboard/payroll/${runId}/${entry.employee_id}/payslip`}
+                <Link href={`/d/payroll/${runId}/${entry.employee_id}/payslip`}
                   className="block text-center rounded-lg border border-indigo-500/30 py-1.5 text-xs text-indigo-400 hover:bg-indigo-500/10 transition-colors">
                   View Payslip →
                 </Link>

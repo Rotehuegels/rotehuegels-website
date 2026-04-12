@@ -13,7 +13,7 @@ export default function FYSelector({ current }: { current: string }) {
   return (
     <select
       value={current}
-      onChange={e => router.push(`/dashboard/accounts/gst?fy=${e.target.value}`)}
+      onChange={e => router.push(`/d/gst?fy=${e.target.value}`)}
       className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm text-white focus:border-amber-500 focus:outline-none transition-colors"
     >
       {FY_OPTIONS.map(o => (

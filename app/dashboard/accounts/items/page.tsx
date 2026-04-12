@@ -32,7 +32,7 @@ export default async function ItemsPage() {
           </p>
         </div>
         <Link
-          href="/dashboard/accounts/items/new"
+          href="/d/catalog/new"
           className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
         >
           <Plus className="h-4 w-4" /> Add Item
@@ -43,7 +43,7 @@ export default async function ItemsPage() {
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-12 text-center">
           <Package className="mx-auto h-8 w-8 text-zinc-700 mb-3" />
           <p className="text-zinc-500 text-sm">No items in catalog yet.</p>
-          <Link href="/dashboard/accounts/items/new" className="mt-3 inline-block text-amber-400 text-sm hover:underline">
+          <Link href="/d/catalog/new" className="mt-3 inline-block text-amber-400 text-sm hover:underline">
             Add your first item →
           </Link>
         </div>
@@ -96,7 +96,7 @@ export default async function ItemsPage() {
                         <td className="px-5 py-3.5 text-zinc-500 text-xs">{item.category ?? '—'}</td>
                         <td className="px-5 py-3.5 text-right">
                           <Link
-                            href={`/dashboard/accounts/items/${item.id}`}
+                            href={`/d/catalog/${item.id}`}
                             className="text-xs text-amber-400 hover:underline"
                           >
                             Edit →

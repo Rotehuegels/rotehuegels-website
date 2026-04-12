@@ -53,7 +53,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <Link href="/dashboard/accounts/customers" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
+          <Link href="/d/customers" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
             <ArrowLeft className="h-3 w-3" /> Customers
           </Link>
           <div className="flex items-center gap-3">
@@ -67,15 +67,15 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           )}
         </div>
         <div className="flex gap-2">
-          <Link href={`/dashboard/accounts/customers/${id}/edit`}
+          <Link href={`/d/customers/${id}/edit`}
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors flex items-center gap-2">
             <Pencil className="h-3.5 w-3.5" /> Edit
           </Link>
-          <Link href={`/dashboard/accounts/customers/${id}/statement`}
+          <Link href={`/d/customers/${id}/statement`}
             className="rounded-xl border border-amber-600/50 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center gap-2">
             <ReceiptText className="h-3.5 w-3.5" /> Pending Bills
           </Link>
-          <Link href={`/dashboard/accounts/quotes/new?customer=${id}`}
+          <Link href={`/d/quotes/new?customer=${id}`}
             className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500 transition-colors flex items-center gap-2">
             <FileText className="h-3.5 w-3.5" /> New Quote
           </Link>
@@ -163,7 +163,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
             Orders ({orders?.length ?? 0})
           </h2>
-          <Link href="/dashboard/accounts/orders/new" className="text-xs text-amber-400 hover:underline">
+          <Link href="/d/orders/new" className="text-xs text-amber-400 hover:underline">
             + New Order
           </Link>
         </div>
@@ -199,7 +199,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                     }`}>{o.status}</span>
                   </td>
                   <td className="py-2.5 text-right">
-                    <Link href={`/dashboard/accounts/orders/${o.id}`} className="text-xs text-amber-400 hover:underline">
+                    <Link href={`/d/orders/${o.id}`} className="text-xs text-amber-400 hover:underline">
                       View →
                     </Link>
                   </td>
@@ -216,7 +216,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
             Quotations ({quotes?.length ?? 0})
           </h2>
-          <Link href="/dashboard/accounts/quotes/new" className="text-xs text-amber-400 hover:underline">
+          <Link href="/d/quotes/new" className="text-xs text-amber-400 hover:underline">
             + New Quote
           </Link>
         </div>
@@ -247,7 +247,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                     </span>
                   </td>
                   <td className="py-2.5 text-right">
-                    <Link href={`/dashboard/accounts/quotes/${q.id}`} className="text-xs text-amber-400 hover:underline">
+                    <Link href={`/d/quotes/${q.id}`} className="text-xs text-amber-400 hover:underline">
                       View →
                     </Link>
                   </td>

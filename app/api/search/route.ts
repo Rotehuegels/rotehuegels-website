@@ -92,7 +92,7 @@ export async function GET(req: Request) {
       id: o.id,
       label: o.order_no,
       sublabel: o.client_name + (o.description ? ` — ${o.description}` : ''),
-      href: `/dashboard/accounts/orders/${o.id}`,
+      href: `/d/orders/${o.id}`,
     });
   }
 
@@ -103,7 +103,7 @@ export async function GET(req: Request) {
       id: c.id,
       label: c.name,
       sublabel: [c.customer_id, c.gstin].filter(Boolean).join(' · '),
-      href: `/dashboard/accounts/customers/${c.id}`,
+      href: `/d/customers/${c.id}`,
     });
   }
 
@@ -114,7 +114,7 @@ export async function GET(req: Request) {
       id: q.id,
       label: q.quote_no,
       sublabel: q.customer_id,
-      href: `/dashboard/accounts/quotes/${q.id}`,
+      href: `/d/quotes/${q.id}`,
     });
   }
 
@@ -125,7 +125,7 @@ export async function GET(req: Request) {
       id: s.id,
       label: s.legal_name,
       sublabel: [s.vendor_code, s.gstin].filter(Boolean).join(' · '),
-      href: `/dashboard/accounts/suppliers/${s.id}`,
+      href: `/d/suppliers/${s.id}`,
     });
   }
 
@@ -136,7 +136,7 @@ export async function GET(req: Request) {
       id: e.id,
       label: e.description,
       sublabel: [e.vendor_name, e.expense_date].filter(Boolean).join(' · '),
-      href: `/dashboard/accounts/expenses`,
+      href: `/d/expenses`,
     });
   }
 
@@ -160,7 +160,7 @@ export async function GET(req: Request) {
       id: eng.id,
       label: member.full_name ?? member.rex_id,
       sublabel: [eng.role, eng.department].filter(Boolean).join(' · '),
-      href: `/dashboard/hr/employees/${eng.id}`,
+      href: `/d/employees/${eng.id}`,
     });
   }
 
@@ -181,7 +181,7 @@ export async function GET(req: Request) {
           id: eng.id,
           label: m.full_name ?? m.rex_id,
           sublabel: [eng.role, eng.department].filter(Boolean).join(' · '),
-          href: `/dashboard/hr/employees/${eng.id}`,
+          href: `/d/employees/${eng.id}`,
         });
       }
     }

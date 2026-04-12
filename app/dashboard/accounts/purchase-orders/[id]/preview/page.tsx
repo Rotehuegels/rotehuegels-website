@@ -77,7 +77,7 @@ export default async function POPreviewPage({ params }: { params: Promise<{ id: 
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-5 no-print">
         <div className="flex items-center gap-3">
-          <Link href={`/dashboard/accounts/purchase-orders/${id}`}
+          <Link href={`/d/purchase-orders/${id}`}
             className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
             ← Back to PO
           </Link>

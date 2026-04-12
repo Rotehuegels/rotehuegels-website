@@ -190,7 +190,7 @@ export default async function InvoicePage({
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-5 no-print">
         <div className="flex items-center gap-3">
-          <Link href={`/dashboard/accounts/orders/${id}`}
+          <Link href={`/d/orders/${id}`}
             className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
             ← Back to Order
           </Link>

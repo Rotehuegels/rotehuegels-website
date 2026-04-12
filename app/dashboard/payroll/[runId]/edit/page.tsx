@@ -18,14 +18,14 @@ export default async function PayrollRunEditPage({ params }: { params: Promise<{
   ]);
 
   if (!run) notFound();
-  if (run.status === 'paid') redirect(`/dashboard/payroll/${runId}`);
+  if (run.status === 'paid') redirect(`/d/payroll/${runId}`);
 
   const entries = entriesRaw ?? [];
 
   return (
     <div className="p-5 md:p-8 space-y-6">
       <div className="flex items-center gap-3">
-        <Link href={`/dashboard/payroll/${runId}`} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+        <Link href={`/d/payroll/${runId}`} className="text-zinc-500 hover:text-zinc-300 transition-colors">
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <div>

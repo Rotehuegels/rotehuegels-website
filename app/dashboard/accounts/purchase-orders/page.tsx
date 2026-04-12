@@ -101,7 +101,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
           </p>
         </div>
         <Link
-          href="/dashboard/accounts/purchase-orders/new"
+          href="/d/purchase-orders/new"
           className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
         >
           <Plus className="h-4 w-4" /> New PO
@@ -119,7 +119,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-12 text-center">
           <ShoppingCart className="mx-auto h-8 w-8 text-zinc-700 mb-3" />
           <p className="text-zinc-500 text-sm">No purchase orders found.</p>
-          <Link href="/dashboard/accounts/purchase-orders/new"
+          <Link href="/d/purchase-orders/new"
             className="mt-3 inline-block text-amber-400 text-sm hover:underline">
             Create your first PO
           </Link>
@@ -185,7 +185,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <Link href={`/dashboard/accounts/purchase-orders/${po.id}`}
+                      <Link href={`/d/purchase-orders/${po.id}`}
                         className="text-xs text-amber-400 hover:underline">
                         View
                       </Link>

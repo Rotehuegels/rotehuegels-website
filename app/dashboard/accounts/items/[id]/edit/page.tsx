@@ -78,7 +78,7 @@ export default function EditItemPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(data.error));
-      router.push(`/dashboard/accounts/items/${id}`);
+      router.push(`/d/catalog/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update item.');
       setSaving(false);
@@ -91,7 +91,7 @@ export default function EditItemPage() {
 
   return (
     <div className="p-6 max-w-2xl">
-      <Link href={`/dashboard/accounts/items/${id}`} className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-5 transition-colors">
+      <Link href={`/d/catalog/${id}`} className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-5 transition-colors">
         <ArrowLeft className="h-3 w-3" /> Back to Item
       </Link>
       <div className="mb-6">
@@ -169,7 +169,7 @@ export default function EditItemPage() {
             className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-50 transition-colors">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
-          <Link href={`/dashboard/accounts/items/${id}`}
+          <Link href={`/d/catalog/${id}`}
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
             Cancel
           </Link>

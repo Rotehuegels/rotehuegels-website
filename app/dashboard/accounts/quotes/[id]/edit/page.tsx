@@ -213,7 +213,7 @@ export default function EditQuotePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(data.error));
-      router.push(`/dashboard/accounts/quotes/${id}`);
+      router.push(`/d/quotes/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update quote.');
       setSaving(false);
@@ -233,7 +233,7 @@ export default function EditQuotePage() {
         <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
           Only draft quotes can be edited. This quote is &ldquo;{status}&rdquo;.
         </p>
-        <a href={`/dashboard/accounts/quotes/${id}`}
+        <a href={`/d/quotes/${id}`}
           className="mt-4 inline-block text-sm text-amber-400 hover:underline">
           Back to quote
         </a>
@@ -500,7 +500,7 @@ export default function EditQuotePage() {
             className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-50 transition-colors">
             {saving ? 'Saving...' : 'Update Quote'}
           </button>
-          <a href={`/dashboard/accounts/quotes/${id}`}
+          <a href={`/d/quotes/${id}`}
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
             Cancel
           </a>

@@ -73,7 +73,7 @@ export default function QuoteActions({ quoteId, currentStatus, totalAmount, taxa
       return;
     }
     setShowModal(false);
-    router.push(`/dashboard/accounts/orders/${data.order_id}`);
+    router.push(`/d/orders/${data.order_id}`);
   }
 
   const isConverted = currentStatus === 'converted';

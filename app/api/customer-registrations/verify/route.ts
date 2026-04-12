@@ -104,7 +104,7 @@ export async function GET(req: Request) {
             <tr><td><strong>Industry</strong></td><td>${reg.industry || '—'}</td></tr>
           </table>
           <p style="margin-top:16px;">
-            <a href="https://rotehuegels.com/dashboard/accounts/customers/registrations" style="color:#e11d48;font-weight:700;">Review in Dashboard →</a>
+            <a href="https://rotehuegels.com/d/customers/registrations" style="color:#e11d48;font-weight:700;">Review in Dashboard →</a>
           </p>
         `,
       });

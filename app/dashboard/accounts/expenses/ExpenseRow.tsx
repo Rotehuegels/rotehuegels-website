@@ -71,7 +71,7 @@ export default function ExpenseRow({ expense }: { expense: Expense }) {
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
-          <Link href={`/dashboard/accounts/expenses/${e.id}`}
+          <Link href={`/d/expenses/${e.id}`}
             className="rounded-lg border border-zinc-700 bg-zinc-800/60 p-1.5 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
             title="View details">
             <ExternalLink className="h-3.5 w-3.5" />

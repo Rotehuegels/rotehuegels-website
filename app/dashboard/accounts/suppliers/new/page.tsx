@@ -6,7 +6,7 @@ export default function NewSupplierPage() {
   return (
     <div className="p-8 space-y-6">
       <div>
-        <Link href="/dashboard/accounts/suppliers"
+        <Link href="/d/suppliers"
           className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-3">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Suppliers
         </Link>

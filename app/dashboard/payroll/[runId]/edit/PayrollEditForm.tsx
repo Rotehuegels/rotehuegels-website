@@ -168,7 +168,7 @@ export default function PayrollEditForm({ runId, month, entries }: Props) {
         </div>
         <div className="flex items-center gap-2">
           <a
-            href={`/dashboard/payroll/${runId}`}
+            href={`/d/payroll/${runId}`}
             className="flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Back

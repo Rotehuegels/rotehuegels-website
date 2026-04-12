@@ -72,7 +72,7 @@ export default function GSTFilingPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <Link href="/dashboard/accounts/gst" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white mb-4">
+      <Link href="/d/gst" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white mb-4">
         <ArrowLeft className="h-4 w-4" /> GST Report
       </Link>
 

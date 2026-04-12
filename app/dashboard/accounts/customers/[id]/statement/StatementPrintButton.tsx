@@ -6,7 +6,7 @@ export default function StatementPrintButton({ customerId, fy }: { customerId: s
   const fyParam = fy && fy !== 'all' ? `?fy=${fy}` : '';
   return (
     <Link
-      href={`/dashboard/accounts/customers/${customerId}/statement/preview${fyParam}`}
+      href={`/d/customers/${customerId}/statement/preview${fyParam}`}
       className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
     >
       <FileText className="h-3.5 w-3.5" /> Preview / PDF

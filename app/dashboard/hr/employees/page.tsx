@@ -76,7 +76,7 @@ export default async function EmployeesPage({ searchParams }: { searchParams: Pr
           <h1 className="text-2xl font-bold text-white">Engagements</h1>
           <p className="mt-1 text-sm text-zinc-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''} · {staff.length} staff · {board.length} board</p>
         </div>
-        <Link href="/dashboard/hr/add"
+        <Link href="/d/employees/add"
           className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
           <UserPlus className="h-4 w-4" /> Add Engagement
         </Link>
@@ -171,7 +171,7 @@ function EngagementTable({
                   </td>
                 )}
                 <td className="px-6 py-4">
-                  <Link href={`/dashboard/hr/employees/${eng.id}`} className="font-medium text-white hover:text-amber-400 transition-colors">
+                  <Link href={`/d/employees/${eng.id}`} className="font-medium text-white hover:text-amber-400 transition-colors">
                     {name}
                   </Link>
                   {member?.email && <p className="text-xs text-zinc-500 mt-0.5">{member.email}</p>}

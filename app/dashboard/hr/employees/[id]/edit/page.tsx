@@ -143,7 +143,7 @@ export default function EditEmployeePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
-      router.push(`/dashboard/hr/employees/${id}`);
+      router.push(`/d/employees/${id}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save.');
@@ -164,7 +164,7 @@ export default function EditEmployeePage() {
   return (
     <div className="p-8 space-y-6 max-w-3xl">
       <div>
-        <Link href={`/dashboard/hr/employees/${id}`}
+        <Link href={`/d/employees/${id}`}
           className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-3">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Employee
         </Link>
@@ -364,7 +364,7 @@ export default function EditEmployeePage() {
             className="rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 px-6 py-2.5 text-sm font-semibold text-white transition-colors">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
-          <Link href={`/dashboard/hr/employees/${id}`}
+          <Link href={`/d/employees/${id}`}
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
             Cancel
           </Link>

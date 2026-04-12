@@ -47,7 +47,7 @@ export default async function RunDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/payroll" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+          <Link href="/d/payroll" className="text-zinc-500 hover:text-zinc-300 transition-colors">
             <ChevronLeft className="h-5 w-5" />
           </Link>
           <div>
@@ -71,7 +71,7 @@ export default async function RunDetailPage({
         <div className="flex items-center gap-2">
           {run.status !== 'paid' && (
             <Link
-              href={`/dashboard/payroll/${runId}/edit`}
+              href={`/d/payroll/${runId}/edit`}
               className="flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
             >
               <Pencil className="h-3.5 w-3.5" /> Edit

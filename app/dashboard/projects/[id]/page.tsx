@@ -105,7 +105,7 @@ export default function AdminProjectDetailPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <Link href="/dashboard/projects" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white">
+      <Link href="/d/projects" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white">
         <ArrowLeft className="h-4 w-4" /> All Projects
       </Link>
 
@@ -186,7 +186,7 @@ export default function AdminProjectDetailPage() {
                 {linkedOrders.map((lo: { order_id: string; orders: { order_no: string; description: string; total_value_incl_gst: number; status: string } }) => (
                   <Link
                     key={lo.order_id}
-                    href={`/dashboard/accounts/orders/${lo.order_id}`}
+                    href={`/d/orders/${lo.order_id}`}
                     className="flex items-center justify-between rounded-xl bg-zinc-800/40 px-4 py-2.5 hover:bg-zinc-800/60 transition-colors"
                   >
                     <div>

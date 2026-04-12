@@ -7,7 +7,7 @@ export default function InvoiceActions({ orderId }: { orderId: string }) {
   return (
     <div className="print:hidden flex items-center gap-2">
       <button
-        onClick={() => router.push(`/dashboard/accounts/orders/${orderId}`)}
+        onClick={() => router.push(`/d/orders/${orderId}`)}
         className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" /> Back to Order

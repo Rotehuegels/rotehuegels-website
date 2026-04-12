@@ -86,7 +86,7 @@ export default function ItemDetailPage() {
 
   return (
     <div className="p-6 max-w-2xl">
-      <Link href="/dashboard/accounts/items" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-5 transition-colors">
+      <Link href="/d/catalog" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-5 transition-colors">
         <ArrowLeft className="h-3 w-3" /> Item Catalog
       </Link>
       <div className="mb-6">
@@ -164,7 +164,7 @@ export default function ItemDetailPage() {
             className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-50 transition-colors">
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
-          <Link href="/dashboard/accounts/items"
+          <Link href="/d/catalog"
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
             Cancel
           </Link>

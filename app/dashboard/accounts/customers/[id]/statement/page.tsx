@@ -228,7 +228,7 @@ export default async function CustomerStatementPage({
       {/* Toolbar */}
       <div className="flex items-center justify-between flex-wrap gap-4 mb-5 no-print">
         <div>
-          <Link href={`/dashboard/accounts/customers/${id}`}
+          <Link href={`/d/customers/${id}`}
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
             <ArrowLeft className="h-3 w-3" /> {customer.name}
           </Link>

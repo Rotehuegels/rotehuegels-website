@@ -15,7 +15,7 @@ export default function FYSelector({ current }: { current: string }) {
     <div className="flex items-center gap-2">
       <select
         value={current}
-        onChange={e => router.push(`/dashboard/accounts/pl?fy=${e.target.value}`)}
+        onChange={e => router.push(`/d/pl?fy=${e.target.value}`)}
         className="rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-xs text-white focus:border-amber-500 focus:outline-none transition-colors"
       >
         {FY_OPTIONS.map(o => (

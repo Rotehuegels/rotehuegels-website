@@ -213,7 +213,7 @@ export default function EditPOPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(data.error));
-      router.push(`/dashboard/accounts/purchase-orders/${id}`);
+      router.push(`/d/purchase-orders/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update PO.');
       setLoading(false);
@@ -233,7 +233,7 @@ export default function EditPOPage() {
   if (isCompleted) {
     return (
       <div className="p-6 max-w-xl">
-        <Link href={`/dashboard/accounts/purchase-orders/${id}`}
+        <Link href={`/d/purchase-orders/${id}`}
           className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-4 transition-colors">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to PO
         </Link>
@@ -247,7 +247,7 @@ export default function EditPOPage() {
   return (
     <div className="p-6 max-w-6xl">
       <div className="mb-6">
-        <Link href={`/dashboard/accounts/purchase-orders/${id}`}
+        <Link href={`/d/purchase-orders/${id}`}
           className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-2 transition-colors">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to PO
         </Link>
@@ -474,7 +474,7 @@ export default function EditPOPage() {
             className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-50 transition-colors">
             {loading ? 'Saving…' : 'Save Changes'}
           </button>
-          <Link href={`/dashboard/accounts/purchase-orders/${id}`}
+          <Link href={`/d/purchase-orders/${id}`}
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
             Cancel
           </Link>

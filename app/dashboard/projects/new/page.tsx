@@ -56,12 +56,12 @@ export default function NewProjectPage() {
     }
 
     const project = await res.json();
-    router.push(`/dashboard/projects/${project.id}`);
+    router.push(`/d/projects/${project.id}`);
   };
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <Link href="/dashboard/projects" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white mb-4">
+      <Link href="/d/projects" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white mb-4">
         <ArrowLeft className="h-4 w-4" /> Back to Projects
       </Link>
 

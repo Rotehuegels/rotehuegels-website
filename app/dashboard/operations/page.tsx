@@ -44,7 +44,7 @@ export default async function OperationsListPage() {
           {list.map((c: any) => (
             <Link
               key={c.id}
-              href={`/dashboard/operations/${c.id}`}
+              href={`/d/operations/${c.id}`}
               className={`${glass} p-5 block hover:border-zinc-700 transition-colors group`}
             >
               <div className="flex items-center justify-between mb-2">

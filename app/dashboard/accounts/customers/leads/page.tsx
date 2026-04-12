@@ -75,7 +75,7 @@ export default function CustomerLeadsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
-      <Link href="/dashboard/accounts/customers" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white mb-4">
+      <Link href="/d/customers" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white mb-4">
         <ArrowLeft className="h-4 w-4" /> Customers
       </Link>
 

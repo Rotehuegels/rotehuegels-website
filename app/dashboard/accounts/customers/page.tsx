@@ -65,7 +65,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
             <Download className="h-4 w-4" /> <span className="hidden sm:inline">Export</span> CSV
           </a>
           <Link
-            href="/dashboard/accounts/customers/new"
+            href="/d/customers/new"
             className="flex items-center gap-2 rounded-xl bg-amber-600 px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
           >
             <Plus className="h-4 w-4" /> Add Customer
@@ -86,7 +86,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           <Building2 className="mx-auto h-8 w-8 text-zinc-700 mb-3" />
           <p className="text-zinc-500 text-sm">{q ? 'No customers match your search.' : 'No customers yet.'}</p>
           {!q && (
-            <Link href="/dashboard/accounts/customers/new" className="mt-3 inline-block text-amber-400 text-sm hover:underline">
+            <Link href="/d/customers/new" className="mt-3 inline-block text-amber-400 text-sm hover:underline">
               Add your first customer →
             </Link>
           )}
@@ -138,7 +138,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <Link
-                      href={`/dashboard/accounts/customers/${c.id}`}
+                      href={`/d/customers/${c.id}`}
                       className="text-xs text-amber-400 hover:underline"
                     >
                       View →

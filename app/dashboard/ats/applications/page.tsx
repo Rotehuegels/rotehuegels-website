@@ -102,7 +102,7 @@ export default async function ApplicationsPipelinePage({
                   {items.map(app => (
                     <Link
                       key={app.id}
-                      href={`/dashboard/ats/applications/${app.id}`}
+                      href={`/d/applications/${app.id}`}
                       className={`block ${glass} p-4 hover:bg-zinc-800/40 transition-colors cursor-pointer`}
                     >
                       <p className="text-sm font-semibold text-white truncate">{app.full_name}</p>

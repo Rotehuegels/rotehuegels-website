@@ -137,7 +137,7 @@ export default async function OrdersListPage({ searchParams }: { searchParams: P
           <h1 className="text-xl md:text-2xl font-bold text-white">Orders</h1>
           <p className="mt-1 text-sm text-zinc-400">{total} total orders</p>
         </div>
-        <Link href="/dashboard/accounts/orders/new"
+        <Link href="/d/orders/new"
           className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
           <Plus className="h-4 w-4" /> New Order
         </Link>
@@ -168,7 +168,7 @@ export default async function OrdersListPage({ searchParams }: { searchParams: P
         {!enriched.length ? (
           <div className="p-12 text-center">
             <p className="text-zinc-500 text-sm">No orders found.</p>
-            <Link href="/dashboard/accounts/orders/new"
+            <Link href="/d/orders/new"
               className="mt-4 inline-block rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
               Create first order
             </Link>
@@ -232,7 +232,7 @@ export default async function OrdersListPage({ searchParams }: { searchParams: P
                   </div>
 
                   <div>
-                    <Link href={`/dashboard/accounts/orders/${o.id}`}
+                    <Link href={`/d/orders/${o.id}`}
                       className="rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
                       View
                     </Link>

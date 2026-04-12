@@ -55,7 +55,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Link href="/dashboard/accounts/orders"
+          <Link href="/d/orders"
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-3">
             <ArrowLeft className="h-3.5 w-3.5" /> Back to Orders
           </Link>
@@ -88,11 +88,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <SendEmailButton type="payment_reminder" entityId={id} label="Payment Reminder"
                 confirmMessage="Send a payment reminder email to the client?" />
             )}
-            <Link href={`/dashboard/accounts/orders/${id}/invoice`}
+            <Link href={`/d/orders/${id}/invoice`}
               className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-amber-500 hover:text-amber-400 transition-colors">
               <FileText className="h-3.5 w-3.5" /> Generate Invoice
             </Link>
-            <Link href={`/dashboard/accounts/orders/${id}/edit`}
+            <Link href={`/d/orders/${id}/edit`}
               className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-amber-600 hover:text-amber-400 transition-colors">
               <Pencil className="h-3.5 w-3.5" /> Edit Order
             </Link>
@@ -265,14 +265,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   <StageStatusButton stageId={s.id} orderId={id} currentStatus={s.status} />
                   {s.stage_number > 1 && (
                     <Link
-                      href={`/dashboard/accounts/orders/${id}/invoice?upto=${s.stage_number}`}
+                      href={`/d/orders/${id}/invoice?upto=${s.stage_number}`}
                       title={`Cumulative invoice — stages 1 to ${s.stage_number}`}
                       className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800/40 px-2 py-1 text-[10px] text-zinc-400 hover:border-amber-500 hover:text-amber-400 transition-colors">
                       <Receipt className="h-2.5 w-2.5" /> 1–{s.stage_number}
                     </Link>
                   )}
                   <Link
-                    href={`/dashboard/accounts/orders/${id}/invoice?stage=${s.stage_number}`}
+                    href={`/d/orders/${id}/invoice?stage=${s.stage_number}`}
                     title={`Invoice for stage ${s.stage_number} only`}
                     className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800/40 px-2 py-1 text-[10px] text-zinc-400 hover:border-sky-500 hover:text-sky-400 transition-colors">
                     <Receipt className="h-2.5 w-2.5" /> S{s.stage_number} only

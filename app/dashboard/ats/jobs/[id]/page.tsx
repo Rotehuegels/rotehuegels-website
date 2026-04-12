@@ -42,7 +42,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     <div className="p-8 space-y-8">
       {/* Header */}
       <div>
-        <Link href="/dashboard/ats/jobs" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+        <Link href="/d/jobs" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           ← Back to Jobs
         </Link>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
@@ -109,7 +109,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <Link href={`/dashboard/ats/applications/${app.id}`} className="font-semibold text-white hover:text-rose-400 transition-colors">{app.full_name}</Link>
+                      <Link href={`/d/applications/${app.id}`} className="font-semibold text-white hover:text-rose-400 transition-colors">{app.full_name}</Link>
                       {app.rex_id && (
                         <span className="flex items-center gap-1 text-[10px] rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 px-2 py-0.5">
                           <Network className="h-2.5 w-2.5" /> {app.rex_id}

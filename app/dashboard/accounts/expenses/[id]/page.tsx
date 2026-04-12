@@ -84,7 +84,7 @@ export default function ExpenseDetailPage() {
       {/* Back + Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Link href="/dashboard/accounts/expenses"
+          <Link href="/d/expenses"
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-2 transition-colors">
             <ArrowLeft className="h-3.5 w-3.5" /> All Expenses
           </Link>

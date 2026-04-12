@@ -38,11 +38,11 @@ export default async function PayrollPage() {
           <p className="mt-0.5 text-sm text-zinc-500">{activeCount} active employees · {runs.length} runs</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/dashboard/payroll/setup"
+          <Link href="/d/payroll/setup"
             className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
             Salary Setup
           </Link>
-          <Link href="/dashboard/payroll/new"
+          <Link href="/d/payroll/new"
             className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
             <Plus className="h-4 w-4" /> Run Payroll
           </Link>
@@ -89,7 +89,7 @@ export default async function PayrollPage() {
         {runs.length === 0 ? (
           <div className="p-12 text-center">
             <p className="text-zinc-500 text-sm">No payroll runs yet.</p>
-            <Link href="/dashboard/payroll/new"
+            <Link href="/d/payroll/new"
               className="mt-4 inline-flex items-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
               <Plus className="h-4 w-4" /> Run First Payroll
             </Link>
@@ -135,7 +135,7 @@ export default async function PayrollPage() {
                         </span>
                       </td>
                       <td className="px-5 py-3 text-right">
-                        <Link href={`/dashboard/payroll/${run.id}`}
+                        <Link href={`/d/payroll/${run.id}`}
                           className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
                           View →
                         </Link>

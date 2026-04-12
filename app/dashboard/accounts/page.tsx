@@ -124,7 +124,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <AccountsFYSelector current={fy} />
-          <Link href="/dashboard/accounts/orders/new"
+          <Link href="/d/orders/new"
             className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
             <Plus className="h-4 w-4" /> New Order
           </Link>
@@ -215,7 +215,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
       <div className={`${glass} p-6`}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-zinc-300">Total Expenses ({label})</h2>
-          <Link href="/dashboard/accounts/expenses"
+          <Link href="/d/expenses"
             className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 transition-colors">
             Manage <ArrowRight className="h-3 w-3" />
           </Link>
@@ -228,7 +228,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
       <div className={glass}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-800/60">
           <h2 className="text-sm font-semibold text-zinc-300">Orders in {label}</h2>
-          <Link href="/dashboard/accounts/orders"
+          <Link href="/d/orders"
             className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 transition-colors">
             View all <ArrowRight className="h-3 w-3" />
           </Link>
@@ -237,7 +237,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
         {!recentOrders.length ? (
           <div className="p-12 text-center">
             <p className="text-zinc-500 text-sm">No orders in {label}.</p>
-            <Link href="/dashboard/accounts/orders/new"
+            <Link href="/d/orders/new"
               className="mt-4 inline-block rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
               Create first order
             </Link>
@@ -277,7 +277,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full border capitalize ${STATUS_STYLE[o.status] ?? STATUS_STYLE.active}`}>
                       {o.status}
                     </span>
-                    <Link href={`/dashboard/accounts/orders/${o.id}`}
+                    <Link href={`/d/orders/${o.id}`}
                       className="rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
                       View
                     </Link>
@@ -293,19 +293,19 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
       <div className={`${glass} p-6`}>
         <h2 className="text-sm font-semibold text-zinc-300 mb-4">Quick actions</h2>
         <div className="flex flex-wrap gap-3">
-          <Link href="/dashboard/accounts/orders/new"
+          <Link href="/d/orders/new"
             className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
             <Plus className="h-4 w-4" /> New Order
           </Link>
-          <Link href={`/dashboard/accounts/pl?fy=${fy}`}
+          <Link href={`/d/pl?fy=${fy}`}
             className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-semibold text-zinc-200 hover:border-zinc-600 transition-colors">
             <TrendingUp className="h-4 w-4" /> P&amp;L Statement
           </Link>
-          <Link href="/dashboard/accounts/expenses"
+          <Link href="/d/expenses"
             className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-semibold text-zinc-200 hover:border-zinc-600 transition-colors">
             <ReceiptText className="h-4 w-4" /> Manage Expenses
           </Link>
-          <Link href="/dashboard/accounts/stock"
+          <Link href="/d/stock"
             className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-semibold text-zinc-200 hover:border-zinc-600 transition-colors">
             <Package className="h-4 w-4" /> Stock Items
           </Link>

@@ -95,7 +95,7 @@ export default function OperationsDetailPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
-      <Link href="/dashboard/operations" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white">
+      <Link href="/d/operations" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white">
         <ArrowLeft className="h-4 w-4" /> All Contracts
       </Link>
 

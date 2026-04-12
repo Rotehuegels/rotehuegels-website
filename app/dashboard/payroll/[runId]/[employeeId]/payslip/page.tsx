@@ -48,7 +48,7 @@ export default async function PayslipPage({
     <div className="min-h-screen bg-white text-black p-0">
       {/* Print button — hidden on print */}
       <div className="print:hidden bg-zinc-900 border-b border-zinc-700 px-6 py-3 flex items-center justify-between">
-        <a href={`/dashboard/payroll/${runId}`} className="text-sm text-zinc-400 hover:text-white transition-colors">
+        <a href={`/d/payroll/${runId}`} className="text-sm text-zinc-400 hover:text-white transition-colors">
           ← Back to Run
         </a>
         <button

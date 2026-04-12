@@ -242,14 +242,14 @@ function relativeTime(iso: string) {
 function entityHref(entityType: string, entityId: string | null): string | null {
   if (!entityId) return null;
   const map: Record<string, string> = {
-    order:    `/dashboard/accounts/orders/${entityId}`,
-    customer: `/dashboard/accounts/customers/${entityId}`,
+    order:    `/d/orders/${entityId}`,
+    customer: `/d/customers/${entityId}`,
     expense:  `/dashboard/accounts/expenses`,
-    supplier: `/dashboard/accounts/suppliers/${entityId}`,
-    employee: `/dashboard/hr/employees/${entityId}`,
-    quote:    `/dashboard/accounts/quotes/${entityId}`,
-    payroll:  `/dashboard/payroll/${entityId}`,
-    application: `/dashboard/ats/applications/${entityId}`,
+    supplier: `/d/suppliers/${entityId}`,
+    employee: `/d/employees/${entityId}`,
+    quote:    `/d/quotes/${entityId}`,
+    payroll:  `/d/payroll/${entityId}`,
+    application: `/d/applications/${entityId}`,
   };
   return map[entityType.toLowerCase()] ?? null;
 }
@@ -294,7 +294,7 @@ export default async function DashboardPage() {
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-600">This month</p>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           {/* Orders */}
-          <Link href="/dashboard/accounts/orders"
+          <Link href="/d/orders"
             className={`${glass} p-5 hover:border-zinc-700 transition-colors`}>
             <div className="flex items-center gap-2 mb-2">
               <ReceiptText className="h-4 w-4 text-sky-400" />
@@ -307,7 +307,7 @@ export default async function DashboardPage() {
           </Link>
 
           {/* Expenses */}
-          <Link href="/dashboard/accounts/expenses"
+          <Link href="/d/expenses"
             className={`${glass} p-5 hover:border-zinc-700 transition-colors`}>
             <div className="flex items-center gap-2 mb-2">
               <Wallet className="h-4 w-4 text-rose-400" />
@@ -318,7 +318,7 @@ export default async function DashboardPage() {
           </Link>
 
           {/* Employees */}
-          <Link href="/dashboard/hr/employees"
+          <Link href="/d/employees"
             className={`${glass} p-5 hover:border-zinc-700 transition-colors`}>
             <div className="flex items-center gap-2 mb-2">
               <Users className="h-4 w-4 text-emerald-400" />
@@ -329,7 +329,7 @@ export default async function DashboardPage() {
           </Link>
 
           {/* Open applications */}
-          <Link href="/dashboard/ats/applications"
+          <Link href="/d/applications"
             className={`${glass} p-5 hover:border-zinc-700 transition-colors`}>
             <div className="flex items-center gap-2 mb-2">
               <Briefcase className="h-4 w-4 text-amber-400" />
@@ -351,7 +351,7 @@ export default async function DashboardPage() {
           </Link>
 
           {/* Suppliers */}
-          <Link href="/dashboard/accounts/suppliers"
+          <Link href="/d/suppliers"
             className={`${glass} p-5 hover:border-zinc-700 transition-colors`}>
             <div className="flex items-center gap-2 mb-2">
               <Package className="h-4 w-4 text-orange-400" />
@@ -556,19 +556,19 @@ export default async function DashboardPage() {
           <section className={`${glass} p-6`}>
             <h2 className="text-sm font-semibold text-zinc-300 mb-4">Quick actions</h2>
             <div className="flex flex-wrap gap-3">
-              <Link href="/dashboard/hr/add"
+              <Link href="/d/employees/add"
                 className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors">
                 <UserPlus className="h-4 w-4" /> Add Employee
               </Link>
-              <Link href="/dashboard/accounts/orders/new"
+              <Link href="/d/orders/new"
                 className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-semibold text-zinc-200 hover:border-zinc-600 transition-colors">
                 <ReceiptText className="h-4 w-4" /> New Order
               </Link>
-              <Link href="/dashboard/accounts/expenses/new"
+              <Link href="/d/expenses/new"
                 className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-semibold text-zinc-200 hover:border-zinc-600 transition-colors">
                 <Wallet className="h-4 w-4" /> Add Expense
               </Link>
-              <Link href="/dashboard/payroll/new"
+              <Link href="/d/payroll/new"
                 className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm font-semibold text-zinc-200 hover:border-zinc-600 transition-colors">
                 <CheckCircle2 className="h-4 w-4" /> Run Payroll
               </Link>

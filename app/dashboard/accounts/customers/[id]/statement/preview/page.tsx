@@ -221,7 +221,7 @@ export default async function StatementPreviewPage({
       filename={`SOA-${customer.name.replace(/\s+/g, '-')}.pdf`}
       toolbar={
         <div className="flex items-center gap-3">
-          <a href={`/dashboard/accounts/customers/${id}/statement`}
+          <a href={`/d/customers/${id}/statement`}
             className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
             ← Back to Statement
           </a>

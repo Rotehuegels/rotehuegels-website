@@ -57,9 +57,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'A registration with this email already exists.' }, { status: 409 });
   }
 
-  const year = new Date().getFullYear();
-  const { count } = await supabaseAdmin.from('trading_partners').select('id', { count: 'exact', head: true });
-  const regNo = `TP-${year}-${String((count ?? 0) + 1).padStart(3, '0')}`;
+  // Random 8-char alphanumeric reference (doesn't reveal sequence)
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const regNo = `TP-${rand}`;
 
   const { data, error } = await supabaseAdmin
     .from('trading_partners')

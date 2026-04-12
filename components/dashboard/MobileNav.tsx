@@ -13,7 +13,7 @@ import {
   ShoppingBag, Building2, BookOpen, FileText, ReceiptText,
   Package, ShoppingCart, Truck,
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
-  Network, FolderKanban, FolderPlus, CalendarDays, Factory, FlaskConical,
+  Network, FolderKanban, FolderPlus, CalendarDays, Factory, FlaskConical, Scale,
   Shield, BarChart3, Globe, Eye, Mail, History,
   Radar, AlertTriangle, FileCheck,
 } from 'lucide-react';
@@ -66,7 +66,8 @@ const NAV: NavItem[] = [
     children: [
       { label: 'Customers',      href: '/d/customers',                icon: Building2 },
       { label: 'Registrations',  href: '/d/customers/registrations',  icon: UserCheck },
-      { label: 'Leads',          href: '/d/customers/leads',          icon: Users },
+      { label: 'Leads',            href: '/d/customers/leads',          icon: Users },
+      { label: 'Trading Partners', href: '/d/trading',                 icon: Scale },
       { label: 'Catalog',        href: '/d/catalog',                  icon: BookOpen },
       { label: 'Quotes',         href: '/d/quotes',                   icon: FileText },
       { label: 'Orders',         href: '/d/orders',                   icon: ReceiptText },
@@ -120,7 +121,9 @@ const NAV: NavItem[] = [
     label: 'Network', icon: Network,
     children: [
       { label: 'REX Members',            href: '/d/rex',          icon: Network },
-      { label: 'Supplier Registrations', href: '/d/supplier-reg', icon: Building2 },
+      { label: 'Supplier Registrations', href: '/d/supplier-reg',             icon: Building2 },
+      { label: 'Customer Registrations', href: '/d/customers/registrations',  icon: UserCheck },
+      { label: 'Trading Partners',       href: '/d/trading',                  icon: Scale },
     ],
   },
 

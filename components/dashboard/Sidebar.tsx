@@ -9,7 +9,7 @@ import {
   LayoutDashboard,
   Users, UserPlus, UserCheck,
   Briefcase, FilePlus, ClipboardList,
-  Receipt, Settings2,
+  Receipt, Settings2, Scale,
   ShoppingBag, Building2, BookOpen, FileText, ReceiptText,
   Package, ShoppingCart, Truck,
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
@@ -77,7 +77,8 @@ const NAV: NavItem[] = [
     children: [
       { label: 'Customers',      href: '/d/customers',                icon: Building2 },
       { label: 'Registrations', href: '/d/customers/registrations', icon: UserCheck },
-      { label: 'Leads',         href: '/d/customers/leads',         icon: Users },
+      { label: 'Leads',            href: '/d/customers/leads',         icon: Users },
+      { label: 'Trading Partners', href: '/d/trading',                icon: Scale },
       { label: 'Catalog',       href: '/d/catalog',                   icon: BookOpen },
       { label: 'Quotes',    href: '/d/quotes',     icon: FileText },
       { label: 'Orders',    href: '/d/orders',     icon: ReceiptText },
@@ -133,6 +134,8 @@ const NAV: NavItem[] = [
     children: [
       { label: 'REX Members',            href: '/d/rex',                    icon: Network },
       { label: 'Supplier Registrations', href: '/d/supplier-reg',              icon: Building2 },
+      { label: 'Customer Registrations', href: '/d/customers/registrations',  icon: UserCheck },
+      { label: 'Trading Partners',       href: '/d/trading',                  icon: Scale },
     ],
   },
 

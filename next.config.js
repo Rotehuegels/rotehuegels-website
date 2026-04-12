@@ -84,6 +84,7 @@ const nextConfig = {
       { source: '/d/employees/add', destination: '/dashboard/hr/add' },
       { source: '/d/employees/:id', destination: '/dashboard/hr/employees/:id' },
       { source: '/d/employees/:id/edit', destination: '/dashboard/hr/employees/:id/edit' },
+      { source: '/d/trading', destination: '/dashboard/accounts/trading' },
       { source: '/d/leave', destination: '/dashboard/hr/leave' },
       { source: '/d/payroll', destination: '/dashboard/payroll' },
       { source: '/d/payroll/new', destination: '/dashboard/payroll/new' },

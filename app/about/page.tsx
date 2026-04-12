@@ -151,7 +151,8 @@ export default function AboutPage() {
       {/* OUR TECHNOLOGY */}
       <Section title="Our Technology">
         <p className="text-sm text-zinc-400 mb-6">
-          Three proprietary platforms that form a complete ecosystem for industrial operations.
+          Three proprietary platforms — each independently powerful, seamlessly integrated when combined.
+          Available as add-on modules based on client needs.
         </p>
         <div className="grid sm:grid-cols-3 gap-6">
           <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-6 hover:border-amber-500/40 transition-colors">
@@ -191,6 +192,25 @@ export default function AboutPage() {
               and mineral processing instruments. Sample tracking, spec compliance, and quality control.
             </p>
             <p className="text-xs text-zinc-500 mt-3">Multi-industry: Cu, Au, Ag, Zn, Li, Co, Ni, Al, black mass</p>
+          </div>
+        </div>
+
+        {/* Integration message */}
+        <div className="mt-6 rounded-xl border border-zinc-700/50 bg-zinc-800/30 p-5">
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 mt-0.5 h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+              <Globe className="h-4 w-4 text-rose-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-white">Independent modules. Seamless integration.</h4>
+              <p className="text-sm text-zinc-400 mt-1">
+                Each product is a standalone platform focused on a distinct aspect of plant operations — automation,
+                business management, and laboratory quality. Clients can adopt any single module, or combine all three
+                for complete end-to-end control over their project. When deployed together, AutoREX™, Operon, and
+                LabREX share data in real time — production metrics flow into ERP reporting, lab results trigger
+                quality alerts in the automation layer, and investor dashboards update automatically.
+              </p>
+            </div>
           </div>
         </div>
       </Section>

@@ -13,24 +13,34 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.rotehuegels.com"),
 
   title: {
-    default: "Rotehügels - Where Research Meets Business Excellence",
+    default: "Rotehügels — Engineering. Technology. Execution.",
     template: "%s | Rotehügels"
   },
 
   description:
-    "Rotehügel Research Business Consultancy Pvt. Ltd., Chennai. EPC, process engineering, hydrometallurgy, critical minerals, battery recycling, and digital automation solutions including AutoREX™.",
+    "Rotehügels designs process plants, builds industrial software (AutoREX™, Operon, LabREX), and operates facilities across metals, mining, battery recycling, and process industries. EPC, plant automation, LIMS, and cloud ERP — Chennai, India.",
 
   keywords: [
     "Rotehügels",
+    "AutoREX",
+    "Operon ERP",
+    "LabREX LIMS",
+    "Plant Automation",
     "Hydrometallurgy",
+    "EPC Contractor",
     "Battery Recycling",
+    "Black Mass Processing",
     "Critical Minerals",
     "Copper Extraction",
-    "Zinc Dross Recycling",
-    "Process Plant EPC",
-    "AutoREX",
+    "Zinc Dross Recovery",
+    "Gold Refining",
     "Industrial Automation",
-    "Metallurgy Consulting"
+    "Process Plant EPC",
+    "SCADA PLC HMI",
+    "Laboratory Information Management",
+    "Commodity Trading",
+    "Metallurgy Consulting",
+    "Chennai India"
   ],
 
   authors: [{ name: "Sivakumar Shanmugam" }],
@@ -43,8 +53,8 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Rotehügels",
-    description: "Where Research Meets Business Excellence.",
+    title: "Rotehügels — Engineering. Technology. Execution.",
+    description: "Process plant EPC, industrial automation (AutoREX™), cloud ERP (Operon), and LIMS (LabREX) for metals, mining, recycling, and process industries worldwide.",
     url: "https://www.rotehuegels.com",
     siteName: "Rotehügels",
     images: [
@@ -61,8 +71,8 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Rotehügels",
-    description: "Where Research Meets Business Excellence.",
+    title: "Rotehügels — Engineering. Technology. Execution.",
+    description: "EPC, AutoREX™ plant automation, Operon cloud ERP, LabREX LIMS — for metals, mining, recycling, and process industries.",
     images: ["/logo.png"],
   },
 

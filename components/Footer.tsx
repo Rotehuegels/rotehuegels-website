@@ -41,6 +41,13 @@ export default function Footer() {
             <li><a href="/contact" className="hover:underline">Contact</a></li>
             <li><a href="/rotehuegels-story" className="hover:underline">The Rotehügels Story</a></li>
           </ul>
+
+          <p className="font-semibold text-white text-base mb-2 mt-5">Register</p>
+          <ul className="space-y-1">
+            <li><a href="/customers/register" className="hover:underline text-rose-300">Customer Registration</a></li>
+            <li><a href="/suppliers/register" className="hover:underline">Supplier Registration</a></li>
+            <li><a href="/rex" className="hover:underline">REX Network</a></li>
+          </ul>
         </div>
 
         {/* 3. Connect */}

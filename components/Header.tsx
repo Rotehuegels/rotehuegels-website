@@ -28,9 +28,10 @@ const NAV = [
   {
     label: 'Join Us',
     children: [
-      { label: 'REX Network',           href: '/rex',                highlight: true },
-      { label: 'Supplier Registration', href: '/suppliers/register' },
-      { label: 'Careers',               href: '/careers' },
+      { label: 'REX Network',             href: '/rex',                 highlight: true },
+      { label: 'Customer Registration',   href: '/customers/register' },
+      { label: 'Supplier Registration',   href: '/suppliers/register' },
+      { label: 'Careers',                 href: '/careers' },
     ],
   },
 ];

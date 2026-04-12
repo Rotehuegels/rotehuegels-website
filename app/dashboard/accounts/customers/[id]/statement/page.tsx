@@ -11,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { getCompanyCO } from '@/lib/company';
+import { getLogoBase64 } from '@/lib/serverAssets';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,7 @@ export default async function CustomerStatementPage({
   const { fy: fyParam } = await searchParams;
   const selectedFY = fyParam ?? 'all';
   const CO = await getCompanyCO();
+  const logoSrc = getLogoBase64();
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
@@ -252,7 +254,7 @@ export default async function CustomerStatementPage({
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'14px' }}>
               <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+                <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
                 <div>
                   <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
                   <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
@@ -524,7 +526,7 @@ export default async function CustomerStatementPage({
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'12px' }}>
                   <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+                    <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
                     <div>
                       <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
                       <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>
@@ -730,7 +732,7 @@ export default async function CustomerStatementPage({
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'2.5px solid #111', paddingBottom:'10px', marginBottom:'14px' }}>
                   <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
+                    <img src={logoSrc} alt="Rotehügels" style={{ height:'52px', width:'auto', objectFit:'contain', marginTop:'2px' }} />
                     <div>
                       <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Rotehuegel Research Business</div>
                       <div style={{ fontSize:'15px', fontWeight:900, textTransform:'uppercase', lineHeight:1.2 }}>Consultancy Private Limited</div>

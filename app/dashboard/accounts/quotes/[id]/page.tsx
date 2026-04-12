@@ -8,6 +8,7 @@ import ReportContainer from '@/components/ReportContainer';
 import SendEmailButton from '@/components/SendEmailButton';
 
 import { getCompanyCO } from '@/lib/company';
+import { getLogoBase64 } from '@/lib/serverAssets';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default async function QuoteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const CO = await getCompanyCO();
+  const logoSrc = getLogoBase64();
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
@@ -134,7 +136,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '10px', marginBottom: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/Logo2_black.png" alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px' }} />
+              <img src={logoSrc} alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px' }} />
               <div>
                 <div style={{ fontSize: '15px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.2 }}>
                   Rotehuegel Research Business

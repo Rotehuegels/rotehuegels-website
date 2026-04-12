@@ -75,8 +75,10 @@ const NAV: NavItem[] = [
   {
     label: 'Sales', icon: ShoppingBag,
     children: [
-      { label: 'Customers', href: '/dashboard/accounts/customers',  icon: Building2 },
-      { label: 'Catalog',   href: '/dashboard/accounts/items',      icon: BookOpen },
+      { label: 'Customers',      href: '/dashboard/accounts/customers',                icon: Building2 },
+      { label: 'Registrations', href: '/dashboard/accounts/customers/registrations', icon: UserCheck },
+      { label: 'Leads',         href: '/dashboard/accounts/customers/leads',         icon: Users },
+      { label: 'Catalog',       href: '/dashboard/accounts/items',                   icon: BookOpen },
       { label: 'Quotes',    href: '/dashboard/accounts/quotes',     icon: FileText },
       { label: 'Orders',    href: '/dashboard/accounts/orders',     icon: ReceiptText },
       { type: 'section', label: 'Intelligence' },

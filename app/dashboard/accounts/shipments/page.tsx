@@ -155,10 +155,14 @@ export default function ShipmentsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    <a href={`/d/shipments/${s.id}`}
+                      className="flex items-center gap-1.5 rounded-lg border border-rose-700/50 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-400 hover:text-white hover:bg-rose-500/20">
+                      <Truck className="h-3.5 w-3.5" /> Live Track
+                    </a>
                     {trackUrl && (
                       <a href={trackUrl} target="_blank" rel="noopener noreferrer"
                         className="flex items-center gap-1.5 rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:border-zinc-600">
-                        <ExternalLink className="h-3.5 w-3.5" /> Track
+                        <ExternalLink className="h-3.5 w-3.5" /> Carrier Site
                       </a>
                     )}
                     {s.status !== 'delivered' && (

@@ -92,9 +92,12 @@ export default function ShipmentDetailPage() {
     }
   }, [shipment, id]);
 
-  // Auto-fetch tracking on load
+  // Auto-fetch tracking on load (with delay to let page render first)
   useEffect(() => {
-    if (shipment && !tracking) fetchTracking();
+    if (shipment && !tracking) {
+      const timer = setTimeout(() => fetchTracking(), 500);
+      return () => clearTimeout(timer);
+    }
   }, [shipment, tracking, fetchTracking]);
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;

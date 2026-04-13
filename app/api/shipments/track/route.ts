@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 // ── ARC Tracking Scraper ────────────────────────────────────────────────────
 // ARC (Anjaney Resources & Consultancy) uses an ASP.NET form.
@@ -42,7 +43,17 @@ export async function GET(req: Request) {
 
     switch (carrier.toUpperCase()) {
       case 'ARC':
-        result = await trackARC(trackingNo);
+        try {
+          result = await trackARC(trackingNo);
+        } catch (arcErr) {
+          console.error('[ARC tracking error]', arcErr);
+          result = {
+            carrier: 'ARC', tracking_no: trackingNo, status: 'unknown',
+            origin: '', destination: '', booked_date: '', expected_delivery: '',
+            current_status: 'ARC tracking temporarily unavailable — try again later',
+            events: [],
+          };
+        }
         break;
       default:
         result = {
@@ -56,10 +67,12 @@ export async function GET(req: Request) {
     return NextResponse.json(result);
   } catch (err: unknown) {
     console.error('[GET /api/shipments/track]', err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Tracking failed' },
-      { status: 500 },
-    );
+    return NextResponse.json({
+      carrier: 'unknown', tracking_no: trackingNo ?? '', status: 'error',
+      origin: '', destination: '', booked_date: '', expected_delivery: '',
+      current_status: 'Tracking service error — try again later',
+      events: [],
+    });
   }
 }
 
@@ -71,7 +84,7 @@ async function trackARC(trackingNo: string): Promise<TrackingResult> {
   // Step 1: GET the page to obtain __VIEWSTATE and __EVENTVALIDATION tokens
   const pageRes = await fetch(url, {
     headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(10000),
   });
   const pageHtml = await pageRes.text();
 
@@ -95,7 +108,7 @@ async function trackARC(trackingNo: string): Promise<TrackingResult> {
       'Referer': url,
     },
     body: formData.toString(),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(10000),
   });
   const html = await trackRes.text();
 

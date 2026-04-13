@@ -23,7 +23,7 @@ const CARRIER_URLS: Record<string, string> = {
 export async function GET() {
   const { data, error } = await supabaseAdmin
     .from('shipments')
-    .select('*, purchase_orders(po_no, supplier_id, suppliers(legal_name)), orders(order_no, client_name)')
+    .select('*, tracking_data, tracking_updated_at, purchase_orders(po_no, supplier_id, suppliers(legal_name)), orders(order_no, client_name)')
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

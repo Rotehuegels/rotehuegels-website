@@ -80,6 +80,7 @@ export default async function InvoicePage({
   const isIntraOrder = (order.igst_amount ?? 0) === 0 && (order.cgst_amount ?? 0) > 0;
   const items: Array<{
     description: string; qty?: string; unit?: string; hsn: string;
+    rate?: number; discount?: string;
     base: number; cgst: number; sgst: number; igst: number; total: number;
   }> = Array.isArray(rawItems)
     ? rawItems.map(r => {
@@ -90,6 +91,8 @@ export default async function InvoicePage({
           description: r.name ?? r.description ?? '',
           qty:  r.quantity != null ? `${r.quantity} ${r.unit ?? ''}`.trim() : r.qty,
           hsn:  r.hsn_code || r.sac_code || r.hsn || '',
+          rate: r.rate ?? undefined,
+          discount: r.discount ?? undefined,
           base: taxable,
           cgst: isIntraOrder ? halfGst : 0,
           sgst: isIntraOrder ? halfGst : 0,
@@ -98,6 +101,7 @@ export default async function InvoicePage({
         };
       })
     : [];
+  const hasRateDiscount = items.some(i => i.rate != null);
 
   // ── Stage filtering ────────────────────────────────────────────────────────
   const uptoStage = sp.upto ? parseInt(sp.upto) : null;
@@ -168,8 +172,8 @@ export default async function InvoicePage({
   const sacHsn   = order.hsn_sac_code ?? (order.order_type === 'service' ? '9983' : '—');
   const placeOfSupply = order.place_of_supply ?? 'Tamil Nadu (33)';
 
-  // colspan for footer row: # + Description + (Qty if multi-item) + HSN
-  const descColspan = items.length > 0 ? 4 : 3;
+  // colspan for footer row: # + Description + (Qty if multi-item) + HSN + (Rate + Disc if present)
+  const descColspan = (items.length > 0 ? 4 : 3) + (hasRateDiscount ? 2 : 0);
 
   // Balance due — scoped to filtered stages
   const filteredPaid = filteredStages
@@ -306,6 +310,12 @@ export default async function InvoicePage({
                   <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'center', width: '45px' }}>Qty</th>
                 )}
                 <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'center', width: '50px' }}>SAC / HSN</th>
+                {hasRateDiscount && (
+                  <>
+                    <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'right', width: '70px' }}>Rate (₹)</th>
+                    <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'center', width: '40px' }}>Disc.</th>
+                  </>
+                )}
                 <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'right', width: '90px' }}>Taxable Value</th>
                 {isIntra ? (
                   <>
@@ -327,6 +337,12 @@ export default async function InvoicePage({
                   </td>
                   <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', verticalAlign: 'top' }}>{item.qty ?? '—'}</td>
                   <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 700, verticalAlign: 'top' }}>{item.hsn}</td>
+                  {hasRateDiscount && (
+                    <>
+                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right', verticalAlign: 'top' }}>{item.rate != null ? fmt(item.rate) : '—'}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', verticalAlign: 'top' }}>{item.discount ?? '—'}</td>
+                    </>
+                  )}
                   <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(item.base)}</td>
                   {isIntra ? (
                     <>

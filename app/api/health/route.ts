@@ -34,10 +34,19 @@ export async function GET() {
     ai_ollama = { status: 'down' };
   }
 
-  // ── Groq ──────────────────────────────────────────────────────────────────
-  const ai_groq = process.env.GROQ_API_KEY
-    ? { status: 'configured' }
-    : { status: 'not_configured' };
+  // ── AI Providers ──────────────────────────────────────────────────────────
+  const ai_providers: Record<string, { status: string }> = {};
+  const providerKeys = [
+    ['groq', 'GROQ_API_KEY'],
+    ['gemini', 'GEMINI_API_KEY'],
+    ['mistral', 'MISTRAL_API_KEY'],
+    ['cerebras', 'CEREBRAS_API_KEY'],
+    ['together', 'TOGETHER_API_KEY'],
+    ['openrouter', 'OPENROUTER_API_KEY'],
+  ] as const;
+  for (const [name, envKey] of providerKeys) {
+    ai_providers[name] = { status: process.env[envKey] ? 'configured' : 'not_configured' };
+  }
 
   // ── SMTP ──────────────────────────────────────────────────────────────────
   const email_smtp = process.env.SMTP_HOST
@@ -58,7 +67,7 @@ export async function GET() {
       services: {
         database,
         ai_ollama,
-        ai_groq,
+        ai_providers,
         email_smtp,
         microsoft,
       },

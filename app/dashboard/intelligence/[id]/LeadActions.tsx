@@ -10,7 +10,7 @@ export default function LeadActions({
   currentStatus,
 }: {
   id: string;
-  table: 'supplier_leads' | 'customer_leads';
+  table: 'supplier_leads' | 'customer_leads' | 'trading_leads';
   currentStatus: string;
 }) {
   const router = useRouter();
@@ -70,7 +70,7 @@ export default function LeadActions({
           <Phone className="h-4 w-4" />
           Mark Contacted
         </button>
-        {table === 'customer_leads' && (
+        {(table === 'customer_leads' || table === 'trading_leads') && (
           <button
             onClick={() => updateStatus('qualified')}
             disabled={loading || currentStatus === 'qualified'}

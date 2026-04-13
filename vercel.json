@@ -4,7 +4,7 @@
     { "source": "/assets/logo2.png", "destination": "/assets/Logo2.png" }
   ],
   "crons": [
-    { "path": "/api/cron/crawl", "schedule": "30 20 * * *" },
+    { "path": "/api/cron/stock-analysis", "schedule": "30 20 * * *" },
     { "path": "/api/cron/reminders", "schedule": "0 4 * * 1" }
   ]
 }

@@ -1,31 +1,27 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import {
-  runCrawlJob,
-  DEFAULT_SUPPLIER_QUERIES,
-  DEFAULT_CUSTOMER_QUERIES,
-} from '@/lib/crawler';
+import { discoverAndSave, type LeadType } from '@/lib/leadDiscovery';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // 5 minutes
+export const maxDuration = 60;
 
-// ── POST — Trigger a crawl job ────────────────────────────────────────────────
+// ── POST — Trigger AI-powered lead discovery ─────────────────────────────────
+// Kept for backward compat — proxies to new multi-AI discovery system
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const type: 'supplier' | 'customer' = body.type ?? 'supplier';
-    const queries: string[] =
-      body.queries?.length > 0
-        ? body.queries
-        : type === 'supplier'
-          ? DEFAULT_SUPPLIER_QUERIES
-          : DEFAULT_CUSTOMER_QUERIES;
+    const type: LeadType = body.type ?? 'supplier';
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await runCrawlJob(type, queries, supabaseAdmin as any);
+    const result = await discoverAndSave(type, supabaseAdmin as any);
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ok: true,
+      ...result,
+      // Legacy field compat
+      resultsCount: result.saved,
+    });
   } catch (err: unknown) {
     console.error('[POST /api/crawl] Error:', err);
     return NextResponse.json(
@@ -35,7 +31,7 @@ export async function POST(req: Request) {
   }
 }
 
-// ── GET — List recent crawl jobs ──────────────────────────────────────────────
+// ── GET — List recent crawl jobs (legacy) ────────────────────────────────────
 
 export async function GET() {
   try {

@@ -3,6 +3,11 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const dynamic = 'force-dynamic';
 
+const ALLOWED_TABLES = ['supplier_leads', 'customer_leads', 'trading_leads'] as const;
+type LeadTable = (typeof ALLOWED_TABLES)[number];
+
+const ALLOWED_STATUSES = ['reviewed', 'approved', 'rejected', 'contacted', 'qualified'];
+
 // ── POST — Update lead status ─────────────────────────────────────────────────
 
 export async function POST(
@@ -11,18 +16,27 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
+
+    // Validate UUID format
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
+
     const body = await req.json();
     const { status, notes, table } = body as {
       status: string;
       notes?: string;
-      table?: 'supplier_leads' | 'customer_leads';
+      table?: string;
     };
 
-    if (!['reviewed', 'approved', 'rejected', 'contacted', 'qualified'].includes(status)) {
+    if (!ALLOWED_STATUSES.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
-    const targetTable = table ?? 'supplier_leads';
+    const targetTable: LeadTable = ALLOWED_TABLES.includes(table as LeadTable)
+      ? (table as LeadTable)
+      : 'supplier_leads';
+
     const updateData: Record<string, unknown> = {
       status,
       reviewed_at: new Date().toISOString(),

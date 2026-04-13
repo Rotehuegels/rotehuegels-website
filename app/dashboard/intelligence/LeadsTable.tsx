@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Building2, Users, ExternalLink, Check, X } from 'lucide-react';
+import { Building2, Users, Handshake, ExternalLink, Check, X } from 'lucide-react';
 
 type Lead = Record<string, unknown>;
+type Tab = 'supplier' | 'customer' | 'trading';
 
 function Badge({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -35,27 +36,27 @@ function ConfidenceDot({ score }: { score: number }) {
 export default function LeadsTable({
   supplierLeads,
   customerLeads,
+  tradingLeads,
 }: {
   supplierLeads: Lead[];
   customerLeads: Lead[];
+  tradingLeads: Lead[];
 }) {
-  const [tab, setTab] = useState<'supplier' | 'customer'>('supplier');
+  const [tab, setTab] = useState<Tab>('supplier');
   const [filter, setFilter] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const leads = tab === 'supplier' ? supplierLeads : customerLeads;
+  const leads = tab === 'supplier' ? supplierLeads : tab === 'customer' ? customerLeads : tradingLeads;
   const filtered = filter === 'all' ? leads : leads.filter((l) => l.status === filter);
 
   async function updateStatus(id: string, status: string) {
     setActionLoading(id);
     try {
+      const table = tab === 'supplier' ? 'supplier_leads' : tab === 'customer' ? 'customer_leads' : 'trading_leads';
       await fetch(`/api/crawl/leads/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status,
-          table: tab === 'supplier' ? 'supplier_leads' : 'customer_leads',
-        }),
+        body: JSON.stringify({ status, table }),
       });
       window.location.reload();
     } catch {
@@ -68,29 +69,32 @@ export default function LeadsTable({
   const statuses = ['all', 'new', 'reviewed', 'approved', 'rejected', 'contacted'];
   if (tab === 'customer') statuses.splice(3, 0, 'qualified');
 
+  const tabs: { key: Tab; label: string; icon: typeof Building2; color: string; count: number }[] = [
+    { key: 'supplier', label: 'Supplier Leads', icon: Building2, color: 'orange', count: supplierLeads.length },
+    { key: 'customer', label: 'Customer Leads', icon: Users, color: 'sky', count: customerLeads.length },
+    { key: 'trading', label: 'Trading Leads', icon: Handshake, color: 'emerald', count: tradingLeads.length },
+  ];
+
+  // Extra columns per type
+  const extraHeader = tab === 'supplier' ? 'Products' : tab === 'customer' ? 'Needs' : 'Commodities';
+
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm p-6">
       {/* Tab headers */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex gap-2">
-          <button
-            onClick={() => { setTab('supplier'); setFilter('all'); }}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              tab === 'supplier' ? 'bg-orange-500/20 text-orange-400' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <Building2 className="h-4 w-4" />
-            Supplier Leads ({supplierLeads.length})
-          </button>
-          <button
-            onClick={() => { setTab('customer'); setFilter('all'); }}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              tab === 'customer' ? 'bg-sky-500/20 text-sky-400' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <Users className="h-4 w-4" />
-            Customer Leads ({customerLeads.length})
-          </button>
+          {tabs.map(({ key, label, icon: Icon, color, count }) => (
+            <button
+              key={key}
+              onClick={() => { setTab(key); setFilter('all'); }}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                tab === key ? `bg-${color}-500/20 text-${color}-400` : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label} ({count})
+            </button>
+          ))}
         </div>
 
         {/* Status filter */}
@@ -121,71 +125,86 @@ export default function LeadsTable({
                 <th className="pb-2 pr-4">Contact</th>
                 <th className="pb-2 pr-4">Email</th>
                 <th className="pb-2 pr-4">Phone</th>
-                <th className="pb-2 pr-4">Industry</th>
+                <th className="pb-2 pr-4">Location</th>
+                <th className="pb-2 pr-4">{extraHeader}</th>
                 <th className="pb-2 pr-4">Source</th>
-                <th className="pb-2 pr-4">Confidence</th>
+                <th className="pb-2 pr-4">Score</th>
                 <th className="pb-2 pr-4">Status</th>
                 <th className="pb-2">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((lead) => (
-                <tr key={lead.id as string} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                  <td className="py-2.5 pr-4">
-                    <Link
-                      href={`/dashboard/intelligence/${lead.id}`}
-                      className="text-zinc-200 hover:text-rose-400 font-medium transition-colors"
-                    >
-                      {lead.company_name as string}
-                    </Link>
-                  </td>
-                  <td className="py-2.5 pr-4 text-zinc-400">{(lead.contact_person as string) ?? '-'}</td>
-                  <td className="py-2.5 pr-4 text-zinc-400 text-xs">{(lead.email as string) ?? '-'}</td>
-                  <td className="py-2.5 pr-4 text-zinc-400 text-xs">{(lead.phone as string) ?? '-'}</td>
-                  <td className="py-2.5 pr-4 text-zinc-400">{(lead.industry as string) ?? '-'}</td>
-                  <td className="py-2.5 pr-4">
-                    {lead.source_url ? (
-                      <a
-                        href={lead.source_url as string}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-zinc-500 hover:text-zinc-300 text-xs"
+              {filtered.map((lead) => {
+                const extra = tab === 'supplier'
+                  ? ((lead.products_services as string[]) ?? []).join(', ')
+                  : tab === 'customer'
+                  ? ((lead.potential_needs as string[]) ?? []).join(', ')
+                  : ((lead.commodities as string[]) ?? []).join(', ');
+
+                return (
+                  <tr key={lead.id as string} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                    <td className="py-2.5 pr-4">
+                      <Link
+                        href={`/dashboard/intelligence/${lead.id}`}
+                        className="text-zinc-200 hover:text-rose-400 font-medium transition-colors"
                       >
-                        <ExternalLink className="h-3 w-3" />
-                        {(lead.source_type as string) ?? 'web'}
-                      </a>
-                    ) : (
-                      <span className="text-zinc-600 text-xs">-</span>
-                    )}
-                  </td>
-                  <td className="py-2.5 pr-4">
-                    <ConfidenceDot score={(lead.confidence_score as number) ?? 0} />
-                  </td>
-                  <td className="py-2.5 pr-4">
-                    <Badge status={(lead.status as string) ?? 'new'} />
-                  </td>
-                  <td className="py-2.5">
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => updateStatus(lead.id as string, 'approved')}
-                        disabled={actionLoading === lead.id}
-                        className="rounded-lg p-1.5 text-emerald-400 hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
-                        title="Approve"
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => updateStatus(lead.id as string, 'rejected')}
-                        disabled={actionLoading === lead.id}
-                        className="rounded-lg p-1.5 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
-                        title="Reject"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {lead.company_name as string}
+                      </Link>
+                      {(lead.website as string) ? (
+                        <a
+                          href={lead.website as string}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-1.5 inline-block text-zinc-600 hover:text-zinc-400"
+                        >
+                          <ExternalLink className="h-3 w-3 inline" />
+                        </a>
+                      ) : null}
+                    </td>
+                    <td className="py-2.5 pr-4 text-zinc-400 text-xs">
+                      {(lead.contact_person as string) ?? '-'}
+                      {(lead.designation as string) ? <span className="text-zinc-600 block">{lead.designation as string}</span> : null}
+                    </td>
+                    <td className="py-2.5 pr-4 text-zinc-400 text-xs">{(lead.email as string) ?? '-'}</td>
+                    <td className="py-2.5 pr-4 text-zinc-400 text-xs">{(lead.phone as string) ?? '-'}</td>
+                    <td className="py-2.5 pr-4 text-zinc-400 text-xs">
+                      {[lead.city, lead.state].filter(Boolean).join(', ') || (lead.country as string) || '-'}
+                    </td>
+                    <td className="py-2.5 pr-4 text-zinc-400 text-xs max-w-[200px] truncate" title={extra}>
+                      {extra || '-'}
+                    </td>
+                    <td className="py-2.5 pr-4 text-zinc-500 text-xs">
+                      {(lead.source_type as string) ?? '-'}
+                    </td>
+                    <td className="py-2.5 pr-4">
+                      <ConfidenceDot score={(lead.confidence_score as number) ?? 0} />
+                    </td>
+                    <td className="py-2.5 pr-4">
+                      <Badge status={(lead.status as string) ?? 'new'} />
+                    </td>
+                    <td className="py-2.5">
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => updateStatus(lead.id as string, 'approved')}
+                          disabled={actionLoading === lead.id}
+                          className="rounded-lg p-1.5 text-emerald-400 hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                          title="Approve"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => updateStatus(lead.id as string, 'rejected')}
+                          disabled={actionLoading === lead.id}
+                          className="rounded-lg p-1.5 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                          title="Reject"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -1,10 +1,12 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Building2, MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Building2, MapPin, Phone, Mail, Globe, Handshake } from 'lucide-react';
 import LeadActions from './LeadActions';
 
 export const dynamic = 'force-dynamic';
+
+type LeadTable = 'supplier_leads' | 'customer_leads' | 'trading_leads';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
@@ -40,34 +42,29 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label:
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  // Try supplier first, then customer
+  // Try all 3 tables: supplier → customer → trading
   let lead: Record<string, unknown> | null = null;
-  let table: 'supplier_leads' | 'customer_leads' = 'supplier_leads';
+  let table: LeadTable = 'supplier_leads';
 
-  const { data: supplier } = await supabaseAdmin
-    .from('supplier_leads')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
-
-  if (supplier) {
-    lead = supplier;
-    table = 'supplier_leads';
-  } else {
-    const { data: customer } = await supabaseAdmin
-      .from('customer_leads')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-    if (customer) {
-      lead = customer;
-      table = 'customer_leads';
+  const tables: LeadTable[] = ['supplier_leads', 'customer_leads', 'trading_leads'];
+  for (const t of tables) {
+    const { data } = await supabaseAdmin.from(t).select('*').eq('id', id).maybeSingle();
+    if (data) {
+      lead = data;
+      table = t;
+      break;
     }
   }
 
   if (!lead) return notFound();
 
-  const isSupplier = table === 'supplier_leads';
+  const typeLabel = table === 'supplier_leads' ? 'Supplier Lead'
+    : table === 'customer_leads' ? 'Customer Lead'
+    : 'Trading Lead';
+
+  const typeColor = table === 'supplier_leads' ? 'bg-orange-500/20 text-orange-400'
+    : table === 'customer_leads' ? 'bg-sky-500/20 text-sky-400'
+    : 'bg-emerald-500/20 text-emerald-400';
 
   return (
     <div className="p-8 max-w-4xl space-y-6">
@@ -86,11 +83,11 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold text-white">{lead.company_name as string}</h1>
             <Badge status={lead.status as string} />
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${isSupplier ? 'bg-orange-500/20 text-orange-400' : 'bg-sky-500/20 text-sky-400'}`}>
-              {isSupplier ? 'Supplier Lead' : 'Customer Lead'}
+            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${typeColor}`}>
+              {typeLabel}
             </span>
           </div>
-          {lead.industry ? (
+          {(lead.industry as string) ? (
             <p className="text-sm text-zinc-400">{lead.industry as string}</p>
           ) : null}
         </div>
@@ -110,7 +107,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide mb-3">Contact Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
           <InfoRow icon={Building2} label="Contact Person" value={(lead.contact_person as string) ?? null} />
-          {!isSupplier ? <InfoRow icon={Building2} label="Designation" value={(lead.designation as string) ?? null} /> : null}
+          {table !== 'supplier_leads' ? <InfoRow icon={Building2} label="Designation" value={(lead.designation as string) ?? null} /> : null}
           <InfoRow icon={Mail} label="Email" value={(lead.email as string) ?? null} />
           <InfoRow icon={Phone} label="Phone" value={(lead.phone as string) ?? null} />
           <InfoRow icon={Globe} label="Website" value={(lead.website as string) ?? null} />
@@ -121,36 +118,54 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         </div>
       </div>
 
-      {/* Products / Needs */}
+      {/* Products / Needs / Commodities */}
       <div className={`${glass} p-6`}>
         <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide mb-3">
-          {isSupplier ? 'Products & Services' : 'Potential Needs'}
+          {table === 'supplier_leads' ? 'Products & Services' : table === 'customer_leads' ? 'Potential Needs' : 'Commodities & Trading'}
         </h2>
-        {isSupplier && (lead.products_services as string[] | null)?.length ? (
+
+        {table === 'supplier_leads' && (lead.products_services as string[] | null)?.length ? (
           <div className="flex flex-wrap gap-2">
             {(lead.products_services as string[]).map((p, i) => (
               <span key={i} className="rounded-lg bg-zinc-800 px-3 py-1 text-sm text-zinc-300">{p}</span>
             ))}
           </div>
-        ) : !isSupplier && (lead.potential_needs as string[] | null)?.length ? (
+        ) : table === 'customer_leads' && (lead.potential_needs as string[] | null)?.length ? (
           <div className="flex flex-wrap gap-2">
             {(lead.potential_needs as string[]).map((p, i) => (
+              <span key={i} className="rounded-lg bg-zinc-800 px-3 py-1 text-sm text-zinc-300">{p}</span>
+            ))}
+          </div>
+        ) : table === 'trading_leads' && (lead.commodities as string[] | null)?.length ? (
+          <div className="flex flex-wrap gap-2">
+            {(lead.commodities as string[]).map((p, i) => (
               <span key={i} className="rounded-lg bg-zinc-800 px-3 py-1 text-sm text-zinc-300">{p}</span>
             ))}
           </div>
         ) : (
           <p className="text-sm text-zinc-500">Not available</p>
         )}
-        {!isSupplier && lead.estimated_value ? (
+
+        {/* Extra fields per type */}
+        {table === 'customer_leads' && (lead.estimated_value as string) ? (
           <div className="mt-3">
             <span className="text-xs text-zinc-500">Estimated Value: </span>
             <span className="text-sm text-zinc-300 capitalize">{lead.estimated_value as string}</span>
           </div>
         ) : null}
+
+        {table === 'trading_leads' ? (
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+            <InfoRow icon={Handshake} label="Trade Type" value={(lead.trade_type as string) ?? null} />
+            <InfoRow icon={Building2} label="Typical Volume" value={(lead.typical_volume as string) ?? null} />
+            <InfoRow icon={Globe} label="Origin Countries" value={(lead.origin_countries as string[] | null)?.join(', ') ?? null} />
+            <InfoRow icon={Building2} label="Certifications" value={(lead.certifications as string) ?? null} />
+          </div>
+        ) : null}
       </div>
 
       {/* Relevance Notes */}
-      {lead.relevance_notes ? (
+      {(lead.relevance_notes as string) ? (
         <div className={`${glass} p-6`}>
           <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide mb-3">Relevance Notes</h2>
           <p className="text-sm text-zinc-300 leading-relaxed">{lead.relevance_notes as string}</p>
@@ -162,7 +177,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide mb-3">Source</h2>
         <div className="flex items-center gap-4">
           <span className="text-xs text-zinc-500 uppercase">{lead.source_type as string}</span>
-          {lead.source_url ? (
+          {(lead.source_url as string) ? (
             <a
               href={lead.source_url as string}
               target="_blank"

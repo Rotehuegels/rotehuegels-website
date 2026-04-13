@@ -125,7 +125,16 @@ export default function ShipmentDetailPage() {
               {shipment.status.replace(/_/g, ' ')}
             </span>
           </div>
-          <p className="text-sm text-zinc-400">{shipment.carrier} — {shipment.description ?? shipment.supplier_name}</p>
+          <p className="text-sm text-zinc-400">
+            {shipment.carrier}
+            {(shipment.purchase_orders?.suppliers?.legal_name || shipment.supplier_name) && (
+              <> — From: <span className="text-zinc-200">{shipment.purchase_orders?.suppliers?.legal_name ?? shipment.supplier_name}</span></>
+            )}
+            {shipment.orders?.client_name && (
+              <> → To: <span className="text-emerald-400">{shipment.orders.client_name}</span></>
+            )}
+          </p>
+          {shipment.description && <p className="text-xs text-zinc-500">{shipment.description}</p>}
         </div>
         <button
           onClick={fetchTracking}
@@ -170,7 +179,10 @@ export default function ShipmentDetailPage() {
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-zinc-500" /><span className="text-zinc-500 w-24">Carrier</span><span className="text-zinc-200">{shipment.carrier}</span></div>
             <div className="flex items-center gap-2"><Package className="h-4 w-4 text-zinc-500" /><span className="text-zinc-500 w-24">Tracking No</span><span className="text-zinc-200 font-mono">{shipment.tracking_no}</span></div>
-            <div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-zinc-500" /><span className="text-zinc-500 w-24">Supplier</span><span className="text-zinc-200">{shipment.supplier_name ?? '—'}</span></div>
+            <div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-zinc-500" /><span className="text-zinc-500 w-24">Supplier</span><span className="text-zinc-200">{shipment.purchase_orders?.suppliers?.legal_name ?? shipment.supplier_name ?? '—'}</span></div>
+            {shipment.purchase_orders?.po_no && <div className="flex items-center gap-2"><Package className="h-4 w-4 text-zinc-500" /><span className="text-zinc-500 w-24">PO Ref</span><a href={`/d/purchase-orders/${shipment.po_id}`} className="text-rose-400 hover:text-rose-300">{shipment.purchase_orders.po_no}</a></div>}
+            {shipment.orders?.client_name && <div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-emerald-500" /><span className="text-zinc-500 w-24">Customer</span><span className="text-emerald-400">{shipment.orders.client_name}</span></div>}
+            {shipment.orders?.order_no && <div className="flex items-center gap-2"><Package className="h-4 w-4 text-emerald-500" /><span className="text-zinc-500 w-24">Order Ref</span><a href={`/d/orders/${shipment.order_id}`} className="text-rose-400 hover:text-rose-300">{shipment.orders.order_no}</a></div>}
             <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-zinc-500" /><span className="text-zinc-500 w-24">Ship Date</span><span className="text-zinc-200">{fmtDate(shipment.ship_date)}</span></div>
             <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-zinc-500" /><span className="text-zinc-500 w-24">Expected</span><span className="text-zinc-200">{fmtDate(shipment.expected_date)}</span></div>
             {shipment.delivered_date && (

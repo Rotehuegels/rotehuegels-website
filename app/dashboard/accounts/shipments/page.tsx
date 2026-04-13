@@ -146,7 +146,18 @@ export default function ShipmentsPage() {
                         <Icon className="h-3 w-3" /> {s.status.replace('_', ' ')}
                       </span>
                     </div>
-                    {s.supplier_name && <p className="text-sm text-white font-medium">{s.supplier_name}</p>}
+                    {(s.purchase_orders?.suppliers?.legal_name || s.supplier_name) && (
+                      <p className="text-sm text-white font-medium">
+                        <span className="text-zinc-500 text-xs">From:</span> {s.purchase_orders?.suppliers?.legal_name ?? s.supplier_name}
+                        {s.purchase_orders?.po_no && <span className="text-zinc-600 text-xs ml-1">({s.purchase_orders.po_no})</span>}
+                      </p>
+                    )}
+                    {s.orders?.client_name && (
+                      <p className="text-sm text-emerald-400/80">
+                        <span className="text-zinc-500 text-xs">To:</span> {s.orders.client_name}
+                        {s.orders?.order_no && <span className="text-zinc-600 text-xs ml-1">({s.orders.order_no})</span>}
+                      </p>
+                    )}
                     {s.description && <p className="text-xs text-zinc-400">{s.description}</p>}
                     <div className="flex gap-3 text-xs text-zinc-500 mt-1">
                       {s.ship_date && <span>Shipped: {fmtDate(s.ship_date)}</span>}

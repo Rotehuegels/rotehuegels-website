@@ -17,7 +17,7 @@ import {
   Shield, BarChart3, Globe, Eye, Mail, History,
   Radar, AlertTriangle,
   FileCheck, FolderKanban, FolderPlus, CalendarDays, Factory, FlaskConical,
-  ChevronDown,
+  ChevronDown, BookOpenCheck, HandCoins, CreditCard,
 } from 'lucide-react';
 import LogoutButton from './LogoutButton';
 
@@ -101,13 +101,16 @@ const NAV: NavItem[] = [
   {
     label: 'Finance', icon: Wallet,
     children: [
-      { label: 'Expenses',       href: '/d/expenses', icon: Receipt },
-      { label: 'Bank Statement', href: '/d/bank',     icon: Landmark },
-      { label: 'GST Report',     href: '/d/gst',          icon: BadgePercent },
-      { label: 'GST Filing',     href: '/d/gst/filing', icon: BadgePercent },
-      { label: 'P&L Statement',  href: '/d/pl',       icon: TrendingUp },
-      { label: 'Investments',        href: '/d/investments',          icon: BarChart2 },
-      { label: 'Stock Intelligence', href: '/d/stock-intel', icon: AlertTriangle },
+      { label: 'Expenses',         href: '/d/expenses',       icon: Receipt },
+      { label: 'Cash Book',        href: '/d/cash-book',      icon: BookOpenCheck },
+      { label: 'Bank Statement',   href: '/d/bank',           icon: Landmark },
+      { label: 'Customer Ledger',  href: '/d/customer-ledger', icon: HandCoins },
+      { label: 'Creditors Ledger', href: '/d/creditors-ledger', icon: CreditCard },
+      { label: 'GST Report',       href: '/d/gst',            icon: BadgePercent },
+      { label: 'GST Filing',       href: '/d/gst/filing',     icon: BadgePercent },
+      { label: 'P&L Statement',    href: '/d/pl',             icon: TrendingUp },
+      { label: 'Investments',      href: '/d/investments',    icon: BarChart2 },
+      { label: 'Stock Intelligence', href: '/d/stock-intel',  icon: AlertTriangle },
     ],
   },
 

@@ -40,7 +40,7 @@ export async function GET() {
 
   const { data, error } = await supabaseAdmin
     .from('customers')
-    .select('id, customer_id, name, gstin, contact_person, email, phone, state, created_at')
+    .select('id, customer_id, name, gstin, pan, billing_address, contact_person, email, phone, state, state_code, created_at')
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

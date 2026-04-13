@@ -63,6 +63,7 @@ const nextConfig = {
       { source: '/d/suppliers/new', destination: '/dashboard/accounts/suppliers/new' },
       { source: '/d/suppliers/:id', destination: '/dashboard/accounts/suppliers/:id' },
       { source: '/d/suppliers/:id/edit', destination: '/dashboard/accounts/suppliers/:id/edit' },
+      { source: '/d/reinvoice', destination: '/dashboard/accounts/purchase-orders/reinvoice' },
       { source: '/d/stock', destination: '/dashboard/accounts/stock' },
       { source: '/d/stock/:id/edit', destination: '/dashboard/accounts/stock/:id/edit' },
 

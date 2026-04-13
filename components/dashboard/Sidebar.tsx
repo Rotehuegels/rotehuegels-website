@@ -91,6 +91,7 @@ const NAV: NavItem[] = [
     label: 'Procurement', icon: Package,
     children: [
       { label: 'Purchase Orders',  href: '/d/purchase-orders', icon: ShoppingCart },
+      { label: 'Re-Invoice',       href: '/d/reinvoice',       icon: ReceiptText },
       { label: 'Suppliers',        href: '/d/suppliers',       icon: Truck },
       { label: 'Shipments',        href: '/d/shipments',       icon: Package },
       { label: 'Stock & Inventory',href: '/d/stock',           icon: Package },

@@ -125,10 +125,30 @@ export async function sendOrderConfirmation(orderId: string) {
   if (!clientEmail) throw new Error("Order has no linked customer email address.");
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const items = (order.items ?? []) as Array<{
-    name: string; quantity: number; unit: string; unit_price: number;
-    taxable_amount: number; gst_rate: number; total: number;
-  }>;
+  const rawItems = (order.items ?? []) as Array<Record<string, any>>;
+  const orderGstRate = Number(order.gst_rate ?? 18);
+  const items = rawItems.map(r => ({
+    name: r.name ?? r.description ?? '',
+    quantity: r.quantity ?? 0,
+    unit: r.unit ?? '',
+    unit_price: r.unit_price ?? r.rate ?? 0,
+    taxable_amount: r.taxable_amount ?? r.base ?? 0,
+    gst_rate: r.gst_rate ?? orderGstRate,
+    total: r.total ?? 0,
+  }));
+
+  // Fetch payments and adjustments
+  const { data: pmts } = await supabaseAdmin
+    .from("order_payments")
+    .select("*")
+    .eq("order_id", orderId)
+    .order("payment_date");
+  const payments = pmts ?? [];
+  const totalPaid = payments.reduce((s: number, p: { amount_received: number }) => s + (p.amount_received ?? 0), 0);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adjustments = ((order as any).adjustments ?? []) as Array<{ description: string; amount: number }>;
+  const totalAdj = adjustments.reduce((s: number, a: { amount: number }) => s + (a.amount ?? 0), 0);
+  const netDue = (order.total_value_incl_gst ?? 0) - totalPaid - totalAdj;
 
   const itemsHtml = items
     .map(
@@ -143,6 +163,33 @@ export async function sendOrderConfirmation(orderId: string) {
         </tr>`
     )
     .join("");
+
+  const paymentHtml = (totalPaid > 0 || totalAdj > 0) ? `
+    <div style="border:1px solid #ddd;border-radius:4px;padding:10px 12px;margin:12px 0;">
+      <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Payment &amp; Adjustment Summary</div>
+      <table style="width:100%;font-size:11px;border-collapse:collapse;">
+        <tr>
+          <td style="padding:3px 0;font-weight:700;">Invoice Total</td>
+          <td style="padding:3px 0;text-align:right;font-weight:700;font-family:monospace;">${fmt(order.total_value_incl_gst ?? 0)}</td>
+        </tr>
+        ${payments.map((p: { payment_date: string; amount_received: number; payment_mode?: string }) =>
+          `<tr>
+            <td style="padding:3px 0;color:#555;">Less: Payment Received (${fmtDate(p.payment_date)})${p.payment_mode ? ` — ${p.payment_mode}` : ''}</td>
+            <td style="padding:3px 0;text-align:right;color:#16a34a;font-family:monospace;">−${fmt(p.amount_received)}</td>
+          </tr>`
+        ).join('')}
+        ${adjustments.map((a: { description: string; amount: number }) =>
+          `<tr>
+            <td style="padding:3px 0;color:#555;">Less: ${esc(a.description)}</td>
+            <td style="padding:3px 0;text-align:right;color:#16a34a;font-family:monospace;">−${fmt(a.amount)}</td>
+          </tr>`
+        ).join('')}
+        <tr style="border-top:2px solid #111;">
+          <td style="padding:5px 0 3px;font-weight:900;font-size:12px;">Balance Due</td>
+          <td style="padding:5px 0 3px;text-align:right;font-weight:900;font-family:monospace;font-size:12px;color:${netDue > 0 ? '#dc2626' : '#16a34a'};">${fmt(netDue)}</td>
+        </tr>
+      </table>
+    </div>` : '';
 
   const html = `${letterhead(CO, "Order Confirmation")}
     <p style="font-size:13px;">Dear <strong>${esc(order.client_name)}</strong>,</p>
@@ -173,6 +220,8 @@ export async function sendOrderConfirmation(orderId: string) {
         </tr>
       </tfoot>
     </table>
+
+    ${paymentHtml}
 
     ${order.payment_terms ? `<p style="font-size:11px;color:#444;"><strong>Payment Terms:</strong> ${esc(order.payment_terms)}</p>` : ""}
 

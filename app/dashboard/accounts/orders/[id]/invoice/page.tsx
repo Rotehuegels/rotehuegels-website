@@ -217,7 +217,7 @@ export default async function InvoicePage({
       <ReportContainer filename={`Invoice-${invoiceNo}`}>
         <div
           className="bg-white text-zinc-900"
-          style={{ padding: '8mm 14mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}
+          style={{ padding: '10mm 14mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}
         >
 
           {/* ── Header ─────────────────────────────────────────────────── */}

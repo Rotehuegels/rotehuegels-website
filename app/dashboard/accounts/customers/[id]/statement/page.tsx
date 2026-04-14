@@ -244,7 +244,7 @@ export default async function CustomerStatementPage({
         </div>
       </div>
 
-      <ReportContainer filename={`Statement-${customer.name.replace(/\s+/g, '-')}`}>
+      <ReportContainer filename={`Statement-${customer.name.replace(/\s+/g, '-')}`} fitToPage={false}>
         <div className="bg-white text-zinc-900">
 
           {/* ══════════════════════ PAGE 1 — SOA ══════════════════════ */}

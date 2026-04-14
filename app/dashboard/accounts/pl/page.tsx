@@ -219,7 +219,7 @@ export default async function PLPage({ searchParams }: { searchParams: Promise<{
       </div>
 
       {/* A4 Document */}
-      <ReportContainer filename={`PL-Statement-${fy}`}>
+      <ReportContainer filename={`PL-Statement-${fy}`} fitToPage={false}>
       <div className="bg-white overflow-hidden">
 
         {/* Letterhead */}

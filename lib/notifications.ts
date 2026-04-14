@@ -191,9 +191,17 @@ export async function sendOrderConfirmation(orderId: string) {
       </table>
     </div>` : '';
 
-  const html = `${letterhead(CO, "Order Confirmation")}
+  const isResend = !!order.last_emailed_at;
+  const resendNotice = isResend
+    ? `<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#856404;">
+        <strong>Note:</strong> This is a revised order confirmation. Please disregard any previous communication for this order.
+      </div>`
+    : '';
+
+  const html = `${letterhead(CO, isResend ? "Revised Order Confirmation" : "Order Confirmation")}
+    ${resendNotice}
     <p style="font-size:13px;">Dear <strong>${esc(order.client_name)}</strong>,</p>
-    <p style="font-size:12px;color:#444;">Thank you for your order. Please find the details below.</p>
+    <p style="font-size:12px;color:#444;">${isResend ? 'Please find the revised details for your order below.' : 'Thank you for your order. Please find the details below.'}</p>
 
     <table style="font-size:12px;line-height:1.8;margin:12px 0;">
       <tr><td style="color:#666;padding-right:14px;">Order No</td><td style="font-weight:700;font-family:monospace;">${esc(order.order_no)}</td></tr>
@@ -235,8 +243,9 @@ export async function sendOrderConfirmation(orderId: string) {
     .join("\n");
 
   const text = [
-    `ORDER CONFIRMATION — ${order.order_no}`,
+    `${isResend ? 'REVISED ' : ''}ORDER CONFIRMATION — ${order.order_no}`,
     ``,
+    ...(isResend ? ['NOTE: This is a revised order confirmation. Please disregard any previous communication for this order.', ''] : []),
     `Dear ${order.client_name},`,
     ``,
     `Thank you for your order. Details:`,
@@ -255,11 +264,17 @@ export async function sendOrderConfirmation(orderId: string) {
 
   await send(
     clientEmail,
-    `Order Confirmation — ${order.order_no} | ${CO.name}`,
+    `${isResend ? 'Revised: ' : ''}Order Confirmation — ${order.order_no} | ${CO.name}`,
     html,
     text,
     SALES_FROM
   );
+
+  // Stamp last_emailed_at so next send knows it's a resend
+  await supabaseAdmin
+    .from("orders")
+    .update({ last_emailed_at: new Date().toISOString() })
+    .eq("id", orderId);
 }
 
 /* ── 2. Payment Receipt ──────────────────────────────────────────────────── */

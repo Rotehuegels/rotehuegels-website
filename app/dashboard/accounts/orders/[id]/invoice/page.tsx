@@ -217,11 +217,11 @@ export default async function InvoicePage({
       <ReportContainer filename={`Invoice-${invoiceNo}`}>
         <div
           className="bg-white text-zinc-900"
-          style={{ padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}
+          style={{ padding: '8mm 14mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}
         >
 
           {/* ── Header ─────────────────────────────────────────────────── */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '10px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '6px', marginBottom: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={logoSrc} alt="Rotehügels" style={{ height: '52px', width: 'auto', objectFit: 'contain', marginTop: '2px', flexShrink: 0 }} />
@@ -255,7 +255,7 @@ export default async function InvoicePage({
           </div>
 
           {/* ── Invoice meta ────────────────────────────────────────────── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
 
             {/* Bill To */}
             <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '8px 10px' }}>
@@ -307,7 +307,7 @@ export default async function InvoicePage({
           </div>
 
           {/* ── Items table ──────────────────────────────────────────────── */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '12px', fontSize: '9.5px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '6px', fontSize: '9.5px' }}>
             <thead>
               <tr style={{ background: '#1a1a1a', color: 'white' }}>
                 <th style={{ border: '1px solid #555', padding: '5px 6px', textAlign: 'left', width: '20px' }}>#</th>
@@ -337,33 +337,33 @@ export default async function InvoicePage({
             <tbody>
               {items.length > 0 ? items.map((item, idx) => (
                 <tr key={idx}>
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>{idx + 1}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', verticalAlign: 'top' }}>{idx + 1}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', verticalAlign: 'top' }}>
                     <div style={{ fontWeight: 700, color: '#111', whiteSpace: 'pre-line', lineHeight: 1.5 }}>{item.description}</div>
                   </td>
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', verticalAlign: 'top' }}>{item.qty ?? '—'}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 700, verticalAlign: 'top' }}>{item.hsn}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'center', verticalAlign: 'top' }}>{item.qty ?? '—'}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 700, verticalAlign: 'top' }}>{item.hsn}</td>
                   {hasRateDiscount && (
                     <>
-                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right', verticalAlign: 'top' }}>{item.rate != null ? fmt(item.rate) : '—'}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', verticalAlign: 'top' }}>{item.discount ?? '—'}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right', verticalAlign: 'top' }}>{item.rate != null ? fmt(item.rate) : '—'}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'center', verticalAlign: 'top' }}>{item.discount ?? '—'}</td>
                     </>
                   )}
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(item.base)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right' }}>{fmt(item.base)}</td>
                   {isIntra ? (
                     <>
-                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(item.cgst)}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(item.sgst)}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right' }}>{fmt(item.cgst)}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right' }}>{fmt(item.sgst)}</td>
                     </>
                   ) : (
-                    <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(item.igst)}</td>
+                    <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right' }}>{fmt(item.igst)}</td>
                   )}
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right', fontWeight: 700 }}>{fmt(item.total)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right', fontWeight: 700 }}>{fmt(item.total)}</td>
                 </tr>
               )) : (
                 <tr>
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>1</td>
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', verticalAlign: 'top' }}>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', verticalAlign: 'top' }}>1</td>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', verticalAlign: 'top' }}>
                     <div style={{ fontWeight: 700, color: '#111', marginBottom: '3px', whiteSpace: 'pre-line' }}>{order.description}</div>
                     {filteredStages.length > 1 && (
                       <div style={{ marginTop: '4px', paddingLeft: '8px' }}>
@@ -382,17 +382,17 @@ export default async function InvoicePage({
                       </div>
                     )}
                   </td>
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 700 }}>{sacHsn}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(effectiveBase)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 700 }}>{sacHsn}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right' }}>{fmt(effectiveBase)}</td>
                   {isIntra ? (
                     <>
-                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(effectiveCgst)}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(effectiveSgst)}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right' }}>{fmt(effectiveCgst)}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right' }}>{fmt(effectiveSgst)}</td>
                     </>
                   ) : (
-                    <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right' }}>{fmt(effectiveIgst)}</td>
+                    <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right' }}>{fmt(effectiveIgst)}</td>
                   )}
-                  <td style={{ border: '1px solid #ddd', padding: '7px 6px', textAlign: 'right', fontWeight: 700 }}>{fmt(effectiveTotal)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '4px 6px', textAlign: 'right', fontWeight: 700 }}>{fmt(effectiveTotal)}</td>
                 </tr>
               )}
             </tbody>
@@ -414,8 +414,8 @@ export default async function InvoicePage({
           </table>
 
           {/* ── Amount in words + TDS ────────────────────────────────────── */}
-          <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '8px 10px', marginBottom: '12px' }}>
-            <div style={{ fontSize: '8px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '3px' }}>
+          <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '5px 10px', marginBottom: '6px' }}>
+            <div style={{ fontSize: '8px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
               Amount in Words
             </div>
             <div style={{ fontSize: '11px', fontWeight: 800, color: '#111' }}>
@@ -433,8 +433,8 @@ export default async function InvoicePage({
           {(totalPaid > 0 || totalAdjustments > 0) && (() => {
             const netDue = effectiveTotal - totalPaid - totalAdjustments;
             return (
-            <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '8px 10px', marginBottom: '12px' }}>
-              <div style={{ fontSize: '8px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>
+            <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '5px 10px', marginBottom: '6px' }}>
+              <div style={{ fontSize: '8px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>
                 Payment &amp; Adjustment Summary
               </div>
               <table style={{ width: '100%', fontSize: '9.5px', borderCollapse: 'collapse' }}>
@@ -474,13 +474,13 @@ export default async function InvoicePage({
 
           {/* ── Advance adjustment note (inter-state partial orders) ─────── */}
           {order.advance_note && (
-            <div style={{ border: '1px dashed #ccc', borderRadius: '4px', padding: '7px 10px', marginBottom: '12px', fontSize: '8.5px', color: '#555', lineHeight: 1.6 }}>
+            <div style={{ border: '1px dashed #ccc', borderRadius: '4px', padding: '5px 10px', marginBottom: '6px', fontSize: '8.5px', color: '#555', lineHeight: 1.5 }}>
               <strong style={{ color: '#333' }}>Advance Reference: </strong>{order.advance_note}
             </div>
           )}
 
           {/* ── Bank details + Declaration + Signature ───────────────────── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
 
             {/* Bank */}
             <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '8px 10px' }}>
@@ -529,7 +529,7 @@ export default async function InvoicePage({
                 </div>
                 {true && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={sigBase64} alt="" style={{ display: 'block', height: '52px', width: 'auto', objectFit: 'contain', marginLeft: 'auto', marginTop: '8px', mixBlendMode: 'multiply' }} />
+                  <img src={sigBase64} alt="" style={{ display: 'block', height: '40px', width: 'auto', objectFit: 'contain', marginLeft: 'auto', marginTop: '4px', mixBlendMode: 'multiply' }} />
                 )}
                 <div style={{ borderBottom: '1px solid #bbb', marginBottom: '4px' }}></div>
                 <div style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Sivakumar Shanmugam</div>
@@ -540,7 +540,7 @@ export default async function InvoicePage({
           </div>
 
           {/* ── Footer ──────────────────────────────────────────────────── */}
-          <div style={{ fontSize: '7.5px', color: '#999', marginBottom: '6px', lineHeight: 1.5 }}>
+          <div style={{ fontSize: '7px', color: '#999', marginBottom: '4px', lineHeight: 1.4 }}>
             * UPI payments are subject to per-transaction limits (typically ₹1 lakh). For amounts exceeding the limit, you may split into multiple UPI transfers or use NEFT / RTGS for the full amount in a single transfer.
           </div>
 

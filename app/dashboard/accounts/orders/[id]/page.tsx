@@ -39,11 +39,22 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const payments = paymentsRes.data ?? [];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const items = (order.items ?? []) as Array<{
-    name: string; item_type: string; hsn_code?: string; sac_code?: string;
-    unit: string; quantity: number; unit_price: number;
-    taxable_amount: number; gst_rate: number; gst_amount: number; total: number;
-  }>;
+  const rawItems = (order.items ?? []) as Array<Record<string, any>>;
+  const orderGstRate = Number(order.gst_rate ?? 18);
+  const items = rawItems.map(r => ({
+    name: r.name ?? r.description ?? '',
+    item_type: r.item_type ?? '',
+    hsn_code: r.hsn_code ?? r.hsn ?? '',
+    sac_code: r.sac_code ?? '',
+    unit: r.unit ?? '',
+    quantity: r.quantity ?? 0,
+    unit_price: r.unit_price ?? r.rate ?? 0,
+    discount: r.discount ?? null,
+    taxable_amount: r.taxable_amount ?? r.base ?? 0,
+    gst_rate: r.gst_rate ?? orderGstRate,
+    gst_amount: r.gst_amount ?? 0,
+    total: r.total ?? 0,
+  }));
 
   const totalReceived = payments.reduce((s, p) => s + (p.amount_received ?? 0), 0);
   const totalTds = payments.reduce((s, p) => s + (p.tds_deducted ?? 0), 0);

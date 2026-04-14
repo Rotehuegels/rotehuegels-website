@@ -46,7 +46,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
       suppliers(legal_name, state),
       orders(order_no, client_name)
     `)
-    .order('created_at', { ascending: false });
+    .order('po_date', { ascending: false });
 
   let filtered = allPos ?? [];
 
@@ -131,7 +131,6 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
               <tr className="border-b border-zinc-800 bg-zinc-900/60">
                 <th className="px-5 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">PO No</th>
                 <th className="px-5 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Supplier</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Date</th>
                 <th className="px-5 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Linked Order</th>
                 <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Total</th>
                 <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Paid</th>
@@ -152,6 +151,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
                   <tr key={po.id} className="hover:bg-zinc-800/30 transition-colors">
                     <td className="px-5 py-3.5">
                       <span className="font-mono text-xs text-amber-400 font-semibold">{po.po_no}</span>
+                      <div className="text-[11px] text-zinc-500 mt-0.5">{fmtDate(po.po_date)}</div>
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="text-white text-sm">{supplier?.legal_name ?? '—'}</div>
@@ -159,7 +159,6 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
                         <div className="text-xs text-zinc-500">{supplier.state}</div>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-zinc-400 text-xs">{fmtDate(po.po_date)}</td>
                     <td className="px-5 py-3.5">
                       {order ? (
                         <div>

@@ -101,10 +101,13 @@ function bankDetailsHtml(CO: CO) {
     </div>`;
 }
 
-async function send(to: string, subject: string, html: string, text: string) {
+async function send(to: string, subject: string, html: string, text: string, from?: string) {
   const t = getTransporter();
-  await t.sendMail({ from: EMAIL_FROM, to, subject, html, text });
+  await t.sendMail({ from: from ?? EMAIL_FROM, to, subject, html, text });
 }
+
+const PROCUREMENT_FROM = "Rotehügels Procurements <procurements@rotehuegels.com>";
+const SALES_FROM = "Rotehügels Sales <sales@rotehuegels.com>";
 
 /* ── 1. Order Confirmation / Invoice Email ───────────────────────────────── */
 
@@ -204,7 +207,8 @@ export async function sendOrderConfirmation(orderId: string) {
     clientEmail,
     `Order Confirmation — ${order.order_no} | ${CO.name}`,
     html,
-    text
+    text,
+    SALES_FROM
   );
 }
 
@@ -279,7 +283,8 @@ export async function sendPaymentReceipt(paymentId: string) {
     clientEmail,
     `Payment Received — ${order.order_no} | ${CO.name}`,
     html,
-    text
+    text,
+    SALES_FROM
   );
 }
 
@@ -352,7 +357,8 @@ export async function sendPaymentReminder(orderId: string) {
     clientEmail,
     `Payment Reminder — ${order.order_no} | ${fmt(pending)} due | ${CO.name}`,
     html,
-    text
+    text,
+    SALES_FROM
   );
 }
 
@@ -454,7 +460,8 @@ export async function sendQuoteEmail(quoteId: string) {
     recipientEmail,
     `Quotation ${quote.quote_no} | ${CO.name}`,
     html,
-    text
+    text,
+    SALES_FROM
   );
 }
 
@@ -557,7 +564,8 @@ export async function sendPOConfirmation(poId: string) {
     supplierEmail,
     `Purchase Order ${po.po_no} | ${CO.name}`,
     html,
-    text
+    text,
+    PROCUREMENT_FROM
   );
 }
 

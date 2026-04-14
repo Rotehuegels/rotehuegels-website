@@ -66,15 +66,21 @@ export default async function InvoicePage({
   const logoSrc   = getLogoBase64();
   const sigBase64 = getSignatureBase64();
 
-  const [orderRes, stagesRes] = await Promise.all([
+  const [orderRes, stagesRes, paymentsRes] = await Promise.all([
     supabaseAdmin.from('orders').select('*').eq('id', id).single(),
     supabaseAdmin.from('order_payment_stages').select('*').eq('order_id', id).order('stage_number'),
+    supabaseAdmin.from('order_payments').select('*').eq('order_id', id).order('payment_date'),
   ]);
 
   if (orderRes.error || !orderRes.data) notFound();
 
-  const order  = orderRes.data;
-  const stages = stagesRes.data ?? [];
+  const order    = orderRes.data;
+  const stages   = stagesRes.data ?? [];
+  const payments = paymentsRes.data ?? [];
+  const totalPaid = payments.reduce((s: number, p: { amount_received: number }) => s + (p.amount_received ?? 0), 0);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adjustments = ((orderRes.data as any).adjustments ?? []) as Array<{ description: string; amount: number; reference?: string }>;
+  const totalAdjustments = adjustments.reduce((s, a) => s + (a.amount ?? 0), 0);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawItems = (order as any).items as Array<Record<string, any>> | null;
   const isIntraOrder = (order.igst_amount ?? 0) === 0 && (order.cgst_amount ?? 0) > 0;
@@ -422,6 +428,49 @@ export default async function InvoicePage({
               </div>
             )}
           </div>
+
+          {/* ── Payment & Adjustment Summary ──────────────────────── */}
+          {(totalPaid > 0 || totalAdjustments > 0) && (() => {
+            const netDue = effectiveTotal - totalPaid - totalAdjustments;
+            return (
+            <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '8px 10px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '8px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>
+                Payment &amp; Adjustment Summary
+              </div>
+              <table style={{ width: '100%', fontSize: '9.5px', borderCollapse: 'collapse' }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '3px 0', color: '#111', fontWeight: 700 }}>Invoice Total</td>
+                    <td style={{ padding: '3px 0', textAlign: 'right', fontWeight: 700, fontFamily: 'monospace' }}>{fmt(effectiveTotal)}</td>
+                  </tr>
+                  {payments.map((p: { id: string; payment_date: string; amount_received: number; payment_mode?: string }, idx: number) => (
+                    <tr key={p.id ?? idx}>
+                      <td style={{ padding: '3px 0', color: '#555' }}>
+                        Less: Payment Received ({fmtDate(p.payment_date)})
+                        {p.payment_mode ? <span style={{ fontSize: '8px', color: '#888' }}> — {p.payment_mode}</span> : null}
+                      </td>
+                      <td style={{ padding: '3px 0', textAlign: 'right', color: '#16a34a', fontFamily: 'monospace' }}>−{fmt(p.amount_received)}</td>
+                    </tr>
+                  ))}
+                  {adjustments.map((a, idx) => (
+                    <tr key={`adj-${idx}`}>
+                      <td style={{ padding: '3px 0', color: '#555' }}>
+                        Less: {a.description}
+                      </td>
+                      <td style={{ padding: '3px 0', textAlign: 'right', color: '#16a34a', fontFamily: 'monospace' }}>−{fmt(a.amount)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{ borderTop: '1.5px solid #111' }}>
+                    <td style={{ padding: '5px 0 3px', fontWeight: 900, color: '#111', fontSize: '10.5px' }}>Balance Due</td>
+                    <td style={{ padding: '5px 0 3px', textAlign: 'right', fontWeight: 900, fontFamily: 'monospace', fontSize: '10.5px', color: netDue > 0 ? '#dc2626' : '#16a34a' }}>
+                      {fmt(netDue)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            );
+          })()}
 
           {/* ── Advance adjustment note (inter-state partial orders) ─────── */}
           {order.advance_note && (

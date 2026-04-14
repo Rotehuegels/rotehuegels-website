@@ -118,6 +118,10 @@ UPDATE orders SET
   sgst_amount          = 6009.77,
   igst_amount          = 0.00,
   total_value_incl_gst = 78794.85,
+  customer_id          = (SELECT id FROM customers WHERE customer_id = 'CUST-001'),
+  order_date           = '2026-04-14',
+  invoice_date         = '2026-04-14',
+  delivery_date        = '2026-04-15',
   description          = 'Supply of CPVC Piping, Fittings, MS Pipes, Transportation & Plumbing Labour for India Zinc ETP/Plant Site',
   notes                = 'Zero-margin re-invoice of materials purchased from National Tubes and Valves (PI/17/26-27 dt. 11-Apr-26 + NTV/0104/26-27 dt. 13-Apr-26). '
                          'Includes ₹2,000 delivery charges (paid cash), ₹10,000 plumbing labour (13 Apr), ₹10,000 plumbing labour (14 Apr). '

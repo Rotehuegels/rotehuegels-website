@@ -115,13 +115,14 @@ export async function sendOrderConfirmation(orderId: string) {
   const CO = await getCompanyCO();
   const { data: order, error } = await supabaseAdmin
     .from("orders")
-    .select("*")
+    .select("*, customers(email)")
     .eq("id", orderId)
     .single();
   if (error || !order) throw new Error(`Order not found: ${orderId}`);
 
-  const clientEmail = order.client_email;
-  if (!clientEmail) throw new Error("Order has no client email address.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clientEmail = (order as any).customers?.email;
+  if (!clientEmail) throw new Error("Order has no linked customer email address.");
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items = (order.items ?? []) as Array<{
@@ -225,13 +226,14 @@ export async function sendPaymentReceipt(paymentId: string) {
 
   const { data: order, error: oErr } = await supabaseAdmin
     .from("orders")
-    .select("*")
+    .select("*, customers(email)")
     .eq("id", payment.order_id)
     .single();
   if (oErr || !order) throw new Error(`Order not found for payment ${paymentId}`);
 
-  const clientEmail = order.client_email;
-  if (!clientEmail) throw new Error("Order has no client email address.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clientEmail = (order as any).customers?.email;
+  if (!clientEmail) throw new Error("Order has no linked customer email address.");
 
   // Compute balance
   const { data: allPayments } = await supabaseAdmin
@@ -294,13 +296,14 @@ export async function sendPaymentReminder(orderId: string) {
   const CO = await getCompanyCO();
   const { data: order, error } = await supabaseAdmin
     .from("orders")
-    .select("*")
+    .select("*, customers(email)")
     .eq("id", orderId)
     .single();
   if (error || !order) throw new Error(`Order not found: ${orderId}`);
 
-  const clientEmail = order.client_email;
-  if (!clientEmail) throw new Error("Order has no client email address.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clientEmail = (order as any).customers?.email;
+  if (!clientEmail) throw new Error("Order has no linked customer email address.");
 
   const { data: payments } = await supabaseAdmin
     .from("order_payments")

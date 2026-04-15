@@ -85,7 +85,7 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
     ],
   };
   content.push(headerColumns);
-  content.push({ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 2, lineColor: '#111' }], margin: [0, 6, 0, 8] as [number, number, number, number] });
+  content.push({ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 523, y2: 0, lineWidth: 2, lineColor: '#111' }], margin: [0, 4, 0, 6] as [number, number, number, number] });
 
   // ── Title Block ─────────────────────────────────────────────────────────
   const titleRows: TableCell[][] = [
@@ -97,18 +97,18 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
     [{ text: 'Approved By', bold: true, fillColor: BG_GRAY }, sop.approvedBy],
   ];
   content.push({
-    table: { headerRows: 0, widths: [100, '*'], body: titleRows },
+    table: { headerRows: 0, widths: [90, '*'], body: titleRows },
     layout: 'lightHorizontalLines',
-    margin: [0, 0, 0, 10] as [number, number, number, number],
+    margin: [0, 0, 0, 6] as [number, number, number, number],
   });
 
   function sectionHeader(num: number, title: string): Content {
     return {
       text: `${num}. ${title}`,
-      fontSize: 10,
+      fontSize: 9.5,
       bold: true,
       color: AMBER,
-      margin: [0, 8, 0, 4] as [number, number, number, number],
+      margin: [0, 5, 0, 3] as [number, number, number, number],
       decoration: 'underline' as const,
       decorationColor: '#fde68a',
     };
@@ -208,13 +208,13 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
 
   return {
     pageSize: 'A4' as const,
-    pageMargins: [40, 30, 40, 55] as [number, number, number, number],
-    defaultStyle: { fontSize: 9, lineHeight: 1.3 },
+    pageMargins: [36, 25, 36, 45] as [number, number, number, number],
+    defaultStyle: { fontSize: 8.5, lineHeight: 1.25 },
     content,
     footer: (currentPage: number, pageCount: number) => ({
       stack: [
         {
-          canvas: [{ type: 'line', x1: 40, y1: 0, x2: 555, y2: 0, lineWidth: 0.5, lineColor: '#d1d5db' }],
+          canvas: [{ type: 'line', x1: 36, y1: 0, x2: 559, y2: 0, lineWidth: 0.5, lineColor: '#d1d5db' }],
         },
         {
           columns: [
@@ -223,7 +223,7 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
               text: `${sop.id}  |  Version ${sop.version}  |  R0  |  APPROVED`,
               fontSize: 7,
               color: LIGHT_GRAY,
-              margin: [40, 4, 0, 0] as [number, number, number, number],
+              margin: [36, 3, 0, 0] as [number, number, number, number],
             },
             {
               width: 'auto',
@@ -232,7 +232,7 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
               bold: true,
               color: '#16a34a',
               alignment: 'center' as const,
-              margin: [0, 4, 0, 0] as [number, number, number, number],
+              margin: [0, 3, 0, 0] as [number, number, number, number],
             },
             {
               width: '*',
@@ -240,7 +240,7 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
               fontSize: 7,
               color: LIGHT_GRAY,
               alignment: 'right' as const,
-              margin: [0, 4, 40, 0] as [number, number, number, number],
+              margin: [0, 3, 36, 0] as [number, number, number, number],
             },
           ],
         },

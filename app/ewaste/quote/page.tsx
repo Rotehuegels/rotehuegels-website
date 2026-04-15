@@ -2,58 +2,96 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Calculator, Recycle, ArrowRight, Trash2, Plus, Zap } from 'lucide-react';
+import { ArrowLeft, Recycle, Plus, Trash2, Loader2, CheckCircle2, Send } from 'lucide-react';
 
 const input = 'w-full rounded-xl bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50';
 
-// Approximate scrap value per kg (INR) — varies by market
-const SCRAP_RATES: Record<string, { rate: number; unit: string; avgWeight: number }> = {
-  'Computers & Laptops':       { rate: 25,  unit: 'per unit', avgWeight: 5 },
-  'Mobile Phones & Tablets':   { rate: 15,  unit: 'per unit', avgWeight: 0.2 },
-  'Batteries (Li-ion)':        { rate: 80,  unit: 'per kg',   avgWeight: 1 },
-  'Batteries (Lead-acid)':     { rate: 45,  unit: 'per kg',   avgWeight: 10 },
-  'Monitors & Displays':       { rate: 10,  unit: 'per unit', avgWeight: 8 },
-  'Printers & Peripherals':    { rate: 15,  unit: 'per unit', avgWeight: 6 },
-  'Cables & Copper Wiring':    { rate: 350, unit: 'per kg',   avgWeight: 1 },
-  'PCBs & Circuit Boards':     { rate: 600, unit: 'per kg',   avgWeight: 0.5 },
-  'UPS & Power Supply':        { rate: 40,  unit: 'per unit', avgWeight: 8 },
-  'Networking Equipment':      { rate: 20,  unit: 'per unit', avgWeight: 2 },
-  'Home Appliances (AC)':      { rate: 200, unit: 'per unit', avgWeight: 35 },
-  'Home Appliances (Fridge)':  { rate: 150, unit: 'per unit', avgWeight: 40 },
-  'Home Appliances (Washer)':  { rate: 100, unit: 'per unit', avgWeight: 30 },
-  'Industrial Electronics':    { rate: 50,  unit: 'per kg',   avgWeight: 5 },
-  'Solar Panels':              { rate: 15,  unit: 'per kg',   avgWeight: 18 },
-  'Mixed E-Waste':             { rate: 10,  unit: 'per kg',   avgWeight: 1 },
-};
+const CATEGORIES = [
+  'Computers & Laptops', 'Mobile Phones & Tablets', 'Batteries (Li-ion)',
+  'Batteries (Lead-acid)', 'Monitors & Displays', 'Printers & Peripherals',
+  'Cables & Copper Wiring', 'PCBs & Circuit Boards', 'UPS & Power Supply',
+  'Networking Equipment', 'Home Appliances', 'Industrial Electronics',
+  'Solar Panels & Inverters', 'Mixed E-Waste', 'Other',
+];
 
-const CATEGORIES = Object.keys(SCRAP_RATES);
-
-interface Item {
-  category: string;
-  quantity: number;
-}
+interface Item { category: string; quantity: number; condition: string; description: string; }
 
 export default function EWasteQuotePage() {
-  const [items, setItems] = useState<Item[]>([{ category: '', quantity: 1 }]);
-  const [showResult, setShowResult] = useState(false);
+  const [items, setItems] = useState<Item[]>([{ category: '', quantity: 1, condition: 'non_working', description: '' }]);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
+  const [type, setType] = useState('individual');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const addItem = () => setItems(prev => [...prev, { category: '', quantity: 1 }]);
+  const addItem = () => setItems(prev => [...prev, { category: '', quantity: 1, condition: 'non_working', description: '' }]);
   const removeItem = (i: number) => setItems(prev => prev.filter((_, idx) => idx !== i));
   const updateItem = (i: number, field: string, value: string | number) =>
     setItems(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
 
-  const validItems = items.filter(i => i.category && i.quantity > 0);
-  const totalWeight = validItems.reduce((s, i) => {
-    const info = SCRAP_RATES[i.category];
-    return s + (info ? info.avgWeight * i.quantity : 0);
-  }, 0);
-  const estimatedValue = validItems.reduce((s, i) => {
-    const info = SCRAP_RATES[i.category];
-    if (!info) return s;
-    return s + (info.unit === 'per kg' ? info.rate * info.avgWeight * i.quantity : info.rate * i.quantity);
-  }, 0);
+  const validItems = items.filter(i => i.category);
 
-  const fmt = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validItems.length === 0) { setError('Add at least one e-waste item'); return; }
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/ewaste/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          generator_name: name,
+          generator_email: email,
+          generator_phone: phone,
+          generator_city: city,
+          generator_type: type,
+          generator_address: city, // minimal — we'll get full address later
+          generator_state: 'India',
+          source: 'quote_request',
+          notes: 'Quote request — not a collection request. Contact to provide pricing.',
+          items: validItems.map(i => ({
+            category_name: i.category,
+            quantity: i.quantity,
+            condition: i.condition,
+            description: i.description,
+            unit: 'units',
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setError(typeof data.error === 'string' ? data.error : 'Please fill all required fields.');
+      } else {
+        setSubmitted(true);
+      }
+    } catch { setError('Failed to submit.'); }
+    finally { setSubmitting(false); }
+  };
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-6 py-20">
+        <div className="max-w-md w-full text-center space-y-6">
+          <div className="h-20 w-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">Request Received!</h1>
+          <p className="text-sm text-zinc-400">
+            We&apos;ve received your e-waste details. Our team will check with registered recyclers
+            in your area and get back to you with a quote within 24-48 hours.
+          </p>
+          <Link href="/ewaste" className="inline-block text-sm text-zinc-500 hover:text-zinc-300">
+            &larr; Back to E-Waste Recycling
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -63,137 +101,114 @@ export default function EWasteQuotePage() {
         </Link>
 
         <div className="flex items-center gap-3 mb-2">
-          <Calculator className="h-7 w-7 text-emerald-400" />
-          <h1 className="text-2xl font-bold">E-Waste Value Estimator</h1>
+          <Recycle className="h-7 w-7 text-emerald-400" />
+          <h1 className="text-2xl font-bold">Get a Quote for Your E-Waste</h1>
         </div>
         <p className="text-sm text-zinc-500 mb-8">
-          Get an instant estimate of your e-waste scrap value. Actual rates depend on condition, market prices, and recycler.
+          Tell us what you have — we&apos;ll check with our recycler network and get back with actual pricing.
+          No commitment, no obligation.
         </p>
 
-        {/* Items */}
-        <div className="space-y-3 mb-6">
-          {items.map((item, idx) => (
-            <div key={idx} className="flex gap-3 items-end">
-              <div className="flex-1">
-                {idx === 0 && <label className="text-xs text-zinc-500 mb-1 block">E-Waste Type</label>}
-                <select className={input} value={item.category} onChange={e => updateItem(idx, 'category', e.target.value)}>
-                  <option value="">Select category...</option>
-                  {CATEGORIES.map(c => (
-                    <option key={c} value={c}>{c} — {SCRAP_RATES[c].unit === 'per kg' ? `~₹${SCRAP_RATES[c].rate}/kg` : `~₹${SCRAP_RATES[c].rate}/unit`}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="w-24">
-                {idx === 0 && <label className="text-xs text-zinc-500 mb-1 block">Qty</label>}
-                <input type="number" min={1} className={input} value={item.quantity}
-                  onChange={e => updateItem(idx, 'quantity', Number(e.target.value))} />
-              </div>
-              {items.length > 1 && (
-                <button onClick={() => removeItem(idx)} className="p-3 text-red-400/60 hover:text-red-400">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
+        {error && <div className="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-400 mb-6">{error}</div>}
 
-        <button onClick={addItem} className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 mb-8">
-          <Plus className="h-3.5 w-3.5" /> Add Another Item
-        </button>
-
-        {/* Calculate */}
-        {!showResult ? (
-          <button
-            onClick={() => { if (validItems.length > 0) setShowResult(true); }}
-            disabled={validItems.length === 0}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-4 text-base font-semibold text-white transition-colors disabled:opacity-50"
-          >
-            <Zap className="h-5 w-5" /> Get Instant Estimate
-          </button>
-        ) : (
-          <div className="space-y-6">
-            {/* Result card */}
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-8">
-              <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Estimated Scrap Value</p>
-              <p className="text-4xl font-black text-emerald-400">{fmt(estimatedValue)}</p>
-              <div className="flex gap-6 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Your Details */}
+          <section>
+            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Your Details</h2>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-zinc-500">Items</p>
-                  <p className="text-lg font-bold text-white">{validItems.reduce((s, i) => s + i.quantity, 0)}</p>
+                  <label className="text-xs text-zinc-500 mb-1 block">Name *</label>
+                  <input className={input} required value={name} onChange={e => setName(e.target.value)} />
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Est. Weight</p>
-                  <p className="text-lg font-bold text-white">{Math.round(totalWeight)} kg</p>
+                  <label className="text-xs text-zinc-500 mb-1 block">Type</label>
+                  <select className={input} value={type} onChange={e => setType(e.target.value)}>
+                    <option value="individual">Individual / Home</option>
+                    <option value="business">Business / Office</option>
+                    <option value="institution">Institution / School</option>
+                    <option value="government">Government</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs text-zinc-500 mb-1 block">Email *</label>
+                  <input type="email" className={input} required value={email} onChange={e => setEmail(e.target.value)} />
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Categories</p>
-                  <p className="text-lg font-bold text-white">{validItems.length}</p>
+                  <label className="text-xs text-zinc-500 mb-1 block">Phone *</label>
+                  <input type="tel" className={input} required value={phone} onChange={e => setPhone(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-500 mb-1 block">City *</label>
+                  <input className={input} required value={city} onChange={e => setCity(e.target.value)} />
                 </div>
               </div>
             </div>
+          </section>
 
-            {/* Breakdown */}
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">
-              <div className="px-6 py-3 border-b border-zinc-800/60">
-                <h3 className="text-sm font-semibold text-zinc-300">Breakdown</h3>
-              </div>
-              <div className="divide-y divide-zinc-800/60">
-                {validItems.map((item, idx) => {
-                  const info = SCRAP_RATES[item.category];
-                  const value = info.unit === 'per kg' ? info.rate * info.avgWeight * item.quantity : info.rate * item.quantity;
-                  const weight = info.avgWeight * item.quantity;
-                  return (
-                    <div key={idx} className="flex items-center justify-between px-6 py-3">
-                      <div>
-                        <p className="text-sm text-zinc-300">{item.category}</p>
-                        <p className="text-xs text-zinc-500">{item.quantity} {info.unit === 'per kg' ? `units (~${Math.round(weight)} kg)` : 'units'} &times; ₹{info.rate}/{info.unit.replace('per ', '')}</p>
-                      </div>
-                      <p className="text-sm font-semibold text-emerald-400">{fmt(value)}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Disclaimer */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-800/30 p-4 text-xs text-zinc-500 space-y-1">
-              <p><strong className="text-zinc-400">Note:</strong> This is an approximate estimate based on average market rates.</p>
-              <p>Actual value depends on item condition (working/non-working), current scrap market prices, recycler capacity, and location.</p>
-              <p>Rates shown are indicative and may vary &plusmn;30%. No payment is guaranteed until the recycler inspects the items.</p>
-            </div>
-
-            {/* CTAs */}
-            <div className="flex flex-col gap-3">
-              <Link href="/ewaste/recycler-register"
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3.5 text-sm font-semibold text-white transition-colors">
-                <Recycle className="h-4 w-4" /> Register as Recycler
-              </Link>
-              <button onClick={() => { setShowResult(false); setItems([{ category: '', quantity: 1 }]); }}
-                className="text-sm text-zinc-500 hover:text-zinc-300">
-                Start Over
+          {/* E-Waste Items */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">What Do You Have?</h2>
+              <button type="button" onClick={addItem} className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300">
+                <Plus className="h-3.5 w-3.5" /> Add Item
               </button>
             </div>
-          </div>
-        )}
+            <div className="space-y-3">
+              {items.map((item, idx) => (
+                <div key={idx} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-zinc-500">Item {idx + 1}</span>
+                    {items.length > 1 && (
+                      <button type="button" onClick={() => removeItem(idx)} className="text-red-400/60 hover:text-red-400">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs text-zinc-500 mb-1 block">Category *</label>
+                      <select className={input} required value={item.category} onChange={e => updateItem(idx, 'category', e.target.value)}>
+                        <option value="">Select...</option>
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-zinc-500 mb-1 block">Quantity</label>
+                      <input type="number" min={1} className={input} value={item.quantity} onChange={e => updateItem(idx, 'quantity', Number(e.target.value))} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-zinc-500 mb-1 block">Condition</label>
+                      <select className={input} value={item.condition} onChange={e => updateItem(idx, 'condition', e.target.value)}>
+                        <option value="working">Working</option>
+                        <option value="partially_working">Partially Working</option>
+                        <option value="non_working">Not Working</option>
+                        <option value="damaged">Damaged</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs text-zinc-500 mb-1 block">Description (optional)</label>
+                    <input className={input} placeholder="e.g., 5 Dell laptops 2018 model, 10 old UPS batteries..." value={item.description} onChange={e => updateItem(idx, 'description', e.target.value)} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        {/* How rates work */}
-        <div className="mt-12 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
-          <h3 className="text-sm font-semibold text-zinc-300 mb-4">How Scrap Value is Determined</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-zinc-500">
-            <div>
-              <p className="text-zinc-400 font-medium mb-1">High Value</p>
-              <p>PCBs, copper cables, batteries — contain precious and base metals (gold, silver, copper, lithium) recoverable through recycling.</p>
-            </div>
-            <div>
-              <p className="text-zinc-400 font-medium mb-1">Medium Value</p>
-              <p>Computers, UPS, appliances — contain mixed metals, plastics, and some recoverable components.</p>
-            </div>
-            <div>
-              <p className="text-zinc-400 font-medium mb-1">Low Value</p>
-              <p>Monitors, mixed e-waste — high processing cost relative to recoverable material. Still must be recycled responsibly.</p>
-            </div>
-          </div>
-        </div>
+          <button type="submit" disabled={submitting}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-4 text-base font-semibold text-white transition-colors disabled:opacity-50">
+            {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+            Request Quote
+          </button>
+
+          <p className="text-xs text-zinc-600 text-center">
+            No commitment. We&apos;ll check with recyclers in your area and respond within 24-48 hours.
+            Roteh&uuml;gels is a digital facilitator — we do not physically handle e-waste.
+          </p>
+        </form>
       </div>
     </div>
   );

@@ -1,18 +1,11 @@
 import { NextResponse } from 'next/server';
-import { hrLine } from '@/lib/pdfConfig';
+import { getLogoDataUrl, fmtINR, generateSmartPdf, hrLine } from '@/lib/pdfConfig';
+import { COLORS, FONT, buildHeader, buildFooter } from '@/lib/pdfTemplate';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
-import fs from 'fs';
-import path from 'path';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const dynamic = 'force-dynamic';
-
-const fmtN = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
-
-function getLogoDataUrl(): string | null {
-  try { return `data:image/png;base64,${fs.readFileSync(path.join(process.cwd(), 'public', 'assets', 'Logo2_black.png')).toString('base64')}`; } catch { return null; }
-}
 
 function parseFY(fy: string) {
   const [startYear] = fy.split('-').map(Number);
@@ -92,41 +85,36 @@ export async function GET(_req: Request) {
     const netGSTLiability = totalGST - inputCredit - gstPaid;
 
     const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-    const AMBER = '#b45309';
     const content: any[] = [];
 
     // Header
-    content.push({
-      columns: [
-        { width: '*', stack: [
-          ...(logoUrl ? [{ image: logoUrl, width: 100, margin: [0, 0, 0, 3] }] : []),
-          { text: CO.name, fontSize: 9, bold: true },
-          { text: `CIN: ${CO.cin}  |  GSTIN: ${CO.gstin}  |  PAN: ${CO.pan}`, fontSize: 7, color: '#666', margin: [0, 2, 0, 0] },
-        ]},
-        { width: 'auto', alignment: 'right', stack: [
-          { text: 'PROFIT & LOSS', fontSize: 12, bold: true, color: AMBER },
-          { text: 'STATEMENT', fontSize: 12, bold: true, color: AMBER },
-          { text: label, fontSize: 9, color: '#555', margin: [0, 2, 0, 0] },
-        ]},
-      ],
-    });
-    content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 4] });
+    content.push(buildHeader({
+      logoUrl,
+      companyName: CO.name,
+      address: `${CO.addr1} ${CO.addr2}`,
+      contactLine: `${CO.email} | ${CO.phone} | ${CO.web}`,
+      gstin: CO.gstin,
+      pan: CO.pan,
+      cin: CO.cin,
+      tan: CO.tan,
+      documentTitle: 'PROFIT & LOSS STATEMENT',
+    }));
     content.push({ text: `For the period ${full}  |  Prepared on accrual basis  |  All amounts in INR`, fontSize: 7.5, color: '#666', margin: [0, 0, 0, 6] });
 
     // Helper for P&L rows
     function plRow(label: string, value: number, opts: { bold?: boolean; indent?: boolean; highlight?: boolean; positive?: boolean } = {}): any {
-      const color = opts.positive !== undefined ? (opts.positive ? '#16a34a' : '#dc2626') : (value < 0 ? '#dc2626' : '#374151');
+      const color = opts.positive !== undefined ? (opts.positive ? COLORS.positive : COLORS.negative) : (value < 0 ? COLORS.negative : '#374151');
       return {
         columns: [
-          { text: label, width: '*', fontSize: 9, bold: opts.bold, margin: opts.indent ? [16, 0, 0, 0] : undefined, color: opts.bold ? '#111' : '#555' },
-          { text: value < 0 ? `(${fmtN(Math.abs(value))})` : fmtN(value), width: 110, alignment: 'right', fontSize: 9, bold: opts.bold, color },
+          { text: label, width: '*', fontSize: 9, bold: opts.bold, margin: opts.indent ? [16, 0, 0, 0] : undefined, color: opts.bold ? COLORS.black : COLORS.gray },
+          { text: value < 0 ? `(${fmtINR(Math.abs(value))})` : fmtINR(value), width: 110, alignment: 'right', fontSize: 9, bold: opts.bold, color },
         ],
         margin: [0, 2, 0, 2] as any,
         ...(opts.highlight ? { fillColor: '#f9fafb' } : {}),
       };
     }
     function sectionHead(title: string): any {
-      return { text: title, fontSize: 9, bold: true, color: AMBER, margin: [0, 8, 0, 3], decoration: 'underline', decorationColor: '#fde68a' };
+      return { text: title, fontSize: 9, bold: true, color: COLORS.sectionHeader, margin: [0, 8, 0, 3], decoration: 'underline', decorationColor: COLORS.border };
     }
     function divider(thick = false): any {
       return { ...hrLine(thick ? 1.5 : 0.5, thick ? '#374151' : '#e5e7eb'), margin: [0, 2, 0, 2] };
@@ -162,12 +150,12 @@ export async function GET(_req: Request) {
     content.push(plRow('Total Tax Payments', advanceTax + gstPaid, { bold: true }));
 
     // Net Profit box
-    const npColor = netProfit >= 0 ? '#16a34a' : '#dc2626';
+    const npColor = netProfit >= 0 ? COLORS.positive : COLORS.negative;
     const npBg = netProfit >= 0 ? '#f0fdf4' : '#fef2f2';
     content.push({
       table: { widths: ['*', 110], body: [[
-        { text: 'Net Profit / (Loss) after Tax', bold: true, fontSize: 11, color: '#111' },
-        { text: netProfit < 0 ? `(${fmtN(Math.abs(netProfit))})` : fmtN(netProfit), alignment: 'right', bold: true, fontSize: 12, color: npColor },
+        { text: 'Net Profit / (Loss) after Tax', bold: true, fontSize: 11, color: COLORS.black },
+        { text: netProfit < 0 ? `(${fmtINR(Math.abs(netProfit))})` : fmtINR(netProfit), alignment: 'right', bold: true, fontSize: 12, color: npColor },
       ]]},
       layout: { hLineWidth: () => 2, vLineWidth: () => 0, hLineColor: () => npColor, paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 6, paddingBottom: () => 6, fillColor: () => npBg },
       margin: [0, 6, 0, 8],
@@ -191,7 +179,7 @@ export async function GET(_req: Request) {
         { width: '*', stack: [
           sectionHead('TDS Summary'),
           plRow('TDS Deducted by Clients', tdsDeducted, { bold: true }),
-          { text: 'Recoverable via Form 26AS / AIS', fontSize: 7, color: '#888', margin: [0, 0, 0, 4] },
+          { text: 'Recoverable via Form 26AS / AIS', fontSize: 7, color: COLORS.labelText, margin: [0, 0, 0, 4] },
           divider(),
           plRow('TDS Paid to Govt', tdsPaid, { bold: true }),
           divider(true),
@@ -222,24 +210,21 @@ export async function GET(_req: Request) {
     // KPI strip
     content.push({
       table: { widths: ['*', '*', '*', '*'], body: [[
-        { stack: [{ text: 'Total Revenue', fontSize: 7, color: '#888', alignment: 'center' }, { text: fmtN(totalBase), fontSize: 10, bold: true, color: AMBER, alignment: 'center' }] },
-        { stack: [{ text: 'Gross Profit', fontSize: 7, color: '#888', alignment: 'center' }, { text: fmtN(grossProfit), fontSize: 10, bold: true, color: grossProfit >= 0 ? '#16a34a' : '#dc2626', alignment: 'center' }] },
-        { stack: [{ text: 'Net Profit', fontSize: 7, color: '#888', alignment: 'center' }, { text: fmtN(netProfit), fontSize: 10, bold: true, color: netProfit >= 0 ? '#16a34a' : '#dc2626', alignment: 'center' }] },
-        { stack: [{ text: 'Receivables', fontSize: 7, color: '#888', alignment: 'center' }, { text: fmtN(pendingRec), fontSize: 10, bold: true, color: pendingRec > 0 ? '#dc2626' : '#16a34a', alignment: 'center' }] },
+        { stack: [{ text: 'Total Revenue', fontSize: 7, color: COLORS.labelText, alignment: 'center' }, { text: fmtINR(totalBase), fontSize: 10, bold: true, color: COLORS.sectionHeader, alignment: 'center' }] },
+        { stack: [{ text: 'Gross Profit', fontSize: 7, color: COLORS.labelText, alignment: 'center' }, { text: fmtINR(grossProfit), fontSize: 10, bold: true, color: grossProfit >= 0 ? COLORS.positive : COLORS.negative, alignment: 'center' }] },
+        { stack: [{ text: 'Net Profit', fontSize: 7, color: COLORS.labelText, alignment: 'center' }, { text: fmtINR(netProfit), fontSize: 10, bold: true, color: netProfit >= 0 ? COLORS.positive : COLORS.negative, alignment: 'center' }] },
+        { stack: [{ text: 'Receivables', fontSize: 7, color: COLORS.labelText, alignment: 'center' }, { text: fmtINR(pendingRec), fontSize: 10, bold: true, color: pendingRec > 0 ? COLORS.negative : COLORS.positive, alignment: 'center' }] },
       ]]},
       layout: 'noBorders',
       margin: [0, 8, 0, 6],
     });
 
-    // Footer
-
     // Generate PDF using smart auto-scaling system
-    const { generateSmartPdf } = await import('@/lib/pdfConfig');
-    const pdfBuffer = await generateSmartPdf(content, (pg: number, total: number) => ({ columns: [
-      { text: `${CO.name}`, fontSize: 7, color: '#aaa', margin: [36, 0, 0, 0] },
-      { text: label, fontSize: 7, color: '#aaa', alignment: 'center' },
-      { text: `Page ${pg} of ${total}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 36, 0] },
-    ]}));
+    const footer = buildFooter({
+      leftText: CO.name,
+      centerText: label,
+    });
+    const pdfBuffer = await generateSmartPdf(content, footer);
 
     const headers: Record<string, string> = { 'Content-Type': 'application/pdf', 'Cache-Control': 'public, max-age=60' };
     if (download) headers['Content-Disposition'] = `attachment; filename="PL-Statement-${fy}.pdf"`;

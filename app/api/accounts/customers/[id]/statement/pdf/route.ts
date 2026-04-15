@@ -1,20 +1,14 @@
 import { NextResponse } from 'next/server';
-import { hrLine } from '@/lib/pdfConfig';
+import { getLogoDataUrl, fmtINR, fmtDate, generateSmartPdf, hrLine } from '@/lib/pdfConfig';
+import { COLORS, FONT, buildHeader, buildFooter, tableHeaderCell } from '@/lib/pdfTemplate';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
 import QRCode from 'qrcode';
-import fs from 'fs';
-import path from 'path';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const dynamic = 'force-dynamic';
 
-const fmtN = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
-const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
-
-function getLogoDataUrl(): string | null {
-  try { return `data:image/png;base64,${fs.readFileSync(path.join(process.cwd(), 'public', 'assets', 'Logo2_black.png')).toString('base64')}`; } catch { return null; }
-}
+const fmtDateNullable = (d: string | null) => d ? fmtDate(d) : '-';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -72,27 +66,21 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     const billing = customer.billing_address as Record<string, string> | null;
     const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-    const AMBER = '#b45309';
-    const BG = '#f3f4f6';
     const content: any[] = [];
 
     // Header
-    content.push({
-      columns: [
-        { width: '*', stack: [
-          ...(logoUrl ? [{ image: logoUrl, width: 100, margin: [0, 0, 0, 3] }] : []),
-          { text: CO.name, fontSize: 9, bold: true },
-          { text: `${CO.addr1} ${CO.addr2}`, fontSize: 7, color: '#666', margin: [0, 2, 0, 0] },
-          { text: `GSTIN: ${CO.gstin}  |  PAN: ${CO.pan}`, fontSize: 7, color: '#666', margin: [0, 1, 0, 0] },
-        ]},
-        { width: 'auto', alignment: 'right', stack: [
-          { text: 'STATEMENT OF ACCOUNT', fontSize: 12, bold: true, color: AMBER },
-          { text: `As on ${today}`, fontSize: 8, color: '#555', margin: [0, 2, 0, 0] },
-          { text: selectedFY === 'all' ? 'All Periods' : `FY ${selectedFY}`, fontSize: 8, color: '#555' },
-        ]},
-      ],
-    });
-    content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 6] });
+    content.push(buildHeader({
+      logoUrl,
+      companyName: CO.name,
+      address: `${CO.addr1} ${CO.addr2}`,
+      contactLine: `${CO.email} | ${CO.phone} | ${CO.web}`,
+      gstin: CO.gstin,
+      pan: CO.pan,
+      cin: CO.cin,
+      tan: CO.tan,
+      documentTitle: 'STATEMENT OF ACCOUNT',
+    }));
+    content.push({ text: `As on ${today}  |  ${selectedFY === 'all' ? 'All Periods' : `FY ${selectedFY}`}`, fontSize: FONT.body, color: COLORS.gray, margin: [0, 0, 0, 6] });
 
     // Customer details
     content.push({
@@ -101,18 +89,18 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         body: [[
           {
             stack: [
-              { text: 'CUSTOMER', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+              { text: 'CUSTOMER', fontSize: FONT.sectionLabel, bold: true, color: COLORS.sectionHeader, margin: [0, 0, 0, 3] },
               { text: customer.name, fontSize: 11, bold: true },
-              ...(customer.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 7, margin: [0, 2, 0, 0] }] : []),
-              ...(billing ? [{ text: `${billing.line1 ?? ''}${billing.line2 ? ', ' + billing.line2 : ''}, ${billing.city ?? ''}, ${billing.state ?? ''}`, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
+              ...(customer.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: FONT.body, margin: [0, 2, 0, 0] }] : []),
+              ...(billing ? [{ text: `${billing.line1 ?? ''}${billing.line2 ? ', ' + billing.line2 : ''}, ${billing.city ?? ''}, ${billing.state ?? ''}`, fontSize: FONT.body, color: COLORS.gray, margin: [0, 2, 0, 0] }] : []),
             ],
           },
           {
             table: { widths: ['*', 80], body: [
-              [{ text: 'Total Invoiced', fontSize: 7, color: '#666' }, { text: fmtN(totalInvoiced), fontSize: 7, alignment: 'right', bold: true }],
-              [{ text: 'Received', fontSize: 7, color: '#666' }, { text: fmtN(totalReceived), fontSize: 7, alignment: 'right', color: '#16a34a' }],
-              [{ text: 'TDS Deducted', fontSize: 7, color: '#666' }, { text: fmtN(totalTds), fontSize: 7, alignment: 'right', color: '#16a34a' }],
-              [{ text: 'Outstanding', fontSize: 9, bold: true }, { text: fmtN(totalPending), fontSize: 9, alignment: 'right', bold: true, color: totalPending > 0 ? '#dc2626' : '#16a34a' }],
+              [{ text: 'Total Invoiced', fontSize: FONT.body, color: '#666' }, { text: fmtINR(totalInvoiced), fontSize: FONT.body, alignment: 'right', bold: true }],
+              [{ text: 'Received', fontSize: FONT.body, color: '#666' }, { text: fmtINR(totalReceived), fontSize: FONT.body, alignment: 'right', color: COLORS.positive }],
+              [{ text: 'TDS Deducted', fontSize: FONT.body, color: '#666' }, { text: fmtINR(totalTds), fontSize: FONT.body, alignment: 'right', color: COLORS.positive }],
+              [{ text: 'Outstanding', fontSize: 9, bold: true }, { text: fmtINR(totalPending), fontSize: 9, alignment: 'right', bold: true, color: totalPending > 0 ? COLORS.negative : COLORS.positive }],
             ]}, layout: 'noBorders',
           },
         ]],
@@ -123,13 +111,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     // Transaction table
     const headerRow = [
-      { text: '#', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' },
-      { text: 'Invoice', bold: true, fillColor: '#f0f0f0', color: '#111' },
-      { text: 'Date', bold: true, fillColor: '#f0f0f0', color: '#111' },
-      { text: 'Description', bold: true, fillColor: '#f0f0f0', color: '#111' },
-      { text: 'Invoiced', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
-      { text: 'Received', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
-      { text: 'Outstanding', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      tableHeaderCell('#', 'center'),
+      tableHeaderCell('Invoice', 'left'),
+      tableHeaderCell('Date', 'left'),
+      tableHeaderCell('Description', 'left'),
+      tableHeaderCell('Invoiced', 'right'),
+      tableHeaderCell('Received', 'right'),
+      tableHeaderCell('Outstanding', 'right'),
     ];
 
     let runningBalance = 0;
@@ -138,21 +126,21 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return [
         { text: String(i + 1), alignment: 'center' },
         { text: r.order_no, fontSize: 7.5, bold: true },
-        { text: fmtDate(r.inv_date ?? r.order_date), fontSize: 7.5 },
-        { text: r.desc, fontSize: 7.5, color: '#555' },
-        { text: fmtN(r.total), alignment: 'right', fontSize: 7.5 },
-        { text: r.received > 0 ? fmtN(r.received) : '-', alignment: 'right', fontSize: 7.5, color: '#16a34a' },
-        { text: fmtN(r.pending), alignment: 'right', fontSize: 7.5, bold: true, color: r.pending > 0 ? '#dc2626' : '#16a34a' },
+        { text: fmtDateNullable(r.inv_date ?? r.order_date), fontSize: 7.5 },
+        { text: r.desc, fontSize: 7.5, color: COLORS.gray },
+        { text: fmtINR(r.total), alignment: 'right', fontSize: 7.5 },
+        { text: r.received > 0 ? fmtINR(r.received) : '-', alignment: 'right', fontSize: 7.5, color: COLORS.positive },
+        { text: fmtINR(r.pending), alignment: 'right', fontSize: 7.5, bold: true, color: r.pending > 0 ? COLORS.negative : COLORS.positive },
       ];
     });
 
     // Total row
     const totalDataRow = [
       { text: '', colSpan: 3 }, {}, {},
-      { text: 'TOTAL', alignment: 'right', bold: true, fillColor: BG },
-      { text: fmtN(totalInvoiced), alignment: 'right', bold: true, fillColor: BG },
-      { text: fmtN(totalReceived), alignment: 'right', bold: true, color: '#16a34a', fillColor: BG },
-      { text: fmtN(totalPending), alignment: 'right', bold: true, color: totalPending > 0 ? '#dc2626' : '#16a34a', fillColor: BG, fontSize: 10 },
+      { text: 'TOTAL', alignment: 'right', bold: true, fillColor: COLORS.headerBg },
+      { text: fmtINR(totalInvoiced), alignment: 'right', bold: true, fillColor: COLORS.headerBg },
+      { text: fmtINR(totalReceived), alignment: 'right', bold: true, color: COLORS.positive, fillColor: COLORS.headerBg },
+      { text: fmtINR(totalPending), alignment: 'right', bold: true, color: totalPending > 0 ? COLORS.negative : COLORS.positive, fillColor: COLORS.headerBg, fontSize: 10 },
     ];
 
     content.push({
@@ -168,17 +156,17 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         body: [[
           {
             stack: [
-              { text: 'BANK DETAILS FOR PAYMENT', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 4] },
+              { text: 'BANK DETAILS FOR PAYMENT', fontSize: FONT.sectionLabel, bold: true, color: COLORS.sectionHeader, margin: [0, 0, 0, 4] },
               {
                 columns: [
                   {
                     width: '*',
                     table: { body: [
-                      [{ text: 'Name', fontSize: 7, color: '#888' }, { text: CO.name, fontSize: 7 }],
-                      [{ text: 'A/c No.', fontSize: 7, color: '#888' }, { text: CO.acc, fontSize: 7, bold: true }],
-                      [{ text: 'IFSC', fontSize: 7, color: '#888' }, { text: CO.ifsc, fontSize: 7 }],
-                      [{ text: 'Bank', fontSize: 7, color: '#888' }, { text: CO.bank, fontSize: 7 }],
-                      [{ text: 'UPI', fontSize: 7, color: '#888' }, { text: CO.upi, fontSize: 7 }],
+                      [{ text: 'Name', fontSize: FONT.body, color: COLORS.labelText }, { text: CO.name, fontSize: FONT.body }],
+                      [{ text: 'A/c No.', fontSize: FONT.body, color: COLORS.labelText }, { text: CO.acc, fontSize: FONT.body, bold: true }],
+                      [{ text: 'IFSC', fontSize: FONT.body, color: COLORS.labelText }, { text: CO.ifsc, fontSize: FONT.body }],
+                      [{ text: 'Bank', fontSize: FONT.body, color: COLORS.labelText }, { text: CO.bank, fontSize: FONT.body }],
+                      [{ text: 'UPI', fontSize: FONT.body, color: COLORS.labelText }, { text: CO.upi, fontSize: FONT.body }],
                     ]}, layout: 'noBorders',
                   },
                   { width: 72, image: upiQr, fit: [65, 65], alignment: 'center' },
@@ -197,16 +185,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       margin: [0, 0, 0, 6],
     });
 
-    // Footer
-    // Note: "computer-generated statement" text moved to footer to prevent page overflow
-
     // Generate PDF using smart auto-scaling system
-    const { generateSmartPdf } = await import('@/lib/pdfConfig');
-    const pdfBuffer = await generateSmartPdf(content, (pg: number, total: number) => ({ columns: [
-      { text: `Statement for ${customer.name}`, fontSize: 7, color: '#aaa', margin: [36, 0, 0, 0] },
-      { text: today, fontSize: 7, color: '#aaa', alignment: 'center' },
-      { text: `Page ${pg} of ${total}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 36, 0] },
-    ]}));
+    const footer = buildFooter({
+      leftText: `Statement for ${customer.name}`,
+      centerText: today,
+    });
+    const pdfBuffer = await generateSmartPdf(content, footer);
 
     const headers: Record<string, string> = { 'Content-Type': 'application/pdf', 'Cache-Control': 'public, max-age=60' };
     if (download) headers['Content-Disposition'] = `attachment; filename="Statement-${customer.customer_id ?? customer.name}.pdf"`;

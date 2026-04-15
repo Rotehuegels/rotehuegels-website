@@ -1,18 +1,11 @@
 import { NextResponse } from 'next/server';
-import { hrLine } from '@/lib/pdfConfig';
+import { getLogoDataUrl, fmtINR, generateSmartPdf, hrLine } from '@/lib/pdfConfig';
+import { COLORS, FONT, buildHeader, buildFooter, tableHeaderCell } from '@/lib/pdfTemplate';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
-import fs from 'fs';
-import path from 'path';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const dynamic = 'force-dynamic';
-
-const fmtN = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
-
-function getLogoDataUrl(): string | null {
-  try { return `data:image/png;base64,${fs.readFileSync(path.join(process.cwd(), 'public', 'assets', 'Logo2_black.png')).toString('base64')}`; } catch { return null; }
-}
 
 function parseFY(fy: string) {
   const [startYear] = fy.split('-').map(Number);
@@ -59,25 +52,20 @@ export async function GET(_req: Request) {
     const months = fyMonths(startYear, endYear);
     const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    const AMBER = '#b45309';
-    const BG = '#f3f4f6';
     const content: any[] = [];
 
     // Header
-    content.push({
-      columns: [
-        { width: '*', stack: [
-          ...(logoUrl ? [{ image: logoUrl, width: 100, margin: [0, 0, 0, 3] }] : []),
-          { text: CO.name, fontSize: 9, bold: true },
-          { text: `CIN: ${CO.cin}  |  GSTIN: ${CO.gstin}  |  PAN: ${CO.pan}`, fontSize: 7, color: '#666', margin: [0, 2, 0, 0] },
-        ]},
-        { width: 'auto', alignment: 'right', stack: [
-          { text: 'GST SUMMARY REPORT', fontSize: 12, bold: true, color: AMBER },
-          { text: label, fontSize: 9, color: '#555', margin: [0, 2, 0, 0] },
-        ]},
-      ],
-    });
-    content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 4] });
+    content.push(buildHeader({
+      logoUrl,
+      companyName: CO.name,
+      address: `${CO.addr1} ${CO.addr2}`,
+      contactLine: `${CO.email} | ${CO.phone} | ${CO.web}`,
+      gstin: CO.gstin,
+      pan: CO.pan,
+      cin: CO.cin,
+      tan: CO.tan,
+      documentTitle: 'GST SUMMARY REPORT',
+    }));
     content.push({ text: `For the period ${full}  |  GSTIN: ${CO.gstin}  |  All amounts in INR`, fontSize: 7.5, color: '#666', margin: [0, 0, 0, 8] });
 
     // Summary boxes (as table)
@@ -87,21 +75,21 @@ export async function GET(_req: Request) {
         body: [[
           { stack: [
             { text: 'OUTPUT GST (LIABILITY)', fontSize: 7, bold: true, color: '#666' },
-            { text: 'Collected from customers', fontSize: 7, color: '#888', margin: [0, 1, 0, 3] },
-            { text: fmtN(totalOutput), fontSize: 14, bold: true, color: AMBER },
-            { text: `CGST: ${fmtN(totalCGST)}  |  SGST: ${fmtN(totalSGST)}${totalIGST > 0 ? '  |  IGST: ' + fmtN(totalIGST) : ''}`, fontSize: 7, color: '#666', margin: [0, 3, 0, 0] },
+            { text: 'Collected from customers', fontSize: 7, color: COLORS.labelText, margin: [0, 1, 0, 3] },
+            { text: fmtINR(totalOutput), fontSize: 14, bold: true, color: COLORS.sectionHeader },
+            { text: `CGST: ${fmtINR(totalCGST)}  |  SGST: ${fmtINR(totalSGST)}${totalIGST > 0 ? '  |  IGST: ' + fmtINR(totalIGST) : ''}`, fontSize: 7, color: '#666', margin: [0, 3, 0, 0] },
           ]},
           { stack: [
             { text: 'INPUT TAX CREDIT (ITC)', fontSize: 7, bold: true, color: '#666' },
-            { text: 'GST paid on purchases', fontSize: 7, color: '#888', margin: [0, 1, 0, 3] },
-            { text: fmtN(totalITC), fontSize: 14, bold: true, color: '#16a34a' },
+            { text: 'GST paid on purchases', fontSize: 7, color: COLORS.labelText, margin: [0, 1, 0, 3] },
+            { text: fmtINR(totalITC), fontSize: 14, bold: true, color: COLORS.positive },
             { text: 'Offset against output liability', fontSize: 7, color: '#666', margin: [0, 3, 0, 0] },
           ]},
           { stack: [
             { text: 'NET GST PAYABLE', fontSize: 7, bold: true, color: '#666' },
-            { text: 'Output GST - ITC', fontSize: 7, color: '#888', margin: [0, 1, 0, 3] },
-            { text: fmtN(Math.abs(netPayable)), fontSize: 14, bold: true, color: netPayable > 0 ? '#dc2626' : '#16a34a' },
-            { text: netPayable > 0 ? 'Payable to government' : 'ITC surplus / carry forward', fontSize: 7, color: netPayable > 0 ? AMBER : '#16a34a', margin: [0, 3, 0, 0] },
+            { text: 'Output GST - ITC', fontSize: 7, color: COLORS.labelText, margin: [0, 1, 0, 3] },
+            { text: fmtINR(Math.abs(netPayable)), fontSize: 14, bold: true, color: netPayable > 0 ? COLORS.negative : COLORS.positive },
+            { text: netPayable > 0 ? 'Payable to government' : 'ITC surplus / carry forward', fontSize: 7, color: netPayable > 0 ? COLORS.sectionHeader : COLORS.positive, margin: [0, 3, 0, 0] },
           ]},
         ]],
       },
@@ -110,17 +98,17 @@ export async function GET(_req: Request) {
     });
 
     // Monthly breakdown table
-    content.push({ text: 'Monthly Breakdown', fontSize: 10, bold: true, color: AMBER, margin: [0, 0, 0, 2], decoration: 'underline', decorationColor: '#fde68a' });
-    content.push({ text: 'Output GST by order date  |  ITC by expense date', fontSize: 7, color: '#888', margin: [0, 0, 0, 4] });
+    content.push({ text: 'Monthly Breakdown', fontSize: 10, bold: true, color: COLORS.sectionHeader, margin: [0, 0, 0, 2], decoration: 'underline', decorationColor: COLORS.border });
+    content.push({ text: 'Output GST by order date  |  ITC by expense date', fontSize: 7, color: COLORS.labelText, margin: [0, 0, 0, 4] });
 
     const monthHeader = [
-      { text: 'Month', bold: true, fillColor: '#f0f0f0', color: '#111' },
-      { text: 'CGST', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
-      { text: 'SGST', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
-      { text: 'IGST', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
-      { text: 'Total Output', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
-      { text: 'ITC', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
-      { text: 'Net Payable', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      tableHeaderCell('Month', 'left'),
+      tableHeaderCell('CGST', 'right'),
+      tableHeaderCell('SGST', 'right'),
+      tableHeaderCell('IGST', 'right'),
+      tableHeaderCell('Total Output', 'right'),
+      tableHeaderCell('ITC', 'right'),
+      tableHeaderCell('Net Payable', 'right'),
     ];
 
     const monthRows = months.map(({ year, month }) => {
@@ -134,24 +122,24 @@ export async function GET(_req: Request) {
 
       return [
         { text: monthLabel, bold: hasActivity },
-        { text: out.cgst > 0 ? fmtN(out.cgst) : '-', alignment: 'right', color: hasActivity ? '#374151' : '#aaa' },
-        { text: out.sgst > 0 ? fmtN(out.sgst) : '-', alignment: 'right', color: hasActivity ? '#374151' : '#aaa' },
-        { text: out.igst > 0 ? fmtN(out.igst) : '-', alignment: 'right', color: hasActivity ? '#374151' : '#aaa' },
-        { text: totalOut > 0 ? fmtN(totalOut) : '-', alignment: 'right', bold: true, color: hasActivity ? AMBER : '#aaa' },
-        { text: itc > 0 ? fmtN(itc) : '-', alignment: 'right', color: hasActivity ? '#16a34a' : '#aaa' },
-        { text: !hasActivity ? '-' : net > 0 ? fmtN(net) : net < 0 ? `(${fmtN(Math.abs(net))})` : '0', alignment: 'right', bold: true, color: !hasActivity ? '#aaa' : net > 0 ? '#dc2626' : net < 0 ? '#16a34a' : '#666' },
+        { text: out.cgst > 0 ? fmtINR(out.cgst) : '-', alignment: 'right', color: hasActivity ? '#374151' : '#aaa' },
+        { text: out.sgst > 0 ? fmtINR(out.sgst) : '-', alignment: 'right', color: hasActivity ? '#374151' : '#aaa' },
+        { text: out.igst > 0 ? fmtINR(out.igst) : '-', alignment: 'right', color: hasActivity ? '#374151' : '#aaa' },
+        { text: totalOut > 0 ? fmtINR(totalOut) : '-', alignment: 'right', bold: true, color: hasActivity ? COLORS.sectionHeader : '#aaa' },
+        { text: itc > 0 ? fmtINR(itc) : '-', alignment: 'right', color: hasActivity ? COLORS.positive : '#aaa' },
+        { text: !hasActivity ? '-' : net > 0 ? fmtINR(net) : net < 0 ? `(${fmtINR(Math.abs(net))})` : '0', alignment: 'right', bold: true, color: !hasActivity ? '#aaa' : net > 0 ? COLORS.negative : net < 0 ? COLORS.positive : '#666' },
       ];
     });
 
     // Totals row
     const totalRow = [
-      { text: 'TOTAL', bold: true, fillColor: BG },
-      { text: fmtN(totalCGST), alignment: 'right', bold: true, fillColor: BG },
-      { text: fmtN(totalSGST), alignment: 'right', bold: true, fillColor: BG },
-      { text: totalIGST > 0 ? fmtN(totalIGST) : '-', alignment: 'right', bold: true, fillColor: BG },
-      { text: fmtN(totalOutput), alignment: 'right', bold: true, color: AMBER, fillColor: BG },
-      { text: fmtN(totalITC), alignment: 'right', bold: true, color: '#16a34a', fillColor: BG },
-      { text: netPayable > 0 ? fmtN(netPayable) : `(${fmtN(Math.abs(netPayable))})`, alignment: 'right', bold: true, color: netPayable > 0 ? '#dc2626' : '#16a34a', fillColor: BG },
+      { text: 'TOTAL', bold: true, fillColor: COLORS.headerBg },
+      { text: fmtINR(totalCGST), alignment: 'right', bold: true, fillColor: COLORS.headerBg },
+      { text: fmtINR(totalSGST), alignment: 'right', bold: true, fillColor: COLORS.headerBg },
+      { text: totalIGST > 0 ? fmtINR(totalIGST) : '-', alignment: 'right', bold: true, fillColor: COLORS.headerBg },
+      { text: fmtINR(totalOutput), alignment: 'right', bold: true, color: COLORS.sectionHeader, fillColor: COLORS.headerBg },
+      { text: fmtINR(totalITC), alignment: 'right', bold: true, color: COLORS.positive, fillColor: COLORS.headerBg },
+      { text: netPayable > 0 ? fmtINR(netPayable) : `(${fmtINR(Math.abs(netPayable))})`, alignment: 'right', bold: true, color: netPayable > 0 ? COLORS.negative : COLORS.positive, fillColor: COLORS.headerBg },
     ];
 
     content.push({
@@ -160,15 +148,12 @@ export async function GET(_req: Request) {
       margin: [0, 0, 0, 8],
     });
 
-    // Footer
-
     // Generate PDF using smart auto-scaling system
-    const { generateSmartPdf } = await import('@/lib/pdfConfig');
-    const pdfBuffer = await generateSmartPdf(content, (pg: number, total: number) => ({ columns: [
-      { text: `GSTIN: ${CO.gstin}`, fontSize: 7, color: '#aaa', margin: [36, 0, 0, 0] },
-      { text: label, fontSize: 7, color: '#aaa', alignment: 'center' },
-      { text: `Page ${pg} of ${total}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 36, 0] },
-    ]}));
+    const footer = buildFooter({
+      leftText: `GSTIN: ${CO.gstin}`,
+      centerText: label,
+    });
+    const pdfBuffer = await generateSmartPdf(content, footer);
 
     const headers: Record<string, string> = { 'Content-Type': 'application/pdf', 'Cache-Control': 'public, max-age=60' };
     if (download) headers['Content-Disposition'] = `attachment; filename="GST-Report-${fy}.pdf"`;

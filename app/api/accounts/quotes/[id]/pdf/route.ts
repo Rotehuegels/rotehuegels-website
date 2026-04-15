@@ -1,22 +1,11 @@
 import { NextResponse } from 'next/server';
-import { hrLine } from '@/lib/pdfConfig';
+import { getLogoDataUrl, getSignatureDataUrl, fmtINR, fmtDate, generateSmartPdf } from '@/lib/pdfConfig';
+import { COLORS, FONT, buildHeader, buildFooter, tableHeaderCell, TABLE_LAYOUT, sectionLabel } from '@/lib/pdfTemplate';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
-import fs from 'fs';
-import path from 'path';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const dynamic = 'force-dynamic';
-
-const fmtN = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
-const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-
-function getLogoDataUrl(): string | null {
-  try { return `data:image/png;base64,${fs.readFileSync(path.join(process.cwd(), 'public', 'assets', 'Logo2_black.png')).toString('base64')}`; } catch { return null; }
-}
-function getSigDataUrl(): string | null {
-  try { return `data:image/jpeg;base64,${fs.readFileSync(path.join(process.cwd(), 'private', 'signature.jpg')).toString('base64')}`; } catch { return null; }
-}
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,7 +15,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   try {
     const CO = await getCompanyCO();
     const logoUrl = getLogoDataUrl();
-    const sigUrl = getSigDataUrl();
+    const sigUrl = getSignatureDataUrl();
 
     const { data: quote, error } = await supabaseAdmin.from('quotes').select('*, customers(*)').eq('id', id).single();
     if (error || !quote) return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
@@ -37,33 +26,28 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const isIntra = customer?.state_code === '33' || customer?.state?.toLowerCase().includes('tamil');
     const halfRate = (items[0]?.gst_rate ?? 18) / 2;
 
-    const BG = '#f3f4f6';
     const content: any[] = [];
 
-    // Header
-    content.push({
-      columns: [
-        { width: '*', stack: [
-          ...(logoUrl ? [{ image: logoUrl, width: 110, margin: [0, 0, 0, 4] }] : []),
-          { text: CO.name, fontSize: 11, bold: true },
-          { text: `${CO.addr1} ${CO.addr2}`, fontSize: 7, color: '#666', margin: [0, 2, 0, 0] },
-          { text: `${CO.email}  |  ${CO.phone}  |  ${CO.web}`, fontSize: 7, color: '#888', margin: [0, 2, 0, 0] },
-        ]},
-        { width: 'auto', alignment: 'right', stack: [
-          { text: 'QUOTATION', fontSize: 18, bold: true, color: '#b45309' },
-          { text: 'Not a tax invoice', fontSize: 8, italics: true, color: '#888', margin: [0, 2, 0, 4] },
-          { text: `Quote No: ${quote.quote_no}`, fontSize: 8 },
-          { text: `Date: ${fmtDate(quote.quote_date)}`, fontSize: 8 },
-          ...(quote.valid_until ? [{ text: `Valid Until: ${fmtDate(quote.valid_until)}`, fontSize: 8 }] : []),
-        ]},
-      ],
-    });
-    content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 6] });
+    // Header — using shared buildHeader
+    content.push(buildHeader({
+      logoUrl,
+      companyName: CO.name,
+      address: `${CO.addr1} ${CO.addr2}`,
+      contactLine: `${CO.email}  |  ${CO.phone}  |  ${CO.web}`,
+      gstin: CO.gstin,
+      pan: CO.pan,
+      cin: CO.cin,
+      tan: CO.tan,
+      documentTitle: 'QUOTATION',
+    }));
+
+    // "Not a tax invoice" subtitle
+    content.push({ text: 'Not a tax invoice', fontSize: FONT.body, italics: true, color: COLORS.medGray, alignment: 'right', margin: [0, -4, 0, 4] });
 
     // GSTIN strip
     content.push({
       text: `GSTIN: ${CO.gstin}  |  PAN: ${CO.pan}  |  CIN: ${CO.cin}`,
-      fontSize: 7.5, color: '#555', fillColor: BG,
+      fontSize: 7.5, color: '#555', fillColor: COLORS.headerBg,
       margin: [0, 0, 0, 8],
     });
 
@@ -75,7 +59,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         body: [[
           {
             stack: [
-              { text: 'QUOTED TO', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 3] },
+              sectionLabel('Quoted To'),
               { text: customer?.name ?? '', fontSize: 10, bold: true },
               ...(customer?.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 7, margin: [0, 2, 0, 0] }] : []),
               ...(customer?.pan ? [{ text: `PAN: ${customer.pan}`, fontSize: 7 }] : []),
@@ -86,7 +70,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           },
           {
             stack: [
-              { text: 'QUOTE DETAILS', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 3] },
+              sectionLabel('Quote Details'),
               { text: `Quote No: ${quote.quote_no}`, fontSize: 7.5, bold: true },
               { text: `Date: ${fmtDate(quote.quote_date)}`, fontSize: 7 },
               ...(quote.valid_until ? [{ text: `Valid Until: ${fmtDate(quote.valid_until)}`, fontSize: 7 }] : []),
@@ -103,41 +87,39 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     // Items table — Description gets all remaining space (*)
     // Monetary columns sized to fit ₹XX,XXX.XX format
     // Overall table spans full page width
-    const F = 7; // table font size
     const FM = 6.5; // monetary column font (slightly smaller for compact numbers)
-    const hdr = (text: string, align = 'center') => ({ text, bold: true, fillColor: BG, alignment: align, fontSize: F, noWrap: true });
     const cell = (text: string, align = 'right', bold = false) => ({ text, alignment: align, fontSize: FM, bold, noWrap: true });
 
     const headerRow: any[] = [
-      hdr('#'), hdr('Description', 'left'), hdr('HSN/SAC'),
-      hdr('Qty'), hdr('Unit'), hdr('Rate', 'right'),
-      hdr('Disc%'), hdr('Taxable', 'right'),
+      tableHeaderCell('#', 'center'), tableHeaderCell('Description', 'left'), tableHeaderCell('HSN/SAC', 'center'),
+      tableHeaderCell('Qty', 'center'), tableHeaderCell('Unit', 'center'), tableHeaderCell('Rate', 'right'),
+      tableHeaderCell('Disc%', 'center'), tableHeaderCell('Taxable', 'right'),
     ];
     if (isIntra) {
-      headerRow.push(hdr(`CGST ${halfRate}%`, 'right'), hdr(`SGST ${halfRate}%`, 'right'));
+      headerRow.push(tableHeaderCell(`CGST ${halfRate}%`, 'right'), tableHeaderCell(`SGST ${halfRate}%`, 'right'));
     } else {
-      headerRow.push(hdr('IGST', 'right'));
+      headerRow.push(tableHeaderCell('IGST', 'right'));
     }
-    headerRow.push(hdr('Total', 'right'));
+    headerRow.push(tableHeaderCell('Total', 'right'));
 
     const dataRows = items.map((item: any, i: number) => {
       const halfGst = parseFloat((item.gst_amount / 2).toFixed(2));
       const row: any[] = [
-        { text: String(i + 1), alignment: 'center', fontSize: F },
-        { text: item.name, fontSize: F },  // Description wraps naturally
+        { text: String(i + 1), alignment: 'center', fontSize: FONT.table },
+        { text: item.name, fontSize: FONT.table },  // Description wraps naturally
         cell(item.hsn_code || item.sac_code || '-', 'center'),
         cell(String(item.quantity), 'center'),
         cell(item.unit, 'center'),
-        cell(fmtN(item.unit_price)),
+        cell(fmtINR(item.unit_price)),
         cell(item.discount_pct > 0 ? `${item.discount_pct}%` : '-', 'center'),
-        cell(fmtN(item.taxable_amount)),
+        cell(fmtINR(item.taxable_amount)),
       ];
       if (isIntra) {
-        row.push(cell(fmtN(halfGst)), cell(fmtN(halfGst)));
+        row.push(cell(fmtINR(halfGst)), cell(fmtINR(halfGst)));
       } else {
-        row.push(cell(fmtN(item.gst_amount)));
+        row.push(cell(fmtINR(item.gst_amount)));
       }
-      row.push(cell(fmtN(item.total), 'right', true));
+      row.push(cell(fmtINR(item.total), 'right', true));
       return row;
     });
 
@@ -149,27 +131,27 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     content.push({
       table: { headerRows: 1, widths, body: [headerRow, ...dataRows], dontBreakRows: true },
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3 },
+      layout: TABLE_LAYOUT,
       margin: [0, 0, 0, 8],
     });
 
     // Totals (right-aligned)
     const totalsBody: any[][] = [
-      [{ text: 'Subtotal', alignment: 'right', color: '#666' }, { text: fmtN(quote.subtotal), alignment: 'right' }],
+      [{ text: 'Subtotal', alignment: 'right', color: '#666' }, { text: fmtINR(quote.subtotal), alignment: 'right' }],
     ];
     if (Number(quote.discount_amount) > 0) {
-      totalsBody.push([{ text: 'Discount', alignment: 'right', color: '#c00' }, { text: `- ${fmtN(quote.discount_amount)}`, alignment: 'right', color: '#c00' }]);
+      totalsBody.push([{ text: 'Discount', alignment: 'right', color: '#c00' }, { text: `- ${fmtINR(quote.discount_amount)}`, alignment: 'right', color: '#c00' }]);
     }
-    totalsBody.push([{ text: 'Taxable Value', alignment: 'right' }, { text: fmtN(quote.taxable_value), alignment: 'right' }]);
+    totalsBody.push([{ text: 'Taxable Value', alignment: 'right' }, { text: fmtINR(quote.taxable_value), alignment: 'right' }]);
     if (isIntra) {
-      totalsBody.push([{ text: 'CGST', alignment: 'right', color: '#666' }, { text: fmtN(quote.cgst_amount), alignment: 'right' }]);
-      totalsBody.push([{ text: 'SGST', alignment: 'right', color: '#666' }, { text: fmtN(quote.sgst_amount), alignment: 'right' }]);
+      totalsBody.push([{ text: 'CGST', alignment: 'right', color: '#666' }, { text: fmtINR(quote.cgst_amount), alignment: 'right' }]);
+      totalsBody.push([{ text: 'SGST', alignment: 'right', color: '#666' }, { text: fmtINR(quote.sgst_amount), alignment: 'right' }]);
     } else {
-      totalsBody.push([{ text: 'IGST', alignment: 'right', color: '#666' }, { text: fmtN(quote.igst_amount), alignment: 'right' }]);
+      totalsBody.push([{ text: 'IGST', alignment: 'right', color: '#666' }, { text: fmtINR(quote.igst_amount), alignment: 'right' }]);
     }
     totalsBody.push([
-      { text: 'GRAND TOTAL', alignment: 'right', bold: true, fontSize: 10, fillColor: BG },
-      { text: fmtN(quote.total_amount), alignment: 'right', bold: true, fontSize: 10, fillColor: BG },
+      { text: 'GRAND TOTAL', alignment: 'right', bold: true, fontSize: 10, fillColor: COLORS.headerBg },
+      { text: fmtINR(quote.total_amount), alignment: 'right', bold: true, fontSize: 10, fillColor: COLORS.headerBg },
     ]);
 
     // Totals table — full width, right-aligned labels + values
@@ -182,24 +164,24 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           { ...value, border: [false, true, true, true] },
         ]),
       },
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 3, paddingBottom: () => 3 },
+      layout: TABLE_LAYOUT,
       margin: [0, 0, 0, 10],
     });
 
-    // Notes & Terms — professional two-column table with gray background
+    // Notes & Terms — professional two-column table
     if (quote.notes || quote.terms) {
       const ntBody: any[][] = [[
         ...(quote.notes ? [{
-          
+
           stack: [
-            { text: 'NOTES', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+            sectionLabel('Notes'),
             { text: quote.notes, fontSize: 7, color: '#444', lineHeight: 1.5 },
           ],
         }] : []),
         ...(quote.terms ? [{
-          
+
           stack: [
-            { text: 'TERMS & CONDITIONS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+            sectionLabel('Terms & Conditions'),
             { text: quote.terms, fontSize: 7, color: '#444', lineHeight: 1.5 },
           ],
         }] : []),
@@ -238,14 +220,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     });
 
     // Generate PDF using smart auto-scaling system
-    const { generateSmartPdf } = await import('@/lib/pdfConfig');
-    const pdfBuffer = await generateSmartPdf(content, (pg: number, total: number) => ({
-      columns: [
-        { text: quote.quote_no, fontSize: 7, color: '#aaa', margin: [36, 0, 0, 0] },
-        { text: `${CO.web}  |  ${CO.email}`, fontSize: 7, color: '#aaa', alignment: 'center' },
-        { text: `Page ${pg} of ${total}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 36, 0] },
-      ],
-    }));
+    const pdfBuffer = await generateSmartPdf(
+      content,
+      buildFooter({
+        leftText: quote.quote_no,
+        centerText: `${CO.web}  |  ${CO.email}`,
+      }),
+    );
 
     const headers: Record<string, string> = { 'Content-Type': 'application/pdf', 'Cache-Control': 'public, max-age=60' };
     if (download) headers['Content-Disposition'] = `attachment; filename="Quote-${quote.quote_no}.pdf"`;

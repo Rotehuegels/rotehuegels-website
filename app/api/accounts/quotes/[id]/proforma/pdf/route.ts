@@ -1,22 +1,11 @@
 import { NextResponse } from 'next/server';
-import { hrLine } from '@/lib/pdfConfig';
+import { getLogoDataUrl, getSignatureDataUrl, fmtINR, fmtDate, generateSmartPdf } from '@/lib/pdfConfig';
+import { COLORS, FONT, buildHeader, buildFooter, tableHeaderCell, TABLE_LAYOUT, sectionLabel } from '@/lib/pdfTemplate';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
-import fs from 'fs';
-import path from 'path';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const dynamic = 'force-dynamic';
-
-const fmtN = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
-const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-
-function getLogoDataUrl(): string | null {
-  try { return `data:image/png;base64,${fs.readFileSync(path.join(process.cwd(), 'public', 'assets', 'Logo2_black.png')).toString('base64')}`; } catch { return null; }
-}
-function getSigDataUrl(): string | null {
-  try { return `data:image/jpeg;base64,${fs.readFileSync(path.join(process.cwd(), 'private', 'signature.jpg')).toString('base64')}`; } catch { return null; }
-}
 
 function amountInWords(amount: number): string {
   const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
@@ -39,7 +28,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   try {
     const CO = await getCompanyCO();
     const logoUrl = getLogoDataUrl();
-    const sigUrl = getSigDataUrl();
+    const sigUrl = getSignatureDataUrl();
 
     const { data: pi, error } = await supabaseAdmin.from('proforma_invoices').select('*, customers(*)').eq('quote_id', id).single();
     if (error || !pi) return NextResponse.json({ error: 'Proforma not found' }, { status: 404 });
@@ -49,28 +38,33 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const items = (pi.items ?? []) as any[];
     const isIntra = customer?.state_code === '33' || customer?.state?.toLowerCase().includes('tamil');
 
-    const BG = '#f3f4f6';
     const content: any[] = [];
 
     // Header
+    content.push(buildHeader({
+      logoUrl,
+      companyName: CO.name,
+      address: `${CO.addr1} ${CO.addr2}`,
+      contactLine: `GSTIN: ${CO.gstin}  |  PAN: ${CO.pan}  |  CIN: ${CO.cin}`,
+      gstin: CO.gstin, pan: CO.pan, cin: CO.cin, tan: CO.tan,
+      documentTitle: 'PROFORMA INVOICE',
+    }));
+
+    // Subtitle — "This is not a tax invoice"
+    content.push({ text: 'This is not a tax invoice', fontSize: FONT.body, italics: true, color: COLORS.medGray, alignment: 'right', margin: [0, -2, 0, 2] });
+
+    // PI No / Date / Valid Until line
     content.push({
       columns: [
-        { width: '*', stack: [
-          ...(logoUrl ? [{ image: logoUrl, width: 110, margin: [0, 0, 0, 4] }] : []),
-          { text: CO.name, fontSize: 11, bold: true },
-          { text: `${CO.addr1} ${CO.addr2}`, fontSize: 7, color: '#666', margin: [0, 2, 0, 0] },
-          { text: `GSTIN: ${CO.gstin}  |  PAN: ${CO.pan}  |  CIN: ${CO.cin}`, fontSize: 7, color: '#666', margin: [0, 2, 0, 0] },
-        ]},
+        { width: '*', text: '' },
         { width: 'auto', alignment: 'right', stack: [
-          { text: 'PROFORMA INVOICE', fontSize: 14, bold: true, color: '#b45309' },
-          { text: 'This is not a tax invoice', fontSize: 8, italics: true, color: '#888', margin: [0, 2, 0, 4] },
-          { text: `PI No: ${pi.pi_no}`, fontSize: 8 },
-          { text: `Date: ${fmtDate(pi.pi_date)}`, fontSize: 8 },
-          ...(pi.valid_until ? [{ text: `Valid Until: ${fmtDate(pi.valid_until)}`, fontSize: 8 }] : []),
+          { text: `PI No: ${pi.pi_no}`, fontSize: FONT.body },
+          { text: `Date: ${fmtDate(pi.pi_date)}`, fontSize: FONT.body },
+          ...(pi.valid_until ? [{ text: `Valid Until: ${fmtDate(pi.valid_until)}`, fontSize: FONT.body }] : []),
         ]},
       ],
+      margin: [0, 0, 0, 6],
     });
-    content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 8] });
 
     // Bill To + PI Details
     content.push({
@@ -79,19 +73,19 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         body: [[
           {
             stack: [
-              { text: 'BILL TO', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
-              { text: customer?.name ?? '', fontSize: 11, bold: true },
-              ...(customer?.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 7, margin: [0, 2, 0, 0] }] : []),
-              ...(billing ? [{ text: `${billing.line1 ?? ''}${billing.line2 ? ', ' + billing.line2 : ''}, ${billing.city ?? ''}, ${billing.state ?? ''}`, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
+              sectionLabel('Bill To'),
+              { text: customer?.name ?? '', fontSize: FONT.heading, bold: true },
+              ...(customer?.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: FONT.body, margin: [0, 2, 0, 0] }] : []),
+              ...(billing ? [{ text: `${billing.line1 ?? ''}${billing.line2 ? ', ' + billing.line2 : ''}, ${billing.city ?? ''}, ${billing.state ?? ''}`, fontSize: FONT.body, color: COLORS.gray, margin: [0, 2, 0, 0] }] : []),
             ],
           },
           {
             stack: [
-              { text: 'PROFORMA DETAILS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
-              { text: `PI No: ${pi.pi_no}`, fontSize: 7 },
-              { text: `Quote Ref: ${pi.quote_no ?? '-'}`, fontSize: 7 },
-              { text: `Place of Supply: ${isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '-')}`, fontSize: 7 },
-              { text: `GST Type: ${isIntra ? 'CGST + SGST' : 'IGST'}`, fontSize: 7 },
+              sectionLabel('Proforma Details'),
+              { text: `PI No: ${pi.pi_no}`, fontSize: FONT.body },
+              { text: `Quote Ref: ${pi.quote_no ?? '-'}`, fontSize: FONT.body },
+              { text: `Place of Supply: ${isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '-')}`, fontSize: FONT.body },
+              { text: `GST Type: ${isIntra ? 'CGST + SGST' : 'IGST'}`, fontSize: FONT.body },
             ],
           },
         ]],
@@ -103,38 +97,38 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     // Items table
     const halfRate = (items[0]?.gst_rate ?? 18) / 2;
     const headerRow: any[] = [
-      { text: '#', bold: true, fillColor: BG, alignment: 'center' },
-      { text: 'Description', bold: true, fillColor: BG },
-      { text: 'HSN/SAC', bold: true, fillColor: BG, alignment: 'center' },
-      { text: 'Qty', bold: true, fillColor: BG, alignment: 'right' },
-      { text: 'Rate', bold: true, fillColor: BG, alignment: 'right' },
-      { text: 'Taxable', bold: true, fillColor: BG, alignment: 'right' },
+      tableHeaderCell('#', 'center'),
+      tableHeaderCell('Description', 'left'),
+      tableHeaderCell('HSN/SAC', 'center'),
+      tableHeaderCell('Qty', 'right'),
+      tableHeaderCell('Rate', 'right'),
+      tableHeaderCell('Taxable', 'right'),
     ];
     if (isIntra) {
-      headerRow.push({ text: `CGST ${halfRate}%`, bold: true, fillColor: BG, alignment: 'right' });
-      headerRow.push({ text: `SGST ${halfRate}%`, bold: true, fillColor: BG, alignment: 'right' });
+      headerRow.push(tableHeaderCell(`CGST ${halfRate}%`, 'right'));
+      headerRow.push(tableHeaderCell(`SGST ${halfRate}%`, 'right'));
     } else {
-      headerRow.push({ text: 'IGST', bold: true, fillColor: BG, alignment: 'right' });
+      headerRow.push(tableHeaderCell('IGST', 'right'));
     }
-    headerRow.push({ text: 'Total', bold: true, fillColor: BG, alignment: 'right' });
+    headerRow.push(tableHeaderCell('Total', 'right'));
 
     const dataRows = items.map((item: any, i: number) => {
       const halfGst = parseFloat((item.gst_amount / 2).toFixed(2));
       const row: any[] = [
-        { text: String(i + 1), alignment: 'center' },
-        { text: item.name, bold: true },
-        { text: item.hsn_code || item.sac_code || '-', alignment: 'center', fontSize: 7.5 },
-        { text: `${item.quantity} ${item.unit}`, alignment: 'right' },
-        { text: fmtN(item.unit_price), alignment: 'right' },
-        { text: fmtN(item.taxable_amount), alignment: 'right' },
+        { text: String(i + 1), alignment: 'center', fontSize: FONT.table },
+        { text: item.name, bold: true, fontSize: FONT.table },
+        { text: item.hsn_code || item.sac_code || '-', alignment: 'center', fontSize: FONT.table },
+        { text: `${item.quantity} ${item.unit}`, alignment: 'right', fontSize: FONT.table },
+        { text: fmtINR(item.unit_price), alignment: 'right', fontSize: FONT.table },
+        { text: fmtINR(item.taxable_amount), alignment: 'right', fontSize: FONT.table },
       ];
       if (isIntra) {
-        row.push({ text: fmtN(halfGst), alignment: 'right' });
-        row.push({ text: fmtN(halfGst), alignment: 'right' });
+        row.push({ text: fmtINR(halfGst), alignment: 'right', fontSize: FONT.table });
+        row.push({ text: fmtINR(halfGst), alignment: 'right', fontSize: FONT.table });
       } else {
-        row.push({ text: fmtN(item.gst_amount), alignment: 'right' });
+        row.push({ text: fmtINR(item.gst_amount), alignment: 'right', fontSize: FONT.table });
       }
-      row.push({ text: fmtN(item.total), alignment: 'right', bold: true });
+      row.push({ text: fmtINR(item.total), alignment: 'right', bold: true, fontSize: FONT.table });
       return row;
     });
 
@@ -144,23 +138,23 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     content.push({
       table: { headerRows: 1, widths, body: [headerRow, ...dataRows], dontBreakRows: true },
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3 },
+      layout: TABLE_LAYOUT,
       margin: [0, 0, 0, 8],
     });
 
     // Totals
     const totalsBody: any[][] = [
-      [{ text: 'Taxable Value', alignment: 'right' }, { text: fmtN(pi.taxable_value), alignment: 'right' }],
+      [{ text: 'Taxable Value', alignment: 'right' }, { text: fmtINR(pi.taxable_value), alignment: 'right' }],
     ];
     if (isIntra) {
-      totalsBody.push([{ text: 'CGST', alignment: 'right', color: '#666' }, { text: fmtN(pi.cgst_amount), alignment: 'right' }]);
-      totalsBody.push([{ text: 'SGST', alignment: 'right', color: '#666' }, { text: fmtN(pi.sgst_amount), alignment: 'right' }]);
+      totalsBody.push([{ text: 'CGST', alignment: 'right', color: COLORS.gray }, { text: fmtINR(pi.cgst_amount), alignment: 'right' }]);
+      totalsBody.push([{ text: 'SGST', alignment: 'right', color: COLORS.gray }, { text: fmtINR(pi.sgst_amount), alignment: 'right' }]);
     } else {
-      totalsBody.push([{ text: 'IGST', alignment: 'right', color: '#666' }, { text: fmtN(pi.igst_amount), alignment: 'right' }]);
+      totalsBody.push([{ text: 'IGST', alignment: 'right', color: COLORS.gray }, { text: fmtINR(pi.igst_amount), alignment: 'right' }]);
     }
     totalsBody.push([
-      { text: 'GRAND TOTAL', alignment: 'right', bold: true, fontSize: 10 },
-      { text: fmtN(pi.total_amount), alignment: 'right', bold: true, fontSize: 10 },
+      { text: 'GRAND TOTAL', alignment: 'right', bold: true, fontSize: FONT.total },
+      { text: fmtINR(pi.total_amount), alignment: 'right', bold: true, fontSize: FONT.total },
     ]);
 
     content.push({
@@ -173,11 +167,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     });
 
     // Amount in words
-    content.push({ text: `Amount in words: ${amountInWords(pi.total_amount)}`, fontSize: 8, bold: true, margin: [0, 0, 0, 8] });
+    content.push({ text: `Amount in words: ${amountInWords(pi.total_amount)}`, fontSize: FONT.heading, bold: true, margin: [0, 0, 0, 8] });
 
     // Payment terms
     if (pi.payment_terms) {
-      content.push({ text: `Payment Terms: ${pi.payment_terms}`, fontSize: 8, color: '#555', margin: [0, 0, 0, 6] });
+      content.push({ text: `Payment Terms: ${pi.payment_terms}`, fontSize: FONT.body, color: COLORS.gray, margin: [0, 0, 0, 6] });
     }
 
     // Bank details + Signature
@@ -187,21 +181,21 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         body: [[
           {
             stack: [
-              { text: 'BANK DETAILS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 4] },
+              sectionLabel('Bank Details'),
               { table: { body: [
-                [{ text: 'Name', fontSize: 7, color: '#888' }, { text: CO.name, fontSize: 7 }],
-                [{ text: 'A/c No.', fontSize: 7, color: '#888' }, { text: CO.acc, fontSize: 7, bold: true }],
-                [{ text: 'IFSC', fontSize: 7, color: '#888' }, { text: CO.ifsc, fontSize: 7 }],
-                [{ text: 'Bank', fontSize: 7, color: '#888' }, { text: CO.bank, fontSize: 7 }],
+                [{ text: 'Name', fontSize: FONT.body, color: COLORS.labelText }, { text: CO.name, fontSize: FONT.body }],
+                [{ text: 'A/c No.', fontSize: FONT.body, color: COLORS.labelText }, { text: CO.acc, fontSize: FONT.body, bold: true }],
+                [{ text: 'IFSC', fontSize: FONT.body, color: COLORS.labelText }, { text: CO.ifsc, fontSize: FONT.body }],
+                [{ text: 'Bank', fontSize: FONT.body, color: COLORS.labelText }, { text: CO.bank, fontSize: FONT.body }],
               ]}, layout: 'noBorders' },
             ],
           },
           {
             stack: [
-              { text: `For ${CO.name}`, fontSize: 7, bold: true, color: '#444', alignment: 'right' },
+              { text: `For ${CO.name}`, fontSize: FONT.body, bold: true, color: COLORS.darkGray, alignment: 'right' },
               ...(sigUrl ? [{ image: sigUrl, width: 55, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 16, 0, 0] }]),
-              { canvas: [{ type: 'line', x1: 80, y1: 0, x2: 200, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
-              { text: 'Authorised Signatory', fontSize: 6.5, bold: true, alignment: 'right' },
+              { canvas: [{ type: 'line', x1: 80, y1: 0, x2: 200, y2: 0, lineWidth: 0.5, lineColor: COLORS.lightGray }] },
+              { text: 'Authorised Signatory', fontSize: FONT.small, bold: true, alignment: 'right' },
             ],
           },
         ]],
@@ -209,16 +203,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       layout: 'noBorders',
     });
 
-    // Footer
-    // Note: disclaimer moved to footer to prevent page overflow
-
     // Generate PDF using smart auto-scaling system
-    const { generateSmartPdf } = await import('@/lib/pdfConfig');
-    const pdfBuffer = await generateSmartPdf(content, (pg: number, total: number) => ({ columns: [
-      { text: pi.pi_no, fontSize: 7, color: '#aaa', margin: [36, 0, 0, 0] },
-      { text: 'Proforma Invoice — Not a Tax Invoice', fontSize: 7, color: '#aaa', alignment: 'center' },
-      { text: `Page ${pg} of ${total}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 36, 0] },
-    ]}));
+    const pdfBuffer = await generateSmartPdf(
+      content,
+      buildFooter({ leftText: pi.pi_no, centerText: 'Proforma Invoice — Not a Tax Invoice' }),
+    );
 
     const headers: Record<string, string> = { 'Content-Type': 'application/pdf', 'Cache-Control': 'public, max-age=60' };
     if (download) headers['Content-Disposition'] = `attachment; filename="Proforma-${pi.pi_no}.pdf"`;

@@ -1,10 +1,9 @@
-import Link from 'next/link';
-import { Recycle, MapPin, Factory, ArrowLeft } from 'lucide-react';
+'use client';
 
-export const metadata = {
-  title: 'CPCB Registered E-Waste Recyclers — Rotehügels',
-  description: 'Directory of 569 CPCB/SPCB authorized e-waste recyclers and dismantlers across 22 states in India.',
-};
+import Link from 'next/link';
+import { useState } from 'react';
+import { Recycle, MapPin, Factory, ArrowLeft, List, Map as MapIcon, X } from 'lucide-react';
+import IndiaMap from '@/components/IndiaMap';
 
 // State-wise data from CPCB list (As on 08-06-2023)
 const STATES = [
@@ -44,6 +43,13 @@ const TOTAL_CAPACITY = 1790348;
 const fmtNum = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 
 export default function RecyclersDirectoryPage() {
+  const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [view, setView] = useState<'map' | 'table'>('map');
+
+  const filteredStates = selectedState
+    ? STATES.filter(s => s.name === selectedState)
+    : STATES;
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-5xl mx-auto px-6 py-12">
@@ -81,11 +87,56 @@ export default function RecyclersDirectoryPage() {
           </div>
         </div>
 
+        {/* View toggle */}
+        <div className="flex items-center gap-2 mb-6">
+          <button
+            onClick={() => setView('map')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              view === 'map' ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-300'
+            }`}
+          >
+            <MapIcon className="h-3.5 w-3.5" /> Map View
+          </button>
+          <button
+            onClick={() => setView('table')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              view === 'table' ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-300'
+            }`}
+          >
+            <List className="h-3.5 w-3.5" /> Table View
+          </button>
+          {selectedState && (
+            <button
+              onClick={() => setSelectedState(null)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors ml-auto"
+            >
+              <X className="h-3 w-3" /> Clear: {selectedState}
+            </button>
+          )}
+        </div>
+
+        {/* Map View */}
+        {view === 'map' && (
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
+            <h2 className="text-sm font-semibold text-zinc-300 mb-4">Interactive India Map — Click a state to filter</h2>
+            <div className="max-w-lg mx-auto">
+              <IndiaMap
+                onStateClick={(state) => setSelectedState(prev => prev === state ? null : state)}
+                selectedState={selectedState}
+              />
+            </div>
+          </div>
+        )}
+
         {/* State-wise table */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-zinc-800/60 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-300">State-wise Distribution</h2>
-            <span className="text-xs text-zinc-500">Sorted by number of recyclers</span>
+            <h2 className="text-sm font-semibold text-zinc-300">
+              {selectedState ? `Recyclers in ${selectedState}` : 'State-wise Distribution'}
+            </h2>
+            <span className="text-xs text-zinc-500">
+              {selectedState ? `${filteredStates[0]?.recyclers ?? 0} recyclers` : 'Sorted by number of recyclers'}
+            </span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -99,11 +150,15 @@ export default function RecyclersDirectoryPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
-                {STATES.map((s, i) => {
+                {filteredStates.map((s, i) => {
                   const pct = Math.round((s.recyclers / TOTAL_RECYCLERS) * 100);
                   return (
-                    <tr key={s.name} className="hover:bg-zinc-800/20 transition-colors">
-                      <td className="px-6 py-3 text-zinc-600">{i + 1}</td>
+                    <tr
+                      key={s.name}
+                      className={`hover:bg-zinc-800/20 transition-colors cursor-pointer ${selectedState === s.name ? 'bg-amber-500/5' : ''}`}
+                      onClick={() => setSelectedState(prev => prev === s.name ? null : s.name)}
+                    >
+                      <td className="px-6 py-3 text-zinc-600">{selectedState ? 1 : i + 1}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <MapPin className={`h-3.5 w-3.5 ${s.color}`} />
@@ -129,15 +184,17 @@ export default function RecyclersDirectoryPage() {
                   );
                 })}
               </tbody>
-              <tfoot>
-                <tr className="border-t border-zinc-700 bg-zinc-800/20">
-                  <td className="px-6 py-3"></td>
-                  <td className="px-4 py-3 font-bold text-white">Total</td>
-                  <td className="px-4 py-3 text-right font-black text-emerald-400">{fmtNum(TOTAL_RECYCLERS)}</td>
-                  <td className="px-4 py-3 text-right font-bold text-zinc-300 font-mono">{fmtNum(TOTAL_CAPACITY)}</td>
-                  <td className="px-6 py-3 text-xs text-zinc-500">100%</td>
-                </tr>
-              </tfoot>
+              {!selectedState && (
+                <tfoot>
+                  <tr className="border-t border-zinc-700 bg-zinc-800/20">
+                    <td className="px-6 py-3"></td>
+                    <td className="px-4 py-3 font-bold text-white">Total</td>
+                    <td className="px-4 py-3 text-right font-black text-emerald-400">{fmtNum(TOTAL_RECYCLERS)}</td>
+                    <td className="px-4 py-3 text-right font-bold text-zinc-300 font-mono">{fmtNum(TOTAL_CAPACITY)}</td>
+                    <td className="px-6 py-3 text-xs text-zinc-500">100%</td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </div>

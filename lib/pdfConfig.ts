@@ -197,9 +197,9 @@ export const fmtDate = (d: string) =>
 // presets. This uses a table-based approach that always spans 100% width.
 export function hrLine(thickness = 2, color = '#111'): any {
   return {
-    table: { widths: ['*'], body: [[{ text: '', border: [false, false, false, true], borderColor: [color, color, color, color] }]] },
+    table: { widths: ['*'], body: [['']] },
     layout: {
-      hLineWidth: (_i: number) => thickness,
+      hLineWidth: (i: number) => i === 1 ? thickness : 0,
       vLineWidth: () => 0,
       hLineColor: () => color,
       paddingLeft: () => 0, paddingRight: () => 0,

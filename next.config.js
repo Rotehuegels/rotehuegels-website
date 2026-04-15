@@ -6,6 +6,11 @@ const nextConfig = {
       './public/fonts/Roboto/**',
       './public/assets/Logo2_black.png',
     ],
+    '/api/accounts/orders/[id]/invoice/pdf': [
+      './public/fonts/Roboto/**',
+      './public/assets/Logo2_black.png',
+      './private/signature.jpg',
+    ],
   },
 
   // ── Security headers ────────────────────────────────────────────────

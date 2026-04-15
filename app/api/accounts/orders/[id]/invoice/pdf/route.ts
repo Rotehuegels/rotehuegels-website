@@ -105,8 +105,11 @@ export async function GET(
           const gstAmt = r.gst_amount ?? 0;
           const halfGst = parseFloat((gstAmt / 2).toFixed(2));
           return {
-            desc: r.name ?? r.description ?? '', qty: r.quantity != null ? `${r.quantity} ${r.unit ?? ''}`.trim() : '',
-            hsn: r.hsn_code || r.sac_code || '', rate: r.rate, discount: r.discount,
+            desc: r.name ?? r.description ?? '',
+            qty: r.quantity != null && r.quantity !== 0 ? `${r.quantity} ${r.unit ?? ''}`.trim() : (r.qty ?? '-'),
+            hsn: r.hsn_code || r.sac_code || r.hsn || '-',
+            rate: r.rate ?? r.unit_price ?? null,
+            discount: r.discount ?? r.discount_pct ?? null,
             base: taxable, cgst: isIntra ? halfGst : 0, sgst: isIntra ? halfGst : 0,
             igst: isIntra ? 0 : gstAmt, total: r.total ?? (taxable + gstAmt),
           };

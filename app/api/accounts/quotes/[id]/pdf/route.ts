@@ -93,51 +93,51 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       margin: [0, 0, 0, 8],
     });
 
-    // Items table — use smaller font (7pt) and compact columns
-    const tblFont = 7;
+    // Items table — Description gets all remaining space (*)
+    // Monetary columns sized to fit ₹XX,XXX.XX format
+    // Overall table spans full page width
+    const F = 7; // table font size
+    const FM = 6.5; // monetary column font (slightly smaller for compact numbers)
+    const hdr = (text: string, align = 'center') => ({ text, bold: true, fillColor: BG, alignment: align, fontSize: F, noWrap: true });
+    const cell = (text: string, align = 'right', bold = false) => ({ text, alignment: align, fontSize: FM, bold, noWrap: true });
+
     const headerRow: any[] = [
-      { text: '#', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
-      { text: 'Description', bold: true, fillColor: BG, fontSize: tblFont },
-      { text: 'HSN', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
-      { text: 'Qty', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
-      { text: 'Unit', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
-      { text: 'Rate', bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont },
-      { text: 'Disc', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
-      { text: 'Taxable', bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont },
+      hdr('#'), hdr('Description', 'left'), hdr('HSN/SAC'),
+      hdr('Qty'), hdr('Unit'), hdr('Rate', 'right'),
+      hdr('Disc%'), hdr('Taxable', 'right'),
     ];
     if (isIntra) {
-      headerRow.push({ text: `CGST`, bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont });
-      headerRow.push({ text: `SGST`, bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont });
+      headerRow.push(hdr(`CGST ${halfRate}%`, 'right'), hdr(`SGST ${halfRate}%`, 'right'));
     } else {
-      headerRow.push({ text: `IGST`, bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont });
+      headerRow.push(hdr('IGST', 'right'));
     }
-    headerRow.push({ text: 'Total', bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont });
+    headerRow.push(hdr('Total', 'right'));
 
     const dataRows = items.map((item: any, i: number) => {
       const halfGst = parseFloat((item.gst_amount / 2).toFixed(2));
       const row: any[] = [
-        { text: String(i + 1), alignment: 'center', fontSize: tblFont },
-        { text: item.name, fontSize: tblFont },
-        { text: item.hsn_code || item.sac_code || '-', alignment: 'center', fontSize: 6.5 },
-        { text: String(item.quantity), alignment: 'center', fontSize: tblFont },
-        { text: item.unit, alignment: 'center', fontSize: tblFont },
-        { text: fmtN(item.unit_price), alignment: 'right', fontSize: tblFont },
-        { text: item.discount_pct > 0 ? `${item.discount_pct}%` : '-', alignment: 'center', fontSize: tblFont },
-        { text: fmtN(item.taxable_amount), alignment: 'right', fontSize: tblFont },
+        { text: String(i + 1), alignment: 'center', fontSize: F },
+        { text: item.name, fontSize: F },  // Description wraps naturally
+        cell(item.hsn_code || item.sac_code || '-', 'center'),
+        cell(String(item.quantity), 'center'),
+        cell(item.unit, 'center'),
+        cell(fmtN(item.unit_price)),
+        cell(item.discount_pct > 0 ? `${item.discount_pct}%` : '-', 'center'),
+        cell(fmtN(item.taxable_amount)),
       ];
       if (isIntra) {
-        row.push({ text: fmtN(halfGst), alignment: 'right', fontSize: tblFont });
-        row.push({ text: fmtN(halfGst), alignment: 'right', fontSize: tblFont });
+        row.push(cell(fmtN(halfGst)), cell(fmtN(halfGst)));
       } else {
-        row.push({ text: fmtN(item.gst_amount), alignment: 'right', fontSize: tblFont });
+        row.push(cell(fmtN(item.gst_amount)));
       }
-      row.push({ text: fmtN(item.total), alignment: 'right', bold: true, fontSize: tblFont });
+      row.push(cell(fmtN(item.total), 'right', true));
       return row;
     });
 
-    // Give Description more space by using narrower fixed columns
-    const widths: any[] = [15, '*', 35, 20, 22, 48, 22, 48];
-    if (isIntra) { widths.push(38, 38); } else { widths.push(42); }
+    // # and Disc are tiny, HSN/Qty/Unit are compact, monetary cols fit ₹XX,XXX.XX
+    // Description (*) gets all remaining space — typically ~160-200pt
+    const widths: any[] = [14, '*', 40, 18, 20, 50, 20, 52];
+    if (isIntra) { widths.push(42, 42); } else { widths.push(46); }
     widths.push(55);
 
     content.push({

@@ -156,6 +156,7 @@ const NAV: NavItem[] = [
       { label: 'Supplier Registrations', href: '/d/supplier-reg/registrations', icon: Building2 },
       { label: 'Customer Registrations', href: '/d/customers/registrations',    icon: UserCheck },
       { label: 'Trading Partners',       href: '/d/trading',                    icon: Scale },
+      { label: 'Recycler Registrations', href: '/d/ewaste/recyclers',          icon: Package },
     ],
   },
 

@@ -2,7 +2,7 @@
 // Fires Groq, Gemini, Mistral, Cerebras, Together, OpenRouter in parallel.
 // Consolidates + deduplicates results from all providers.
 
-export type LeadType = 'supplier' | 'customer' | 'trading';
+export type LeadType = 'supplier' | 'customer' | 'trading' | 'recycler';
 
 interface DiscoveredLead {
   company_name: string;
@@ -148,9 +148,25 @@ const TRADING_QUERIES = [
   'manganese ore traders India', 'chrome ore traders India',
 ];
 
+const RECYCLER_QUERIES = [
+  'CPCB registered e-waste recyclers India',
+  'e-waste recycling companies Tamil Nadu',
+  'electronic waste processing facilities India',
+  'battery recycling companies India CPCB authorized',
+  'PCB recycling companies India',
+  'computer hardware recyclers India',
+  'e-waste dismantlers India SPCB registered',
+  'lithium battery recycling India',
+  'black mass recycling companies India',
+  'solar panel recycling India',
+  'WEEE recyclers India authorized',
+  'e-waste collection agents India CPCB',
+];
+
 function pickQuery(type: LeadType): string {
   const pool = type === 'supplier' ? SUPPLIER_QUERIES
     : type === 'customer' ? CUSTOMER_QUERIES
+    : type === 'recycler' ? RECYCLER_QUERIES
     : TRADING_QUERIES;
   // Rotate based on day + hour so each login gets different queries
   const seed = new Date().getDate() * 24 + new Date().getHours();
@@ -167,6 +183,8 @@ For each, return: company_name, contact_person, designation, email, phone, websi
 For each, return: company_name, contact_person, designation, email, phone, website, address, city, state, country, gstin (if known), industry, potential_needs (array of what they'd buy from us), estimated_value ("small"/"medium"/"large"), confidence_score (0-100), relevance_notes.`,
     trading: `Find 5–8 REAL companies (India + international) matching this query as commodity trading partners.
 For each, return: company_name, contact_person, designation, email, phone, website, address, city, state, country, industry, commodities (array like ["copper","zinc"]), trade_type ("seller"/"buyer"/"both"), typical_volume (e.g. "50-100 MT/month"), origin_countries (array), certifications, confidence_score (0-100), relevance_notes.`,
+    recycler: `Find 5–8 REAL Indian companies matching this query that are CPCB/SPCB registered e-waste recyclers.
+For each, return: company_name, contact_person, designation, email, phone, website, address, city, state, country, gstin (if known), cpcb_registration (CPCB authorization number if known), spcb_registration (SPCB number if known), capabilities (array of e-waste types they handle, e.g. ["batteries","PCBs","computers"]), capacity_per_month (e.g. "500 MT/month"), confidence_score (0-100), relevance_notes.`,
   };
 
   return {
@@ -340,6 +358,7 @@ export async function discoverAndSave(type: LeadType, supabase: any): Promise<Di
   // Save to DB with dedup against existing
   const table = type === 'supplier' ? 'supplier_leads'
     : type === 'customer' ? 'customer_leads'
+    : type === 'recycler' ? 'ewaste_recyclers'
     : 'trading_leads';
 
   for (const lead of unique) {

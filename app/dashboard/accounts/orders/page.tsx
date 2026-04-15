@@ -188,7 +188,10 @@ export default async function OrdersListPage({ searchParams }: { searchParams: P
                   className="flex flex-col lg:grid lg:grid-cols-[120px_1fr_130px_130px_130px_90px_80px] gap-2 lg:gap-4 px-6 py-4 hover:bg-zinc-800/20 transition-colors items-start lg:items-center">
                   <div>
                     <p className="text-sm font-mono font-semibold text-amber-400">{o.order_no}</p>
-                    <div className="flex items-center gap-1.5 mt-1">
+                    <p className="text-[10px] text-zinc-500 mt-0.5">
+                      {new Date(o.order_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
                       {o.order_type === 'service'
                         ? <Wrench className="h-3 w-3 text-sky-400" />
                         : <ShoppingBag className="h-3 w-3 text-violet-400" />}

@@ -64,6 +64,7 @@ const UpdateOrderSchema = z.object({
   tds_rate: z.number().min(0).optional(),
   tds_deducted_total: z.number().min(0).optional(),
   status: z.enum(['draft', 'active', 'completed', 'cancelled']).optional(),
+  order_category: z.enum(['order', 'reimbursement', 'complimentary']).optional(),
   notes: z.string().optional(),
   hsn_sac_code: z.string().max(8).optional().nullable(),
 });

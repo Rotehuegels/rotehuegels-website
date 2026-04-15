@@ -34,6 +34,7 @@ export default function EditOrderForm({ order }: { order: Order }) {
 
   const [form, setForm] = useState({
     order_type: order.order_type,
+    order_category: (order as any).order_category ?? 'order',
     client_name: order.client_name,
     client_gstin: order.client_gstin ?? '',
     client_pan: order.client_pan ?? '',
@@ -105,6 +106,7 @@ export default function EditOrderForm({ order }: { order: Order }) {
 
     const body: Record<string, unknown> = {
       order_type: form.order_type,
+      order_category: form.order_category,
       client_name: form.client_name,
       client_gstin: form.client_gstin || null,
       client_pan: form.client_pan || null,
@@ -158,6 +160,14 @@ export default function EditOrderForm({ order }: { order: Order }) {
             <select name="order_type" value={form.order_type} onChange={handleChange} className={input}>
               <option value="goods">Goods</option>
               <option value="service">Service</option>
+            </select>
+          </div>
+          <div>
+            <label className={label}>Category</label>
+            <select name="order_category" value={form.order_category} onChange={handleChange} className={input}>
+              <option value="order">Order (Revenue)</option>
+              <option value="reimbursement">Reimbursement (Pass-through)</option>
+              <option value="complimentary">Complimentary (No Invoice Value)</option>
             </select>
           </div>
           <div>

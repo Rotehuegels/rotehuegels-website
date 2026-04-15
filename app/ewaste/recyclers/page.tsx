@@ -18,7 +18,7 @@ const STATES = [
   { name: 'Andhra Pradesh',    recyclers: 10,  capacity: 44003,   color: 'text-emerald-400' },
   { name: 'Punjab',            recyclers: 8,   capacity: 10092,   color: 'text-sky-400' },
   { name: 'Uttarakhand',       recyclers: 8,   capacity: 153068,  color: 'text-sky-400' },
-  { name: 'Orissa',            recyclers: 7,   capacity: 9050,    color: 'text-sky-400' },
+  { name: 'Odisha',            recyclers: 7,   capacity: 9050,    color: 'text-sky-400' },
   { name: 'Delhi',             recyclers: 6,   capacity: 1989,    color: 'text-sky-400' },
   { name: 'West Bengal',       recyclers: 5,   capacity: 2640,    color: 'text-sky-400' },
   { name: 'Madhya Pradesh',    recyclers: 3,   capacity: 13600,   color: 'text-sky-400' },

@@ -130,8 +130,28 @@ export async function generateSmartPdf(
   // IMPORTANT: pdfmake mutates the content array internally (adds $$pdfmake$$
   // image references). We must deep-clone before each render attempt to avoid
   // "ENOENT $$pdfmake$$1" errors on subsequent passes.
+  //
+  // CRITICAL: JSON.parse(JSON.stringify()) strips functions (like layout callbacks).
+  // We use structuredClone for data + manually preserve function properties.
   function deepClone(obj: any): any {
-    return JSON.parse(JSON.stringify(obj));
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (typeof obj === 'function') return obj;
+    if (Array.isArray(obj)) return obj.map(deepClone);
+
+    const clone: any = {};
+    for (const key of Object.keys(obj)) {
+      const val = obj[key];
+      if (typeof val === 'function') {
+        clone[key] = val; // preserve functions (layout callbacks)
+      } else if (val instanceof Buffer || val instanceof Uint8Array) {
+        clone[key] = val; // don't clone buffers
+      } else if (typeof val === 'object' && val !== null) {
+        clone[key] = deepClone(val);
+      } else {
+        clone[key] = val; // primitives (string, number, boolean)
+      }
+    }
+    return clone;
   }
 
   function render(presetIndex: number): Promise<Buffer> {

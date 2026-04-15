@@ -11,6 +11,16 @@ const nextConfig = {
       './public/assets/Logo2_black.png',
       './private/signature.jpg',
     ],
+    '/api/accounts/quotes/[id]/pdf': [
+      './public/fonts/Roboto/**',
+      './public/assets/Logo2_black.png',
+      './private/signature.jpg',
+    ],
+    '/api/accounts/purchase-orders/[id]/pdf': [
+      './public/fonts/Roboto/**',
+      './public/assets/Logo2_black.png',
+      './private/signature.jpg',
+    ],
   },
 
   // ── Security headers ────────────────────────────────────────────────

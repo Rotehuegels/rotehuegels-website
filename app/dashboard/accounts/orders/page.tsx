@@ -73,7 +73,7 @@ export default async function OrdersListPage({ searchParams }: { searchParams: P
   }
 
   const { data: orders } = await dataQuery
-    .order('order_no', { ascending: true })
+    .order('order_date', { ascending: false })
     .range(from, to);
 
   const ids = (orders ?? []).map(o => o.id);

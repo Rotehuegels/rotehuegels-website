@@ -93,50 +93,52 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       margin: [0, 0, 0, 8],
     });
 
-    // Items table
+    // Items table — use smaller font (7pt) and compact columns
+    const tblFont = 7;
     const headerRow: any[] = [
-      { text: '#', bold: true, fillColor: BG, alignment: 'center' },
-      { text: 'Description', bold: true, fillColor: BG },
-      { text: 'HSN/SAC', bold: true, fillColor: BG, alignment: 'center' },
-      { text: 'Qty', bold: true, fillColor: BG, alignment: 'right' },
-      { text: 'Unit', bold: true, fillColor: BG, alignment: 'center' },
-      { text: 'Rate', bold: true, fillColor: BG, alignment: 'right' },
-      { text: 'Disc%', bold: true, fillColor: BG, alignment: 'center' },
-      { text: 'Taxable', bold: true, fillColor: BG, alignment: 'right' },
+      { text: '#', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
+      { text: 'Description', bold: true, fillColor: BG, fontSize: tblFont },
+      { text: 'HSN', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
+      { text: 'Qty', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
+      { text: 'Unit', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
+      { text: 'Rate', bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont },
+      { text: 'Disc', bold: true, fillColor: BG, alignment: 'center', fontSize: tblFont },
+      { text: 'Taxable', bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont },
     ];
     if (isIntra) {
-      headerRow.push({ text: `CGST ${halfRate}%`, bold: true, fillColor: BG, alignment: 'right' });
-      headerRow.push({ text: `SGST ${halfRate}%`, bold: true, fillColor: BG, alignment: 'right' });
+      headerRow.push({ text: `CGST`, bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont });
+      headerRow.push({ text: `SGST`, bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont });
     } else {
-      headerRow.push({ text: `IGST`, bold: true, fillColor: BG, alignment: 'right' });
+      headerRow.push({ text: `IGST`, bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont });
     }
-    headerRow.push({ text: 'Total', bold: true, fillColor: BG, alignment: 'right' });
+    headerRow.push({ text: 'Total', bold: true, fillColor: BG, alignment: 'right', fontSize: tblFont });
 
     const dataRows = items.map((item: any, i: number) => {
       const halfGst = parseFloat((item.gst_amount / 2).toFixed(2));
       const row: any[] = [
-        { text: String(i + 1), alignment: 'center' },
-        { text: item.name, bold: true },
-        { text: item.hsn_code || item.sac_code || '-', alignment: 'center', fontSize: 7.5 },
-        { text: String(item.quantity), alignment: 'right' },
-        { text: item.unit, alignment: 'center' },
-        { text: fmtN(item.unit_price), alignment: 'right' },
-        { text: item.discount_pct > 0 ? `${item.discount_pct}%` : '-', alignment: 'center' },
-        { text: fmtN(item.taxable_amount), alignment: 'right' },
+        { text: String(i + 1), alignment: 'center', fontSize: tblFont },
+        { text: item.name, fontSize: tblFont },
+        { text: item.hsn_code || item.sac_code || '-', alignment: 'center', fontSize: 6.5 },
+        { text: String(item.quantity), alignment: 'center', fontSize: tblFont },
+        { text: item.unit, alignment: 'center', fontSize: tblFont },
+        { text: fmtN(item.unit_price), alignment: 'right', fontSize: tblFont },
+        { text: item.discount_pct > 0 ? `${item.discount_pct}%` : '-', alignment: 'center', fontSize: tblFont },
+        { text: fmtN(item.taxable_amount), alignment: 'right', fontSize: tblFont },
       ];
       if (isIntra) {
-        row.push({ text: fmtN(halfGst), alignment: 'right' });
-        row.push({ text: fmtN(halfGst), alignment: 'right' });
+        row.push({ text: fmtN(halfGst), alignment: 'right', fontSize: tblFont });
+        row.push({ text: fmtN(halfGst), alignment: 'right', fontSize: tblFont });
       } else {
-        row.push({ text: fmtN(item.gst_amount), alignment: 'right' });
+        row.push({ text: fmtN(item.gst_amount), alignment: 'right', fontSize: tblFont });
       }
-      row.push({ text: fmtN(item.total), alignment: 'right', bold: true });
+      row.push({ text: fmtN(item.total), alignment: 'right', bold: true, fontSize: tblFont });
       return row;
     });
 
-    const widths: any[] = [18, '*', 40, 28, 28, 55, 30, 55];
-    if (isIntra) { widths.push(45, 45); } else { widths.push(50); }
-    widths.push(60);
+    // Give Description more space by using narrower fixed columns
+    const widths: any[] = [15, '*', 35, 20, 22, 48, 22, 48];
+    if (isIntra) { widths.push(38, 38); } else { widths.push(42); }
+    widths.push(55);
 
     content.push({
       table: { headerRows: 1, widths, body: [headerRow, ...dataRows], dontBreakRows: true },
@@ -163,12 +165,17 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       { text: fmtN(quote.total_amount), alignment: 'right', bold: true, fontSize: 10, fillColor: BG },
     ]);
 
+    // Totals table — full width, right-aligned labels + values
     content.push({
-      columns: [{ width: '*', text: '' }, {
-        width: 'auto',
-        table: { widths: [120, 90], body: totalsBody },
-        layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 3, paddingBottom: () => 3 },
-      }],
+      table: {
+        widths: ['*', 90, 80],
+        body: totalsBody.map(([label, value]) => [
+          { text: '', border: [false, false, false, false] },
+          { ...label, border: [true, true, false, true] },
+          { ...value, border: [false, true, true, true] },
+        ]),
+      },
+      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 3, paddingBottom: () => 3 },
       margin: [0, 0, 0, 10],
     });
 

@@ -41,6 +41,12 @@ export default function EWasteLandingPage() {
             >
               Register as Recycler
             </Link>
+            <Link
+              href="/ewaste/recyclers"
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
+            >
+              View 569 Registered Recyclers
+            </Link>
           </div>
         </div>
       </section>

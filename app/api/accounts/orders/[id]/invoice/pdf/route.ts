@@ -176,16 +176,8 @@ export async function GET(
     });
     content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 6] });
 
-    // Bill To + Invoice Details (side by side)
-    const billToLines = [
-      { text: 'BILL TO / SHIP TO', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-      { text: order.client_name, fontSize: 11, bold: true, color: '#111' },
-      ...(order.client_contact ? [{ text: order.client_contact, fontSize: 8, color: '#555' }] : []),
-      ...(order.client_address ? [{ text: order.client_address, fontSize: 8, color: '#555', margin: [0, 1, 0, 0] }] : []),
-      ...(order.client_gstin ? [{ text: `GSTIN: ${order.client_gstin}`, fontSize: 8, color: '#555', margin: [0, 2, 0, 0] }] : []),
-      ...(order.client_pan ? [{ text: `PAN: ${order.client_pan}`, fontSize: 8, color: '#555' }] : []),
-    ];
-    const invDetails: [string, string][] = [
+    // Bill To + Invoice Details — full-width two-column table
+    const invDetailRows: [string, string][] = [
       ['Invoice No.', invoiceNo],
       ['Invoice Date', invoiceDate],
       ['Order Date', fmtDate(order.order_date)],
@@ -196,20 +188,37 @@ export async function GET(
     ];
 
     content.push({
-      columns: [
-        { width: '55%', stack: billToLines },
-        {
-          width: '45%',
-          table: {
-            body: invDetails.map(([l, v]) => [
-              { text: l, fontSize: 7.5, color: '#888', bold: true },
-              { text: v, fontSize: 7.5, color: '#111', bold: l === 'Invoice No.' },
-            ]),
+      table: {
+        widths: ['*', '*'],
+        body: [[
+          {
+            stack: [
+              { text: 'BILL TO / SHIP TO', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 3] },
+              { text: order.client_name, fontSize: 10, bold: true, color: '#111' },
+              ...(order.client_contact ? [{ text: order.client_contact, fontSize: 7, color: '#555' }] : []),
+              ...(order.client_address ? [{ text: order.client_address, fontSize: 7, color: '#555', margin: [0, 1, 0, 0] }] : []),
+              ...(order.client_gstin ? [{ text: `GSTIN: ${order.client_gstin}`, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
+              ...(order.client_pan ? [{ text: `PAN: ${order.client_pan}`, fontSize: 7, color: '#555' }] : []),
+            ],
           },
-          layout: 'noBorders',
-        },
-      ],
-      columnGap: 10,
+          {
+            table: {
+              widths: [70, '*'],
+              body: invDetailRows.map(([l, v]) => [
+                { text: l, fontSize: 7, color: '#888', bold: true, border: [false, false, false, false] },
+                { text: v, fontSize: 7, color: '#111', bold: l === 'Invoice No.', border: [false, false, false, false] },
+              ]),
+            },
+            layout: { paddingLeft: () => 2, paddingRight: () => 2, paddingTop: () => 1, paddingBottom: () => 1, hLineWidth: () => 0, vLineWidth: () => 0 },
+          },
+        ]],
+      },
+      layout: {
+        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+        hLineColor: () => '#ddd', vLineColor: () => '#ddd',
+        paddingLeft: () => 8, paddingRight: () => 8,
+        paddingTop: () => 6, paddingBottom: () => 6,
+      },
       margin: [0, 0, 0, 8],
     });
 
@@ -352,49 +361,56 @@ export async function GET(
       });
     }
 
-    // Bank details + Signature
+    // Bank details + Declaration/Signature — full-width two-column table
     content.push({
-      columns: [
-        {
-          width: '*',
-          stack: [
-            { text: 'BANK DETAILS', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 4] },
-            {
-              columns: [
-                {
-                  width: '*',
-                  table: {
-                    body: [
-                      [{ text: 'Name', fontSize: 7.5, color: '#888' }, { text: CO.name, fontSize: 7.5 }],
-                      [{ text: 'A/c No.', fontSize: 7.5, color: '#888' }, { text: CO.acc, fontSize: 7.5, bold: true }],
-                      [{ text: 'IFSC', fontSize: 7.5, color: '#888' }, { text: CO.ifsc, fontSize: 7.5 }],
-                      [{ text: 'Bank', fontSize: 7.5, color: '#888' }, { text: CO.bank, fontSize: 7.5 }],
-                      [{ text: 'UPI', fontSize: 7.5, color: '#888' }, { text: CO.upi, fontSize: 7.5 }],
-                    ],
+      table: {
+        widths: ['*', '*'],
+        body: [[
+          {
+            fillColor: '#f9fafb',
+            stack: [
+              { text: 'BANK DETAILS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 4] },
+              {
+                columns: [
+                  {
+                    width: '*',
+                    table: {
+                      body: [
+                        [{ text: 'Name', fontSize: 7, color: '#888' }, { text: CO.name, fontSize: 7 }],
+                        [{ text: 'A/c No.', fontSize: 7, color: '#888' }, { text: CO.acc, fontSize: 7, bold: true }],
+                        [{ text: 'IFSC', fontSize: 7, color: '#888' }, { text: CO.ifsc, fontSize: 7 }],
+                        [{ text: 'Bank', fontSize: 7, color: '#888' }, { text: CO.bank, fontSize: 7 }],
+                        [{ text: 'UPI', fontSize: 7, color: '#888' }, { text: CO.upi, fontSize: 7 }],
+                      ],
+                    },
+                    layout: { hLineWidth: () => 0, vLineWidth: () => 0, paddingLeft: () => 0, paddingRight: () => 4, paddingTop: () => 1, paddingBottom: () => 1 },
                   },
-                  layout: 'noBorders',
-                },
-                { width: 80, image: upiQr, fit: [70, 70], alignment: 'center' },
-              ],
-            },
-          ],
-        },
-        {
-          width: 200,
-          stack: [
-            { text: 'DECLARATION', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-            { text: 'We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.', fontSize: 7, color: '#666', lineHeight: 1.4 },
-            { text: '', margin: [0, 8, 0, 0] },
-            { text: `For ${CO.name}`, fontSize: 8, bold: true, color: '#444', alignment: 'right' },
-            ...(sigUrl ? [{ image: sigUrl, width: 60, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 20, 0, 0] }]),
-            { canvas: [{ type: 'line', x1: 80, y1: 0, x2: 200, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
-            { text: 'Sivakumar Shanmugam', fontSize: 8, bold: true, alignment: 'right' },
-            { text: 'CEO, Rotehugels', fontSize: 7, color: '#555', alignment: 'right' },
-            { text: 'Authorised Signatory', fontSize: 7, color: '#999', alignment: 'right' },
-          ],
-        },
-      ],
-      margin: [0, 0, 0, 6],
+                  { width: 72, image: upiQr, fit: [65, 65], alignment: 'center' },
+                ],
+              },
+            ],
+          },
+          {
+            stack: [
+              { text: 'DECLARATION', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+              { text: 'We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.', fontSize: 6.5, color: '#666', lineHeight: 1.4 },
+              { text: '', margin: [0, 6, 0, 0] },
+              { text: `For ${CO.name}`, fontSize: 7, bold: true, color: '#444', alignment: 'right' },
+              ...(sigUrl ? [{ image: sigUrl, width: 55, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 16, 0, 0] }]),
+              { canvas: [{ type: 'line', x1: 80, y1: 0, x2: 200, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
+              { text: 'Sivakumar Shanmugam', fontSize: 7, bold: true, alignment: 'right' },
+              { text: 'CEO, Roteh\u00fcgels', fontSize: 6.5, color: '#555', alignment: 'right' },
+              { text: 'Authorised Signatory', fontSize: 6.5, color: '#999', alignment: 'right' },
+            ],
+          },
+        ]],
+      },
+      layout: {
+        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+        hLineColor: () => '#e5e7eb', vLineColor: () => '#e5e7eb',
+        paddingLeft: () => 8, paddingRight: () => 8,
+        paddingTop: () => 6, paddingBottom: () => 6,
+      },
     });
 
     // Generate PDF using smart auto-scaling system

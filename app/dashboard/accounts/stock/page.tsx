@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import AddStockForm from './AddStockForm';
-import { Package, Pencil } from 'lucide-react';
+import { Package, Pencil, AlertTriangle, TrendingDown } from 'lucide-react';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import StockFilterBar from './StockFilterBar';
@@ -9,6 +9,8 @@ const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-s
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
 const fmtNum = (n: number, dec = 3) => n.toLocaleString('en-IN', { maximumFractionDigits: dec });
+
+const LOW_STOCK_THRESHOLD = 5; // items with qty <= this are flagged
 
 export default async function StockPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -27,15 +29,65 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
 
   const list = items ?? [];
   const totalValue = list.reduce((s, i) => s + (i.quantity ?? 0) * (i.unit_cost ?? 0), 0);
+  const lowStockItems = list.filter(i => (i.quantity ?? 0) <= LOW_STOCK_THRESHOLD && (i.quantity ?? 0) > 0);
+  const outOfStock = list.filter(i => (i.quantity ?? 0) === 0);
+  const categories = [...new Set(list.map(i => i.category).filter(Boolean))];
 
   return (
-    <div className="p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Stock Items</h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          {list.length} items — Total value: {fmt(totalValue)}
-        </p>
+    <div className="p-5 md:p-8 space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Package className="h-6 w-6 text-amber-400" />
+        <div>
+          <h1 className="text-2xl font-bold text-white">Stock &amp; Inventory</h1>
+          <p className="mt-0.5 text-sm text-zinc-500">{list.length} items &middot; {categories.length} categories</p>
+        </div>
       </div>
+
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className={`${glass} p-4`}>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Total Items</p>
+          <p className="text-2xl font-black text-white mt-1">{list.length}</p>
+        </div>
+        <div className={`${glass} p-4`}>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Stock Value</p>
+          <p className="text-2xl font-black text-amber-400 mt-1">{fmt(totalValue)}</p>
+        </div>
+        <div className={`${glass} p-4`}>
+          <div className="flex items-center gap-1.5">
+            <TrendingDown className="h-3 w-3 text-amber-400" />
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Low Stock</p>
+          </div>
+          <p className={`text-2xl font-black mt-1 ${lowStockItems.length > 0 ? 'text-amber-400' : 'text-zinc-600'}`}>{lowStockItems.length}</p>
+        </div>
+        <div className={`${glass} p-4`}>
+          <div className="flex items-center gap-1.5">
+            <AlertTriangle className="h-3 w-3 text-red-400" />
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Out of Stock</p>
+          </div>
+          <p className={`text-2xl font-black mt-1 ${outOfStock.length > 0 ? 'text-red-400' : 'text-zinc-600'}`}>{outOfStock.length}</p>
+        </div>
+      </div>
+
+      {/* Low stock alert banner */}
+      {(lowStockItems.length > 0 || outOfStock.length > 0) && (
+        <div className="flex items-start gap-3 rounded-xl bg-amber-500/5 border border-amber-500/20 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            {outOfStock.length > 0 && (
+              <p className="text-red-400 font-medium">
+                {outOfStock.length} item{outOfStock.length > 1 ? 's' : ''} out of stock: {outOfStock.map(i => i.item_name).join(', ')}
+              </p>
+            )}
+            {lowStockItems.length > 0 && (
+              <p className="text-amber-400">
+                {lowStockItems.length} item{lowStockItems.length > 1 ? 's' : ''} running low (&le;{LOW_STOCK_THRESHOLD}): {lowStockItems.map(i => `${i.item_name} (${i.quantity})`).join(', ')}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Add stock */}
       <div className={`${glass} p-6`}>

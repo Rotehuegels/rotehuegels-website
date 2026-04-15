@@ -92,12 +92,18 @@ export async function GET(
     const adjustments = ((order as any).adjustments ?? []) as Array<{ description: string; amount: number }>;
     const totalPaid = payments.reduce((s: number, p: any) => s + (p.amount_received ?? 0), 0);
 
-    // If order doesn't have customer details inline, try to fetch from customers table
-    if (!order.client_address && order.customer_id) {
-      const { data: cust } = await supabaseAdmin.from('customers').select('contact_person, billing_address, email, phone').eq('id', order.customer_id).single();
+    // Fetch customer details from customers table (for address, phone, email, customer_id)
+    let custPhone = '';
+    let custEmail = '';
+    let custCode = '';
+    if (order.customer_id) {
+      const { data: cust } = await supabaseAdmin.from('customers').select('customer_id, contact_person, billing_address, email, phone').eq('id', order.customer_id).single();
       if (cust) {
+        custPhone = cust.phone ?? '';
+        custEmail = cust.email ?? '';
+        custCode = cust.customer_id ?? '';
         if (!order.client_contact && cust.contact_person) order.client_contact = cust.contact_person;
-        if (cust.billing_address) {
+        if (!order.client_address && cust.billing_address) {
           const ba = cust.billing_address as Record<string, string>;
           order.client_address = [ba.line1, ba.line2, ba.city, ba.state, ba.pincode].filter(Boolean).join(', ');
         }
@@ -220,6 +226,9 @@ export async function GET(
               ...(order.client_address ? [{ text: order.client_address, fontSize: 6, color: '#555', lineHeight: 1.2, margin: [0, 1, 0, 0] }] : []),
               ...(order.client_gstin ? [{ text: `GSTIN:  ${order.client_gstin}`, fontSize: 6, bold: true, margin: [0, 2, 0, 0] }] : []),
               ...(order.client_pan ? [{ text: `PAN:  ${order.client_pan}`, fontSize: 6, bold: true }] : []),
+              ...(custPhone ? [{ text: `Phone: ${custPhone}`, fontSize: 5.5, color: '#666', margin: [0, 1, 0, 0] }] : []),
+              ...(custEmail ? [{ text: `Email: ${custEmail}`, fontSize: 5.5, color: '#666' }] : []),
+              ...(custCode ? [{ text: `Customer ID: ${custCode}`, fontSize: 5.5, color: '#888', margin: [0, 1, 0, 0] }] : []),
             ],
           },
           {

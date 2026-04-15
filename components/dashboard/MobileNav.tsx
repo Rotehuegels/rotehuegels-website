@@ -10,16 +10,17 @@ import {
   LayoutDashboard,
   Users, UserPlus, UserCheck,
   Briefcase, FilePlus, ClipboardList,
-  Receipt, Settings2,
+  Receipt, Settings2, Scale,
   ShoppingBag, Building2, BookOpen, FileText, ReceiptText,
   Package, ShoppingCart, Truck,
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
-  Network, FolderKanban, FolderPlus, CalendarDays, Factory, FlaskConical, Scale,
+  Network, FolderKanban, FolderPlus, CalendarDays, Factory, FlaskConical,
   Shield, BarChart3, Globe, Eye, Mail, History,
   Radar, AlertTriangle, FileCheck,
+  BookOpenCheck, HandCoins, CreditCard,
 } from 'lucide-react';
 
-// ── Same nav tree as Sidebar ──────────────────────────────────────────────────
+// ── Same nav tree as Sidebar (kept in sync) ──────────────────────────────────
 type NavLink    = { type?: 'link'; label: string; href: string; icon: React.ElementType };
 type NavSection = { type: 'section'; label: string };
 type NavChild   = NavLink | NavSection;
@@ -41,15 +42,16 @@ const NAV: NavItem[] = [
   {
     label: 'Operations', icon: Factory,
     children: [
-      { label: 'Contracts', href: '/d/operations', icon: Factory },
+      { label: 'Contracts',      href: '/d/operations',     icon: Factory },
+      { label: 'Lab Parameters', href: '/d/operations/lab', icon: FlaskConical },
     ],
   },
 
   {
     label: 'People', icon: Users,
     children: [
-      { label: 'Employees',    href: '/d/employees',  icon: Users },
-      { label: 'Add Employee', href: '/d/employees/add',        icon: UserPlus },
+      { label: 'Employees',    href: '/d/employees',     icon: Users },
+      { label: 'Add Employee', href: '/d/employees/add', icon: UserPlus },
       { type: 'section', label: 'Leave' },
       { label: 'Leave Management', href: '/d/leave', icon: CalendarDays },
       { type: 'section', label: 'Payroll' },
@@ -57,23 +59,24 @@ const NAV: NavItem[] = [
       { label: 'Salary Setup', href: '/d/payroll/setup', icon: Settings2 },
       { label: 'Run Payroll',  href: '/d/payroll/new',   icon: Receipt },
       { type: 'section', label: 'Recruitment' },
-      { label: 'Job Postings', href: '/d/jobs',      icon: Briefcase },
-      { label: 'Post a Job',   href: '/d/jobs/new',  icon: FilePlus },
+      { label: 'Job Postings',  href: '/d/jobs',          icon: Briefcase },
+      { label: 'Applications', href: '/d/applications',  icon: UserCheck },
+      { label: 'Post a Job',   href: '/d/jobs/new',      icon: FilePlus },
     ],
   },
 
   {
     label: 'Sales', icon: ShoppingBag,
     children: [
-      { label: 'Customers',      href: '/d/customers',                icon: Building2 },
-      { label: 'Registrations',  href: '/d/customers/registrations',  icon: UserCheck },
-      { label: 'Leads',            href: '/d/customers/leads',          icon: Users },
+      { label: 'Customers',       href: '/d/customers',                icon: Building2 },
+      { label: 'Registrations',   href: '/d/customers/registrations',  icon: UserCheck },
+      { label: 'Leads',           href: '/d/customers/leads',          icon: Users },
       { label: 'Trading Partners', href: '/d/trading',                 icon: Scale },
-      { label: 'Catalog',        href: '/d/catalog',                  icon: BookOpen },
-      { label: 'Quotes',         href: '/d/quotes',                   icon: FileText },
-      { label: 'Orders',         href: '/d/orders',                   icon: ReceiptText },
+      { label: 'Catalog',         href: '/d/catalog',                  icon: BookOpen },
+      { label: 'Quotes',          href: '/d/quotes',                   icon: FileText },
+      { label: 'Orders',          href: '/d/orders',                   icon: ReceiptText },
       { type: 'section', label: 'Intelligence' },
-      { label: 'Market Intelligence', href: '/d/intelligence',        icon: Radar },
+      { label: 'Market Intelligence', href: '/d/intelligence',         icon: Radar },
     ],
   },
 
@@ -81,39 +84,50 @@ const NAV: NavItem[] = [
     label: 'Procurement', icon: Package,
     children: [
       { label: 'Purchase Orders',   href: '/d/purchase-orders', icon: ShoppingCart },
-      { label: 'Suppliers',         href: '/d/suppliers',       icon: Truck },
-      { label: 'Stock & Inventory', href: '/d/stock',           icon: Package },
+      { label: 'Re-Invoice',        href: '/d/reinvoice',       icon: ReceiptText },
+      { label: 'Suppliers',          href: '/d/suppliers',       icon: Truck },
+      { label: 'Shipments',          href: '/d/shipments',       icon: Package },
+      { label: 'Stock & Inventory',  href: '/d/stock',           icon: Package },
     ],
   },
 
   {
     label: 'Finance', icon: Wallet,
     children: [
-      { label: 'Expenses',          href: '/d/expenses',     icon: Receipt },
-      { label: 'Bank Statement',    href: '/d/bank',         icon: Landmark },
-      { label: 'GST Report',        href: '/d/gst',          icon: BadgePercent },
-      { label: 'GST Filing',        href: '/d/gst/filing',   icon: BadgePercent },
-      { label: 'P&L Statement',     href: '/d/pl',           icon: TrendingUp },
-      { label: 'Investments',       href: '/d/investments',   icon: BarChart2 },
-      { label: 'Stock Intelligence', href: '/d/stock-intel',  icon: AlertTriangle },
+      { label: 'Expenses',          href: '/d/expenses',          icon: Receipt },
+      { label: 'Cash Book',         href: '/d/cash-book',         icon: BookOpenCheck },
+      { label: 'Bank Statement',    href: '/d/bank',              icon: Landmark },
+      { label: 'Customer Ledger',   href: '/d/customer-ledger',   icon: HandCoins },
+      { label: 'Creditors Ledger',  href: '/d/creditors-ledger',  icon: CreditCard },
+      { label: 'E-Way Bills',       href: '/d/eway-bills',        icon: FileCheck },
+      { label: 'Credit/Debit Notes', href: '/d/credit-notes',     icon: FileText },
+      { label: 'Payment Receipts',  href: '/d/receipts',          icon: Receipt },
+      { label: 'GST Report',        href: '/d/gst',               icon: BadgePercent },
+      { label: 'GST Filing',        href: '/d/gst/filing',        icon: BadgePercent },
+      { label: 'P&L Statement',     href: '/d/pl',                icon: TrendingUp },
+      { label: 'Investments',       href: '/d/investments',       icon: BarChart2 },
+      { label: 'Stock Intelligence', href: '/d/stock-intel',      icon: AlertTriangle },
     ],
   },
 
   {
     label: 'IT', icon: Shield,
     children: [
-      { label: 'Mail',             href: '/d/mail',              icon: Mail },
-      { label: 'Chat Analytics',   href: '/d/analytics',         icon: BarChart3 },
-      { label: 'Visitor Insights', href: '/d/analytics#orgs',    icon: Eye },
-      { label: 'Page Views',       href: '/d/analytics#traffic', icon: Globe },
+      { label: 'Mail',             href: '/d/mail',               icon: Mail },
+      { label: 'Chat Analytics',   href: '/d/analytics',          icon: BarChart3 },
+      { label: 'Visitor Insights', href: '/d/analytics#orgs',     icon: Eye },
+      { label: 'Security Log',     href: '/d/analytics#security', icon: Shield },
+      { label: 'Page Views',       href: '/d/analytics#traffic',  icon: Globe },
       { type: 'section', label: 'Audit' },
-      { label: 'Audit Trail',      href: '/d/audit',             icon: History },
+      { label: 'Audit Trail',      href: '/d/audit',              icon: History },
     ],
   },
 
   {
-    label: 'Quality', icon: FileCheck,
+    label: 'IMS', icon: Shield,
     children: [
+      { label: 'Overview',  href: '/d/ims',      icon: Shield },
+      { label: 'SOPs',      href: '/d/ims/sops', icon: BookOpenCheck },
       { label: 'Documents', href: '/d/documents', icon: FileCheck },
     ],
   },
@@ -121,10 +135,7 @@ const NAV: NavItem[] = [
   {
     label: 'Network', icon: Network,
     children: [
-      { label: 'REX Members',            href: '/d/rex',          icon: Network },
-      { label: 'Supplier Registrations', href: '/d/supplier-reg',             icon: Building2 },
-      { label: 'Customer Registrations', href: '/d/customers/registrations',  icon: UserCheck },
-      { label: 'Trading Partners',       href: '/d/trading',                  icon: Scale },
+      { label: 'REX Members', href: '/d/rex', icon: Network },
     ],
   },
 

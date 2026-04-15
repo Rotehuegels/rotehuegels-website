@@ -143,10 +143,7 @@ const NAV: NavItem[] = [
   {
     label: 'Network', icon: Network,
     children: [
-      { label: 'REX Members',            href: '/d/rex',                    icon: Network },
-      { label: 'Supplier Registrations', href: '/d/supplier-reg',              icon: Building2 },
-      { label: 'Customer Registrations', href: '/d/customers/registrations',  icon: UserCheck },
-      { label: 'Trading Partners',       href: '/d/trading',                  icon: Scale },
+      { label: 'REX Members', href: '/d/rex', icon: Network },
     ],
   },
 

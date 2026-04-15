@@ -68,12 +68,32 @@ export default function EditOrderForm({ order }: { order: Order }) {
       const base = total / (1 + rate / 100);
       const gst = total - base;
       const half = gst / 2;
+      const isIgst = parseFloat(form.igst_amount || '0') > 0;
       setForm(f => ({
         ...f,
         base_value: base.toFixed(2),
-        cgst_amount: half.toFixed(2),
-        sgst_amount: half.toFixed(2),
-        igst_amount: '0',
+        cgst_amount: isIgst ? '0' : half.toFixed(2),
+        sgst_amount: isIgst ? '0' : half.toFixed(2),
+        igst_amount: isIgst ? gst.toFixed(2) : '0',
+      }));
+    }
+  }
+
+  // Auto-compute total from base value
+  function computeFromBase() {
+    const base = parseFloat(form.base_value || '0');
+    const rate = parseFloat(form.gst_rate || '18');
+    if (base > 0 && rate >= 0) {
+      const gst = base * rate / 100;
+      const half = gst / 2;
+      const total = base + gst;
+      const isIgst = parseFloat(form.igst_amount || '0') > 0;
+      setForm(f => ({
+        ...f,
+        total_value_incl_gst: total.toFixed(2),
+        cgst_amount: isIgst ? '0' : half.toFixed(2),
+        sgst_amount: isIgst ? '0' : half.toFixed(2),
+        igst_amount: isIgst ? gst.toFixed(2) : '0',
       }));
     }
   }
@@ -195,10 +215,16 @@ export default function EditOrderForm({ order }: { order: Order }) {
       <div className={glass}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-zinc-300">Financial Details</h2>
-          <button type="button" onClick={computeFromTotal}
-            className="text-xs text-amber-400 hover:text-amber-300 transition-colors underline underline-offset-2">
-            Auto-compute base & GST
-          </button>
+          <div className="flex gap-4">
+            <button type="button" onClick={computeFromTotal}
+              className="text-xs text-amber-400 hover:text-amber-300 transition-colors underline underline-offset-2">
+              Calculate from Total &darr;
+            </button>
+            <button type="button" onClick={computeFromBase}
+              className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors underline underline-offset-2">
+              Calculate from Base Value &uarr;
+            </button>
+          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div>

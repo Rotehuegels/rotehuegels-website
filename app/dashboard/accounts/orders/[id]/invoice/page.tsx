@@ -56,16 +56,19 @@ export default async function InvoicePage({
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-4 no-print">
         <div className="flex items-center gap-3">
-          <Link href={`/d/orders/${id}`} className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
-            &larr; Back to Order
+          <Link href="/d/orders" className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
+            &larr; Orders
           </Link>
           <span className="text-zinc-700">|</span>
-          <span className="text-xs text-zinc-500">Invoice</span>
           <span className="font-mono text-sm text-amber-400 font-bold">{invoiceNo}</span>
           {stageLabel && (
             <span className="text-xs text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-full">{stageLabel}</span>
           )}
         </div>
+        <Link href={`/d/orders/${id}`}
+          className="rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-500 transition-colors">
+          Edit Order
+        </Link>
       </div>
 
       {/* PDF Viewer */}

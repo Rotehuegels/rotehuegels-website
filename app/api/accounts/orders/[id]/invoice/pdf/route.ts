@@ -163,7 +163,7 @@ export async function GET(
           {
             alignment: 'right',
             stack: [
-              { text: 'TAX INVOICE', fontSize: 10, bold: true, alignment: 'right', margin: [0, 0, 0, 4] },
+              { table: { body: [[{ text: 'TAX INVOICE', fontSize: 9, bold: true, alignment: 'center' }]] }, layout: { hLineWidth: () => 1, vLineWidth: () => 1, hLineColor: () => '#333', vLineColor: () => '#333', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 }, margin: [0, 0, 0, 4] },
               { text: `GSTIN: ${CO.gstin}`, fontSize: 6.5, color: '#555', alignment: 'right' },
               { text: `PAN: ${CO.pan}`, fontSize: 6.5, color: '#555', alignment: 'right' },
               { text: `CIN: ${CO.cin}`, fontSize: 6.5, color: '#555', alignment: 'right' },
@@ -174,9 +174,9 @@ export async function GET(
       },
       // Bottom border acts as the separator line — auto full width
       layout: {
-        hLineWidth: (i: number) => i === 1 ? 2 : 0,
+        hLineWidth: (i: number) => i === 1 ? 1 : 0,
         vLineWidth: () => 0,
-        hLineColor: () => '#111',
+        hLineColor: () => '#999',
         paddingLeft: () => 0, paddingRight: () => 0,
         paddingTop: () => 0, paddingBottom: () => 4,
       },
@@ -222,7 +222,7 @@ export async function GET(
       },
       layout: {
         hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-        hLineColor: () => '#ddd', vLineColor: () => '#ddd',
+        hLineColor: () => '#bbb', vLineColor: () => '#bbb',
         paddingLeft: () => 8, paddingRight: () => 8,
         paddingTop: () => 6, paddingBottom: () => 6,
       },
@@ -232,23 +232,23 @@ export async function GET(
     // Items table
     const hasRate = items.some(i => i.rate != null);
     const headerRow: any[] = [
-      { text: '#', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'center' },
-      { text: 'Description', bold: true, fillColor: '#1a1a1a', color: 'white' },
+      { text: '#', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' },
+      { text: 'Description', bold: true, fillColor: '#f0f0f0', color: '#111' },
     ];
-    if (items.length > 0) headerRow.push({ text: 'Qty', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'center' });
-    headerRow.push({ text: 'HSN/SAC', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'center' });
+    if (items.length > 0) headerRow.push({ text: 'Qty', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' });
+    headerRow.push({ text: 'HSN/SAC', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' });
     if (hasRate) {
-      headerRow.push({ text: 'Rate', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' });
-      headerRow.push({ text: 'Disc.', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'center' });
+      headerRow.push({ text: 'Rate', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
+      headerRow.push({ text: 'Disc.', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' });
     }
-    headerRow.push({ text: 'Taxable', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' });
+    headerRow.push({ text: 'Taxable', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
     if (isIntra) {
-      headerRow.push({ text: `CGST ${halfRate}%`, bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' });
-      headerRow.push({ text: `SGST ${halfRate}%`, bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' });
+      headerRow.push({ text: `CGST ${halfRate}%`, bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
+      headerRow.push({ text: `SGST ${halfRate}%`, bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
     } else {
-      headerRow.push({ text: `IGST ${gstRate}%`, bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' });
+      headerRow.push({ text: `IGST ${gstRate}%`, bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
     }
-    headerRow.push({ text: 'Total', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' });
+    headerRow.push({ text: 'Total', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
 
     const dataRows: any[][] = items.length > 0
       ? items.map((item, idx) => {
@@ -317,7 +317,7 @@ export async function GET(
       layout: {
         hLineWidth: () => 0.5, vLineWidth: () => 0.5,
         hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd',
-        vLineColor: () => '#ddd',
+        vLineColor: () => '#bbb',
         paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3,
       },
       margin: [0, 0, 0, 6],
@@ -335,7 +335,7 @@ export async function GET(
           ],
         }]],
       },
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 5, paddingBottom: () => 5 },
+      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#bbb', vLineColor: () => '#bbb', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 5, paddingBottom: () => 5 },
       margin: [0, 0, 0, 4],
     });
 
@@ -364,7 +364,7 @@ export async function GET(
       ]);
       content.push({
         table: { widths: ['*', 100], body: pmtRows },
-        layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
+        layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#bbb', vLineColor: () => '#bbb', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
         margin: [0, 0, 0, 4],
       });
     }
@@ -423,7 +423,7 @@ export async function GET(
           },
         ]],
       },
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 6, paddingBottom: () => 6 },
+      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#bbb', vLineColor: () => '#bbb', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 6, paddingBottom: () => 6 },
       margin: [0, 0, 0, 4],
     });
 

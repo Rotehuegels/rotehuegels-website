@@ -9,36 +9,24 @@ export const metadata = {
 export default function EWasteLandingPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Regulatory Notice Banner */}
-      <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-3">
-        <div className="max-w-5xl mx-auto flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-300">
-            <strong>Pre-Launch Phase:</strong> Roteh&uuml;gels is currently in the process of obtaining the necessary regulatory approvals
-            (CTE/CTO from TNPCB and Authorization under E-Waste Management Rules, 2022) to operate as an e-waste aggregator.
-            <strong> We are not yet authorized to collect or handle e-waste.</strong> This platform is being built in preparation.
-            Recycler registrations are open to build our network ahead of launch.
-          </div>
-        </div>
-      </div>
+      {/* intentionally empty — disclaimer at bottom */}
 
       {/* Hero */}
       <section className="relative overflow-hidden py-20 md:py-32 px-6">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/30 via-zinc-950 to-zinc-950" />
         <div className="absolute top-20 right-20 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
         <div className="relative max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 border border-amber-500/20 px-4 py-1.5 mb-6">
-            <Clock className="h-4 w-4 text-amber-400" />
-            <span className="text-xs font-medium text-amber-400">Launching Soon — Building Network</span>
+          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 mb-6">
+            <Recycle className="h-4 w-4 text-emerald-400" />
+            <span className="text-xs font-medium text-emerald-400">Responsible E-Waste Disposal</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black leading-tight">
             Your E-Waste,<br />
             <span className="text-emerald-400">Recycled Right.</span>
           </h1>
           <p className="mt-6 text-lg text-zinc-400 max-w-2xl mx-auto">
-            We&apos;re building a platform to connect e-waste generators directly with
-            CPCB-registered recyclers — no middlemen, no landfills. Currently in pre-launch
-            while we obtain regulatory approvals.
+            Connecting e-waste generators directly with CPCB-registered recyclers.
+            No middlemen, no landfills — waste goes straight from your door to the recycler.
           </p>
           <div className="flex flex-wrap gap-4 justify-center mt-10">
             <Link
@@ -57,35 +45,29 @@ export default function EWasteLandingPage() {
         </div>
       </section>
 
-      {/* Regulatory Status */}
+      {/* Our Model */}
       <section className="py-12 px-6 border-t border-zinc-800 bg-zinc-900/30">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-xl font-bold text-center mb-8">Regulatory Status</h2>
+          <h2 className="text-xl font-bold text-center mb-3">Our Model</h2>
+          <p className="text-zinc-500 text-center mb-8 max-w-xl mx-auto">We are a digital facilitator — not an aggregator. We don&apos;t touch the waste.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                icon: Building2, title: 'Facility Setup',
-                status: 'In Progress',
-                statusColor: 'text-amber-400',
-                desc: 'Identifying and setting up a compliant collection/aggregation facility in Chennai.',
+                icon: Recycle, title: 'No Physical Handling',
+                desc: 'We never collect, store, or transport e-waste. Waste moves directly from generator to recycler.',
               },
               {
-                icon: Shield, title: 'TNPCB Approval (CTE/CTO)',
-                status: 'Pending Application',
-                statusColor: 'text-amber-400',
-                desc: 'Consent to Establish (CTE) and Consent to Operate (CTO) from Tamil Nadu Pollution Control Board.',
+                icon: Shield, title: 'Only Registered Recyclers',
+                desc: 'Every recycler on our platform must hold valid CPCB/SPCB authorization. We verify credentials before onboarding.',
               },
               {
-                icon: Award, title: 'E-Waste Authorization',
-                status: 'Pending',
-                statusColor: 'text-zinc-500',
-                desc: 'Authorization under E-Waste (Management) Rules, 2022 as a Collection Agent / Aggregator.',
+                icon: Award, title: 'Full Traceability',
+                desc: 'Every transaction is tracked end-to-end. Processing certificates issued by the recycler. E-waste passport compliant.',
               },
-            ].map(({ icon: Icon, title, status, statusColor, desc }) => (
+            ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
-                <Icon className="h-8 w-8 text-zinc-600 mb-4" />
-                <h3 className="text-base font-semibold mb-1">{title}</h3>
-                <p className={`text-xs font-bold ${statusColor} mb-2`}>{status}</p>
+                <Icon className="h-8 w-8 text-emerald-400 mb-4" />
+                <h3 className="text-base font-semibold mb-2">{title}</h3>
                 <p className="text-sm text-zinc-500">{desc}</p>
               </div>
             ))}
@@ -96,8 +78,8 @@ export default function EWasteLandingPage() {
       {/* How it works */}
       <section id="how-it-works" className="py-16 px-6 border-t border-zinc-800">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-4">How It Will Work</h2>
-          <p className="text-zinc-500 text-center mb-12 max-w-xl mx-auto">Once we receive regulatory approval, the platform will operate as follows:</p>
+          <h2 className="text-2xl font-bold text-center mb-4">How It Works</h2>
+          <p className="text-zinc-500 text-center mb-12 max-w-xl mx-auto">Simple, traceable, and compliant.</p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
               { step: '1', title: 'Request Pickup', desc: 'Fill the form with your e-waste details and preferred date', icon: Recycle },
@@ -121,8 +103,8 @@ export default function EWasteLandingPage() {
       {/* What we will collect */}
       <section className="py-16 px-6 bg-zinc-900/50 border-t border-zinc-800">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-4">What We Will Collect</h2>
-          <p className="text-zinc-500 text-center mb-10 max-w-xl mx-auto">From household electronics to industrial equipment — all categories of e-waste, responsibly handled.</p>
+          <h2 className="text-2xl font-bold text-center mb-4">What We Collect</h2>
+          <p className="text-zinc-500 text-center mb-10 max-w-xl mx-auto">From household electronics to industrial equipment — all categories of e-waste.</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               'Computers & Laptops', 'Mobile Phones', 'Batteries (all types)', 'Monitors & TVs',
@@ -174,17 +156,26 @@ export default function EWasteLandingPage() {
 
       {/* Legal disclaimer */}
       <section className="py-8 px-6 border-t border-zinc-800 bg-zinc-900/30">
-        <div className="max-w-5xl mx-auto text-center text-xs text-zinc-600 space-y-2">
+        <div className="max-w-5xl mx-auto text-xs text-zinc-600 space-y-2">
+          <p><strong className="text-zinc-500">Disclaimer:</strong></p>
           <p>
-            Rotehuegel Research Business Consultancy Private Limited is in the process of obtaining necessary
-            regulatory approvals to operate as an e-waste collection agent/aggregator under the E-Waste (Management) Rules, 2022.
+            Rotehuegel Research Business Consultancy Private Limited (&ldquo;Roteh&uuml;gels&rdquo;) operates solely as a digital platform facilitating
+            the connection between e-waste generators and CPCB/SPCB-registered recyclers. Roteh&uuml;gels does not physically collect, store, handle,
+            or transport any e-waste. All e-waste is transported directly from the generator to the registered recycler.
           </p>
           <p>
-            <strong className="text-zinc-500">We are not currently authorized to collect, store, or transport e-waste.</strong>{' '}
-            The collection request feature will be activated once CTE, CTO, and Authorization are obtained from TNPCB.
+            Roteh&uuml;gels is not an e-waste aggregator, dismantler, or recycler. The responsibility for lawful collection, transportation,
+            processing, and disposal of e-waste lies solely with the CPCB/SPCB-authorized recycler.
           </p>
           <p>
-            Recycler registrations are being accepted to build our network in advance. No e-waste transactions will be facilitated until all regulatory requirements are met.
+            All recyclers listed on this platform are required to hold valid authorizations under the E-Waste (Management) Rules, 2022.
+            Roteh&uuml;gels verifies credentials at the time of registration but does not guarantee ongoing compliance.
+            Users are advised to independently verify recycler credentials before engaging.
+          </p>
+          <p>
+            This platform is provided &ldquo;as is&rdquo; for informational and facilitation purposes. Roteh&uuml;gels shall not be liable for
+            any loss, damage, or regulatory non-compliance arising from transactions facilitated through this platform.
+            Subject to Chennai jurisdiction.
           </p>
         </div>
       </section>

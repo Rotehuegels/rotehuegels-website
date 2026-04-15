@@ -67,29 +67,43 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       margin: [0, 0, 0, 8],
     });
 
-    // Quoted To + Quote Details (use table for clean column separation)
+    // Quoted To + Quote Details — full-width two-column table
     const addr = billing ? [billing.line1, billing.line2, billing.city, billing.state, billing.pincode].filter(Boolean).join(', ') : '';
     content.push({
-      columns: [
-        { width: '55%', stack: [
-          { text: 'QUOTED TO', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { text: customer?.name ?? '', fontSize: 10, bold: true },
-          ...(customer?.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 7.5, margin: [0, 2, 0, 0] }] : []),
-          ...(customer?.pan ? [{ text: `PAN: ${customer.pan}`, fontSize: 7.5 }] : []),
-          ...(addr ? [{ text: addr, fontSize: 7.5, color: '#555', margin: [0, 2, 0, 0] }] : []),
-          ...(customer?.phone ? [{ text: `Phone: ${customer.phone}`, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
-          ...(customer?.email ? [{ text: `Email: ${customer.email}`, fontSize: 7, color: '#555' }] : []),
-        ]},
-        { width: '45%', stack: [
-          { text: 'QUOTE DETAILS', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { text: `Quote No: ${quote.quote_no}`, fontSize: 7.5 },
-          { text: `Date: ${fmtDate(quote.quote_date)}`, fontSize: 7.5 },
-          ...(quote.valid_until ? [{ text: `Valid Until: ${fmtDate(quote.valid_until)}`, fontSize: 7.5 }] : []),
-          { text: `Place of Supply: ${isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '-')}`, fontSize: 7.5 },
-          { text: `GST Type: ${isIntra ? 'CGST + SGST' : 'IGST'}`, fontSize: 7.5 },
-        ]},
-      ],
-      columnGap: 12,
+      table: {
+        widths: ['*', '*'],
+        body: [[
+          {
+            border: [true, true, true, true],
+            stack: [
+              { text: 'QUOTED TO', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 3] },
+              { text: customer?.name ?? '', fontSize: 10, bold: true },
+              ...(customer?.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 7, margin: [0, 2, 0, 0] }] : []),
+              ...(customer?.pan ? [{ text: `PAN: ${customer.pan}`, fontSize: 7 }] : []),
+              ...(addr ? [{ text: addr, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
+              ...(customer?.phone ? [{ text: `Ph: ${customer.phone}`, fontSize: 6.5, color: '#555', margin: [0, 2, 0, 0] }] : []),
+              ...(customer?.email ? [{ text: customer.email, fontSize: 6.5, color: '#555' }] : []),
+            ],
+          },
+          {
+            border: [false, true, true, true],
+            stack: [
+              { text: 'QUOTE DETAILS', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 3] },
+              { text: `Quote No: ${quote.quote_no}`, fontSize: 7.5, bold: true },
+              { text: `Date: ${fmtDate(quote.quote_date)}`, fontSize: 7 },
+              ...(quote.valid_until ? [{ text: `Valid Until: ${fmtDate(quote.valid_until)}`, fontSize: 7 }] : []),
+              { text: `Place of Supply: ${isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '-')}`, fontSize: 7 },
+              { text: `GST Type: ${isIntra ? 'CGST + SGST' : 'IGST'}`, fontSize: 7 },
+            ],
+          },
+        ]],
+      },
+      layout: {
+        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+        hLineColor: () => '#ddd', vLineColor: () => '#ddd',
+        paddingLeft: () => 8, paddingRight: () => 8,
+        paddingTop: () => 6, paddingBottom: () => 6,
+      },
       margin: [0, 0, 0, 8],
     });
 
@@ -179,29 +193,66 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       margin: [0, 0, 0, 10],
     });
 
-    // Notes & Terms
+    // Notes & Terms — professional two-column table with gray background
     if (quote.notes || quote.terms) {
-      const cols: any[] = [];
-      if (quote.notes) cols.push({ width: '*', stack: [{ text: 'NOTES', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 2] }, { text: quote.notes, fontSize: 8, color: '#444', lineHeight: 1.5 }] });
-      if (quote.terms) cols.push({ width: '*', stack: [{ text: 'TERMS & CONDITIONS', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 2] }, { text: quote.terms, fontSize: 8, color: '#444', lineHeight: 1.5 }] });
-      content.push({ columns: cols, columnGap: 12, margin: [0, 0, 0, 10] });
+      const ntBody: any[][] = [[
+        ...(quote.notes ? [{
+          fillColor: '#f9fafb',
+          stack: [
+            { text: 'NOTES', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+            { text: quote.notes, fontSize: 7, color: '#444', lineHeight: 1.5 },
+          ],
+        }] : []),
+        ...(quote.terms ? [{
+          fillColor: '#f9fafb',
+          stack: [
+            { text: 'TERMS & CONDITIONS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+            { text: quote.terms, fontSize: 7, color: '#444', lineHeight: 1.5 },
+          ],
+        }] : []),
+      ]];
+      const ntWidths = quote.notes && quote.terms ? ['*', '*'] : ['*'];
+      content.push({
+        table: { widths: ntWidths, body: ntBody },
+        layout: {
+          hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+          hLineColor: () => '#e5e7eb', vLineColor: () => '#e5e7eb',
+          paddingLeft: () => 8, paddingRight: () => 8,
+          paddingTop: () => 6, paddingBottom: () => 6,
+        },
+        margin: [0, 0, 0, 8],
+      });
     }
 
-    // Footer / Signature
+    // Disclaimer + Signature — full-width table
     content.push({
-      columns: [
-        { width: '*', stack: [
-          { text: 'This is a quotation and not a tax invoice.', fontSize: 7.5, color: '#888' },
-          { text: 'Prices subject to change after validity date.', fontSize: 7.5, color: '#888' },
-          { text: 'Subject to Chennai jurisdiction.', fontSize: 7.5, color: '#888' },
-        ]},
-        { width: 180, alignment: 'right', stack: [
-          { text: `For ${CO.name}`, fontSize: 8, bold: true, color: '#444', alignment: 'right' },
-          ...(sigUrl ? [{ image: sigUrl, width: 60, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 20, 0, 0] }]),
-          { canvas: [{ type: 'line', x1: 60, y1: 0, x2: 180, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
-          { text: 'Authorised Signatory', fontSize: 7.5, bold: true, alignment: 'right' },
-        ]},
-      ],
+      table: {
+        widths: ['*', 180],
+        body: [[
+          {
+            fillColor: '#f9fafb',
+            stack: [
+              { text: 'This is a quotation and not a tax invoice.', fontSize: 6.5, color: '#666', italics: true },
+              { text: 'Prices subject to change after validity date.', fontSize: 6.5, color: '#666', italics: true },
+              { text: 'Subject to Chennai jurisdiction.', fontSize: 6.5, color: '#666', italics: true },
+            ],
+          },
+          {
+            stack: [
+              { text: `For ${CO.name}`, fontSize: 7, bold: true, color: '#444', alignment: 'right' },
+              ...(sigUrl ? [{ image: sigUrl, width: 55, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 16, 0, 0] }]),
+              { canvas: [{ type: 'line', x1: 60, y1: 0, x2: 180, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
+              { text: 'Authorised Signatory', fontSize: 7, bold: true, alignment: 'right' },
+            ],
+          },
+        ]],
+      },
+      layout: {
+        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+        hLineColor: () => '#e5e7eb', vLineColor: () => '#e5e7eb',
+        paddingLeft: () => 8, paddingRight: () => 8,
+        paddingTop: () => 6, paddingBottom: () => 6,
+      },
     });
 
     // Generate PDF using smart auto-scaling system

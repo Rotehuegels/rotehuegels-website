@@ -96,6 +96,7 @@ const nextConfig = {
       { source: '/d/quotes/:id/proforma', destination: '/dashboard/accounts/quotes/:id/proforma' },
       { source: '/d/orders', destination: '/dashboard/accounts/orders' },
       { source: '/d/orders/new', destination: '/dashboard/accounts/orders/new' },
+      { source: '/d/recurring-orders', destination: '/dashboard/accounts/recurring-orders' },
       { source: '/d/orders/:id', destination: '/dashboard/accounts/orders/:id' },
       { source: '/d/orders/:id/edit', destination: '/dashboard/accounts/orders/:id/edit' },
       { source: '/d/orders/:id/invoice', destination: '/dashboard/accounts/orders/:id/invoice' },

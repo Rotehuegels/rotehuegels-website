@@ -83,6 +83,7 @@ const NAV: NavItem[] = [
       { label: 'Catalog',       href: '/d/catalog',                   icon: BookOpen },
       { label: 'Quotes',    href: '/d/quotes',     icon: FileText },
       { label: 'Orders',    href: '/d/orders',     icon: ReceiptText },
+      { label: 'Recurring Orders', href: '/d/recurring-orders', icon: ReceiptText },
       { type: 'section', label: 'Intelligence' },
       { label: 'Market Intelligence', href: '/d/intelligence', icon: Radar },
     ],

@@ -127,13 +127,20 @@ export async function generateSmartPdf(
 ): Promise<Buffer> {
   const pdfmake = initPdfMake();
 
+  // IMPORTANT: pdfmake mutates the content array internally (adds $$pdfmake$$
+  // image references). We must deep-clone before each render attempt to avoid
+  // "ENOENT $$pdfmake$$1" errors on subsequent passes.
+  function deepClone(obj: any): any {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
   function render(presetIndex: number): Promise<Buffer> {
     const preset = PRESETS[presetIndex];
     return pdfmake.createPdf({
       pageSize: 'A4' as const,
       pageMargins: preset.margins,
       defaultStyle: { fontSize: preset.fontSize, lineHeight: preset.lineHeight },
-      content,
+      content: deepClone(content),
       ...(footer ? { footer } : {}),
     }).getBuffer();
   }

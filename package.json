@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
     "@mlc-ai/web-llm": "^0.2.79",
     "@prisma/client": "^6.19.2",
     "@react-pdf-viewer/core": "^3.12.0",

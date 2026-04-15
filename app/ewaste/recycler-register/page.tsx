@@ -2,252 +2,262 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Recycle, Loader2, CheckCircle2, Upload } from 'lucide-react';
+import Image from 'next/image';
+import { CheckCircle2, Recycle, Loader2 } from 'lucide-react';
 
-const input = 'w-full rounded-xl bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50';
-
-const EWASTE_CATEGORIES = [
-  'Computers & Laptops', 'Mobile Phones & Tablets', 'Batteries (Li-ion, Lead-acid, NiMH)',
-  'Monitors & Displays (CRT, LCD, LED)', 'Printers & Peripherals', 'Cables & Wiring (Copper, Data)',
-  'PCBs & Circuit Boards', 'UPS & Power Supply Units', 'Networking Equipment',
-  'Home Appliances (AC, Fridge, Washing Machine)', 'Medical Equipment', 'Industrial Electronics (PLCs, Drives)',
-  'Solar Panels & Inverters', 'Black Mass / Battery Waste', 'E-Waste Mixed / Unsorted',
+const EWASTE_CATEGORIES: { group: string; items: string[] }[] = [
+  { group: 'Consumer Electronics', items: [
+    'Computers & Laptops',
+    'Mobile Phones & Tablets',
+    'Monitors & Displays (CRT, LCD, LED)',
+    'Printers & Peripherals',
+    'Networking Equipment',
+  ]},
+  { group: 'Power & Energy', items: [
+    'Batteries (Li-ion, Lead-acid, NiMH)',
+    'UPS & Power Supply Units',
+    'Solar Panels & Inverters',
+  ]},
+  { group: 'Industrial & Specialized', items: [
+    'PCBs & Circuit Boards',
+    'Cables & Wiring (Copper, Data)',
+    'Industrial Electronics (PLCs, Drives)',
+    'Medical Equipment',
+  ]},
+  { group: 'Appliances & Other', items: [
+    'Home Appliances (AC, Fridge, Washing Machine)',
+    'Black Mass / Battery Waste',
+    'E-Waste Mixed / Unsorted',
+  ]},
 ];
 
+const INDIAN_STATES = [
+  'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
+  'Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh',
+  'Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan',
+  'Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal',
+  'Andaman & Nicobar Islands','Chandigarh','Delhi','Jammu & Kashmir','Ladakh','Puducherry',
+];
+
+const inputCls = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/30';
+const labelCls = 'block text-xs font-medium text-zinc-400 mb-1.5';
+
 export default function RecyclerRegisterPage() {
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ recycler_code: string } | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [capabilities, setCapabilities] = useState<string[]>([]);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMsg, setError] = useState('');
+  const [regCode, setRegCode] = useState('');
 
-  const [form, setForm] = useState({
-    company_name: '', contact_person: '', email: '', phone: '',
-    address: '', city: '', state: '', pincode: '',
-    gstin: '', cpcb_registration: '', spcb_registration: '',
-    license_valid_until: '', capabilities: [] as string[],
-    capacity_per_month: '', service_radius_km: 100,
-    notes: '',
-  });
+  function toggleCategory(cat: string) {
+    setCapabilities(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
+  }
 
-  const toggleCategory = (cat: string) => {
-    setForm(f => ({
-      ...f,
-      capabilities: f.capabilities.includes(cat)
-        ? f.capabilities.filter(c => c !== cat)
-        : [...f.capabilities, cat],
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (form.capabilities.length === 0) { setError('Select at least one e-waste category'); return; }
-    setSubmitting(true);
-    setError(null);
+    if (capabilities.length === 0) { setError('Please select at least one e-waste category.'); return; }
+    setStatus('loading');
+    setError('');
 
-    try {
-      const res = await fetch('/api/ewaste/recyclers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+    const fd = new FormData(e.currentTarget);
+    const body: Record<string, unknown> = { capabilities };
+    fd.forEach((val, key) => { if (val !== '') body[key] = val; });
+    body.service_radius_km = Number(body.service_radius_km) || 100;
+
+    const res = await fetch('/api/ewaste/recyclers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
       const data = await res.json();
-      if (data.error) {
-        setError(typeof data.error === 'string' ? data.error : 'Please fill all required fields.');
-      } else {
-        setResult(data);
-      }
-    } catch { setError('Failed to submit. Please try again.'); }
-    finally { setSubmitting(false); }
-  };
+      setRegCode(data.recycler_code ?? '');
+      setStatus('success');
+    } else {
+      const j = await res.json();
+      const msg = typeof j.error === 'string' ? j.error
+        : Object.values(j.error as Record<string, string[]>)[0]?.[0] ?? 'Something went wrong.';
+      setError(msg);
+      setStatus('error');
+    }
+  }
 
-  if (result) {
+  if (status === 'success') {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-6 py-20">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className="h-20 w-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
+      <main className="min-h-screen flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md text-center">
+          <Image src="/logo.png" alt="Rotehügels" width={150} height={42} className="mx-auto mb-6" priority />
+          <div className="rounded-2xl border border-emerald-800/60 bg-emerald-900/20 p-8 space-y-4">
+            <CheckCircle2 className="h-12 w-12 text-emerald-400 mx-auto" />
+            <h1 className="text-lg font-bold text-white">Registration Submitted!</h1>
+            {regCode && (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Your Recycler Code</p>
+                <p className="text-2xl font-black text-emerald-400 mt-1">{regCode}</p>
+              </div>
+            )}
+            <p className="text-sm text-zinc-400">
+              Thank you for registering as a recycler with Roteh&uuml;gels. We will verify your
+              CPCB/SPCB credentials and activate your account once approved.
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-white">Registration Submitted!</h1>
-          <div className="rounded-xl border-2 border-emerald-500/30 bg-emerald-500/5 p-6">
-            <p className="text-xs text-zinc-500 uppercase tracking-wider">Your Recycler Code</p>
-            <p className="text-3xl font-black text-emerald-400 mt-2">{result.recycler_code}</p>
-          </div>
-          <p className="text-sm text-zinc-400">
-            Your registration is under review. We will verify your CPCB/SPCB credentials
-            and activate your account once approved. You&apos;ll receive a confirmation email.
-          </p>
-          <Link href="/ewaste" className="inline-block text-sm text-zinc-500 hover:text-zinc-300">
-            Back to E-Waste Collection
+          <Link href="/ewaste" className="inline-block mt-6 text-sm text-zinc-400 hover:text-white transition-colors">
+            &larr; Back to E-Waste Collection
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-3xl mx-auto px-6 py-12">
-        <Link href="/ewaste" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
-          <ArrowLeft className="h-3 w-3" /> Back to E-Waste Collection
-        </Link>
-
-        <div className="flex items-center gap-3 mb-2">
-          <Recycle className="h-7 w-7 text-emerald-400" />
-          <h1 className="text-2xl font-bold">Register as E-Waste Recycler</h1>
+    <main className="min-h-screen px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <div className="text-center mb-8">
+          <Link href="/"><Image src="/logo.png" alt="Rotehügels" width={150} height={42} className="mx-auto" priority /></Link>
+          <h1 className="mt-4 text-xl font-bold text-white flex items-center justify-center gap-2">
+            <Recycle className="h-5 w-5 text-emerald-400" /> E-Waste Recycler Registration
+          </h1>
+          <p className="mt-2 text-sm text-zinc-500">Join our network of CPCB-registered recyclers</p>
         </div>
-        <p className="text-sm text-zinc-500 mb-8">
-          Join the Roteh&uuml;gels network of registered recyclers. CPCB/SPCB registration required.
-        </p>
 
-        {error && (
-          <div className="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-400 mb-6">{error}</div>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm p-6 sm:p-8">
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Company Details */}
-          <section>
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Company Details</h2>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Company Name *</label>
-                  <input className={input} required value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Contact Person *</label>
-                  <input className={input} required value={form.contact_person} onChange={e => setForm(f => ({ ...f, contact_person: e.target.value }))} />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Email *</label>
-                  <input type="email" className={input} required value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Phone *</label>
-                  <input type="tel" className={input} required value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-                </div>
+          {errorMsg && (
+            <div className="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-400">{errorMsg}</div>
+          )}
+
+          {/* Company Info */}
+          <fieldset>
+            <legend className="text-sm font-semibold text-zinc-300 mb-4">Company Details</legend>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className={labelCls}>Company Name <span className="text-rose-400">*</span></label>
+                <input name="company_name" required className={inputCls} />
               </div>
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">GSTIN</label>
-                <input className={input} placeholder="33XXXXXXXXX1ZX" value={form.gstin} onChange={e => setForm(f => ({ ...f, gstin: e.target.value }))} />
-              </div>
-            </div>
-          </section>
-
-          {/* Address */}
-          <section>
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Recycling Facility Address</h2>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-4">
-              <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Address *</label>
-                <textarea className={`${input} resize-none`} rows={2} required value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">City *</label>
-                  <input className={input} required value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">State *</label>
-                  <input className={input} required value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Pincode</label>
-                  <input className={input} value={form.pincode} onChange={e => setForm(f => ({ ...f, pincode: e.target.value }))} />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Regulatory */}
-          <section>
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Regulatory Credentials</h2>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-4">
-              <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 px-4 py-3 text-xs text-amber-400">
-                CPCB or SPCB registration is mandatory for e-waste recycling in India. Your credentials will be verified before activation.
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">CPCB Registration No. *</label>
-                  <input className={input} required placeholder="Central Pollution Control Board" value={form.cpcb_registration} onChange={e => setForm(f => ({ ...f, cpcb_registration: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">SPCB Registration No.</label>
-                  <input className={input} placeholder="State Pollution Control Board" value={form.spcb_registration} onChange={e => setForm(f => ({ ...f, spcb_registration: e.target.value }))} />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">License Valid Until</label>
-                  <input type="date" className={input} value={form.license_valid_until} onChange={e => setForm(f => ({ ...f, license_valid_until: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Processing Capacity</label>
-                  <input className={input} placeholder="e.g., 500 MT/month" value={form.capacity_per_month} onChange={e => setForm(f => ({ ...f, capacity_per_month: e.target.value }))} />
-                </div>
+                <label className={labelCls}>Contact Person <span className="text-rose-400">*</span></label>
+                <input name="contact_person" required className={inputCls} />
               </div>
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Service Radius (km)</label>
-                <input type="number" className={input} value={form.service_radius_km} onChange={e => setForm(f => ({ ...f, service_radius_km: Number(e.target.value) }))} />
+                <label className={labelCls}>Email <span className="text-rose-400">*</span></label>
+                <input name="email" type="email" required className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Phone <span className="text-rose-400">*</span></label>
+                <input name="phone" type="tel" required className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>GSTIN</label>
+                <input name="gstin" placeholder="33XXXXXXXXX1ZX" className={inputCls} />
               </div>
             </div>
-          </section>
+          </fieldset>
+
+          {/* Facility Address */}
+          <fieldset>
+            <legend className="text-sm font-semibold text-zinc-300 mb-4">Recycling Facility Address</legend>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="sm:col-span-2">
+                <label className={labelCls}>Address <span className="text-rose-400">*</span></label>
+                <textarea name="address" rows={2} required className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>City <span className="text-rose-400">*</span></label>
+                <input name="city" required className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>State <span className="text-rose-400">*</span></label>
+                <select name="state" required className={inputCls} defaultValue="">
+                  <option value="" disabled>Select state...</option>
+                  {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Pincode</label>
+                <input name="pincode" className={inputCls} />
+              </div>
+            </div>
+          </fieldset>
+
+          {/* Regulatory Credentials */}
+          <fieldset>
+            <legend className="text-sm font-semibold text-zinc-300 mb-4">Regulatory Credentials</legend>
+            <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 px-4 py-3 text-xs text-amber-400 mb-4">
+              CPCB or SPCB registration is mandatory for e-waste recycling in India. Your credentials will be verified before activation.
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className={labelCls}>CPCB Registration No. <span className="text-rose-400">*</span></label>
+                <input name="cpcb_registration" required placeholder="Central Pollution Control Board" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>SPCB Registration No.</label>
+                <input name="spcb_registration" placeholder="State Pollution Control Board" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>License Valid Until</label>
+                <input name="license_valid_until" type="date" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Processing Capacity</label>
+                <input name="capacity_per_month" placeholder="e.g., 500 MT/month" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Service Radius (km)</label>
+                <input name="service_radius_km" type="number" defaultValue={100} className={inputCls} />
+              </div>
+            </div>
+          </fieldset>
 
           {/* E-Waste Categories */}
-          <section>
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">
-              E-Waste Categories You Accept *
-            </h2>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
-              <p className="text-xs text-zinc-500 mb-4">Select all categories your facility can process. We&apos;ll match waste generators to you based on these.</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {EWASTE_CATEGORIES.map(cat => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => toggleCategory(cat)}
-                    className={`text-left rounded-xl px-4 py-2.5 text-sm transition-colors ${
-                      form.capabilities.includes(cat)
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                        : 'bg-zinc-800/40 text-zinc-400 border border-zinc-700 hover:border-zinc-600'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-              {form.capabilities.length > 0 && (
-                <p className="text-xs text-emerald-400 mt-3">{form.capabilities.length} categories selected</p>
-              )}
+          <fieldset>
+            <legend className="text-sm font-semibold text-zinc-300 mb-4">
+              E-Waste Categories You Accept <span className="text-rose-400">*</span>
+            </legend>
+            <p className="text-xs text-zinc-500 mb-4">Select all categories your facility can process.</p>
+            <div className="space-y-5">
+              {EWASTE_CATEGORIES.map(grp => (
+                <div key={grp.group}>
+                  <p className="text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wider">{grp.group}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {grp.items.map(cat => (
+                      <button key={cat} type="button" onClick={() => toggleCategory(cat)}
+                        className={`rounded-full px-3.5 py-1.5 text-xs font-medium border transition-colors ${
+                          capabilities.includes(cat)
+                            ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                            : 'bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:border-zinc-500'
+                        }`}>
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          </section>
+            {capabilities.length > 0 && (
+              <p className="text-xs text-emerald-400 mt-3">{capabilities.length} categor{capabilities.length === 1 ? 'y' : 'ies'} selected</p>
+            )}
+          </fieldset>
 
-          {/* Additional Info */}
-          <section>
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Additional Information</h2>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
-              <textarea className={`${input} resize-none`} rows={3} placeholder="Certifications, specializations, processing methods, previous experience..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-            </div>
-          </section>
+          {/* Additional Notes */}
+          <fieldset>
+            <legend className="text-sm font-semibold text-zinc-300 mb-4">Additional Information</legend>
+            <textarea name="notes" rows={3} placeholder="Certifications, specializations, processing methods, previous experience..." className={inputCls} />
+          </fieldset>
 
-          {/* Compliance notice */}
-          <div className="rounded-xl bg-zinc-800/40 border border-zinc-700 p-4 text-xs text-zinc-500 space-y-2">
-            <p><strong className="text-zinc-400">Compliance Notice:</strong></p>
-            <p>By registering, you confirm that your facility holds valid CPCB/SPCB authorization for e-waste recycling under the E-Waste (Management) Rules, 2022.</p>
-            <p>All waste received through Roteh&uuml;gels will be fully traceable. You agree to provide processing certificates and maintain records as required by law.</p>
-            <p>Delivery/transportation charges to your facility will be borne by you (the recycler).</p>
+          {/* Compliance */}
+          <div className="rounded-xl border border-zinc-700 bg-zinc-800/40 px-5 py-4 text-xs text-zinc-500 space-y-1.5">
+            <p>By submitting, you confirm that your facility holds valid CPCB/SPCB authorization for e-waste recycling under the E-Waste (Management) Rules, 2022.</p>
+            <p>You agree to provide processing certificates and maintain records as required by law. Delivery/transportation charges to your facility will be borne by you.</p>
           </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-4 text-base font-semibold text-white transition-colors disabled:opacity-50"
-          >
-            {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Recycle className="h-5 w-5" />}
+          <button type="submit" disabled={status === 'loading'}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-sm font-semibold text-white transition-colors disabled:opacity-60">
+            {status === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Recycle className="h-4 w-4" />}
             Submit Registration
           </button>
         </form>
       </div>
-    </div>
+    </main>
   );
 }

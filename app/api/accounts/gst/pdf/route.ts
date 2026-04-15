@@ -172,8 +172,8 @@ export async function GET(_req: Request) {
     pdfmake.fonts = { Roboto: { normal: 'Roboto-Regular.ttf', bold: 'Roboto-Medium.ttf', italics: 'Roboto-Italic.ttf', bolditalics: 'Roboto-MediumItalic.ttf' } };
 
     const pdfBuffer: Buffer = await pdfmake.createPdf({
-      pageSize: 'A4', pageMargins: [36, 25, 36, 35],
-      defaultStyle: { fontSize: 8.5, lineHeight: 1.25 },
+      pageSize: 'A4', pageMargins: [32, 22, 32, 40],
+      defaultStyle: { fontSize: 8, lineHeight: 1.2 },
       content,
       footer: (pg: number, total: number) => ({ columns: [
         { text: `GSTIN: ${CO.gstin}`, fontSize: 7, color: '#aaa', margin: [36, 0, 0, 0] },

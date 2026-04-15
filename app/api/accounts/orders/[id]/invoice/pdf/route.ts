@@ -400,8 +400,8 @@ export async function GET(
 
     const docDefinition: any = {
       pageSize: 'A4',
-      pageMargins: [36, 25, 36, 35],
-      defaultStyle: { fontSize: 8.5, lineHeight: 1.25 },
+      pageMargins: [32, 22, 32, 40],
+      defaultStyle: { fontSize: 8, lineHeight: 1.2 },
       content,
       footer: (currentPage: number, pageCount: number) => ({
         columns: [

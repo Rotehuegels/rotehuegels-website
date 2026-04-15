@@ -208,8 +208,8 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
 
   return {
     pageSize: 'A4' as const,
-    pageMargins: [36, 25, 36, 45] as [number, number, number, number],
-    defaultStyle: { fontSize: 8.5, lineHeight: 1.25 },
+    pageMargins: [32, 22, 32, 40] as [number, number, number, number],
+    defaultStyle: { fontSize: 8, lineHeight: 1.2 },
     content,
     footer: (currentPage: number, pageCount: number) => ({
       stack: [

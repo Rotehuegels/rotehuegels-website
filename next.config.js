@@ -2,6 +2,10 @@
 const nextConfig = {
   outputFileTracingIncludes: {
     '/api/private/signature': ['./private/**'],
+    '/api/ims/sops/[id]/pdf': [
+      './node_modules/pdfmake/fonts/**',
+      './public/assets/Logo2_black.png',
+    ],
   },
 
   // ── Security headers ────────────────────────────────────────────────

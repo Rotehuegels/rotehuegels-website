@@ -248,38 +248,49 @@ export async function GET(
     return NextResponse.json({ error: 'SOP not found' }, { status: 404 });
   }
 
-  const CO = await getCompanyCO();
-  const logoUrl = getLogoDataUrl();
-  const docDefinition = buildDocDefinition(sop, CO, logoUrl);
+  try {
+    const CO = await getCompanyCO();
+    const logoUrl = getLogoDataUrl();
+    const docDefinition = buildDocDefinition(sop, CO, logoUrl);
 
-  // pdfmake v0.3.x server-side API
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfmake = require('pdfmake');
-  pdfmake.fonts = {
-    Roboto: {
-      normal: path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto', 'Roboto-Regular.ttf'),
-      bold: path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto', 'Roboto-Medium.ttf'),
-      italics: path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto', 'Roboto-Italic.ttf'),
-      bolditalics: path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto', 'Roboto-MediumItalic.ttf'),
-    },
-  };
+    // pdfmake v0.3.x server-side API
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const pdfmake = require('pdfmake');
 
-  const pdfDoc = pdfmake.createPdf(docDefinition);
-  const pdfBuffer: Buffer = await pdfDoc.getBuffer();
+    // Resolve font paths — works both locally and on Vercel
+    const fontDir = path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto');
+    pdfmake.fonts = {
+      Roboto: {
+        normal: path.join(fontDir, 'Roboto-Regular.ttf'),
+        bold: path.join(fontDir, 'Roboto-Medium.ttf'),
+        italics: path.join(fontDir, 'Roboto-Italic.ttf'),
+        bolditalics: path.join(fontDir, 'Roboto-MediumItalic.ttf'),
+      },
+    };
 
-  const url = new URL(_req.url);
-  const download = url.searchParams.get('download') === '1';
+    const pdfDoc = pdfmake.createPdf(docDefinition);
+    const pdfBuffer: Buffer = await pdfDoc.getBuffer();
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/pdf',
-    'Cache-Control': 'public, max-age=300',
-  };
+    const url = new URL(_req.url);
+    const download = url.searchParams.get('download') === '1';
 
-  if (download) {
-    headers['Content-Disposition'] = `attachment; filename="${sop.id}-${sop.title.replace(/\s+/g, '-')}.pdf"`;
-  } else {
-    headers['Content-Disposition'] = 'inline';
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/pdf',
+      'Cache-Control': 'public, max-age=300',
+    };
+
+    if (download) {
+      headers['Content-Disposition'] = `attachment; filename="${sop.id}-${sop.title.replace(/\s+/g, '-')}.pdf"`;
+    } else {
+      headers['Content-Disposition'] = 'inline';
+    }
+
+    return new Response(pdfBuffer, { status: 200, headers });
+  } catch (err: unknown) {
+    console.error('[GET /api/ims/sops/pdf]', err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'PDF generation failed' },
+      { status: 500 },
+    );
   }
-
-  return new Response(pdfBuffer, { status: 200, headers });
 }

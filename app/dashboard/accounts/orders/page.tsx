@@ -231,10 +231,14 @@ export default async function OrdersListPage({ searchParams }: { searchParams: P
                     </span>
                   </div>
 
-                  <div>
+                  <div className="flex gap-2">
+                    <Link href={`/d/orders/${o.id}/invoice`}
+                      className="rounded-lg bg-amber-600/80 hover:bg-amber-600 px-3 py-1.5 text-xs font-medium text-white transition-colors">
+                      Invoice
+                    </Link>
                     <Link href={`/d/orders/${o.id}`}
                       className="rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
-                      View
+                      Edit
                     </Link>
                   </div>
                 </div>

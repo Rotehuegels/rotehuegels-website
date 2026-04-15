@@ -103,6 +103,13 @@ const nextConfig = {
       { source: '/d/suppliers/:id', destination: '/dashboard/accounts/suppliers/:id' },
       { source: '/d/suppliers/:id/edit', destination: '/dashboard/accounts/suppliers/:id/edit' },
       { source: '/d/reinvoice', destination: '/dashboard/accounts/purchase-orders/reinvoice' },
+      { source: '/d/grn', destination: '/dashboard/accounts/grn' },
+      { source: '/d/grn/new', destination: '/dashboard/accounts/grn/new' },
+      { source: '/d/grn/:id', destination: '/dashboard/accounts/grn/:id' },
+      { source: '/d/budgets', destination: '/dashboard/accounts/budgets' },
+      { source: '/d/fixed-assets', destination: '/dashboard/accounts/fixed-assets' },
+      { source: '/d/fixed-assets/new', destination: '/dashboard/accounts/fixed-assets/new' },
+      { source: '/d/fixed-assets/:id', destination: '/dashboard/accounts/fixed-assets/:id' },
       { source: '/d/stock', destination: '/dashboard/accounts/stock' },
       { source: '/d/stock/:id/edit', destination: '/dashboard/accounts/stock/:id/edit' },
 

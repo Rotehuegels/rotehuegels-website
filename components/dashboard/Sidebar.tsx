@@ -92,6 +92,7 @@ const NAV: NavItem[] = [
     label: 'Procurement', icon: Package,
     children: [
       { label: 'Purchase Orders',  href: '/d/purchase-orders', icon: ShoppingCart },
+      { label: 'GRN (Receipts)',   href: '/d/grn',             icon: ClipboardList },
       { label: 'Re-Invoice',       href: '/d/reinvoice',       icon: ReceiptText },
       { label: 'Suppliers',        href: '/d/suppliers',       icon: Truck },
       { label: 'Shipments',        href: '/d/shipments',       icon: Package },
@@ -113,6 +114,9 @@ const NAV: NavItem[] = [
       { label: 'GST Report',       href: '/d/gst',            icon: BadgePercent },
       { label: 'GST Filing',       href: '/d/gst/filing',     icon: BadgePercent },
       { label: 'P&L Statement',    href: '/d/pl',             icon: TrendingUp },
+      { type: 'section', label: 'Assets & Budget' },
+      { label: 'Fixed Assets',     href: '/d/fixed-assets',   icon: CreditCard },
+      { label: 'Budget Tracking',  href: '/d/budgets',        icon: TrendingUp },
       { label: 'Investments',      href: '/d/investments',    icon: BarChart2 },
       { label: 'Stock Intelligence', href: '/d/stock-intel',  icon: AlertTriangle },
     ],

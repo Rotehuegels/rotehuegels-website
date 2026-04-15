@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import InstallAppButton from './InstallAppButton';
 import {
   Menu, X, ChevronDown, LogOut,
   LayoutDashboard,
@@ -264,6 +265,7 @@ export default function MobileNav({ userEmail, userRole = 'admin' }: { userEmail
             </nav>
 
             <div className="border-t border-zinc-800 px-3 py-4 space-y-2">
+              <InstallAppButton />
               <div className="px-4 py-2 rounded-xl bg-zinc-900/60">
                 <p className="text-xs text-zinc-500 truncate">{userEmail}</p>
                 <p className="text-xs text-rose-400 font-medium">{ROLE_LABEL[userRole] ?? userRole}</p>

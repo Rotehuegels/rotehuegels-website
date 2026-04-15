@@ -20,6 +20,7 @@ import {
   ChevronDown, BookOpenCheck, HandCoins, CreditCard,
 } from 'lucide-react';
 import LogoutButton from './LogoutButton';
+import InstallAppButton from './InstallAppButton';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type NavLink    = { type?: 'link'; label: string; href: string; icon: React.ElementType };
@@ -257,7 +258,8 @@ export default function Sidebar({ userEmail, userRole = 'admin' }: { userEmail: 
         </nav>
       </div>
 
-      <div className="border-t border-zinc-800 pt-4">
+      <div className="border-t border-zinc-800 pt-4 space-y-1">
+        <InstallAppButton compact />
         <div className="mb-2 px-4 py-2 rounded-xl bg-zinc-900/60">
           <p className="text-xs text-zinc-500 truncate">{userEmail}</p>
           <p className="text-xs text-rose-400 font-medium">{ROLE_LABEL[userRole] ?? userRole}</p>

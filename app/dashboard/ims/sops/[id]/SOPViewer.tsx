@@ -46,7 +46,7 @@ export default function SOPViewer({ sopId, sopTitle }: Props) {
           <Viewer
             fileUrl={pdfUrl}
             plugins={[defaultLayoutPluginInstance]}
-            defaultScale={SpecialZoomLevel.PageFit}
+            defaultScale={SpecialZoomLevel.PageWidth}
             renderLoader={(percentages: number) => (
               <div className="flex flex-col items-center justify-center h-full gap-3">
                 <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />

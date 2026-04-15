@@ -11,6 +11,11 @@ const nextConfig = {
       './public/assets/Logo2_black.png',
       './private/signature.jpg',
     ],
+    '/api/accounts/quotes/[id]/proforma/pdf': [
+      './public/fonts/Roboto/**',
+      './public/assets/Logo2_black.png',
+      './private/signature.jpg',
+    ],
     '/api/accounts/quotes/[id]/pdf': [
       './public/fonts/Roboto/**',
       './public/assets/Logo2_black.png',
@@ -149,6 +154,7 @@ const nextConfig = {
 
       // People
       { source: '/d/employees', destination: '/dashboard/hr/employees' },
+      { source: '/d/org-chart', destination: '/dashboard/hr/org-chart' },
       { source: '/d/employees/add', destination: '/dashboard/hr/add' },
       { source: '/d/employees/:id', destination: '/dashboard/hr/employees/:id' },
       { source: '/d/employees/:id/edit', destination: '/dashboard/hr/employees/:id/edit' },

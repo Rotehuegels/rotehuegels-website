@@ -8,6 +8,7 @@ import AuraBackground from '@/components/AuraBackground'
 import PageTracker from '@/components/PageTracker'
 import AssistWidget from '@/components/AssistWidget'
 import PublicShell from '@/components/PublicShell'
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.rotehuegels.com"),
@@ -99,6 +100,7 @@ export default function RootLayout({
     <html lang="en">
       <body suppressHydrationWarning>
         <Suspense fallback={null}><PageTracker /></Suspense>
+        <ServiceWorkerRegister />
         <PublicShell>
           <AuraBackground />
           <Header />

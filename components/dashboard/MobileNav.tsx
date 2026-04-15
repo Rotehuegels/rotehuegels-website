@@ -51,6 +51,7 @@ const NAV: NavItem[] = [
     label: 'People', icon: Users,
     children: [
       { label: 'Employees',    href: '/d/employees',     icon: Users },
+      { label: 'Org Chart',    href: '/d/org-chart',     icon: Users },
       { label: 'Add Employee', href: '/d/employees/add', icon: UserPlus },
       { type: 'section', label: 'Leave' },
       { label: 'Leave Management', href: '/d/leave', icon: CalendarDays },

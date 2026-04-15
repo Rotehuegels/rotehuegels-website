@@ -345,7 +345,7 @@ export async function GET(
       ]);
       content.push({
         table: { widths: ['*', 100], body: pmtRows },
-        layout: { hLineWidth: (i: number, _n: any, node: any) => i === 0 || i === node.table.body.length ? 0.5 : (i === node.table.body.length - 1 ? 1.5 : 0), vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
+        layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
         margin: [0, 0, 0, 6],
       });
     }

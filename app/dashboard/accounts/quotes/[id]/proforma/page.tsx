@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
-import PDFViewer from '@/components/PDFViewer';
+import ReportContainer from '@/components/ReportContainer';
 import { getLogoBase64, getSignatureBase64 } from '@/lib/serverAssets';
 
 import { getCompanyCO } from '@/lib/company';
@@ -66,14 +66,11 @@ export default async function ProformaPage({ params }: { params: Promise<{ id: s
   const th: React.CSSProperties   = { ...cell, background: '#f5f5f5', fontWeight: 700, textAlign: 'center' as const };
 
   return (
-    <PDFViewer
-      contentId="rh-pi"
-      filename={`${pi.pi_no}.pdf`}
-      toolbar={
-        <div className="flex items-center gap-3">
+    <div className="p-6 print:p-0">
+      <div className="flex items-center gap-3 mb-5 no-print">
           <a href={`/d/quotes/${id}`}
             className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
-            ← Back to Quote
+            &larr; Back to Quote
           </a>
           <span className="text-zinc-700">|</span>
           <span className="text-xs text-zinc-500">Proforma Invoice</span>
@@ -84,11 +81,10 @@ export default async function ProformaPage({ params }: { params: Promise<{ id: s
             'bg-zinc-800 text-zinc-400'
           }`}>{pi.status}</span>
         </div>
-      }
-    >
-      <div>
-        <div id="rh-pi" className="bg-white text-zinc-900"
-          style={{ width: '210mm', minHeight: '297mm', padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}>
+
+      <ReportContainer filename={`${pi.pi_no}`}>
+        <div className="bg-white text-zinc-900"
+          style={{ padding: '12mm 16mm', fontFamily: 'Arial, sans-serif', fontSize: '11px' }}>
 
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #111', paddingBottom: '10px', marginBottom: '14px' }}>
@@ -274,7 +270,7 @@ export default async function ProformaPage({ params }: { params: Promise<{ id: s
           </div>
 
         </div>
-      </div>
-    </PDFViewer>
+      </ReportContainer>
+    </div>
   );
 }

@@ -159,7 +159,7 @@ export async function GET(_req: Request) {
 
     content.push({
       table: { headerRows: 1, widths: [55, '*', '*', '*', '*', '*', '*'], body: [monthHeader, ...monthRows, totalRow] },
-      layout: { hLineWidth: (i: number, _n: any, node: any) => i === 0 || i === 1 || i === node.table.body.length ? 1.5 : 0.5, vLineWidth: () => 0.5, hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 4, paddingBottom: () => 4 },
+      layout: { hLineWidth: (i: number) => i <= 1 ? 1.5 : 0.5, vLineWidth: () => 0.5, hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 4, paddingBottom: () => 4 },
       margin: [0, 0, 0, 8],
     });
 

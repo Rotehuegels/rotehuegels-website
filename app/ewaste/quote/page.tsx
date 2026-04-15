@@ -129,14 +129,14 @@ export default function EWasteQuotePage() {
               <h2 className="text-lg font-bold mb-2">Would you like to put this value back into the economy?</h2>
               <p className="text-sm text-zinc-400 max-w-lg mx-auto">
                 Instead of letting these materials end up in landfills, we connect you with
-                CPCB-registered recyclers who recover and reuse these resources responsibly.
+                CPCB-registered recyclers near you who recover and reuse these resources responsibly.
                 Your e-waste becomes someone else&apos;s raw material.
               </p>
               <Link
-                href="/ewaste/recycler-register"
+                href="/ewaste/quote"
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-3.5 mt-6 text-sm font-semibold text-white transition-colors"
               >
-                Get Connected with a Recycler <ArrowRight className="h-4 w-4" />
+                Connect with Registered Recyclers Nearby <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 

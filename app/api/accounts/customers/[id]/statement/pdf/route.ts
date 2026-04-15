@@ -96,20 +96,28 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     // Customer details
     content.push({
-      columns: [
-        { width: '*', stack: [
-          { text: 'CUSTOMER', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { text: customer.name, fontSize: 11, bold: true },
-          ...(customer.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 8, margin: [0, 2, 0, 0] }] : []),
-          ...(billing ? [{ text: `${billing.line1 ?? ''}${billing.line2 ? ', ' + billing.line2 : ''}, ${billing.city ?? ''}, ${billing.state ?? ''}`, fontSize: 8, color: '#555', margin: [0, 2, 0, 0] }] : []),
-        ]},
-        { width: 180, table: { widths: ['*', 80], body: [
-          [{ text: 'Total Invoiced', fontSize: 8, color: '#666' }, { text: fmtN(totalInvoiced), fontSize: 8, alignment: 'right', bold: true }],
-          [{ text: 'Received', fontSize: 8, color: '#666' }, { text: fmtN(totalReceived), fontSize: 8, alignment: 'right', color: '#16a34a' }],
-          [{ text: 'TDS Deducted', fontSize: 8, color: '#666' }, { text: fmtN(totalTds), fontSize: 8, alignment: 'right', color: '#16a34a' }],
-          [{ text: 'Outstanding', fontSize: 9, bold: true }, { text: fmtN(totalPending), fontSize: 9, alignment: 'right', bold: true, color: totalPending > 0 ? '#dc2626' : '#16a34a' }],
-        ]}, layout: 'noBorders' },
-      ],
+      table: {
+        widths: ['*', '*'],
+        body: [[
+          {
+            stack: [
+              { text: 'CUSTOMER', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+              { text: customer.name, fontSize: 11, bold: true },
+              ...(customer.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 7, margin: [0, 2, 0, 0] }] : []),
+              ...(billing ? [{ text: `${billing.line1 ?? ''}${billing.line2 ? ', ' + billing.line2 : ''}, ${billing.city ?? ''}, ${billing.state ?? ''}`, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
+            ],
+          },
+          {
+            table: { widths: ['*', 80], body: [
+              [{ text: 'Total Invoiced', fontSize: 7, color: '#666' }, { text: fmtN(totalInvoiced), fontSize: 7, alignment: 'right', bold: true }],
+              [{ text: 'Received', fontSize: 7, color: '#666' }, { text: fmtN(totalReceived), fontSize: 7, alignment: 'right', color: '#16a34a' }],
+              [{ text: 'TDS Deducted', fontSize: 7, color: '#666' }, { text: fmtN(totalTds), fontSize: 7, alignment: 'right', color: '#16a34a' }],
+              [{ text: 'Outstanding', fontSize: 9, bold: true }, { text: fmtN(totalPending), fontSize: 9, alignment: 'right', bold: true, color: totalPending > 0 ? '#dc2626' : '#16a34a' }],
+            ]}, layout: 'noBorders',
+          },
+        ]],
+      },
+      layout: 'noBorders',
       margin: [0, 0, 0, 10],
     });
 
@@ -155,22 +163,37 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     // Bank details + UPI QR
     content.push({
-      columns: [
-        { width: '*', stack: [
-          { text: 'BANK DETAILS FOR PAYMENT', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { table: { body: [
-            [{ text: 'Name', fontSize: 7.5, color: '#888' }, { text: CO.name, fontSize: 7.5 }],
-            [{ text: 'A/c No.', fontSize: 7.5, color: '#888' }, { text: CO.acc, fontSize: 7.5, bold: true }],
-            [{ text: 'IFSC', fontSize: 7.5, color: '#888' }, { text: CO.ifsc, fontSize: 7.5 }],
-            [{ text: 'Bank', fontSize: 7.5, color: '#888' }, { text: CO.bank, fontSize: 7.5 }],
-            [{ text: 'UPI', fontSize: 7.5, color: '#888' }, { text: CO.upi, fontSize: 7.5 }],
-          ]}, layout: 'noBorders' },
-        ]},
-        { width: 90, alignment: 'center', stack: [
-          { image: upiQr, fit: [70, 70] },
-          { text: 'Scan to Pay (UPI)', fontSize: 6.5, color: '#888', alignment: 'center', margin: [0, 2, 0, 0] },
-        ]},
-      ],
+      table: {
+        widths: ['*', '*'],
+        body: [[
+          {
+            stack: [
+              { text: 'BANK DETAILS FOR PAYMENT', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 4] },
+              {
+                columns: [
+                  {
+                    width: '*',
+                    table: { body: [
+                      [{ text: 'Name', fontSize: 7, color: '#888' }, { text: CO.name, fontSize: 7 }],
+                      [{ text: 'A/c No.', fontSize: 7, color: '#888' }, { text: CO.acc, fontSize: 7, bold: true }],
+                      [{ text: 'IFSC', fontSize: 7, color: '#888' }, { text: CO.ifsc, fontSize: 7 }],
+                      [{ text: 'Bank', fontSize: 7, color: '#888' }, { text: CO.bank, fontSize: 7 }],
+                      [{ text: 'UPI', fontSize: 7, color: '#888' }, { text: CO.upi, fontSize: 7 }],
+                    ]}, layout: 'noBorders',
+                  },
+                  { width: 72, image: upiQr, fit: [65, 65], alignment: 'center' },
+                ],
+              },
+            ],
+          },
+          {
+            stack: [
+              { text: '', margin: [0, 0, 0, 0] },
+            ],
+          },
+        ]],
+      },
+      layout: 'noBorders',
       margin: [0, 0, 0, 6],
     });
 

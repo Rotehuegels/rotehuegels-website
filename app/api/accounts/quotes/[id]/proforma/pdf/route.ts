@@ -74,21 +74,29 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     // Bill To + PI Details
     content.push({
-      columns: [
-        { width: '*', stack: [
-          { text: 'BILL TO', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { text: customer?.name ?? '', fontSize: 11, bold: true },
-          ...(customer?.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 8, margin: [0, 2, 0, 0] }] : []),
-          ...(billing ? [{ text: `${billing.line1 ?? ''}${billing.line2 ? ', ' + billing.line2 : ''}, ${billing.city ?? ''}, ${billing.state ?? ''}`, fontSize: 8, color: '#555', margin: [0, 2, 0, 0] }] : []),
-        ]},
-        { width: 180, stack: [
-          { text: 'PROFORMA DETAILS', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { text: `PI No: ${pi.pi_no}`, fontSize: 8 },
-          { text: `Quote Ref: ${pi.quote_no ?? '-'}`, fontSize: 8 },
-          { text: `Place of Supply: ${isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '-')}`, fontSize: 8 },
-          { text: `GST Type: ${isIntra ? 'CGST + SGST' : 'IGST'}`, fontSize: 8 },
-        ]},
-      ],
+      table: {
+        widths: ['*', '*'],
+        body: [[
+          {
+            stack: [
+              { text: 'BILL TO', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+              { text: customer?.name ?? '', fontSize: 11, bold: true },
+              ...(customer?.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 7, margin: [0, 2, 0, 0] }] : []),
+              ...(billing ? [{ text: `${billing.line1 ?? ''}${billing.line2 ? ', ' + billing.line2 : ''}, ${billing.city ?? ''}, ${billing.state ?? ''}`, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
+            ],
+          },
+          {
+            stack: [
+              { text: 'PROFORMA DETAILS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+              { text: `PI No: ${pi.pi_no}`, fontSize: 7 },
+              { text: `Quote Ref: ${pi.quote_no ?? '-'}`, fontSize: 7 },
+              { text: `Place of Supply: ${isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '-')}`, fontSize: 7 },
+              { text: `GST Type: ${isIntra ? 'CGST + SGST' : 'IGST'}`, fontSize: 7 },
+            ],
+          },
+        ]],
+      },
+      layout: 'noBorders',
       margin: [0, 0, 0, 10],
     });
 
@@ -151,8 +159,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       totalsBody.push([{ text: 'IGST', alignment: 'right', color: '#666' }, { text: fmtN(pi.igst_amount), alignment: 'right' }]);
     }
     totalsBody.push([
-      { text: 'GRAND TOTAL', alignment: 'right', bold: true, fontSize: 10, fillColor: BG },
-      { text: fmtN(pi.total_amount), alignment: 'right', bold: true, fontSize: 10, fillColor: BG },
+      { text: 'GRAND TOTAL', alignment: 'right', bold: true, fontSize: 10 },
+      { text: fmtN(pi.total_amount), alignment: 'right', bold: true, fontSize: 10 },
     ]);
 
     content.push({
@@ -174,23 +182,31 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     // Bank details + Signature
     content.push({
-      columns: [
-        { width: '*', stack: [
-          { text: 'BANK DETAILS', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { table: { body: [
-            [{ text: 'Name', fontSize: 7.5, color: '#888' }, { text: CO.name, fontSize: 7.5 }],
-            [{ text: 'A/c No.', fontSize: 7.5, color: '#888' }, { text: CO.acc, fontSize: 7.5, bold: true }],
-            [{ text: 'IFSC', fontSize: 7.5, color: '#888' }, { text: CO.ifsc, fontSize: 7.5 }],
-            [{ text: 'Bank', fontSize: 7.5, color: '#888' }, { text: CO.bank, fontSize: 7.5 }],
-          ]}, layout: 'noBorders' },
-        ]},
-        { width: 180, alignment: 'right', stack: [
-          { text: `For ${CO.name}`, fontSize: 8, bold: true, color: '#444', alignment: 'right' },
-          ...(sigUrl ? [{ image: sigUrl, width: 55, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 20, 0, 0] }]),
-          { canvas: [{ type: 'line', x1: 60, y1: 0, x2: 180, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
-          { text: 'Authorised Signatory', fontSize: 7.5, bold: true, alignment: 'right' },
-        ]},
-      ],
+      table: {
+        widths: ['*', '*'],
+        body: [[
+          {
+            stack: [
+              { text: 'BANK DETAILS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 4] },
+              { table: { body: [
+                [{ text: 'Name', fontSize: 7, color: '#888' }, { text: CO.name, fontSize: 7 }],
+                [{ text: 'A/c No.', fontSize: 7, color: '#888' }, { text: CO.acc, fontSize: 7, bold: true }],
+                [{ text: 'IFSC', fontSize: 7, color: '#888' }, { text: CO.ifsc, fontSize: 7 }],
+                [{ text: 'Bank', fontSize: 7, color: '#888' }, { text: CO.bank, fontSize: 7 }],
+              ]}, layout: 'noBorders' },
+            ],
+          },
+          {
+            stack: [
+              { text: `For ${CO.name}`, fontSize: 7, bold: true, color: '#444', alignment: 'right' },
+              ...(sigUrl ? [{ image: sigUrl, width: 55, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 16, 0, 0] }]),
+              { canvas: [{ type: 'line', x1: 80, y1: 0, x2: 200, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
+              { text: 'Authorised Signatory', fontSize: 6.5, bold: true, alignment: 'right' },
+            ],
+          },
+        ]],
+      },
+      layout: 'noBorders',
     });
 
     // Footer

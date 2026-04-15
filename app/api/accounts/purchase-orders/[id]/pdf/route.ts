@@ -93,24 +93,31 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       : `${CO.addr1} ${CO.addr2}`;
 
     content.push({
-      columns: [
-        { width: '*', stack: [
-          { text: 'VENDOR (BILL FROM)', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { text: supplier?.legal_name ?? '', fontSize: 10, bold: true },
-          ...(supplier?.gstin ? [{ text: `GSTIN: ${supplier.gstin}`, fontSize: 8, margin: [0, 2, 0, 0] }] : []),
-          ...(supplier?.address ? [{ text: `${supplier.address}${supplier.state ? ', ' + supplier.state : ''}${supplier.pincode ? ' - ' + supplier.pincode : ''}`, fontSize: 8, color: '#555', margin: [0, 2, 0, 0] }] : []),
-          ...(supplier?.email ? [{ text: `Email: ${supplier.email}`, fontSize: 7.5, color: '#555', margin: [0, 2, 0, 0] }] : []),
-          ...(supplier?.phone ? [{ text: `Phone: ${supplier.phone}`, fontSize: 7.5, color: '#555' }] : []),
-        ]},
-        { width: '*', stack: [
-          { text: 'DELIVER TO (BILL TO)', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { text: CO.name, fontSize: 10, bold: true },
-          { text: `GSTIN: ${CO.gstin}`, fontSize: 8, margin: [0, 2, 0, 0] },
-          { text: deliverAddr, fontSize: 8, color: '#555', margin: [0, 2, 0, 0] },
-          { text: `Place of Supply: Tamil Nadu (33)  |  GST: ${isIGST ? 'IGST (Inter-state)' : 'CGST+SGST (Intra-state)'}`, fontSize: 7.5, color: '#555', margin: [0, 3, 0, 0] },
-        ]},
-      ],
-      columnGap: 12,
+      table: {
+        widths: ['*', '*'],
+        body: [[
+          {
+            stack: [
+              { text: 'VENDOR (BILL FROM)', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+              { text: supplier?.legal_name ?? '', fontSize: 10, bold: true },
+              ...(supplier?.gstin ? [{ text: `GSTIN: ${supplier.gstin}`, fontSize: 7, margin: [0, 2, 0, 0] }] : []),
+              ...(supplier?.address ? [{ text: `${supplier.address}${supplier.state ? ', ' + supplier.state : ''}${supplier.pincode ? ' - ' + supplier.pincode : ''}`, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
+              ...(supplier?.email ? [{ text: `Email: ${supplier.email}`, fontSize: 6.5, color: '#555', margin: [0, 2, 0, 0] }] : []),
+              ...(supplier?.phone ? [{ text: `Phone: ${supplier.phone}`, fontSize: 6.5, color: '#555' }] : []),
+            ],
+          },
+          {
+            stack: [
+              { text: 'DELIVER TO (BILL TO)', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+              { text: CO.name, fontSize: 10, bold: true },
+              { text: `GSTIN: ${CO.gstin}`, fontSize: 7, margin: [0, 2, 0, 0] },
+              { text: deliverAddr, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] },
+              { text: `Place of Supply: Tamil Nadu (33)  |  GST: ${isIGST ? 'IGST (Inter-state)' : 'CGST+SGST (Intra-state)'}`, fontSize: 6.5, color: '#555', margin: [0, 3, 0, 0] },
+            ],
+          },
+        ]],
+      },
+      layout: 'noBorders',
       margin: [0, 0, 0, 10],
     });
 
@@ -155,14 +162,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       totalsBody.push([{ text: 'SGST', alignment: 'right', color: '#666' }, { text: fmtN(po.sgst_amount), alignment: 'right' }]);
     }
     totalsBody.push([
-      { text: 'GRAND TOTAL', alignment: 'right', bold: true, fontSize: 10, fillColor: BG },
-      { text: fmtN(po.total_amount), alignment: 'right', bold: true, fontSize: 10, fillColor: BG },
+      { text: 'GRAND TOTAL', alignment: 'right', bold: true, fontSize: 10 },
+      { text: fmtN(po.total_amount), alignment: 'right', bold: true, fontSize: 10 },
     ]);
     if (totalPaid > 0) {
       totalsBody.push([{ text: 'Less: Advance Paid', alignment: 'right', color: '#059669' }, { text: `- ${fmtN(totalPaid)}`, alignment: 'right', color: '#059669' }]);
       totalsBody.push([
-        { text: 'BALANCE PAYABLE', alignment: 'right', bold: true, fontSize: 10, fillColor: balance > 0 ? '#fff5f5' : '#f0fdf4' },
-        { text: fmtN(balance), alignment: 'right', bold: true, fontSize: 10, color: balance > 0 ? '#dc2626' : '#059669', fillColor: balance > 0 ? '#fff5f5' : '#f0fdf4' },
+        { text: 'BALANCE PAYABLE', alignment: 'right', bold: true, fontSize: 10 },
+        { text: fmtN(balance), alignment: 'right', bold: true, fontSize: 10, color: balance > 0 ? '#dc2626' : '#059669' },
       ]);
     }
 
@@ -193,18 +200,27 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     // Footer / Signature
     content.push({
-      columns: [
-        { width: '*', stack: [
-          { text: `Purchase Order issued by ${CO.name}`, fontSize: 7.5, color: '#888' },
-          { text: `Subject to Chennai jurisdiction. GSTIN: ${CO.gstin}`, fontSize: 7.5, color: '#888' },
-        ]},
-        { width: 180, alignment: 'right', stack: [
-          { text: `For ${CO.name}`, fontSize: 8, bold: true, color: '#444', alignment: 'right' },
-          ...(sigUrl ? [{ image: sigUrl, width: 55, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 20, 0, 0] }]),
-          { canvas: [{ type: 'line', x1: 60, y1: 0, x2: 180, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
-          { text: 'Authorised Signatory', fontSize: 7.5, bold: true, alignment: 'right' },
-        ]},
-      ],
+      table: {
+        widths: ['*', '*'],
+        body: [[
+          {
+            stack: [
+              { text: 'DISCLAIMER', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+              { text: `Purchase Order issued by ${CO.name}`, fontSize: 6.5, color: '#666' },
+              { text: `Subject to Chennai jurisdiction. GSTIN: ${CO.gstin}`, fontSize: 6.5, color: '#666' },
+            ],
+          },
+          {
+            stack: [
+              { text: `For ${CO.name}`, fontSize: 7, bold: true, color: '#444', alignment: 'right' },
+              ...(sigUrl ? [{ image: sigUrl, width: 55, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 16, 0, 0] }]),
+              { canvas: [{ type: 'line', x1: 80, y1: 0, x2: 200, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
+              { text: 'Authorised Signatory', fontSize: 6.5, bold: true, alignment: 'right' },
+            ],
+          },
+        ]],
+      },
+      layout: 'noBorders',
     });
 
     // Generate PDF using smart auto-scaling system

@@ -197,7 +197,7 @@ export function buildBankDeclarationBox(opts: {
                         [{ text: 'Name', fontSize: FONT.body, color: COLORS.labelText }, { text: opts.companyName, fontSize: FONT.body }],
                         [{ text: 'A/c No.', fontSize: FONT.body, color: COLORS.labelText }, { text: opts.accountNo, fontSize: FONT.body, bold: true }],
                         [{ text: 'IFSC', fontSize: FONT.body, color: COLORS.labelText }, { text: opts.ifsc, fontSize: FONT.body }],
-                        [{ text: 'Bank', fontSize: FONT.body, color: COLORS.labelText }, { text: `${opts.bankName}, ${opts.branch}`, fontSize: FONT.body }],
+                        [{ text: 'Bank', fontSize: FONT.body, color: COLORS.labelText }, { text: [opts.bankName, opts.branch].filter(Boolean).join(', '), fontSize: FONT.body }],
                         [{ text: 'UPI', fontSize: FONT.body, color: COLORS.labelText }, { text: opts.upi, fontSize: FONT.body }],
                       ],
                     },

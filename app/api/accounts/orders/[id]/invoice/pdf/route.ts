@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
+import { getLogoDataUrl, getSignatureDataUrl, fmtINR, fmtDate, generateSmartPdf } from '@/lib/pdfConfig';
+import {
+  COLORS, FONT, BOX_LAYOUT, TABLE_LAYOUT,
+  buildHeader, buildFooter, buildBankDeclarationBox, buildPaymentSummary,
+  sectionLabel, sectionBox, tableHeaderCell,
+} from '@/lib/pdfTemplate';
 import QRCode from 'qrcode';
-import fs from 'fs';
-import path from 'path';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const dynamic = 'force-dynamic';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-const fmtN = (n: number) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
-
-const fmtDate = (d: string) =>
-  new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+// ── Helpers (unique to invoice) ─────────────────────────────────────────────
 
 function getFY(dateStr: string) {
   const d = new Date(dateStr);
@@ -39,25 +38,6 @@ function amountInWords(amount: number): string {
   const words = r === 0 ? 'Zero' : parts.join(' ');
   const paiseStr = p > 0 ? ` and ${twoD(p)} Paise` : '';
   return `Rupees ${words}${paiseStr} Only`;
-}
-
-function loadFont(name: string): Buffer {
-  try { return fs.readFileSync(path.join(process.cwd(), 'public', 'fonts', 'Roboto', name)); }
-  catch { return fs.readFileSync(path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto', name)); }
-}
-
-function getLogoDataUrl(): string | null {
-  try {
-    const buf = fs.readFileSync(path.join(process.cwd(), 'public', 'assets', 'Logo2_black.png'));
-    return `data:image/png;base64,${buf.toString('base64')}`;
-  } catch { return null; }
-}
-
-function getSignatureDataUrl(): string | null {
-  try {
-    const buf = fs.readFileSync(path.join(process.cwd(), 'private', 'signature.jpg'));
-    return `data:image/jpeg;base64,${buf.toString('base64')}`;
-  } catch { return null; }
 }
 
 // ── Build PDF ────────────────────────────────────────────────────────────────
@@ -92,7 +72,7 @@ export async function GET(
     const adjustments = ((order as any).adjustments ?? []) as Array<{ description: string; amount: number }>;
     const totalPaid = payments.reduce((s: number, p: any) => s + (p.amount_received ?? 0), 0);
 
-    // Fetch customer details from customers table (for address, phone, email, customer_id)
+    // Fetch customer details
     let custPhone = '';
     let custEmail = '';
     let custCode = '';
@@ -166,44 +146,21 @@ export async function GET(
 
     // ── Build pdfmake doc ───────────────────────────────────────────────
     const content: any[] = [];
-    const BG = '#f3f4f6';
 
-    // Header — full-width 50/50 table
-    content.push({
-      table: {
-        widths: ['*', '*'],
-        body: [[
-          {
-            stack: [
-              ...(logoUrl ? [{ image: logoUrl, width: 110, margin: [0, 0, 0, 4] }] : []),
-              { text: CO.name, fontSize: 10, bold: true, color: '#111' },
-              { text: `${CO.addr1} ${CO.addr2}`, fontSize: 6.5, color: '#666', margin: [0, 2, 0, 0] },
-              { text: `${CO.email}  |  ${CO.phone}  |  ${CO.web}`, fontSize: 6.5, color: '#888', margin: [0, 2, 0, 0] },
-            ],
-          },
-          {
-            stack: [
-              { text: 'TAX INVOICE', fontSize: 12, bold: true, color: '#c0392b', alignment: 'right', characterSpacing: 1, margin: [0, 0, 0, 6] },
-              { text: `GSTIN: ${CO.gstin}`, fontSize: 6.5, color: '#555', alignment: 'right' },
-              { text: `PAN: ${CO.pan}`, fontSize: 6.5, color: '#555', alignment: 'right' },
-              { text: `CIN: ${CO.cin}`, fontSize: 6.5, color: '#555', alignment: 'right' },
-              { text: `TAN: ${CO.tan}`, fontSize: 6.5, color: '#555', alignment: 'right' },
-            ],
-          },
-        ]],
-      },
-      // Bottom border acts as the separator line — auto full width
-      layout: {
-        hLineWidth: (i: number) => i === 1 ? 1 : 0,
-        vLineWidth: () => 0,
-        hLineColor: () => '#ddd',
-        paddingLeft: () => 0, paddingRight: () => 0,
-        paddingTop: () => 0, paddingBottom: () => 4,
-      },
-      margin: [0, 0, 0, 6],
-    });
+    // Header — shared template
+    content.push(buildHeader({
+      logoUrl,
+      companyName: CO.name,
+      address: `${CO.addr1} ${CO.addr2}`,
+      contactLine: `${CO.email}  |  ${CO.phone}  |  ${CO.web}`,
+      gstin: CO.gstin,
+      pan: CO.pan,
+      cin: CO.cin,
+      tan: CO.tan,
+      documentTitle: 'TAX INVOICE',
+    }));
 
-    // Bill To + Invoice Details — bordered box (matching reference)
+    // Bill To + Invoice Details — bordered box
     const invDetailRows: [string, string][] = [
       ['Invoice No.', invoiceNo],
       ['Invoice Date', invoiceDate],
@@ -220,111 +177,106 @@ export async function GET(
         body: [[
           {
             stack: [
-              { text: 'BILL TO / SHIP TO', fontSize: 6, bold: true, color: '#888', margin: [0, 0, 0, 2] },
-              { text: order.client_name, fontSize: 8, bold: true, color: '#111' },
-              ...(order.client_contact ? [{ text: order.client_contact, fontSize: 6, color: '#555' }] : []),
-              ...(order.client_address ? [{ text: order.client_address, fontSize: 6, color: '#555', lineHeight: 1.2, margin: [0, 1, 0, 0] }] : []),
-              ...(order.client_gstin ? [{ text: `GSTIN:  ${order.client_gstin}`, fontSize: 6, bold: true, margin: [0, 2, 0, 0] }] : []),
-              ...(order.client_pan ? [{ text: `PAN:  ${order.client_pan}`, fontSize: 6, bold: true }] : []),
-              ...(custPhone ? [{ text: `Phone: ${custPhone}`, fontSize: 5.5, color: '#666', margin: [0, 1, 0, 0] }] : []),
-              ...(custEmail ? [{ text: `Email: ${custEmail}`, fontSize: 5.5, color: '#666' }] : []),
-              ...(custCode ? [{ text: `Customer ID: ${custCode}`, fontSize: 5.5, color: '#888', margin: [0, 1, 0, 0] }] : []),
+              sectionLabel('Bill To / Ship To'),
+              { text: order.client_name, fontSize: FONT.heading, bold: true, color: COLORS.black },
+              ...(order.client_contact ? [{ text: order.client_contact, fontSize: FONT.small, color: COLORS.gray }] : []),
+              ...(order.client_address ? [{ text: order.client_address, fontSize: FONT.small, color: COLORS.gray, lineHeight: 1.2, margin: [0, 1, 0, 0] }] : []),
+              ...(order.client_gstin ? [{ text: `GSTIN:  ${order.client_gstin}`, fontSize: FONT.small, bold: true, margin: [0, 2, 0, 0] }] : []),
+              ...(order.client_pan ? [{ text: `PAN:  ${order.client_pan}`, fontSize: FONT.small, bold: true }] : []),
+              ...(custPhone ? [{ text: `Phone: ${custPhone}`, fontSize: 5.5, color: COLORS.gray, margin: [0, 1, 0, 0] }] : []),
+              ...(custEmail ? [{ text: `Email: ${custEmail}`, fontSize: 5.5, color: COLORS.gray }] : []),
+              ...(custCode ? [{ text: `Customer ID: ${custCode}`, fontSize: 5.5, color: COLORS.medGray, margin: [0, 1, 0, 0] }] : []),
             ],
           },
           {
             table: {
               widths: [65, '*'],
               body: invDetailRows.map(([l, v]) => [
-                { text: l, fontSize: 6.5, color: '#888' },
-                { text: v, fontSize: 6.5, bold: l === 'Invoice No.' },
+                { text: l, fontSize: FONT.body, color: COLORS.labelText },
+                { text: v, fontSize: FONT.body, bold: l === 'Invoice No.' },
               ]),
             },
             layout: 'noBorders',
           },
         ]],
       },
-      layout: {
-        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-        hLineColor: () => '#ddd', vLineColor: () => '#ddd',
-        paddingLeft: () => 8, paddingRight: () => 8,
-        paddingTop: () => 6, paddingBottom: () => 6,
-      },
+      layout: BOX_LAYOUT,
       margin: [0, 0, 0, 6],
     });
 
     // Items table
     const hasRate = items.some(i => i.rate != null);
     const headerRow: any[] = [
-      { text: '#', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' },
-      { text: 'Description', bold: true, fillColor: '#f0f0f0', color: '#111' },
+      tableHeaderCell('#', 'center'),
+      tableHeaderCell('Description', 'left'),
     ];
-    if (items.length > 0) headerRow.push({ text: 'Qty', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' });
-    headerRow.push({ text: 'HSN/SAC', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' });
+    if (items.length > 0) headerRow.push(tableHeaderCell('Qty', 'center'));
+    headerRow.push(tableHeaderCell('HSN/SAC', 'center'));
     if (hasRate) {
-      headerRow.push({ text: 'Rate', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
-      headerRow.push({ text: 'Disc.', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' });
+      headerRow.push(tableHeaderCell('Rate', 'right'));
+      headerRow.push(tableHeaderCell('Disc.', 'center'));
     }
-    headerRow.push({ text: 'Taxable', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
+    headerRow.push(tableHeaderCell('Taxable', 'right'));
     if (isIntra) {
-      headerRow.push({ text: `CGST ${halfRate}%`, bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
-      headerRow.push({ text: `SGST ${halfRate}%`, bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
+      headerRow.push(tableHeaderCell(`CGST ${halfRate}%`, 'right'));
+      headerRow.push(tableHeaderCell(`SGST ${halfRate}%`, 'right'));
     } else {
-      headerRow.push({ text: `IGST ${gstRate}%`, bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
+      headerRow.push(tableHeaderCell(`IGST ${gstRate}%`, 'right'));
     }
-    headerRow.push({ text: 'Total', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' });
+    headerRow.push(tableHeaderCell('Total', 'right'));
 
     const dataRows: any[][] = items.length > 0
       ? items.map((item, idx) => {
           const row: any[] = [
-            { text: String(idx + 1), alignment: 'center' },
-            { text: item.desc, bold: true },
-            { text: item.qty || '-', alignment: 'center' },
-            { text: item.hsn, alignment: 'center', fontSize: 7.5 },
+            { text: String(idx + 1), alignment: 'center', fontSize: FONT.table },
+            { text: item.desc, bold: true, fontSize: FONT.table },
+            { text: item.qty || '-', alignment: 'center', fontSize: FONT.table },
+            { text: item.hsn, alignment: 'center', fontSize: FONT.table },
           ];
           if (hasRate) {
-            row.push({ text: item.rate != null ? fmtN(item.rate) : '-', alignment: 'right' });
-            row.push({ text: item.discount ?? '-', alignment: 'center' });
+            row.push({ text: item.rate != null ? fmtINR(item.rate) : '-', alignment: 'right', fontSize: FONT.table });
+            row.push({ text: item.discount ?? '-', alignment: 'center', fontSize: FONT.table });
           }
-          row.push({ text: fmtN(item.base), alignment: 'right' });
+          row.push({ text: fmtINR(item.base), alignment: 'right', fontSize: FONT.table });
           if (isIntra) {
-            row.push({ text: fmtN(item.cgst), alignment: 'right' });
-            row.push({ text: fmtN(item.sgst), alignment: 'right' });
+            row.push({ text: fmtINR(item.cgst), alignment: 'right', fontSize: FONT.table });
+            row.push({ text: fmtINR(item.sgst), alignment: 'right', fontSize: FONT.table });
           } else {
-            row.push({ text: fmtN(item.igst), alignment: 'right' });
+            row.push({ text: fmtINR(item.igst), alignment: 'right', fontSize: FONT.table });
           }
-          row.push({ text: fmtN(item.total), alignment: 'right', bold: true });
+          row.push({ text: fmtINR(item.total), alignment: 'right', bold: true, fontSize: FONT.table });
           return row;
         })
       : [(() => {
           const row: any[] = [
-            { text: '1', alignment: 'center' },
-            { text: order.description, bold: true },
-            { text: sacHsn, alignment: 'center', fontSize: 7.5 },
+            { text: '1', alignment: 'center', fontSize: FONT.table },
+            { text: order.description, bold: true, fontSize: FONT.table },
+            { text: sacHsn, alignment: 'center', fontSize: FONT.table },
           ];
-          row.push({ text: fmtN(base), alignment: 'right' });
+          row.push({ text: fmtINR(base), alignment: 'right', fontSize: FONT.table });
           if (isIntra) {
-            row.push({ text: fmtN(cgst), alignment: 'right' });
-            row.push({ text: fmtN(sgst), alignment: 'right' });
+            row.push({ text: fmtINR(cgst), alignment: 'right', fontSize: FONT.table });
+            row.push({ text: fmtINR(sgst), alignment: 'right', fontSize: FONT.table });
           } else {
-            row.push({ text: fmtN(igst), alignment: 'right' });
+            row.push({ text: fmtINR(igst), alignment: 'right', fontSize: FONT.table });
           }
-          row.push({ text: fmtN(total), alignment: 'right', bold: true });
+          row.push({ text: fmtINR(total), alignment: 'right', bold: true, fontSize: FONT.table });
           return row;
         })()];
 
     // Total row
     const totalRow: any[] = [];
     const colsBefore = (items.length > 0 ? 4 : 3) + (hasRate ? 2 : 0);
-    totalRow.push({ text: 'TOTAL', colSpan: colsBefore, alignment: 'right', bold: true, fillColor: BG });
+    totalRow.push({ text: 'TOTAL', colSpan: colsBefore, alignment: 'right', bold: true, fillColor: COLORS.headerBg, fontSize: FONT.table });
     for (let i = 1; i < colsBefore; i++) totalRow.push({});
-    totalRow.push({ text: fmtN(base), alignment: 'right', bold: true, fillColor: BG });
+    totalRow.push({ text: fmtINR(base), alignment: 'right', bold: true, fillColor: COLORS.headerBg, fontSize: FONT.table });
     if (isIntra) {
-      totalRow.push({ text: fmtN(cgst), alignment: 'right', bold: true, fillColor: BG });
-      totalRow.push({ text: fmtN(sgst), alignment: 'right', bold: true, fillColor: BG });
+      totalRow.push({ text: fmtINR(cgst), alignment: 'right', bold: true, fillColor: COLORS.headerBg, fontSize: FONT.table });
+      totalRow.push({ text: fmtINR(sgst), alignment: 'right', bold: true, fillColor: COLORS.headerBg, fontSize: FONT.table });
     } else {
-      totalRow.push({ text: fmtN(igst), alignment: 'right', bold: true, fillColor: BG });
+      totalRow.push({ text: fmtINR(igst), alignment: 'right', bold: true, fillColor: COLORS.headerBg, fontSize: FONT.table });
     }
-    totalRow.push({ text: fmtN(total), alignment: 'right', bold: true, fillColor: BG, fontSize: 10 });
+    totalRow.push({ text: fmtINR(total), alignment: 'right', bold: true, fillColor: COLORS.headerBg, fontSize: FONT.total });
 
     // Column widths
     const widths: any[] = [18, '*'];
@@ -337,136 +289,78 @@ export async function GET(
 
     content.push({
       table: { headerRows: 1, widths, body: [headerRow, ...dataRows, totalRow], dontBreakRows: true },
-      layout: {
-        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-        hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd',
-        vLineColor: () => '#ddd',
-        paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3,
-      },
+      layout: TABLE_LAYOUT,
       margin: [0, 0, 0, 6],
     });
 
     // Amount in Words — bordered box
-    content.push({
-      table: {
-        widths: ['*'],
-        body: [[{
-          stack: [
-            { text: 'AMOUNT IN WORDS', fontSize: 6, bold: true, color: '#888', margin: [0, 0, 0, 2] },
-            { text: amountInWords(total), fontSize: 9, bold: true, color: '#111' },
-            ...(order.tds_applicable ? [{ text: `* Subject to TDS @ ${order.tds_rate}%. Net receivable: ${fmtN(total - tds)}`, fontSize: 6.5, color: '#777', margin: [0, 2, 0, 0] }] : []),
-          ],
-        }]],
-      },
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 5, paddingBottom: () => 5 },
-      margin: [0, 0, 0, 4],
-    });
+    content.push(sectionBox({
+      stack: [
+        sectionLabel('Amount in Words'),
+        { text: amountInWords(total), fontSize: FONT.heading, bold: true, color: COLORS.black },
+        ...(order.tds_applicable ? [{ text: `* Subject to TDS @ ${order.tds_rate}%. Net receivable: ${fmtINR(total - tds)}`, fontSize: FONT.body, color: COLORS.gray, margin: [0, 2, 0, 0] }] : []),
+      ],
+    }));
 
-    // Payment & Adjustment Summary — bordered box
+    // Payment & Adjustment Summary
     if (totalPaid > 0 || totalAdj > 0) {
       const netDue = total - totalPaid - totalAdj;
-      const pmtRows: any[][] = [
-        [{ text: 'PAYMENT & ADJUSTMENT SUMMARY', colSpan: 2, fontSize: 6, bold: true, color: '#888' }, {}],
-        [{ text: 'Invoice Total', bold: true, fontSize: 7 }, { text: fmtN(total), alignment: 'right', bold: true, fontSize: 7 }],
+      const pmtRows: Array<{ label: string; amount: string; color?: string; bold?: boolean; fontSize?: number }> = [
+        { label: 'Invoice Total', amount: fmtINR(total), bold: true, fontSize: FONT.table },
       ];
       for (const p of payments) {
-        pmtRows.push([
-          { text: `Less: Payment Received (${fmtDate(p.payment_date)}) \u2014 ${p.payment_mode ?? ''}`, color: '#555', fontSize: 6.5 },
-          { text: `\u2013${fmtN(p.amount_received)}`, alignment: 'right', color: '#16a34a', fontSize: 6.5 },
-        ]);
+        pmtRows.push({
+          label: `Less: Payment Received (${fmtDate(p.payment_date)}) \u2014 ${p.payment_mode ?? ''}`,
+          amount: `\u2013${fmtINR(p.amount_received)}`,
+          color: COLORS.positive,
+        });
       }
       for (const a of adjustments) {
-        pmtRows.push([
-          { text: `Less: ${a.description}`, color: '#555', fontSize: 6.5 },
-          { text: `\u2013${fmtN(a.amount)}`, alignment: 'right', color: '#16a34a', fontSize: 6.5 },
-        ]);
+        pmtRows.push({
+          label: `Less: ${a.description}`,
+          amount: `\u2013${fmtINR(a.amount)}`,
+          color: COLORS.positive,
+        });
       }
-      pmtRows.push([
-        { text: 'Balance Due', bold: true, fontSize: 8 },
-        { text: fmtN(netDue), alignment: 'right', bold: true, fontSize: 8, color: netDue > 0 ? '#dc2626' : '#111' },
-      ]);
-      content.push({
-        table: { widths: ['*', 100], body: pmtRows },
-        layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
-        margin: [0, 0, 0, 4],
+      pmtRows.push({
+        label: 'Balance Due',
+        amount: fmtINR(netDue),
+        bold: true,
+        fontSize: FONT.heading,
+        color: netDue > 0 ? COLORS.negative : COLORS.black,
       });
+      content.push(buildPaymentSummary(pmtRows));
     }
 
-    // Bank Details (left with QR) + Declaration & Signature (right) — two bordered boxes
-    content.push({
-      table: {
-        widths: ['*', '*'],
-        body: [[
-          // Left: Bank Details + QR
-          {
-            stack: [
-              { text: 'BANK DETAILS', fontSize: 6, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-              {
-                table: {
-                  widths: ['*', 60],
-                  body: [[
-                    {
-                      table: {
-                        widths: [30, '*'],
-                        body: [
-                          [{ text: 'Name', fontSize: 6.5, color: '#888' }, { text: CO.name, fontSize: 6.5 }],
-                          [{ text: 'A/c No.', fontSize: 6.5, color: '#888' }, { text: CO.acc, fontSize: 6.5, bold: true }],
-                          [{ text: 'IFSC', fontSize: 6.5, color: '#888' }, { text: CO.ifsc, fontSize: 6.5 }],
-                          [{ text: 'Bank', fontSize: 6.5, color: '#888' }, { text: CO.bank, fontSize: 6.5 }],
-                          [{ text: 'UPI', fontSize: 6.5, color: '#888' }, { text: CO.upi, fontSize: 6.5 }],
-                        ],
-                      },
-                      layout: 'noBorders',
-                    },
-                    {
-                      stack: [
-                        { image: upiQr, fit: [55, 55] },
-                        { text: 'Scan to Pay (UPI)', fontSize: 5, color: '#888', alignment: 'center', margin: [0, 1, 0, 0] },
-                      ],
-                      alignment: 'center',
-                    },
-                  ]],
-                },
-                layout: 'noBorders',
-              },
-            ],
-          },
-          // Right: Declaration + Signature
-          {
-            stack: [
-              { text: 'DECLARATION', fontSize: 6, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-              { text: 'We declare that this invoice shows the actual price of the goods / services described and that all particulars are true and correct to the best of our knowledge.', fontSize: 6, color: '#555', lineHeight: 1.3 },
-              { text: '', margin: [0, 4, 0, 0] },
-              { text: `FOR ${CO.name.toUpperCase()}`, fontSize: 6.5, bold: true, alignment: 'right' },
-              ...(sigUrl ? [{ image: sigUrl, width: 50, alignment: 'right' as const, margin: [0, 3, 0, 1] as any }] : [{ text: '', margin: [0, 16, 0, 0] }]),
-              { text: 'Sivakumar Shanmugam', fontSize: 7, bold: true, alignment: 'right' },
-              { text: 'CEO, Roteh\u00fcgels', fontSize: 6, color: '#555', alignment: 'right' },
-              { text: 'Authorised Signatory', fontSize: 6, color: '#888', alignment: 'right' },
-            ],
-          },
-        ]],
-      },
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 6, paddingBottom: () => 6 },
-      margin: [0, 0, 0, 4],
-    });
+    // Bank Details + Declaration — shared template
+    content.push(buildBankDeclarationBox({
+      companyName: CO.name,
+      bankName: CO.bank,
+      accountNo: CO.acc,
+      ifsc: CO.ifsc,
+      branch: CO.bankBranch,
+      upi: CO.upi,
+      qrDataUrl: upiQr,
+      signatureDataUrl: sigUrl,
+      signatoryName: 'Sivakumar Shanmugam',
+      signatoryTitle: 'CEO, Roteh\u00fcgels',
+    }));
 
     // UPI disclaimer
     content.push({
       text: '* UPI payments are subject to per-transaction limits (typically \u20B91 lakh). For amounts exceeding the limit, you may split into multiple UPI transfers or use NEFT / RTGS for the full amount in a single transfer.',
-      fontSize: 5, color: '#999', italics: true, lineHeight: 1.3,
+      fontSize: 5, color: COLORS.medGray, italics: true, lineHeight: 1.3,
       margin: [0, 0, 0, 4],
     });
 
-    // Generate PDF using smart auto-scaling system
-    const { generateSmartPdf } = await import('@/lib/pdfConfig');
-    const invoiceFooter = (currentPage: number, pageCount: number) => ({
-      columns: [
-        { text: invoiceNo, fontSize: 6, color: '#aaa', margin: [32, 0, 0, 0] },
-        { text: `Computer-generated invoice  |  ${CO.web}  |  ${CO.phone}`, fontSize: 6, color: '#aaa', alignment: 'center' },
-        { text: `Page ${currentPage} of ${pageCount}`, fontSize: 6, color: '#aaa', alignment: 'right', margin: [0, 0, 32, 0] },
-      ],
-    });
-    const pdfBuffer = await generateSmartPdf(content, invoiceFooter);
+    // Generate PDF — shared smart system + footer
+    const pdfBuffer = await generateSmartPdf(
+      content,
+      buildFooter({
+        leftText: invoiceNo,
+        centerText: `Computer-generated invoice  |  ${CO.web}  |  ${CO.phone}`,
+      }),
+    );
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/pdf',

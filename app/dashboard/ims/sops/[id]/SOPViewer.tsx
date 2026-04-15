@@ -24,7 +24,7 @@ export default function SOPViewer({ sopId, sopTitle }: Props) {
   });
 
   return (
-    <div className="mx-auto max-w-[900px]">
+    <div className="w-full">
       {/* Download button */}
       <div className="flex items-center justify-end gap-2 mb-3">
         <a

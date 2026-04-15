@@ -350,46 +350,34 @@ export async function GET(
       });
     }
 
-    // Bank details + Declaration/Signature — full-width two-column table
+    // Bank details + Declaration/Signature — 3-column: bank | QR | declaration+sig
     content.push({
       table: {
-        widths: ['*', '*'],
+        widths: ['*', 55, '*'],
         body: [[
+          // Bank details
           {
-            
             stack: [
-              { text: 'BANK DETAILS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 4] },
-              {
-                columns: [
-                  {
-                    width: '*',
-                    table: {
-                      body: [
-                        [{ text: 'Name', fontSize: 7, color: '#888' }, { text: CO.name, fontSize: 7 }],
-                        [{ text: 'A/c No.', fontSize: 7, color: '#888' }, { text: CO.acc, fontSize: 7, bold: true }],
-                        [{ text: 'IFSC', fontSize: 7, color: '#888' }, { text: CO.ifsc, fontSize: 7 }],
-                        [{ text: 'Bank', fontSize: 7, color: '#888' }, { text: CO.bank, fontSize: 7 }],
-                        [{ text: 'UPI', fontSize: 7, color: '#888' }, { text: CO.upi, fontSize: 7 }],
-                      ],
-                    },
-                    layout: 'noBorders',
-                  },
-                  { width: 72, image: upiQr, fit: [65, 65], alignment: 'center' },
-                ],
-              },
+              { text: 'BANK DETAILS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
+              { text: `Name: ${CO.name}`, fontSize: 6.5, color: '#555' },
+              { text: `A/c No: ${CO.acc}`, fontSize: 6.5, bold: true },
+              { text: `IFSC: ${CO.ifsc}`, fontSize: 6.5, color: '#555' },
+              { text: `Bank: ${CO.bank}`, fontSize: 6.5, color: '#555' },
+              { text: `UPI: ${CO.upi}`, fontSize: 6.5, color: '#555' },
             ],
           },
+          // QR code (compact)
+          { image: upiQr, fit: [50, 50], alignment: 'center', margin: [0, 10, 0, 0] },
+          // Declaration + Signature
           {
             stack: [
-              { text: 'DECLARATION', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
-              { text: 'We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.', fontSize: 6.5, color: '#666', lineHeight: 1.4 },
-              { text: '', margin: [0, 6, 0, 0] },
-              { text: `For ${CO.name}`, fontSize: 7, bold: true, color: '#444', alignment: 'right' },
-              ...(sigUrl ? [{ image: sigUrl, width: 55, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }] : [{ text: '', margin: [0, 16, 0, 0] }]),
-              { canvas: [{ type: 'line', x1: 80, y1: 0, x2: 200, y2: 0, lineWidth: 0.5, lineColor: '#bbb' }] },
-              { text: 'Sivakumar Shanmugam', fontSize: 7, bold: true, alignment: 'right' },
-              { text: 'CEO, Roteh\u00fcgels', fontSize: 6.5, color: '#555', alignment: 'right' },
-              { text: 'Authorised Signatory', fontSize: 6.5, color: '#999', alignment: 'right' },
+              { text: 'DECLARATION', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 2] },
+              { text: 'We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.', fontSize: 6, color: '#666', lineHeight: 1.3 },
+              { text: '', margin: [0, 4, 0, 0] },
+              { text: `For ${CO.name}`, fontSize: 6.5, bold: true, color: '#444', alignment: 'right' },
+              ...(sigUrl ? [{ image: sigUrl, width: 50, alignment: 'right' as const, margin: [0, 3, 0, 1] as any }] : [{ text: '', margin: [0, 12, 0, 0] }]),
+              { text: 'Sivakumar Shanmugam', fontSize: 6.5, bold: true, alignment: 'right' },
+              { text: 'CEO, Roteh\u00fcgels | Authorised Signatory', fontSize: 6, color: '#888', alignment: 'right' },
             ],
           },
         ]],

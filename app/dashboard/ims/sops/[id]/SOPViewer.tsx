@@ -42,7 +42,7 @@ export default function SOPViewer({ sopId, sopTitle }: Props) {
         className="rounded-xl overflow-hidden shadow-2xl shadow-black/30 border border-zinc-800"
         style={{ height: 'calc(100vh - 150px)', minHeight: '600px' }}
       >
-        <Worker workerUrl="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js">
+        <Worker workerUrl="/fonts/pdf.worker.min.js">
           <Viewer
             fileUrl={pdfUrl}
             plugins={[defaultLayoutPluginInstance]}

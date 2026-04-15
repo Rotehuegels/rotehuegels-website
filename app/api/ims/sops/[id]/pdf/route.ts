@@ -11,6 +11,18 @@ type TDocumentDefinitions = any;
 
 export const dynamic = 'force-dynamic';
 
+// ── Load fonts from /public/fonts/ (self-hosted, no third-party dependency) ──
+function loadFont(name: string): Buffer {
+  const publicPath = path.join(process.cwd(), 'public', 'fonts', 'Roboto', name);
+  try {
+    return fs.readFileSync(publicPath);
+  } catch {
+    // Fallback to node_modules for local dev
+    const nmPath = path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto', name);
+    return fs.readFileSync(nmPath);
+  }
+}
+
 function getLogoDataUrl(): string | null {
   try {
     const logoPath = path.join(process.cwd(), 'public', 'assets', 'Logo2_black.png');
@@ -90,7 +102,6 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
     margin: [0, 0, 0, 10] as [number, number, number, number],
   });
 
-  // ── Section helper ──────────────────────────────────────────────────────
   function sectionHeader(num: number, title: string): Content {
     return {
       text: `${num}. ${title}`,
@@ -253,18 +264,27 @@ export async function GET(
     const logoUrl = getLogoDataUrl();
     const docDefinition = buildDocDefinition(sop, CO, logoUrl);
 
-    // pdfmake v0.3.x server-side API
+    // Load fonts as Buffers and register via pdfmake's virtual filesystem
+    const fontRegular = loadFont('Roboto-Regular.ttf');
+    const fontBold = loadFont('Roboto-Medium.ttf');
+    const fontItalic = loadFont('Roboto-Italic.ttf');
+    const fontBoldItalic = loadFont('Roboto-MediumItalic.ttf');
+
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const pdfmake = require('pdfmake');
 
-    // Resolve font paths — works both locally and on Vercel
-    const fontDir = path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto');
+    // Register fonts via virtual filesystem (works everywhere — no file paths needed at runtime)
+    pdfmake.virtualfs.writeFileSync('Roboto-Regular.ttf', fontRegular);
+    pdfmake.virtualfs.writeFileSync('Roboto-Medium.ttf', fontBold);
+    pdfmake.virtualfs.writeFileSync('Roboto-Italic.ttf', fontItalic);
+    pdfmake.virtualfs.writeFileSync('Roboto-MediumItalic.ttf', fontBoldItalic);
+
     pdfmake.fonts = {
       Roboto: {
-        normal: path.join(fontDir, 'Roboto-Regular.ttf'),
-        bold: path.join(fontDir, 'Roboto-Medium.ttf'),
-        italics: path.join(fontDir, 'Roboto-Italic.ttf'),
-        bolditalics: path.join(fontDir, 'Roboto-MediumItalic.ttf'),
+        normal: 'Roboto-Regular.ttf',
+        bold: 'Roboto-Medium.ttf',
+        italics: 'Roboto-Italic.ttf',
+        bolditalics: 'Roboto-MediumItalic.ttf',
       },
     };
 

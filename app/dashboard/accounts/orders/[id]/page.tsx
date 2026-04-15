@@ -6,6 +6,7 @@ import RecordPaymentForm from './RecordPaymentForm';
 import StageStatusButton from './StageStatusButton';
 import MarkCompleteButton from './MarkCompleteButton';
 import SendEmailButton from '@/components/SendEmailButton';
+import PaymentActions from './PaymentActions';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const fmt = (n: number) =>
@@ -317,15 +318,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <p className="p-6 text-sm text-zinc-600">No payments recorded yet.</p>
         ) : (
           <>
-            <div className="hidden lg:grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-2 text-[11px] font-medium uppercase tracking-wider text-zinc-600 border-b border-zinc-800/60">
+            <div className="hidden lg:grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_60px] gap-4 px-6 py-2 text-[11px] font-medium uppercase tracking-wider text-zinc-600 border-b border-zinc-800/60">
               <span>Date</span><span className="text-right">Gross Received</span>
               <span className="text-right">TDS</span><span className="text-right">Net to Bank</span>
-              <span>Mode</span><span>Ref / Notes</span>
+              <span>Mode</span><span>Ref / Notes</span><span></span>
             </div>
             <div className="divide-y divide-zinc-800/60">
               {payments.map(p => (
                 <div key={p.id}
-                  className="flex flex-col lg:grid lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr] gap-2 lg:gap-4 px-6 py-4 text-sm items-start lg:items-center">
+                  className="flex flex-col lg:grid lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_60px] gap-2 lg:gap-4 px-6 py-4 text-sm items-start lg:items-center">
                   <p className="text-zinc-300">{fmtDate(p.payment_date)}</p>
                   <p className="text-right text-white font-semibold">{fmt(p.amount_received)}</p>
                   <p className="text-right text-sky-400">{fmt(p.tds_deducted ?? 0)}</p>
@@ -335,6 +336,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     {p.reference_no && <p className="text-zinc-400 font-mono text-xs truncate">{p.reference_no}</p>}
                     {p.notes && <p className="text-zinc-600 text-xs truncate">{p.notes}</p>}
                   </div>
+                  <PaymentActions
+                    paymentId={p.id}
+                    amountReceived={p.amount_received}
+                    tdsDeducted={p.tds_deducted ?? 0}
+                    paymentDate={p.payment_date}
+                    paymentMode={p.payment_mode ?? 'NEFT'}
+                    referenceNo={p.reference_no ?? ''}
+                    notes={p.notes ?? ''}
+                  />
                 </div>
               ))}
             </div>

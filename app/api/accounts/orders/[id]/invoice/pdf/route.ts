@@ -311,47 +311,41 @@ export async function GET(
       margin: [0, 0, 0, 6],
     });
 
-    // Amount in words
+    // Amount in words — no border, just text
     content.push({
-      table: {
-        widths: ['*'],
-        body: [[{
-          stack: [
-            { text: 'AMOUNT IN WORDS', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 2] },
-            { text: amountInWords(total), fontSize: 10, bold: true, color: '#111' },
-            ...(order.tds_applicable ? [{ text: `* Subject to TDS @ ${order.tds_rate}%. Net receivable: ${fmtN(total - tds)}`, fontSize: 7.5, color: '#777', margin: [0, 3, 0, 0] }] : []),
-          ],
-        }]],
-      },
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 5, paddingBottom: () => 5 },
-      margin: [0, 0, 0, 6],
+      stack: [
+        { text: 'AMOUNT IN WORDS', fontSize: 6.5, bold: true, color: '#888' },
+        { text: amountInWords(total), fontSize: 9, bold: true, color: '#111', margin: [0, 2, 0, 0] },
+        ...(order.tds_applicable ? [{ text: `* Subject to TDS @ ${order.tds_rate}%. Net receivable: ${fmtN(total - tds)}`, fontSize: 7, color: '#777', margin: [0, 2, 0, 0] }] : []),
+      ],
+      margin: [0, 4, 0, 6],
     });
 
-    // Payment summary (if any)
+    // Payment summary (if any) — no borders, clean rows
     if (totalPaid > 0 || totalAdj > 0) {
       const netDue = total - totalPaid - totalAdj;
       const pmtRows: any[][] = [
-        [{ text: 'Invoice Total', bold: true }, { text: fmtN(total), alignment: 'right', bold: true }],
+        [{ text: 'Invoice Total', bold: true, fontSize: 7.5 }, { text: fmtN(total), alignment: 'right', bold: true, fontSize: 7.5 }],
       ];
       for (const p of payments) {
         pmtRows.push([
-          { text: `Less: Payment (${fmtDate(p.payment_date)})${p.payment_mode ? ' - ' + p.payment_mode : ''}`, color: '#555' },
-          { text: `-${fmtN(p.amount_received)}`, alignment: 'right', color: '#16a34a' },
+          { text: `Less: Payment (${fmtDate(p.payment_date)})${p.payment_mode ? ' - ' + p.payment_mode : ''}`, color: '#555', fontSize: 7 },
+          { text: `-${fmtN(p.amount_received)}`, alignment: 'right', color: '#16a34a', fontSize: 7 },
         ]);
       }
       for (const a of adjustments) {
         pmtRows.push([
-          { text: `Less: ${a.description}`, color: '#555' },
-          { text: `-${fmtN(a.amount)}`, alignment: 'right', color: '#16a34a' },
+          { text: `Less: ${a.description}`, color: '#555', fontSize: 7 },
+          { text: `-${fmtN(a.amount)}`, alignment: 'right', color: '#16a34a', fontSize: 7 },
         ]);
       }
       pmtRows.push([
-        { text: 'Balance Due', bold: true, fontSize: 10 },
-        { text: fmtN(netDue), alignment: 'right', bold: true, fontSize: 10, color: netDue > 0 ? '#dc2626' : '#16a34a' },
+        { text: 'Balance Due', bold: true, fontSize: 9 },
+        { text: fmtN(netDue), alignment: 'right', bold: true, fontSize: 9, color: netDue > 0 ? '#dc2626' : '#16a34a' },
       ]);
       content.push({
         table: { widths: ['*', 100], body: pmtRows },
-        layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
+        layout: 'noBorders',
         margin: [0, 0, 0, 6],
       });
     }
@@ -378,7 +372,7 @@ export async function GET(
                         [{ text: 'UPI', fontSize: 7, color: '#888' }, { text: CO.upi, fontSize: 7 }],
                       ],
                     },
-                    layout: { hLineWidth: () => 0, vLineWidth: () => 0, paddingLeft: () => 0, paddingRight: () => 4, paddingTop: () => 1, paddingBottom: () => 1 },
+                    layout: 'noBorders',
                   },
                   { width: 72, image: upiQr, fit: [65, 65], alignment: 'center' },
                 ],

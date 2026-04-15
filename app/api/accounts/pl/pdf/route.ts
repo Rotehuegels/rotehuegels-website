@@ -227,7 +227,7 @@ export async function GET(_req: Request) {
         { stack: [{ text: 'Net Profit', fontSize: 7, color: '#888', alignment: 'center' }, { text: fmtN(netProfit), fontSize: 10, bold: true, color: netProfit >= 0 ? '#16a34a' : '#dc2626', alignment: 'center' }] },
         { stack: [{ text: 'Receivables', fontSize: 7, color: '#888', alignment: 'center' }, { text: fmtN(pendingRec), fontSize: 10, bold: true, color: pendingRec > 0 ? '#dc2626' : '#16a34a', alignment: 'center' }] },
       ]]},
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingTop: () => 6, paddingBottom: () => 6 },
+      layout: 'noBorders',
       margin: [0, 8, 0, 6],
     });
 

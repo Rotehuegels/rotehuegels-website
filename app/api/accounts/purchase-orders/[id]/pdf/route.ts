@@ -170,7 +170,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       columns: [{ width: '*', text: '' }, {
         width: 'auto',
         table: { widths: [130, 90], body: totalsBody },
-        layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 3, paddingBottom: () => 3 },
+        layout: 'noBorders',
       }],
       margin: [0, 0, 0, 6],
     });

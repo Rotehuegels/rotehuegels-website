@@ -62,6 +62,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const parsed = UpdateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
+  // Fetch existing name for audit label
+  const { data: existing } = await supabaseAdmin
+    .from('customers')
+    .select('name, customer_id')
+    .eq('id', id)
+    .single();
+
   const { data, error } = await supabaseAdmin
     .from('customers')
     .update(parsed.data)
@@ -71,13 +78,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  const custName = parsed.data.name ?? existing?.name ?? 'Unknown';
   logAudit({
     userId: user.id,
     userEmail: user.email ?? undefined,
     action: 'update',
     entityType: 'customer',
     entityId: id,
-    entityLabel: `Customer ${parsed.data.name ?? id}`,
+    entityLabel: `${existing?.customer_id ?? ''} ${custName}`.trim(),
     changes: Object.fromEntries(
       Object.entries(parsed.data).map(([k, v]) => [k, { old: null, new: v }]),
     ),

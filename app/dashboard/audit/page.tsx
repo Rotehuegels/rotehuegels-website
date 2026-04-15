@@ -112,6 +112,11 @@ export default async function AuditPage({
                             {entry.entity_label}
                           </span>
                         )}
+                        {!entry.entity_label && entry.entity_id && (
+                          <span className="text-xs text-zinc-600 font-mono truncate">
+                            ID: {(entry.entity_id as string).substring(0, 8)}...
+                          </span>
+                        )}
                       </div>
                       <ChangesDisplay changes={entry.changes} />
                     </div>

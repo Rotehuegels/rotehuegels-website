@@ -82,6 +82,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const parsed = UpdateOrderSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
+  // Fetch order details for audit label before updating
+  const { data: existing } = await supabaseAdmin
+    .from('orders')
+    .select('order_no, client_name')
+    .eq('id', id)
+    .single();
+
   const { error } = await supabaseAdmin
     .from('orders')
     .update(parsed.data)
@@ -89,13 +96,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  const label = existing ? `${existing.order_no} - ${existing.client_name}` : id;
   logAudit({
     userId: user.id,
     userEmail: user.email ?? undefined,
     action: 'update',
     entityType: 'order',
     entityId: id,
-    entityLabel: `Order ${id}`,
+    entityLabel: label,
     changes: Object.fromEntries(
       Object.entries(parsed.data).map(([k, v]) => [k, { old: null, new: v }]),
     ),
@@ -110,11 +118,30 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
+
+  // Fetch order details for audit label
+  const { data: existing } = await supabaseAdmin
+    .from('orders')
+    .select('order_no, client_name')
+    .eq('id', id)
+    .single();
+
   const { error } = await supabaseAdmin
     .from('orders')
     .update({ status: 'cancelled' })
     .eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const label = existing ? `${existing.order_no} - ${existing.client_name}` : id;
+  logAudit({
+    userId: user.id,
+    userEmail: user.email ?? undefined,
+    action: 'delete',
+    entityType: 'order',
+    entityId: id,
+    entityLabel: label,
+  });
+
   return NextResponse.json({ success: true });
 }

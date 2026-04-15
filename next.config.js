@@ -29,6 +29,10 @@ const nextConfig = {
       './public/fonts/Roboto/**',
       './public/assets/Logo2_black.png',
     ],
+    '/api/accounts/customers/[id]/statement/pdf': [
+      './public/fonts/Roboto/**',
+      './public/assets/Logo2_black.png',
+    ],
   },
 
   // ── Security headers ────────────────────────────────────────────────

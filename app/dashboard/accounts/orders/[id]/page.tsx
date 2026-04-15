@@ -295,8 +295,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
-      {/* Record payment — shown prominently before history */}
-      {order.status !== 'completed' && order.status !== 'cancelled' && (
+      {/* Record payment — always visible (even for completed orders, to record late payments) */}
+      {order.status !== 'cancelled' && (
         <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-sm`}>
           <div className="px-6 py-4 border-b border-emerald-500/20">
             <h2 className="text-sm font-semibold text-emerald-400">Record Payment</h2>

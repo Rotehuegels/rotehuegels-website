@@ -295,6 +295,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
+      {/* Record payment — shown prominently before history */}
+      {order.status !== 'completed' && order.status !== 'cancelled' && (
+        <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-sm`}>
+          <div className="px-6 py-4 border-b border-emerald-500/20">
+            <h2 className="text-sm font-semibold text-emerald-400">Record Payment</h2>
+          </div>
+          <div className="p-6">
+            <RecordPaymentForm orderId={id} stages={stages} defaultTdsRate={order.tds_rate ?? 0} />
+          </div>
+        </div>
+      )}
+
       {/* Payment history */}
       <div className={glass}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/60">
@@ -330,17 +342,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
-      {/* Record payment */}
-      {order.status !== 'completed' && order.status !== 'cancelled' && (
-        <div className={glass}>
-          <div className="px-6 py-4 border-b border-zinc-800/60">
-            <h2 className="text-sm font-semibold text-zinc-300">Record Payment</h2>
-          </div>
-          <div className="p-6">
-            <RecordPaymentForm orderId={id} stages={stages} defaultTdsRate={order.tds_rate ?? 0} />
-          </div>
-        </div>
-      )}
+      {/* Record payment form moved above Payment History */}
 
       {order.notes && (
         <div className={`${glass} p-5`}>

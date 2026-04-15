@@ -28,10 +28,11 @@ const NAV = [
   {
     label: 'Join Us',
     children: [
-      { label: 'REX Network',             href: '/rex',                 highlight: true },
+      { label: 'REX Network',             href: '/rex',                        highlight: true },
       { label: 'Customer Registration',   href: '/customers/register' },
       { label: 'Supplier Registration',   href: '/suppliers/register' },
       { label: 'Trading Partner',         href: '/trading/register' },
+      { label: 'E-Waste Recycler',        href: '/ewaste/recycler-register' },
       { label: 'Careers',                 href: '/careers' },
     ],
   },

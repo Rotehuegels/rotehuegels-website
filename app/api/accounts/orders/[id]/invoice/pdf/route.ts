@@ -398,37 +398,16 @@ export async function GET(
     // Footer note
     content.push({ text: 'This is a computer-generated invoice.', fontSize: 7, color: '#aaa', alignment: 'center', margin: [0, 4, 0, 0] });
 
-    const docDefinition: any = {
-      pageSize: 'A4',
-      pageMargins: [32, 22, 32, 40],
-      defaultStyle: { fontSize: 8, lineHeight: 1.2 },
-      content,
-      footer: (currentPage: number, pageCount: number) => ({
-        columns: [
-          { text: invoiceNo, fontSize: 7, color: '#aaa', margin: [36, 0, 0, 0] },
-          { text: `${CO.web}  |  ${CO.email}  |  ${CO.phone}`, fontSize: 7, color: '#aaa', alignment: 'center' },
-          { text: `Page ${currentPage} of ${pageCount}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 36, 0] },
-        ],
-      }),
-    };
-
-    // Generate PDF
-    const fontRegular = loadFont('Roboto-Regular.ttf');
-    const fontBold = loadFont('Roboto-Medium.ttf');
-    const fontItalic = loadFont('Roboto-Italic.ttf');
-    const fontBoldItalic = loadFont('Roboto-MediumItalic.ttf');
-
-    const pdfmake = require('pdfmake');
-    pdfmake.virtualfs.writeFileSync('Roboto-Regular.ttf', fontRegular);
-    pdfmake.virtualfs.writeFileSync('Roboto-Medium.ttf', fontBold);
-    pdfmake.virtualfs.writeFileSync('Roboto-Italic.ttf', fontItalic);
-    pdfmake.virtualfs.writeFileSync('Roboto-MediumItalic.ttf', fontBoldItalic);
-    pdfmake.fonts = {
-      Roboto: { normal: 'Roboto-Regular.ttf', bold: 'Roboto-Medium.ttf', italics: 'Roboto-Italic.ttf', bolditalics: 'Roboto-MediumItalic.ttf' },
-    };
-
-    const pdfDoc = pdfmake.createPdf(docDefinition);
-    const pdfBuffer: Buffer = await pdfDoc.getBuffer();
+    // Generate PDF using smart auto-scaling system
+    const { generateSmartPdf } = await import('@/lib/pdfConfig');
+    const invoiceFooter = (currentPage: number, pageCount: number) => ({
+      columns: [
+        { text: invoiceNo, fontSize: 7, color: '#aaa', margin: [32, 0, 0, 0] },
+        { text: `${CO.web}  |  ${CO.email}  |  ${CO.phone}`, fontSize: 7, color: '#aaa', alignment: 'center' },
+        { text: `Page ${currentPage} of ${pageCount}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 32, 0] },
+      ],
+    });
+    const pdfBuffer = await generateSmartPdf(content, invoiceFooter);
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/pdf',

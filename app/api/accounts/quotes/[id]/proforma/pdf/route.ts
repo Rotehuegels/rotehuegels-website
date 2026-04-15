@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { hrLine } from '@/lib/pdfConfig';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
 import fs from 'fs';
@@ -69,7 +70,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         ]},
       ],
     });
-    content.push({ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 523, y2: 0, lineWidth: 2, lineColor: '#111' }], margin: [0, 4, 0, 8] });
+    content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 8] });
 
     // Bill To + PI Details
     content.push({

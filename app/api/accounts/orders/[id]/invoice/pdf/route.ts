@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
+import { hrLine } from '@/lib/pdfConfig';
 import QRCode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
@@ -173,7 +174,7 @@ export async function GET(
         },
       ],
     });
-    content.push({ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 523, y2: 0, lineWidth: 2, lineColor: '#111' }], margin: [0, 4, 0, 6] });
+    content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 6] });
 
     // Bill To + Invoice Details (side by side)
     const billToLines = [

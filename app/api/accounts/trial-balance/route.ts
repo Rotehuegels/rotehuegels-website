@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { hrLine } from '@/lib/pdfConfig';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
 import fs from 'fs';
@@ -112,7 +113,7 @@ export async function GET(_req: Request) {
         ]},
       ],
     });
-    content.push({ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 523, y2: 0, lineWidth: 2, lineColor: '#111' }], margin: [0, 4, 0, 4] });
+    content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 4] });
     content.push({ text: `For the period ${full}  |  All amounts in INR`, fontSize: 7.5, color: '#666', margin: [0, 0, 0, 8] });
 
     // Table

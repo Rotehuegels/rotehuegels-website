@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSOPById, type SOP } from '@/lib/sops';
 import { getCompanyCO } from '@/lib/company';
+import { hrLine } from '@/lib/pdfConfig';
 import fs from 'fs';
 import path from 'path';
 
@@ -73,7 +74,7 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
     ],
   };
   content.push(headerColumns);
-  content.push({ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 523, y2: 0, lineWidth: 2, lineColor: '#111' }], margin: [0, 4, 0, 6] as [number, number, number, number] });
+  content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 6] as [number, number, number, number] });
 
   // ── Title Block ─────────────────────────────────────────────────────────
   const titleRows: TableCell[][] = [

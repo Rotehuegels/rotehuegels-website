@@ -192,6 +192,22 @@ export const fmtINR = (n: number) =>
 export const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
+// ── Full-width horizontal line (adapts to any margin preset) ─────────────────
+// Canvas lines with hardcoded x2 values break when margins change between
+// presets. This uses a table-based approach that always spans 100% width.
+export function hrLine(thickness = 2, color = '#111'): any {
+  return {
+    table: { widths: ['*'], body: [[{ text: '', border: [false, false, false, true], borderColor: [color, color, color, color] }]] },
+    layout: {
+      hLineWidth: (_i: number) => thickness,
+      vLineWidth: () => 0,
+      hLineColor: () => color,
+      paddingLeft: () => 0, paddingRight: () => 0,
+      paddingTop: () => 0, paddingBottom: () => 0,
+    },
+  };
+}
+
 // ── Table layouts ────────────────────────────────────────────────────────────
 export const TABLE_LAYOUT_SIMPLE = {
   hLineWidth: () => 0.5,

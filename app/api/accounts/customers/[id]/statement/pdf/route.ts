@@ -178,7 +178,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     });
 
     // Footer
-    content.push({ text: `This is a computer-generated statement.  |  ${CO.web}  |  ${CO.email}  |  ${CO.phone}`, fontSize: 7, color: '#aaa', alignment: 'center', margin: [0, 4, 0, 0] });
+    // Note: "computer-generated statement" text moved to footer to prevent page overflow
 
     // Generate PDF
     const pdfmake = require('pdfmake');

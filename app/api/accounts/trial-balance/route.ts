@@ -156,7 +156,6 @@ export async function GET(_req: Request) {
       fontSize: 8, color: balanced ? '#16a34a' : '#dc2626', italics: true, margin: [0, 0, 0, 6],
     });
 
-    content.push({ text: `Generated on ${today}  |  ${CO.name}  |  Internal management report. Not audited.`, fontSize: 7, color: '#aaa', alignment: 'center' });
 
     // Generate PDF
     const pdfmake = require('pdfmake');

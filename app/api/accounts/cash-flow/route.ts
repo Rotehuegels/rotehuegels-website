@@ -141,7 +141,6 @@ export async function GET(_req: Request) {
       margin: [0, 4, 0, 10],
     });
 
-    content.push({ text: `Generated on ${today}  |  ${CO.name}  |  Internal management report. Not audited.`, fontSize: 7, color: '#aaa', alignment: 'center' });
 
     // Generate PDF
     const pdfmake = require('pdfmake');

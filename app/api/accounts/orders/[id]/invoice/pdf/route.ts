@@ -395,16 +395,13 @@ export async function GET(
       margin: [0, 0, 0, 6],
     });
 
-    // Footer note
-    content.push({ text: 'This is a computer-generated invoice.', fontSize: 7, color: '#aaa', alignment: 'center', margin: [0, 4, 0, 0] });
-
     // Generate PDF using smart auto-scaling system
     const { generateSmartPdf } = await import('@/lib/pdfConfig');
     const invoiceFooter = (currentPage: number, pageCount: number) => ({
       columns: [
-        { text: invoiceNo, fontSize: 7, color: '#aaa', margin: [32, 0, 0, 0] },
-        { text: `${CO.web}  |  ${CO.email}  |  ${CO.phone}`, fontSize: 7, color: '#aaa', alignment: 'center' },
-        { text: `Page ${currentPage} of ${pageCount}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 32, 0] },
+        { text: invoiceNo, fontSize: 6, color: '#aaa', margin: [32, 0, 0, 0] },
+        { text: `Computer-generated invoice  |  ${CO.web}  |  ${CO.phone}`, fontSize: 6, color: '#aaa', alignment: 'center' },
+        { text: `Page ${currentPage} of ${pageCount}`, fontSize: 6, color: '#aaa', alignment: 'right', margin: [0, 0, 32, 0] },
       ],
     });
     const pdfBuffer = await generateSmartPdf(content, invoiceFooter);

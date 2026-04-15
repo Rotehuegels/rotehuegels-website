@@ -235,7 +235,6 @@ export async function GET(_req: Request) {
     });
 
     // Footer
-    content.push({ text: `Generated on ${today}  |  ${CO.name}  |  Internal management report. Not audited.`, fontSize: 7, color: '#aaa', alignment: 'center' });
 
     // Generate PDF
     const pdfmake = require('pdfmake');

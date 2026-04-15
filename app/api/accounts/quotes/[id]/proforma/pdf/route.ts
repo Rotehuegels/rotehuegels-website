@@ -197,7 +197,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     });
 
     // Footer
-    content.push({ text: 'This is a proforma invoice and not a tax invoice. Subject to Chennai jurisdiction.', fontSize: 7, color: '#aaa', alignment: 'center', margin: [0, 8, 0, 0] });
+    // Note: disclaimer moved to footer to prevent page overflow
 
     // Generate PDF
     const pdfmake = require('pdfmake');

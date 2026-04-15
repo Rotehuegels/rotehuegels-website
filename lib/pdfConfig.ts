@@ -127,55 +127,50 @@ export async function generateSmartPdf(
 ): Promise<Buffer> {
   const pdfmake = initPdfMake();
 
-  // Start with the most comfortable preset
-  let bestBuffer: Buffer | null = null;
-  let bestPages = Infinity;
-
-  for (let i = 0; i < PRESETS.length; i++) {
-    const preset = PRESETS[i];
-
-    const docDef = {
+  function render(presetIndex: number): Promise<Buffer> {
+    const preset = PRESETS[presetIndex];
+    return pdfmake.createPdf({
       pageSize: 'A4' as const,
       pageMargins: preset.margins,
-      defaultStyle: {
-        fontSize: preset.fontSize,
-        lineHeight: preset.lineHeight,
-      },
+      defaultStyle: { fontSize: preset.fontSize, lineHeight: preset.lineHeight },
       content,
       ...(footer ? { footer } : {}),
-    };
+    }).getBuffer();
+  }
 
-    const buffer: Buffer = await pdfmake.createPdf(docDef).getBuffer();
+  // Step 1: Try the comfortable preset first
+  const comfortableBuffer = await render(0);
+  const comfortablePages = countPdfPages(comfortableBuffer);
+
+  // If it fits on 1 page, use comfortable — best readability
+  if (comfortablePages <= 1) return comfortableBuffer;
+
+  // Step 2: Try the tightest preset to see if fewer pages are even possible
+  const tightestBuffer = await render(PRESETS.length - 1);
+  const tightestPages = countPdfPages(tightestBuffer);
+
+  // If the tightest preset has the same page count, content genuinely
+  // needs multiple pages — use comfortable for best readability
+  if (tightestPages >= comfortablePages) return comfortableBuffer;
+
+  // Step 3: Tightest reduced pages — find the LEAST tight preset that
+  // achieves the reduced page count (binary search for optimal readability)
+  let bestBuffer = tightestBuffer;
+  let bestPresetIndex = PRESETS.length - 1;
+
+  for (let i = 1; i < PRESETS.length - 1; i++) {
+    const buffer = await render(i);
     const pages = countPdfPages(buffer);
 
-    if (i === 0) {
-      // First attempt — this is our baseline
+    if (pages <= tightestPages) {
+      // This less-tight preset achieves the same result — prefer it
       bestBuffer = buffer;
-      bestPages = pages;
-
-      // If it already fits on 1 page, we're done — use the comfortable preset
-      if (pages <= 1) break;
-
-      // Multi-page: continue to see if tightening reduces pages
-      continue;
-    }
-
-    if (pages < bestPages) {
-      // Tighter preset reduced page count — this is better
-      bestBuffer = buffer;
-      bestPages = pages;
-
-      // If we've reached 1 page, stop — mission accomplished
-      if (pages <= 1) break;
-    } else {
-      // Tighter preset didn't reduce pages — the content genuinely
-      // needs this many pages. Stop tightening and use the previous
-      // (more readable) version.
-      break;
+      bestPresetIndex = i;
+      break; // First match is the most readable that fits
     }
   }
 
-  return bestBuffer!;
+  return bestBuffer;
 }
 
 // ── Legacy simple generator (for backward compatibility) ─────────────────────

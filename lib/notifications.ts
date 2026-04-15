@@ -609,7 +609,7 @@ export async function sendPOConfirmation(poId: string) {
     ${po.notes ? `<p style="font-size:11px;color:#444;"><strong>Notes:</strong> ${esc(po.notes)}</p>` : ""}
     ${po.terms ? `<p style="font-size:11px;color:#444;"><strong>Terms:</strong> ${esc(po.terms)}</p>` : ""}
 
-    <p style="font-size:12px;color:#444;margin-top:16px;">Please confirm receipt and expected delivery schedule. For queries, contact ${CO.email} or call ${CO.phone}.</p>
+    <p style="font-size:12px;color:#444;margin-top:16px;">Please confirm receipt and expected delivery schedule. For queries, contact ${CO.procurementEmail} or call ${CO.phone}.</p>
   ${footer(CO)}`;
 
   const itemsText = items

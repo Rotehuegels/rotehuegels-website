@@ -536,11 +536,18 @@ export async function sendQuoteEmail(quoteId: string) {
 
 export async function sendPOConfirmation(poId: string) {
   const CO = await getCompanyCO();
-  const { data: po, error } = await supabaseAdmin
-    .from("purchase_orders")
-    .select("*, suppliers(legal_name, trade_name, email, phone, gstin, address, state)")
-    .eq("id", poId)
-    .single();
+  const [{ data: po, error }, { data: poItems }] = await Promise.all([
+    supabaseAdmin
+      .from("purchase_orders")
+      .select("*, suppliers(legal_name, trade_name, email, phone, gstin, address, state)")
+      .eq("id", poId)
+      .single(),
+    supabaseAdmin
+      .from("po_items")
+      .select("*")
+      .eq("po_id", poId)
+      .order("sl_no"),
+  ]);
   if (error || !po) throw new Error(`Purchase order not found: ${poId}`);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -548,7 +555,7 @@ export async function sendPOConfirmation(poId: string) {
   const supplierEmail = supplier?.email;
   if (!supplierEmail) throw new Error("Supplier has no email address.");
 
-  const items = (po.items ?? []) as Array<{
+  const items = (poItems ?? []) as Array<{
     sl_no: number; description: string; hsn_code?: string;
     unit: string; quantity: number; unit_price: number;
     taxable_amount: number; gst_rate: number; gst_amount: number; total: number;

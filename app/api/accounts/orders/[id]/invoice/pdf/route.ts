@@ -91,6 +91,18 @@ export async function GET(
     const payments = paymentsRes.data ?? [];
     const adjustments = ((order as any).adjustments ?? []) as Array<{ description: string; amount: number }>;
     const totalPaid = payments.reduce((s: number, p: any) => s + (p.amount_received ?? 0), 0);
+
+    // If order doesn't have customer details inline, try to fetch from customers table
+    if (!order.client_address && order.customer_id) {
+      const { data: cust } = await supabaseAdmin.from('customers').select('contact_person, billing_address, email, phone').eq('id', order.customer_id).single();
+      if (cust) {
+        if (!order.client_contact && cust.contact_person) order.client_contact = cust.contact_person;
+        if (cust.billing_address) {
+          const ba = cust.billing_address as Record<string, string>;
+          order.client_address = [ba.line1, ba.line2, ba.city, ba.state, ba.pincode].filter(Boolean).join(', ');
+        }
+      }
+    }
     const totalAdj = adjustments.reduce((s, a) => s + (a.amount ?? 0), 0);
 
     // Items
@@ -150,10 +162,10 @@ export async function GET(
     const content: any[] = [];
     const BG = '#f3f4f6';
 
-    // Header — full-width table so TAX INVOICE aligns with right margin
+    // Header — full-width 50/50 table
     content.push({
       table: {
-        widths: ['*', 'auto'],
+        widths: ['*', '*'],
         body: [[
           {
             stack: [
@@ -199,7 +211,7 @@ export async function GET(
 
     content.push({
       table: {
-        widths: ['*', 'auto'],
+        widths: ['*', '*'],
         body: [[
           {
             stack: [
@@ -213,7 +225,7 @@ export async function GET(
           },
           {
             table: {
-              widths: [60, 'auto'],
+              widths: [65, '*'],
               body: invDetailRows.map(([l, v]) => [
                 { text: l, fontSize: 6.5, color: '#888' },
                 { text: v, fontSize: 6.5, bold: l === 'Invoice No.' },

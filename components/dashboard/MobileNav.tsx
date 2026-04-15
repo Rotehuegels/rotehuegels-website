@@ -132,6 +132,15 @@ const NAV: NavItem[] = [
   },
 
   {
+    label: 'E-Waste', icon: Package,
+    children: [
+      { label: 'Dashboard',  href: '/d/ewaste',           icon: Package },
+      { label: 'Requests',   href: '/d/ewaste/requests',  icon: ClipboardList },
+      { label: 'Recyclers',  href: '/d/ewaste/recyclers', icon: Factory },
+    ],
+  },
+
+  {
     label: 'IMS', icon: Shield,
     children: [
       { label: 'Overview',  href: '/d/ims',      icon: Shield },

@@ -71,6 +71,11 @@ const nextConfig = {
       // ── Mobile PWA shortcuts (/m/...) ──────────────────────────────
       { source: '/m/reinvoice', destination: '/mobile/reinvoice' },
 
+      // ── E-Waste shortcuts ──────────────────────────────────────────
+      { source: '/d/ewaste', destination: '/dashboard/ewaste' },
+      { source: '/d/ewaste/requests', destination: '/dashboard/ewaste/requests' },
+      { source: '/d/ewaste/recyclers', destination: '/dashboard/ewaste/recyclers' },
+
       // ── IMS shortcuts ─────────────────────────────────────────────
       { source: '/d/ims', destination: '/dashboard/ims' },
       { source: '/d/ims/sops', destination: '/dashboard/ims/sops' },

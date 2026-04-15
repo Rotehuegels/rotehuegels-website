@@ -117,6 +117,7 @@ const nextConfig = {
       { source: '/d/expenses', destination: '/dashboard/accounts/expenses' },
       { source: '/d/expenses/new', destination: '/dashboard/accounts/expenses/new' },
       { source: '/d/expenses/:id', destination: '/dashboard/accounts/expenses/:id' },
+      { source: '/d/expenses/:id/edit', destination: '/dashboard/accounts/expenses/:id/edit' },
       { source: '/d/eway-bills', destination: '/dashboard/accounts/eway-bills' },
       { source: '/d/eway-bills/new', destination: '/dashboard/accounts/eway-bills/new' },
       { source: '/d/credit-notes', destination: '/dashboard/accounts/credit-notes' },
@@ -152,6 +153,7 @@ const nextConfig = {
       { source: '/d/jobs', destination: '/dashboard/ats/jobs' },
       { source: '/d/jobs/new', destination: '/dashboard/ats/jobs/new' },
       { source: '/d/jobs/:id', destination: '/dashboard/ats/jobs/:id' },
+      { source: '/d/jobs/:id/edit', destination: '/dashboard/ats/jobs/:id/edit' },
       { source: '/d/applications', destination: '/dashboard/ats/applications' },
       { source: '/d/applications/:id', destination: '/dashboard/ats/applications/:id' },
 
@@ -159,6 +161,7 @@ const nextConfig = {
       { source: '/d/projects', destination: '/dashboard/projects' },
       { source: '/d/projects/new', destination: '/dashboard/projects/new' },
       { source: '/d/projects/:id', destination: '/dashboard/projects/:id' },
+      { source: '/d/projects/:id/edit', destination: '/dashboard/projects/:id/edit' },
       { source: '/d/operations', destination: '/dashboard/operations' },
       { source: '/d/operations/lab', destination: '/dashboard/operations/lab' },
       { source: '/d/operations/:id', destination: '/dashboard/operations/:id' },

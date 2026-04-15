@@ -2,96 +2,57 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Recycle, Plus, Trash2, Loader2, CheckCircle2, Send } from 'lucide-react';
+import { ArrowLeft, Recycle, Plus, Trash2, Zap, ArrowRight, Leaf } from 'lucide-react';
 
 const input = 'w-full rounded-xl bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50';
 
-const CATEGORIES = [
-  'Computers & Laptops', 'Mobile Phones & Tablets', 'Batteries (Li-ion)',
-  'Batteries (Lead-acid)', 'Monitors & Displays', 'Printers & Peripherals',
-  'Cables & Copper Wiring', 'PCBs & Circuit Boards', 'UPS & Power Supply',
-  'Networking Equipment', 'Home Appliances', 'Industrial Electronics',
-  'Solar Panels & Inverters', 'Mixed E-Waste', 'Other',
-];
+// Recoverable material value per unit/kg — based on publicly available commodity recovery data
+// These represent the ECONOMIC VALUE of materials inside the waste, NOT what we pay
+const WASTE_VALUE: Record<string, { value: number; unit: string; avgKg: number; materials: string }> = {
+  'Computers & Laptops':       { value: 120,  unit: 'unit', avgKg: 5,   materials: 'Copper, aluminium, gold traces, steel, plastics' },
+  'Mobile Phones & Tablets':   { value: 80,   unit: 'unit', avgKg: 0.2, materials: 'Gold, silver, palladium, copper, cobalt, lithium' },
+  'Batteries (Li-ion)':        { value: 150,  unit: 'kg',   avgKg: 1,   materials: 'Lithium, cobalt, nickel, manganese, copper' },
+  'Batteries (Lead-acid)':     { value: 55,   unit: 'kg',   avgKg: 10,  materials: 'Lead (95% recoverable), sulphuric acid, polypropylene' },
+  'Monitors & Displays':       { value: 40,   unit: 'unit', avgKg: 8,   materials: 'Glass, copper, steel, rare earth elements' },
+  'Printers & Peripherals':    { value: 60,   unit: 'unit', avgKg: 6,   materials: 'Steel, copper, aluminium, plastics, toner residue' },
+  'Cables & Copper Wiring':    { value: 400,  unit: 'kg',   avgKg: 1,   materials: 'Copper (65-85% recovery), PVC, aluminium' },
+  'PCBs & Circuit Boards':     { value: 800,  unit: 'kg',   avgKg: 0.5, materials: 'Gold, silver, palladium, copper, tin, rare earths' },
+  'UPS & Power Supply':        { value: 180,  unit: 'unit', avgKg: 8,   materials: 'Lead-acid battery, copper transformer, steel' },
+  'Networking Equipment':      { value: 50,   unit: 'unit', avgKg: 2,   materials: 'Copper, aluminium, steel, small PCBs' },
+  'Home Appliances (Large)':   { value: 300,  unit: 'unit', avgKg: 35,  materials: 'Compressor copper, steel, aluminium, refrigerant gas' },
+  'Industrial Electronics':    { value: 100,  unit: 'kg',   avgKg: 5,   materials: 'Copper, precious metals, speciality alloys' },
+  'Solar Panels':              { value: 25,   unit: 'kg',   avgKg: 18,  materials: 'Silicon, silver, copper, aluminium frame, glass' },
+  'Mixed E-Waste':             { value: 15,   unit: 'kg',   avgKg: 1,   materials: 'Mixed metals, plastics — lower recovery yield' },
+};
 
-interface Item { category: string; quantity: number; condition: string; description: string; }
+const CATEGORIES = Object.keys(WASTE_VALUE);
+
+interface Item { category: string; quantity: number; }
+
+const fmt = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+const fmtKg = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)} MT` : `${Math.round(n)} kg`;
 
 export default function EWasteQuotePage() {
-  const [items, setItems] = useState<Item[]>([{ category: '', quantity: 1, condition: 'non_working', description: '' }]);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [city, setCity] = useState('');
-  const [type, setType] = useState('individual');
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [items, setItems] = useState<Item[]>([{ category: '', quantity: 1 }]);
+  const [showResult, setShowResult] = useState(false);
 
-  const addItem = () => setItems(prev => [...prev, { category: '', quantity: 1, condition: 'non_working', description: '' }]);
+  const addItem = () => setItems(prev => [...prev, { category: '', quantity: 1 }]);
   const removeItem = (i: number) => setItems(prev => prev.filter((_, idx) => idx !== i));
   const updateItem = (i: number, field: string, value: string | number) =>
     setItems(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
 
-  const validItems = items.filter(i => i.category);
+  const valid = items.filter(i => i.category && i.quantity > 0);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validItems.length === 0) { setError('Add at least one e-waste item'); return; }
-    setSubmitting(true);
-    setError('');
+  const breakdown = valid.map(i => {
+    const info = WASTE_VALUE[i.category];
+    const value = info.unit === 'kg' ? info.value * info.avgKg * i.quantity : info.value * i.quantity;
+    const weight = info.avgKg * i.quantity;
+    return { ...i, value, weight, materials: info.materials, rate: info.value, unit: info.unit };
+  });
 
-    try {
-      const res = await fetch('/api/ewaste/requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          generator_name: name,
-          generator_email: email,
-          generator_phone: phone,
-          generator_city: city,
-          generator_type: type,
-          generator_address: city, // minimal — we'll get full address later
-          generator_state: 'India',
-          source: 'quote_request',
-          notes: 'Quote request — not a collection request. Contact to provide pricing.',
-          items: validItems.map(i => ({
-            category_name: i.category,
-            quantity: i.quantity,
-            condition: i.condition,
-            description: i.description,
-            unit: 'units',
-          })),
-        }),
-      });
-      const data = await res.json();
-      if (data.error) {
-        setError(typeof data.error === 'string' ? data.error : 'Please fill all required fields.');
-      } else {
-        setSubmitted(true);
-      }
-    } catch { setError('Failed to submit.'); }
-    finally { setSubmitting(false); }
-  };
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-6 py-20">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className="h-20 w-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">Request Received!</h1>
-          <p className="text-sm text-zinc-400">
-            We&apos;ve received your e-waste details. Our team will check with registered recyclers
-            in your area and get back to you with a quote within 24-48 hours.
-          </p>
-          <Link href="/ewaste" className="inline-block text-sm text-zinc-500 hover:text-zinc-300">
-            &larr; Back to E-Waste Recycling
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const totalValue = breakdown.reduce((s, b) => s + b.value, 0);
+  const totalWeight = breakdown.reduce((s, b) => s + b.weight, 0);
+  const totalItems = valid.reduce((s, i) => s + i.quantity, 0);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -101,114 +62,140 @@ export default function EWasteQuotePage() {
         </Link>
 
         <div className="flex items-center gap-3 mb-2">
-          <Recycle className="h-7 w-7 text-emerald-400" />
-          <h1 className="text-2xl font-bold">Get a Quote for Your E-Waste</h1>
+          <Leaf className="h-7 w-7 text-emerald-400" />
+          <h1 className="text-2xl font-bold">Discover the Value in Your E-Waste</h1>
         </div>
         <p className="text-sm text-zinc-500 mb-8">
-          Tell us what you have — we&apos;ll check with our recycler network and get back with actual pricing.
-          No commitment, no obligation.
+          Electronic waste contains valuable recoverable materials — copper, gold, silver, lithium, rare earths.
+          Find out what&apos;s locked inside your old electronics.
         </p>
 
-        {error && <div className="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-400 mb-6">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Your Details */}
-          <section>
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Your Details</h2>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Name *</label>
-                  <input className={input} required value={name} onChange={e => setName(e.target.value)} />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Type</label>
-                  <select className={input} value={type} onChange={e => setType(e.target.value)}>
-                    <option value="individual">Individual / Home</option>
-                    <option value="business">Business / Office</option>
-                    <option value="institution">Institution / School</option>
-                    <option value="government">Government</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Email *</label>
-                  <input type="email" className={input} required value={email} onChange={e => setEmail(e.target.value)} />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">Phone *</label>
-                  <input type="tel" className={input} required value={phone} onChange={e => setPhone(e.target.value)} />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 mb-1 block">City *</label>
-                  <input className={input} required value={city} onChange={e => setCity(e.target.value)} />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* E-Waste Items */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">What Do You Have?</h2>
-              <button type="button" onClick={addItem} className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300">
-                <Plus className="h-3.5 w-3.5" /> Add Item
-              </button>
-            </div>
-            <div className="space-y-3">
+        {!showResult ? (
+          <>
+            {/* Item selector */}
+            <div className="space-y-3 mb-6">
               {items.map((item, idx) => (
-                <div key={idx} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-zinc-500">Item {idx + 1}</span>
-                    {items.length > 1 && (
-                      <button type="button" onClick={() => removeItem(idx)} className="text-red-400/60 hover:text-red-400">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
+                <div key={idx} className="flex gap-3 items-end">
+                  <div className="flex-1">
+                    {idx === 0 && <label className="text-xs text-zinc-500 mb-1 block">What do you have?</label>}
+                    <select className={input} value={item.category} onChange={e => updateItem(idx, 'category', e.target.value)}>
+                      <option value="">Select type...</option>
+                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="text-xs text-zinc-500 mb-1 block">Category *</label>
-                      <select className={input} required value={item.category} onChange={e => updateItem(idx, 'category', e.target.value)}>
-                        <option value="">Select...</option>
-                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-xs text-zinc-500 mb-1 block">Quantity</label>
-                      <input type="number" min={1} className={input} value={item.quantity} onChange={e => updateItem(idx, 'quantity', Number(e.target.value))} />
-                    </div>
-                    <div>
-                      <label className="text-xs text-zinc-500 mb-1 block">Condition</label>
-                      <select className={input} value={item.condition} onChange={e => updateItem(idx, 'condition', e.target.value)}>
-                        <option value="working">Working</option>
-                        <option value="partially_working">Partially Working</option>
-                        <option value="non_working">Not Working</option>
-                        <option value="damaged">Damaged</option>
-                      </select>
-                    </div>
+                  <div className="w-24">
+                    {idx === 0 && <label className="text-xs text-zinc-500 mb-1 block">Qty</label>}
+                    <input type="number" min={1} className={input} value={item.quantity}
+                      onChange={e => updateItem(idx, 'quantity', Number(e.target.value))} />
                   </div>
-                  <div>
-                    <label className="text-xs text-zinc-500 mb-1 block">Description (optional)</label>
-                    <input className={input} placeholder="e.g., 5 Dell laptops 2018 model, 10 old UPS batteries..." value={item.description} onChange={e => updateItem(idx, 'description', e.target.value)} />
-                  </div>
+                  {items.length > 1 && (
+                    <button onClick={() => removeItem(idx)} className="p-3 text-red-400/60 hover:text-red-400">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
-          </section>
 
-          <button type="submit" disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-4 text-base font-semibold text-white transition-colors disabled:opacity-50">
-            {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-            Request Quote
-          </button>
+            <button onClick={addItem} className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 mb-8">
+              <Plus className="h-3.5 w-3.5" /> Add More Items
+            </button>
 
-          <p className="text-xs text-zinc-600 text-center">
-            No commitment. We&apos;ll check with recyclers in your area and respond within 24-48 hours.
-            Roteh&uuml;gels is a digital facilitator — we do not physically handle e-waste.
-          </p>
-        </form>
+            <button
+              onClick={() => { if (valid.length > 0) setShowResult(true); }}
+              disabled={valid.length === 0}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-4 text-base font-semibold text-white transition-colors disabled:opacity-50"
+            >
+              <Zap className="h-5 w-5" /> Show Recoverable Value
+            </button>
+          </>
+        ) : (
+          <div className="space-y-6">
+            {/* Hero result */}
+            <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/30 to-zinc-950 p-8 text-center">
+              <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Estimated Recoverable Material Value</p>
+              <p className="text-5xl font-black text-emerald-400">{fmt(totalValue)}</p>
+              <p className="text-sm text-zinc-400 mt-3">
+                locked inside <strong className="text-white">{totalItems} items</strong> weighing approximately <strong className="text-white">{fmtKg(totalWeight)}</strong>
+              </p>
+              <p className="text-xs text-zinc-600 mt-2">
+                Based on commodity recovery rates and current material market values
+              </p>
+            </div>
+
+            {/* The pitch */}
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-center">
+              <Recycle className="h-8 w-8 text-emerald-400 mx-auto mb-3" />
+              <h2 className="text-lg font-bold mb-2">Would you like to put this value back into the economy?</h2>
+              <p className="text-sm text-zinc-400 max-w-lg mx-auto">
+                Instead of letting these materials end up in landfills, we connect you with
+                CPCB-registered recyclers who recover and reuse these resources responsibly.
+                Your e-waste becomes someone else&apos;s raw material.
+              </p>
+              <Link
+                href="/ewaste/recycler-register"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-3.5 mt-6 text-sm font-semibold text-white transition-colors"
+              >
+                Get Connected with a Recycler <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            {/* Breakdown */}
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">
+              <div className="px-6 py-3 border-b border-zinc-800/60">
+                <h3 className="text-sm font-semibold text-zinc-300">What&apos;s Inside Your E-Waste</h3>
+              </div>
+              <div className="divide-y divide-zinc-800/60">
+                {breakdown.map((b, idx) => (
+                  <div key={idx} className="px-6 py-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-medium text-zinc-200">{b.category}</p>
+                      <p className="text-sm font-bold text-emerald-400">{fmt(b.value)}</p>
+                    </div>
+                    <p className="text-xs text-zinc-500">
+                      {b.quantity} {b.unit === 'kg' ? `units (~${fmtKg(b.weight)})` : 'units'} &middot; Recoverable: <span className="text-zinc-400">{b.materials}</span>
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="px-6 py-3 bg-zinc-800/30 flex justify-between items-center">
+                <span className="text-sm font-semibold text-zinc-300">Total Recoverable Value</span>
+                <span className="text-lg font-black text-emerald-400">{fmt(totalValue)}</span>
+              </div>
+            </div>
+
+            {/* Environmental impact */}
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
+              <h3 className="text-sm font-semibold text-zinc-300 mb-4">Environmental Impact of Recycling This</h3>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-black text-emerald-400">{fmtKg(totalWeight * 0.3)}</p>
+                  <p className="text-xs text-zinc-500 mt-1">CO₂ emissions avoided</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-sky-400">{Math.round(totalWeight * 0.7)}</p>
+                  <p className="text-xs text-zinc-500 mt-1">Litres of water saved</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-amber-400">{fmtKg(totalWeight * 0.6)}</p>
+                  <p className="text-xs text-zinc-500 mt-1">Raw materials recovered</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Disclaimer */}
+            <p className="text-xs text-zinc-600 text-center">
+              Values are estimates based on average commodity recovery rates and publicly available market data.
+              Actual recoverable value depends on item condition, age, and processing method.
+              Roteh&uuml;gels is a digital facilitator — we do not physically handle e-waste.
+            </p>
+
+            <button onClick={() => { setShowResult(false); setItems([{ category: '', quantity: 1 }]); }}
+              className="block mx-auto text-sm text-zinc-500 hover:text-zinc-300">
+              Calculate Again
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

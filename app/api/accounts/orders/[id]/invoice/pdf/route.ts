@@ -197,18 +197,19 @@ export async function GET(
 
     content.push({
       columns: [
-        { width: '*', stack: billToLines, margin: [0, 0, 6, 0] },
+        { width: '55%', stack: billToLines },
         {
-          width: 'auto',
+          width: '45%',
           table: {
             body: invDetails.map(([l, v]) => [
-              { text: l, fontSize: 8, color: '#888', bold: true },
-              { text: v, fontSize: 8, color: '#111', bold: l === 'Invoice No.' },
+              { text: l, fontSize: 7.5, color: '#888', bold: true },
+              { text: v, fontSize: 7.5, color: '#111', bold: l === 'Invoice No.' },
             ]),
           },
           layout: 'noBorders',
         },
       ],
+      columnGap: 10,
       margin: [0, 0, 0, 8],
     });
 

@@ -67,28 +67,30 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       margin: [0, 0, 0, 8],
     });
 
-    // Quoted To + Quote Details
+    // Quoted To + Quote Details (use table for clean column separation)
+    const addr = billing ? [billing.line1, billing.line2, billing.city, billing.state, billing.pincode].filter(Boolean).join(', ') : '';
     content.push({
       columns: [
-        { width: '*', stack: [
+        { width: '55%', stack: [
           { text: 'QUOTED TO', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { text: customer?.name ?? '', fontSize: 11, bold: true },
-          ...(customer?.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 8, margin: [0, 2, 0, 0] }] : []),
-          ...(customer?.pan ? [{ text: `PAN: ${customer.pan}`, fontSize: 8 }] : []),
-          ...(billing ? [{ text: `${billing.line1 ?? ''}${billing.line2 ? ', ' + billing.line2 : ''}, ${billing.city ?? ''}, ${billing.state ?? ''}${billing.pincode ? ' - ' + billing.pincode : ''}`, fontSize: 8, color: '#555', margin: [0, 3, 0, 0] }] : []),
-          ...(customer?.phone ? [{ text: `Phone: ${customer.phone}`, fontSize: 7.5, color: '#555', margin: [0, 2, 0, 0] }] : []),
-          ...(customer?.email ? [{ text: `Email: ${customer.email}`, fontSize: 7.5, color: '#555' }] : []),
+          { text: customer?.name ?? '', fontSize: 10, bold: true },
+          ...(customer?.gstin ? [{ text: `GSTIN: ${customer.gstin}`, fontSize: 7.5, margin: [0, 2, 0, 0] }] : []),
+          ...(customer?.pan ? [{ text: `PAN: ${customer.pan}`, fontSize: 7.5 }] : []),
+          ...(addr ? [{ text: addr, fontSize: 7.5, color: '#555', margin: [0, 2, 0, 0] }] : []),
+          ...(customer?.phone ? [{ text: `Phone: ${customer.phone}`, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
+          ...(customer?.email ? [{ text: `Email: ${customer.email}`, fontSize: 7, color: '#555' }] : []),
         ]},
-        { width: 180, stack: [
+        { width: '45%', stack: [
           { text: 'QUOTE DETAILS', fontSize: 7, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-          { text: `Quote No: ${quote.quote_no}`, fontSize: 8 },
-          { text: `Date: ${fmtDate(quote.quote_date)}`, fontSize: 8 },
-          ...(quote.valid_until ? [{ text: `Valid Until: ${fmtDate(quote.valid_until)}`, fontSize: 8 }] : []),
-          { text: `Place of Supply: ${isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '-')}`, fontSize: 8 },
-          { text: `GST Type: ${isIntra ? 'CGST + SGST' : 'IGST'}`, fontSize: 8 },
+          { text: `Quote No: ${quote.quote_no}`, fontSize: 7.5 },
+          { text: `Date: ${fmtDate(quote.quote_date)}`, fontSize: 7.5 },
+          ...(quote.valid_until ? [{ text: `Valid Until: ${fmtDate(quote.valid_until)}`, fontSize: 7.5 }] : []),
+          { text: `Place of Supply: ${isIntra ? 'Tamil Nadu (33)' : (customer?.state ?? '-')}`, fontSize: 7.5 },
+          { text: `GST Type: ${isIntra ? 'CGST + SGST' : 'IGST'}`, fontSize: 7.5 },
         ]},
       ],
-      margin: [0, 0, 0, 10],
+      columnGap: 12,
+      margin: [0, 0, 0, 8],
     });
 
     // Items table

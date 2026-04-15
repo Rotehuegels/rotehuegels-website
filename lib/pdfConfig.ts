@@ -195,16 +195,11 @@ export const fmtDate = (d: string) =>
 // ── Full-width horizontal line (adapts to any margin preset) ─────────────────
 // Canvas lines with hardcoded x2 values break when margins change between
 // presets. This uses a table-based approach that always spans 100% width.
+// Uses canvas with x2: 999 — pdfmake clips canvas to content area,
+// so this always spans the full width regardless of margin preset.
 export function hrLine(thickness = 2, color = '#111'): any {
   return {
-    table: { widths: ['*'], body: [['']] },
-    layout: {
-      hLineWidth: (i: number) => i === 1 ? thickness : 0,
-      vLineWidth: () => 0,
-      hLineColor: () => color,
-      paddingLeft: () => 0, paddingRight: () => 0,
-      paddingTop: () => 0, paddingBottom: () => 0,
-    },
+    canvas: [{ type: 'line', x1: 0, y1: 0, x2: 999, y2: 0, lineWidth: thickness, lineColor: color }],
   };
 }
 

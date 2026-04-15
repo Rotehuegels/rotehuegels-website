@@ -74,7 +74,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         widths: ['*', '*'],
         body: [[
           {
-            border: [true, true, true, true],
             stack: [
               { text: 'QUOTED TO', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 3] },
               { text: customer?.name ?? '', fontSize: 10, bold: true },
@@ -86,7 +85,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
             ],
           },
           {
-            border: [false, true, true, true],
             stack: [
               { text: 'QUOTE DETAILS', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 3] },
               { text: `Quote No: ${quote.quote_no}`, fontSize: 7.5, bold: true },
@@ -98,12 +96,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           },
         ]],
       },
-      layout: {
-        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-        hLineColor: () => '#ddd', vLineColor: () => '#ddd',
-        paddingLeft: () => 8, paddingRight: () => 8,
-        paddingTop: () => 6, paddingBottom: () => 6,
-      },
+      layout: 'noBorders',
       margin: [0, 0, 0, 8],
     });
 
@@ -197,14 +190,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (quote.notes || quote.terms) {
       const ntBody: any[][] = [[
         ...(quote.notes ? [{
-          fillColor: '#f9fafb',
+          
           stack: [
             { text: 'NOTES', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
             { text: quote.notes, fontSize: 7, color: '#444', lineHeight: 1.5 },
           ],
         }] : []),
         ...(quote.terms ? [{
-          fillColor: '#f9fafb',
+          
           stack: [
             { text: 'TERMS & CONDITIONS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
             { text: quote.terms, fontSize: 7, color: '#444', lineHeight: 1.5 },
@@ -214,23 +207,17 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       const ntWidths = quote.notes && quote.terms ? ['*', '*'] : ['*'];
       content.push({
         table: { widths: ntWidths, body: ntBody },
-        layout: {
-          hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-          hLineColor: () => '#e5e7eb', vLineColor: () => '#e5e7eb',
-          paddingLeft: () => 8, paddingRight: () => 8,
-          paddingTop: () => 6, paddingBottom: () => 6,
-        },
+        layout: 'noBorders',
         margin: [0, 0, 0, 8],
       });
     }
 
-    // Disclaimer + Signature — full-width table
+    // Disclaimer + Signature — equal 50/50, no borders
     content.push({
       table: {
-        widths: ['*', 180],
+        widths: ['*', '*'],
         body: [[
           {
-            fillColor: '#f9fafb',
             stack: [
               { text: 'This is a quotation and not a tax invoice.', fontSize: 6.5, color: '#666', italics: true },
               { text: 'Prices subject to change after validity date.', fontSize: 6.5, color: '#666', italics: true },
@@ -247,12 +234,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           },
         ]],
       },
-      layout: {
-        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-        hLineColor: () => '#e5e7eb', vLineColor: () => '#e5e7eb',
-        paddingLeft: () => 8, paddingRight: () => 8,
-        paddingTop: () => 6, paddingBottom: () => 6,
-      },
+      layout: 'noBorders',
     });
 
     // Generate PDF using smart auto-scaling system

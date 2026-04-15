@@ -213,12 +213,7 @@ export async function GET(
           },
         ]],
       },
-      layout: {
-        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-        hLineColor: () => '#ddd', vLineColor: () => '#ddd',
-        paddingLeft: () => 8, paddingRight: () => 8,
-        paddingTop: () => 6, paddingBottom: () => 6,
-      },
+      layout: 'noBorders',
       margin: [0, 0, 0, 8],
     });
 
@@ -367,7 +362,7 @@ export async function GET(
         widths: ['*', '*'],
         body: [[
           {
-            fillColor: '#f9fafb',
+            
             stack: [
               { text: 'BANK DETAILS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 4] },
               {
@@ -405,12 +400,7 @@ export async function GET(
           },
         ]],
       },
-      layout: {
-        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
-        hLineColor: () => '#e5e7eb', vLineColor: () => '#e5e7eb',
-        paddingLeft: () => 8, paddingRight: () => 8,
-        paddingTop: () => 6, paddingBottom: () => 6,
-      },
+      layout: 'noBorders',
     });
 
     // Generate PDF using smart auto-scaling system

@@ -30,16 +30,16 @@ export default function EWasteLandingPage() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center mt-10">
             <Link
-              href="/ewaste/recycler-register"
+              href="/ewaste/quote"
               className="flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-4 text-base font-semibold text-white transition-colors"
             >
-              Register as Recycler <ArrowRight className="h-5 w-5" />
+              Get Instant Quote <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
-              href="#how-it-works"
+              href="/ewaste/recycler-register"
               className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
             >
-              Learn How It Works
+              Register as Recycler
             </Link>
           </div>
         </div>

@@ -21,7 +21,7 @@ const NAV = [
     label: 'Services',
     children: [
       { label: 'Overview',              href: '/services' },
-      { label: 'E-Waste Collection',   href: '/ewaste' },
+      { label: 'E-Waste Recycling',     href: '/ewaste' },
       { label: 'Digital Solutions',     href: '/digital-solutions' },
       { label: 'Success Stories',       href: '/success-stories' },
     ],

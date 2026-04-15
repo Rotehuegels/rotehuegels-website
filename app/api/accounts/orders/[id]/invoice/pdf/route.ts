@@ -215,11 +215,11 @@ export async function GET(
           {
             stack: [
               { text: 'BILL TO / SHIP TO', fontSize: 6, bold: true, color: '#888', margin: [0, 0, 0, 2] },
-              { text: order.client_name, fontSize: 9, bold: true, color: '#111' },
-              ...(order.client_contact ? [{ text: order.client_contact, fontSize: 6.5, color: '#555' }] : []),
-              ...(order.client_address ? [{ text: order.client_address, fontSize: 6.5, color: '#555', margin: [0, 1, 0, 0] }] : []),
-              ...(order.client_gstin ? [{ text: `GSTIN:  ${order.client_gstin}`, fontSize: 6.5, bold: true, margin: [0, 2, 0, 0] }] : []),
-              ...(order.client_pan ? [{ text: `PAN:  ${order.client_pan}`, fontSize: 6.5, bold: true }] : []),
+              { text: order.client_name, fontSize: 8, bold: true, color: '#111' },
+              ...(order.client_contact ? [{ text: order.client_contact, fontSize: 6, color: '#555' }] : []),
+              ...(order.client_address ? [{ text: order.client_address, fontSize: 6, color: '#555', lineHeight: 1.2, margin: [0, 1, 0, 0] }] : []),
+              ...(order.client_gstin ? [{ text: `GSTIN:  ${order.client_gstin}`, fontSize: 6, bold: true, margin: [0, 2, 0, 0] }] : []),
+              ...(order.client_pan ? [{ text: `PAN:  ${order.client_pan}`, fontSize: 6, bold: true }] : []),
             ],
           },
           {

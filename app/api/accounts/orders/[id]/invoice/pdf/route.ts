@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
-import { hrLine } from '@/lib/pdfConfig';
 import QRCode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
@@ -148,33 +147,41 @@ export async function GET(
     const content: any[] = [];
     const BG = '#f3f4f6';
 
-    // Header
+    // Header — full-width table so TAX INVOICE aligns with right margin
     content.push({
-      columns: [
-        {
-          width: '*',
-          stack: [
-            ...(logoUrl ? [{ image: logoUrl, width: 110, margin: [0, 0, 0, 4] }] : []),
-            { text: CO.name, fontSize: 11, bold: true, color: '#111' },
-            { text: `${CO.addr1} ${CO.addr2}`, fontSize: 7, color: '#666', margin: [0, 2, 0, 0] },
-            { text: `${CO.email}  |  ${CO.phone}  |  ${CO.web}`, fontSize: 7, color: '#888', margin: [0, 2, 0, 0] },
-          ],
-        },
-        {
-          width: 'auto', alignment: 'right',
-          stack: [
-            { table: { body: [[{ text: 'TAX INVOICE', fontSize: 10, bold: true, alignment: 'center' }]] },
-              layout: { hLineWidth: () => 1.5, vLineWidth: () => 1.5, hLineColor: () => '#111', vLineColor: () => '#111', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
-              margin: [0, 0, 0, 4] },
-            { text: `GSTIN: ${CO.gstin}`, fontSize: 7, color: '#555', alignment: 'right' },
-            { text: `PAN: ${CO.pan}`, fontSize: 7, color: '#555', alignment: 'right' },
-            { text: `CIN: ${CO.cin}`, fontSize: 7, color: '#555', alignment: 'right' },
-            { text: `TAN: ${CO.tan}`, fontSize: 7, color: '#555', alignment: 'right' },
-          ],
-        },
-      ],
+      table: {
+        widths: ['*', 'auto'],
+        body: [[
+          {
+            stack: [
+              ...(logoUrl ? [{ image: logoUrl, width: 110, margin: [0, 0, 0, 4] }] : []),
+              { text: CO.name, fontSize: 10, bold: true, color: '#111' },
+              { text: `${CO.addr1} ${CO.addr2}`, fontSize: 6.5, color: '#666', margin: [0, 2, 0, 0] },
+              { text: `${CO.email}  |  ${CO.phone}  |  ${CO.web}`, fontSize: 6.5, color: '#888', margin: [0, 2, 0, 0] },
+            ],
+          },
+          {
+            alignment: 'right',
+            stack: [
+              { text: 'TAX INVOICE', fontSize: 10, bold: true, alignment: 'right', margin: [0, 0, 0, 4] },
+              { text: `GSTIN: ${CO.gstin}`, fontSize: 6.5, color: '#555', alignment: 'right' },
+              { text: `PAN: ${CO.pan}`, fontSize: 6.5, color: '#555', alignment: 'right' },
+              { text: `CIN: ${CO.cin}`, fontSize: 6.5, color: '#555', alignment: 'right' },
+              { text: `TAN: ${CO.tan}`, fontSize: 6.5, color: '#555', alignment: 'right' },
+            ],
+          },
+        ]],
+      },
+      // Bottom border acts as the separator line — auto full width
+      layout: {
+        hLineWidth: (i: number) => i === 1 ? 2 : 0,
+        vLineWidth: () => 0,
+        hLineColor: () => '#111',
+        paddingLeft: () => 0, paddingRight: () => 0,
+        paddingTop: () => 0, paddingBottom: () => 4,
+      },
+      margin: [0, 0, 0, 6],
     });
-    content.push({ ...hrLine(2, '#111'), margin: [0, 4, 0, 6] });
 
     // Bill To + Invoice Details — full-width two-column table
     const invDetailRows: [string, string][] = [
@@ -350,48 +357,32 @@ export async function GET(
       });
     }
 
-    // ── Bottom section: Bank + QR | Declaration + Signature ─────────
-    // Row 1: Compact bank details with QR on right
+    // ── Bank details: single compact row ────────────────────────────
     content.push({
-      table: {
-        widths: [35, '*', 45],
-        body: [[
-          { text: 'BANK\nDETAILS', fontSize: 6, bold: true, color: '#b45309', alignment: 'center' },
-          {
-            fontSize: 6.5, color: '#444',
-            table: {
-              widths: [30, '*'],
-              body: [
-                [{ text: 'Name', color: '#888' }, CO.name],
-                [{ text: 'A/c No.', color: '#888' }, { text: CO.acc, bold: true }],
-                [{ text: 'IFSC', color: '#888' }, CO.ifsc],
-                [{ text: 'Bank', color: '#888' }, CO.bank],
-                [{ text: 'UPI', color: '#888' }, CO.upi],
-              ],
-            },
-            layout: 'noBorders',
-          },
-          { image: upiQr, fit: [42, 42], alignment: 'center' },
-        ]],
-      },
-      layout: 'noBorders',
+      text: [
+        { text: 'Bank Details: ', fontSize: 6.5, bold: true, color: '#b45309' },
+        { text: `${CO.name}  |  A/c: `, fontSize: 6, color: '#666' },
+        { text: CO.acc, fontSize: 6, bold: true },
+        { text: `  |  IFSC: ${CO.ifsc}  |  ${CO.bank}  |  UPI: ${CO.upi}`, fontSize: 6, color: '#666' },
+      ],
       margin: [0, 4, 0, 4],
     });
 
-    // Row 2: Declaration left | Signature right
+    // ── Declaration + QR + Signature ─────────────────────────────
     content.push({
       table: {
-        widths: ['*', '*'],
+        widths: ['*', 45, '*'],
         body: [[
           {
             stack: [
-              { text: 'We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.', fontSize: 6, color: '#888', italics: true, lineHeight: 1.3 },
+              { text: 'We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.', fontSize: 5.5, color: '#888', italics: true, lineHeight: 1.3 },
             ],
           },
+          { image: upiQr, fit: [40, 40], alignment: 'center' },
           {
             stack: [
-              { text: `For ${CO.name}`, fontSize: 6.5, bold: true, color: '#333', alignment: 'right' },
-              ...(sigUrl ? [{ image: sigUrl, width: 50, alignment: 'right' as const, margin: [0, 2, 0, 1] as any }] : [{ text: '', margin: [0, 14, 0, 0] }]),
+              { text: `For ${CO.name}`, fontSize: 6, bold: true, color: '#333', alignment: 'right' },
+              ...(sigUrl ? [{ image: sigUrl, width: 48, alignment: 'right' as const, margin: [0, 2, 0, 1] as any }] : [{ text: '', margin: [0, 12, 0, 0] }]),
               { text: 'Sivakumar Shanmugam', fontSize: 6.5, bold: true, alignment: 'right' },
               { text: 'CEO, Roteh\u00fcgels | Authorised Signatory', fontSize: 5.5, color: '#888', alignment: 'right' },
             ],

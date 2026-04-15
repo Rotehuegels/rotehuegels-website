@@ -179,6 +179,24 @@ export default function EWasteLandingPage() {
           </p>
         </div>
       </section>
+
+      {/* References & Sources */}
+      <section className="py-6 px-6 border-t border-zinc-800">
+        <div className="max-w-5xl mx-auto text-xs text-zinc-600 space-y-3">
+          <p className="font-semibold text-zinc-500">References &amp; Data Sources</p>
+          <ol className="list-decimal list-inside space-y-1">
+            <li>Central Pollution Control Board (CPCB) — <em>List of Dismantlers/Recyclers as per the authorisation issued by SPCBs/PCCs under E-Waste (Management) Rules, 2022 (As on 08-06-2023)</em> — <a href="https://www.cpcb.nic.in/e-waste-recyclers-dismantler/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">cpcb.nic.in</a></li>
+            <li>NDMC — <em>CPCB Approved List of E-Waste Recyclers/Dismantler</em> — <a href="https://www.ndmc.gov.in/pdf/cpcb_approved_list_of_e-waste_recyclers_dismantler.pdf" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">ndmc.gov.in (PDF)</a></li>
+            <li>CPCB E-Waste EPR Portal — <a href="https://eprewastecpcb.in/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">eprewastecpcb.in</a></li>
+            <li>E-Waste (Management) Rules, 2022 — Ministry of Environment, Forest and Climate Change, Government of India</li>
+          </ol>
+          <p className="italic text-zinc-700">
+            Any omissions or errors in the data presented on this platform are not intentional. Information is sourced from publicly
+            available government records and may not reflect the most current status. Users are advised to verify details independently
+            with the respective SPCB/PCC or directly with the recycler.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

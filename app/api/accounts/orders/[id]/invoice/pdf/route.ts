@@ -450,6 +450,13 @@ export async function GET(
       margin: [0, 0, 0, 4],
     });
 
+    // UPI disclaimer
+    content.push({
+      text: '* UPI payments are subject to per-transaction limits (typically \u20B91 lakh). For amounts exceeding the limit, you may split into multiple UPI transfers or use NEFT / RTGS for the full amount in a single transfer.',
+      fontSize: 5, color: '#999', italics: true, lineHeight: 1.3,
+      margin: [0, 0, 0, 4],
+    });
+
     // Generate PDF using smart auto-scaling system
     const { generateSmartPdf } = await import('@/lib/pdfConfig');
     const invoiceFooter = (currentPage: number, pageCount: number) => ({

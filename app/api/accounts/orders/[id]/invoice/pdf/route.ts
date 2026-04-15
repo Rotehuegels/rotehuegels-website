@@ -176,7 +176,7 @@ export async function GET(
       layout: {
         hLineWidth: (i: number) => i === 1 ? 1 : 0,
         vLineWidth: () => 0,
-        hLineColor: () => '#999',
+        hLineColor: () => '#ddd',
         paddingLeft: () => 0, paddingRight: () => 0,
         paddingTop: () => 0, paddingBottom: () => 4,
       },
@@ -221,8 +221,8 @@ export async function GET(
         ]],
       },
       layout: {
-        hLineWidth: () => 0.3, vLineWidth: () => 0.3,
-        hLineColor: () => '#ccc', vLineColor: () => '#ccc',
+        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+        hLineColor: () => '#ddd', vLineColor: () => '#ddd',
         paddingLeft: () => 8, paddingRight: () => 8,
         paddingTop: () => 6, paddingBottom: () => 6,
       },
@@ -315,9 +315,9 @@ export async function GET(
     content.push({
       table: { headerRows: 1, widths, body: [headerRow, ...dataRows, totalRow], dontBreakRows: true },
       layout: {
-        hLineWidth: () => 0.3, vLineWidth: () => 0.3,
+        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
         hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd',
-        vLineColor: () => '#ccc',
+        vLineColor: () => '#ddd',
         paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3,
       },
       margin: [0, 0, 0, 6],
@@ -335,7 +335,7 @@ export async function GET(
           ],
         }]],
       },
-      layout: { hLineWidth: () => 0.3, vLineWidth: () => 0.3, hLineColor: () => '#ccc', vLineColor: () => '#ccc', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 5, paddingBottom: () => 5 },
+      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 5, paddingBottom: () => 5 },
       margin: [0, 0, 0, 4],
     });
 
@@ -364,7 +364,7 @@ export async function GET(
       ]);
       content.push({
         table: { widths: ['*', 100], body: pmtRows },
-        layout: { hLineWidth: () => 0.3, vLineWidth: () => 0.3, hLineColor: () => '#ccc', vLineColor: () => '#ccc', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
+        layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
         margin: [0, 0, 0, 4],
       });
     }
@@ -423,7 +423,7 @@ export async function GET(
           },
         ]],
       },
-      layout: { hLineWidth: () => 0.3, vLineWidth: () => 0.3, hLineColor: () => '#ccc', vLineColor: () => '#ccc', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 6, paddingBottom: () => 6 },
+      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 6, paddingBottom: () => 6 },
       margin: [0, 0, 0, 4],
     });
 

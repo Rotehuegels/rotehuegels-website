@@ -147,7 +147,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     content.push({
       table: { headerRows: 1, widths: [18, '*', 35, 28, 28, 55, 55, 50, 60], body: [headerRow, ...dataRows], dontBreakRows: true },
-      layout: { hLineWidth: () => 0.3, vLineWidth: () => 0.3, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3 },
+      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3 },
       margin: [0, 0, 0, 8],
     });
 

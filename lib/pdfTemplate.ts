@@ -15,7 +15,7 @@ export const COLORS = {
   gray: '#555',
   medGray: '#888',
   lightGray: '#bbb',
-  border: '#ccc',        // all section borders (thin, subtle)
+  border: '#ddd',        // all section borders (thin, subtle)
   headerBg: '#f0f0f0',   // items table header background
   headerText: '#111',     // items table header text
   bodyText: '#333',
@@ -40,8 +40,8 @@ export const FONT = {
 
 // Standard border layout for section boxes
 export const BOX_LAYOUT = {
-  hLineWidth: () => 0.3,
-  vLineWidth: () => 0.3,
+  hLineWidth: () => 0.5,
+  vLineWidth: () => 0.5,
   hLineColor: () => COLORS.border,
   vLineColor: () => COLORS.border,
   paddingLeft: () => 8,
@@ -52,8 +52,8 @@ export const BOX_LAYOUT = {
 
 // Standard border layout for items/data table
 export const TABLE_LAYOUT = {
-  hLineWidth: () => 0.3,
-  vLineWidth: () => 0.3,
+  hLineWidth: () => 0.5,
+  vLineWidth: () => 0.5,
   hLineColor: () => COLORS.border,
   vLineColor: () => COLORS.border,
   paddingLeft: () => 4,

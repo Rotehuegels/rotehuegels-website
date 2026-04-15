@@ -149,8 +149,8 @@ function buildDocDefinition(sop: SOP, CO: Awaited<ReturnType<typeof getCompanyCO
       dontBreakRows: true,
     },
     layout: {
-      hLineWidth: () => 0.3,
-      vLineWidth: () => 0.3,
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0.5,
       hLineColor: () => '#d1d5db',
       vLineColor: () => '#d1d5db',
       paddingLeft: () => 4,

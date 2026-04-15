@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { sendRegistrationConfirmation } from '@/lib/registrationEmails';
 
 const Schema = z.object({
   company_name:    z.string().min(2),
@@ -88,5 +89,15 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: 'Failed to save.' }, { status: 500 });
+
+  // Send confirmation email (non-blocking)
+  sendRegistrationConfirmation({
+    to: d.email,
+    companyName: d.company_name,
+    contactPerson: d.contact_person,
+    refNo: data.reg_no,
+    type: 'trading_partner',
+  });
+
   return NextResponse.json({ success: true, reg_no: data.reg_no }, { status: 201 });
 }

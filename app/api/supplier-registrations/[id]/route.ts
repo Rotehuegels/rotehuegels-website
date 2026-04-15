@@ -3,6 +3,7 @@ export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { sendRegistrationApproval } from '@/lib/registrationEmails';
 
 export async function PATCH(
   req: Request,
@@ -69,6 +70,16 @@ export async function PATCH(
     if (supplierError) {
       return NextResponse.json({ error: `Approved but failed to add supplier: ${supplierError.message}` }, { status: 500 });
     }
+
+    // Send welcome email with supplier reference
+    sendRegistrationApproval({
+      to: reg.email,
+      companyName: reg.company_name,
+      contactPerson: reg.contact_person,
+      refNo: reg.reg_no,
+      assignedId: reg.reg_no, // Supplier uses reg_no as reference
+      type: 'supplier',
+    });
   }
 
   return NextResponse.json({ success: true });

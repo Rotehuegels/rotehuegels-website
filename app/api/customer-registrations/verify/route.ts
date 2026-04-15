@@ -49,7 +49,7 @@ export async function GET(req: Request) {
   if (transporter) {
     try {
       await transporter.sendMail({
-        from: 'Rotehügels Sales <sales@rotehuegels.com>',
+        from: 'Rotehügels <noreply@rotehuegels.com>',
         to: reg.email,
         subject: `Welcome to Rotehügels, ${reg.company_name}!`,
         html: `

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { sendRegistrationApproval } from '@/lib/registrationEmails';
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,5 +26,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Send welcome email on verification/approval
+  if (body.status === 'verified' && data.email) {
+    sendRegistrationApproval({
+      to: data.email,
+      companyName: data.company_name,
+      contactPerson: data.contact_person,
+      refNo: data.reg_no,
+      assignedId: data.partner_id,
+      type: 'trading_partner',
+    });
+  }
+
   return NextResponse.json(data);
 }

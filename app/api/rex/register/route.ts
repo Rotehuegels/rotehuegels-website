@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
-import nodemailer from 'nodemailer';
+import { sendRexWelcome } from '@/lib/registrationEmails';
 
 const RexSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -31,82 +31,7 @@ async function generateRexId(dob: string): Promise<string> {
   return `${prefix}${next}`;
 }
 
-function sendWelcomeEmail(params: {
-  to: string;
-  title: string;
-  full_name: string;
-  rex_id: string;
-  member_type: string;
-}) {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM } = process.env;
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) return Promise.resolve();
-
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT),
-    secure: false,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-  });
-
-  const memberTypeLabel: Record<string, string> = {
-    student: 'Student',
-    professional: 'Professional',
-    academic: 'Academic',
-    enthusiast: 'Enthusiast',
-  };
-
-  const html = `
-    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111">
-      <div style="background:#0a0a0a;padding:24px 32px;border-radius:12px 12px 0 0">
-        <h1 style="color:#fff;font-size:22px;margin:0">Welcome to the Rotehügels Expert Network</h1>
-        <p style="color:#aaa;margin:8px 0 0;font-size:14px">REX — Connecting Experts in Sustainability, Recycling & Plant Automation</p>
-      </div>
-
-      <div style="background:#f9f9f9;padding:32px;border-radius:0 0 12px 12px;border:1px solid #eee">
-        <p style="font-size:16px">Dear ${esc(params.title)} ${esc(params.full_name)},</p>
-
-        <p>We are delighted to welcome you to the <strong>Rotehügels Expert Network (REX)</strong> as a lifelong member.</p>
-
-        <div style="background:#fff;border:2px solid #e11d48;border-radius:10px;padding:20px 24px;margin:24px 0;text-align:center">
-          <p style="margin:0;font-size:13px;color:#888;text-transform:uppercase;letter-spacing:1px">Your REX ID</p>
-          <p style="margin:8px 0 0;font-size:32px;font-weight:800;color:#e11d48;letter-spacing:2px;font-family:monospace">${esc(params.rex_id)}</p>
-          <p style="margin:8px 0 0;font-size:13px;color:#888">Member Type: ${memberTypeLabel[params.member_type] ?? params.member_type}</p>
-        </div>
-
-        <p>Your REX ID is your unique lifelong identifier within our growing network of experts. Please keep it safe.</p>
-
-        <h3 style="color:#111;font-size:15px">What this means</h3>
-        <ul style="color:#444;font-size:14px;line-height:1.8">
-          <li>You are now part of a curated network of professionals, academics, students, and enthusiasts focused on sustainability, recycling, and plant automation.</li>
-          <li>This membership is <strong>voluntary and complimentary</strong> — it does not guarantee any immediate assignment or compensation.</li>
-          <li>You may be contacted by our team based on your profile and interests for current or future project opportunities, in line with Rotehügels' policies and requirements.</li>
-          <li>Your REX membership is <strong>lifelong</strong> with no renewal required.</li>
-        </ul>
-
-        <p style="font-size:14px;color:#444">If you have any questions, feel free to reach us at <a href="mailto:info@rotehuegels.com" style="color:#e11d48">info@rotehuegels.com</a>.</p>
-
-        <p style="font-size:14px;color:#444">Warm regards,<br/><strong>Team Rotehügels</strong></p>
-
-        <hr style="border:none;border-top:1px solid #eee;margin:24px 0"/>
-        <p style="font-size:11px;color:#aaa;margin:0">
-          Rotehügel Research Business Consultancy Private Limited · Chennai, India<br/>
-          This is a system-generated email. Please do not reply to this message.
-        </p>
-      </div>
-    </div>
-  `;
-
-  return transporter.sendMail({
-    from: EMAIL_FROM ?? 'sivakumar@rotehuegels.com',
-    to: params.to,
-    subject: `Welcome to REX — Your REX ID: ${params.rex_id}`,
-    html,
-  });
-}
-
-function esc(s: string) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+// Old inline sendWelcomeEmail replaced by centralized lib/registrationEmails.ts
 
 export async function POST(req: Request) {
   const ip = getClientIp(req);
@@ -173,12 +98,12 @@ export async function POST(req: Request) {
 
   // Send welcome email — must await before returning (Vercel terminates on response)
   try {
-    await sendWelcomeEmail({
+    await sendRexWelcome({
       to: data.email,
       title: data.title,
-      full_name: data.full_name,
-      rex_id,
-      member_type: data.member_type,
+      fullName: data.full_name,
+      rexId: rex_id,
+      memberType: data.member_type,
     });
   } catch (err) {
     console.error('[rex/register] Email error:', err);

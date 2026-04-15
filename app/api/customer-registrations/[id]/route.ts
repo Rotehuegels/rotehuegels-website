@@ -101,7 +101,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (transporter) {
       try {
         await transporter.sendMail({
-          from: 'Rotehügels Sales <sales@rotehuegels.com>',
+          from: 'Rotehügels <noreply@rotehuegels.com>',
           to: reg.email,
           subject: `KYC Approved — Your Customer ID: ${customer_id}`,
           html: `

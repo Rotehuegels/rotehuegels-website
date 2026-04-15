@@ -176,9 +176,8 @@ export async function GET(
             ],
           },
           {
-            alignment: 'right',
             stack: [
-              { table: { body: [[{ text: 'TAX INVOICE', fontSize: 9, bold: true, alignment: 'center' }]] }, layout: { hLineWidth: () => 1, vLineWidth: () => 1, hLineColor: () => '#333', vLineColor: () => '#333', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 }, margin: [0, 0, 0, 4] },
+              { text: 'TAX INVOICE', fontSize: 12, bold: true, color: '#c0392b', alignment: 'right', characterSpacing: 1, margin: [0, 0, 0, 6] },
               { text: `GSTIN: ${CO.gstin}`, fontSize: 6.5, color: '#555', alignment: 'right' },
               { text: `PAN: ${CO.pan}`, fontSize: 6.5, color: '#555', alignment: 'right' },
               { text: `CIN: ${CO.cin}`, fontSize: 6.5, color: '#555', alignment: 'right' },

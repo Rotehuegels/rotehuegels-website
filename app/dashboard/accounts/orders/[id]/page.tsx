@@ -7,6 +7,7 @@ import StageStatusButton from './StageStatusButton';
 import MarkCompleteButton from './MarkCompleteButton';
 import SendEmailButton from '@/components/SendEmailButton';
 import PaymentActions from './PaymentActions';
+import ConvertToExpenseButton from './ConvertToExpenseButton';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const fmt = (n: number) =>
@@ -108,6 +109,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-amber-600 hover:text-amber-400 transition-colors">
               <Pencil className="h-3.5 w-3.5" /> Edit Order
             </Link>
+            <ConvertToExpenseButton orderId={id} orderNo={order.order_no} />
           </div>
           <div className="text-right">
           <p className="text-xs text-zinc-500">Order Date</p>

@@ -113,12 +113,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   return NextResponse.json({ success: true });
 }
 
-// DELETE — soft-cancel order
+// DELETE — soft-cancel (default) or hard delete (?hard=1)
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
+  const url = new URL(_req.url);
+  const hard = url.searchParams.get('hard') === '1';
 
   // Fetch order details for audit label
   const { data: existing } = await supabaseAdmin
@@ -127,22 +129,31 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     .eq('id', id)
     .single();
 
-  const { error } = await supabaseAdmin
-    .from('orders')
-    .update({ status: 'cancelled' })
-    .eq('id', id);
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
   const label = existing ? `${existing.order_no} - ${existing.client_name}` : id;
-  logAudit({
-    userId: user.id,
-    userEmail: user.email ?? undefined,
-    action: 'delete',
-    entityType: 'order',
-    entityId: id,
-    entityLabel: label,
-  });
 
-  return NextResponse.json({ success: true });
+  if (hard) {
+    // Hard delete — permanently remove order, stages, and payments
+    await supabaseAdmin.from('order_payments').delete().eq('order_id', id);
+    await supabaseAdmin.from('order_payment_stages').delete().eq('order_id', id);
+    const { error } = await supabaseAdmin.from('orders').delete().eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    logAudit({
+      userId: user.id, userEmail: user.email ?? undefined,
+      action: 'delete', entityType: 'order', entityId: id,
+      entityLabel: `PERMANENTLY DELETED: ${label}`,
+    });
+  } else {
+    // Soft cancel
+    const { error } = await supabaseAdmin.from('orders').update({ status: 'cancelled' }).eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    logAudit({
+      userId: user.id, userEmail: user.email ?? undefined,
+      action: 'delete', entityType: 'order', entityId: id,
+      entityLabel: `Cancelled: ${label}`,
+    });
+  }
+
+  return NextResponse.json({ success: true, hard });
 }

@@ -187,34 +187,34 @@ export async function GET(
       ['Supply Type', isIntra ? 'Intra-State' : 'Inter-State'],
     ];
 
+    // Bill To (left ~60%) + Invoice Details (right ~40%) — aligned to items table edges
     content.push({
       table: {
-        widths: ['*', '*'],
+        widths: ['60%', '40%'],
         body: [[
           {
             stack: [
-              { text: 'BILL TO / SHIP TO', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 3] },
-              { text: order.client_name, fontSize: 10, bold: true, color: '#111' },
-              ...(order.client_contact ? [{ text: order.client_contact, fontSize: 7, color: '#555' }] : []),
-              ...(order.client_address ? [{ text: order.client_address, fontSize: 7, color: '#555', margin: [0, 1, 0, 0] }] : []),
-              ...(order.client_gstin ? [{ text: `GSTIN: ${order.client_gstin}`, fontSize: 7, color: '#555', margin: [0, 2, 0, 0] }] : []),
-              ...(order.client_pan ? [{ text: `PAN: ${order.client_pan}`, fontSize: 7, color: '#555' }] : []),
+              { text: 'BILL TO / SHIP TO', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 2] },
+              { text: order.client_name, fontSize: 9, bold: true, color: '#111' },
+              ...(order.client_contact ? [{ text: order.client_contact, fontSize: 6.5, color: '#555' }] : []),
+              ...(order.client_address ? [{ text: order.client_address, fontSize: 6.5, color: '#555', margin: [0, 1, 0, 0] }] : []),
+              ...(order.client_gstin ? [{ text: `GSTIN: ${order.client_gstin}`, fontSize: 6.5, color: '#555', margin: [0, 2, 0, 0] }] : []),
+              ...(order.client_pan ? [{ text: `PAN: ${order.client_pan}`, fontSize: 6.5, color: '#555' }] : []),
             ],
           },
           {
-            table: {
-              widths: [70, '*'],
-              body: invDetailRows.map(([l, v]) => [
-                { text: l, fontSize: 7, color: '#888', bold: true, border: [false, false, false, false] },
-                { text: v, fontSize: 7, color: '#111', bold: l === 'Invoice No.', border: [false, false, false, false] },
-              ]),
-            },
-            layout: { paddingLeft: () => 2, paddingRight: () => 2, paddingTop: () => 1, paddingBottom: () => 1, hLineWidth: () => 0, vLineWidth: () => 0 },
+            stack: invDetailRows.map(([l, v]) => ({
+              columns: [
+                { text: l, width: 65, fontSize: 6.5, color: '#888', bold: true },
+                { text: v, width: '*', fontSize: 6.5, color: '#111', bold: l === 'Invoice No.' },
+              ],
+              margin: [0, 0, 0, 1] as any,
+            })),
           },
         ]],
       },
       layout: 'noBorders',
-      margin: [0, 0, 0, 8],
+      margin: [0, 0, 0, 6],
     });
 
     // Items table
@@ -350,34 +350,50 @@ export async function GET(
       });
     }
 
-    // Bank details + Declaration/Signature — 3-column: bank | QR | declaration+sig
+    // ── Bottom section: Bank + QR | Declaration + Signature ─────────
+    // Row 1: Compact bank details with QR on right
     content.push({
       table: {
-        widths: ['*', 55, '*'],
+        widths: [35, '*', 45],
         body: [[
-          // Bank details
+          { text: 'BANK\nDETAILS', fontSize: 6, bold: true, color: '#b45309', alignment: 'center' },
+          {
+            fontSize: 6.5, color: '#444',
+            table: {
+              widths: [30, '*'],
+              body: [
+                [{ text: 'Name', color: '#888' }, CO.name],
+                [{ text: 'A/c No.', color: '#888' }, { text: CO.acc, bold: true }],
+                [{ text: 'IFSC', color: '#888' }, CO.ifsc],
+                [{ text: 'Bank', color: '#888' }, CO.bank],
+                [{ text: 'UPI', color: '#888' }, CO.upi],
+              ],
+            },
+            layout: 'noBorders',
+          },
+          { image: upiQr, fit: [42, 42], alignment: 'center' },
+        ]],
+      },
+      layout: 'noBorders',
+      margin: [0, 4, 0, 4],
+    });
+
+    // Row 2: Declaration left | Signature right
+    content.push({
+      table: {
+        widths: ['*', '*'],
+        body: [[
           {
             stack: [
-              { text: 'BANK DETAILS', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 3] },
-              { text: `Name: ${CO.name}`, fontSize: 6.5, color: '#555' },
-              { text: `A/c No: ${CO.acc}`, fontSize: 6.5, bold: true },
-              { text: `IFSC: ${CO.ifsc}`, fontSize: 6.5, color: '#555' },
-              { text: `Bank: ${CO.bank}`, fontSize: 6.5, color: '#555' },
-              { text: `UPI: ${CO.upi}`, fontSize: 6.5, color: '#555' },
+              { text: 'We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.', fontSize: 6, color: '#888', italics: true, lineHeight: 1.3 },
             ],
           },
-          // QR code (compact)
-          { image: upiQr, fit: [50, 50], alignment: 'center', margin: [0, 10, 0, 0] },
-          // Declaration + Signature
           {
             stack: [
-              { text: 'DECLARATION', fontSize: 6.5, bold: true, color: '#b45309', margin: [0, 0, 0, 2] },
-              { text: 'We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.', fontSize: 6, color: '#666', lineHeight: 1.3 },
-              { text: '', margin: [0, 4, 0, 0] },
-              { text: `For ${CO.name}`, fontSize: 6.5, bold: true, color: '#444', alignment: 'right' },
-              ...(sigUrl ? [{ image: sigUrl, width: 50, alignment: 'right' as const, margin: [0, 3, 0, 1] as any }] : [{ text: '', margin: [0, 12, 0, 0] }]),
+              { text: `For ${CO.name}`, fontSize: 6.5, bold: true, color: '#333', alignment: 'right' },
+              ...(sigUrl ? [{ image: sigUrl, width: 50, alignment: 'right' as const, margin: [0, 2, 0, 1] as any }] : [{ text: '', margin: [0, 14, 0, 0] }]),
               { text: 'Sivakumar Shanmugam', fontSize: 6.5, bold: true, alignment: 'right' },
-              { text: 'CEO, Roteh\u00fcgels | Authorised Signatory', fontSize: 6, color: '#888', alignment: 'right' },
+              { text: 'CEO, Roteh\u00fcgels | Authorised Signatory', fontSize: 5.5, color: '#888', alignment: 'right' },
             ],
           },
         ]],

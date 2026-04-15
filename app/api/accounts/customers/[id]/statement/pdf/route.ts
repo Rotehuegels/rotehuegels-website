@@ -11,10 +11,6 @@ export const dynamic = 'force-dynamic';
 const fmtN = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
 const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
-function loadFont(name: string): Buffer {
-  try { return fs.readFileSync(path.join(process.cwd(), 'public', 'fonts', 'Roboto', name)); }
-  catch { return fs.readFileSync(path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto', name)); }
-}
 function getLogoDataUrl(): string | null {
   try { return `data:image/png;base64,${fs.readFileSync(path.join(process.cwd(), 'public', 'assets', 'Logo2_black.png')).toString('base64')}`; } catch { return null; }
 }
@@ -180,21 +176,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     // Footer
     // Note: "computer-generated statement" text moved to footer to prevent page overflow
 
-    // Generate PDF
-    const pdfmake = require('pdfmake');
-    for (const f of ['Roboto-Regular.ttf', 'Roboto-Medium.ttf', 'Roboto-Italic.ttf', 'Roboto-MediumItalic.ttf']) pdfmake.virtualfs.writeFileSync(f, loadFont(f));
-    pdfmake.fonts = { Roboto: { normal: 'Roboto-Regular.ttf', bold: 'Roboto-Medium.ttf', italics: 'Roboto-Italic.ttf', bolditalics: 'Roboto-MediumItalic.ttf' } };
-
-    const pdfBuffer: Buffer = await pdfmake.createPdf({
-      pageSize: 'A4', pageMargins: [32, 22, 32, 40],
-      defaultStyle: { fontSize: 8, lineHeight: 1.2 },
-      content,
-      footer: (pg: number, total: number) => ({ columns: [
-        { text: `Statement for ${customer.name}`, fontSize: 7, color: '#aaa', margin: [36, 0, 0, 0] },
-        { text: today, fontSize: 7, color: '#aaa', alignment: 'center' },
-        { text: `Page ${pg} of ${total}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 36, 0] },
-      ]}),
-    }).getBuffer();
+    // Generate PDF using smart auto-scaling system
+    const { generateSmartPdf } = await import('@/lib/pdfConfig');
+    const pdfBuffer = await generateSmartPdf(content, (pg: number, total: number) => ({ columns: [
+      { text: `Statement for ${customer.name}`, fontSize: 7, color: '#aaa', margin: [36, 0, 0, 0] },
+      { text: today, fontSize: 7, color: '#aaa', alignment: 'center' },
+      { text: `Page ${pg} of ${total}`, fontSize: 7, color: '#aaa', alignment: 'right', margin: [0, 0, 36, 0] },
+    ]}));
 
     const headers: Record<string, string> = { 'Content-Type': 'application/pdf', 'Cache-Control': 'public, max-age=60' };
     if (download) headers['Content-Disposition'] = `attachment; filename="Statement-${customer.customer_id ?? customer.name}.pdf"`;

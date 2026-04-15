@@ -33,6 +33,14 @@ const nextConfig = {
       './public/fonts/Roboto/**',
       './public/assets/Logo2_black.png',
     ],
+    '/api/accounts/trial-balance': [
+      './public/fonts/Roboto/**',
+      './public/assets/Logo2_black.png',
+    ],
+    '/api/accounts/cash-flow': [
+      './public/fonts/Roboto/**',
+      './public/assets/Logo2_black.png',
+    ],
   },
 
   // ── Security headers ────────────────────────────────────────────────
@@ -131,6 +139,8 @@ const nextConfig = {
       { source: '/d/gst', destination: '/dashboard/accounts/gst' },
       { source: '/d/gst/filing', destination: '/dashboard/accounts/gst/filing' },
       { source: '/d/pl', destination: '/dashboard/accounts/pl' },
+      { source: '/d/trial-balance', destination: '/dashboard/accounts/trial-balance' },
+      { source: '/d/cash-flow', destination: '/dashboard/accounts/cash-flow' },
       { source: '/d/pl/preview', destination: '/dashboard/accounts/pl/preview' },
       { source: '/d/investments', destination: '/dashboard/investments' },
       { source: '/d/stock-intel', destination: '/dashboard/stock-intelligence' },

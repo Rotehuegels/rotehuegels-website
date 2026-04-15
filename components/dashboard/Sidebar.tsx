@@ -114,6 +114,8 @@ const NAV: NavItem[] = [
       { label: 'GST Report',       href: '/d/gst',            icon: BadgePercent },
       { label: 'GST Filing',       href: '/d/gst/filing',     icon: BadgePercent },
       { label: 'P&L Statement',    href: '/d/pl',             icon: TrendingUp },
+      { label: 'Trial Balance',    href: '/d/trial-balance',  icon: Scale },
+      { label: 'Cash Flow',        href: '/d/cash-flow',      icon: TrendingUp },
       { type: 'section', label: 'Assets & Budget' },
       { label: 'Fixed Assets',     href: '/d/fixed-assets',   icon: CreditCard },
       { label: 'Budget Tracking',  href: '/d/budgets',        icon: TrendingUp },

@@ -131,9 +131,11 @@ const NAV: NavItem[] = [
   },
 
   {
-    label: 'Quality', icon: FileCheck,
+    label: 'IMS', icon: Shield,
     children: [
-      { label: 'Documents', href: '/d/documents', icon: FileCheck },
+      { label: 'Overview',   href: '/d/ims',       icon: Shield },
+      { label: 'SOPs',       href: '/d/ims/sops',  icon: BookOpenCheck },
+      { label: 'Documents',  href: '/d/documents', icon: FileCheck },
     ],
   },
 

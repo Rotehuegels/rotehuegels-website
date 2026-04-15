@@ -14,7 +14,7 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+          { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=(), interest-cohort=()' },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
         ],
       },
@@ -24,6 +24,14 @@ const nextConfig = {
   // ── Clean URL rewrites — hide internal folder structure ──────────────
   async rewrites() {
     return [
+      // ── Mobile PWA shortcuts (/m/...) ──────────────────────────────
+      { source: '/m/reinvoice', destination: '/mobile/reinvoice' },
+
+      // ── IMS shortcuts ─────────────────────────────────────────────
+      { source: '/d/ims', destination: '/dashboard/ims' },
+      { source: '/d/ims/sops', destination: '/dashboard/ims/sops' },
+      { source: '/d/ims/sops/:id', destination: '/dashboard/ims/sops/:id' },
+
       // ── Dashboard shortcuts (/d/...) ──────────────────────────────
       // Overview
       { source: '/d', destination: '/dashboard' },

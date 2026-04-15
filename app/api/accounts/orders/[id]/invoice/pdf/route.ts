@@ -183,7 +183,7 @@ export async function GET(
       margin: [0, 0, 0, 6],
     });
 
-    // Bill To + Invoice Details — full-width two-column table
+    // Bill To + Invoice Details — bordered box (matching reference)
     const invDetailRows: [string, string][] = [
       ['Invoice No.', invoiceNo],
       ['Invoice Date', invoiceDate],
@@ -194,33 +194,38 @@ export async function GET(
       ['Supply Type', isIntra ? 'Intra-State' : 'Inter-State'],
     ];
 
-    // Bill To (left ~60%) + Invoice Details (right ~40%) — aligned to items table edges
     content.push({
       table: {
-        widths: ['60%', '40%'],
+        widths: ['*', 'auto'],
         body: [[
           {
             stack: [
-              { text: 'BILL TO / SHIP TO', fontSize: 6.5, bold: true, color: '#888', margin: [0, 0, 0, 2] },
+              { text: 'BILL TO / SHIP TO', fontSize: 6, bold: true, color: '#888', margin: [0, 0, 0, 2] },
               { text: order.client_name, fontSize: 9, bold: true, color: '#111' },
               ...(order.client_contact ? [{ text: order.client_contact, fontSize: 6.5, color: '#555' }] : []),
               ...(order.client_address ? [{ text: order.client_address, fontSize: 6.5, color: '#555', margin: [0, 1, 0, 0] }] : []),
-              ...(order.client_gstin ? [{ text: `GSTIN: ${order.client_gstin}`, fontSize: 6.5, color: '#555', margin: [0, 2, 0, 0] }] : []),
-              ...(order.client_pan ? [{ text: `PAN: ${order.client_pan}`, fontSize: 6.5, color: '#555' }] : []),
+              ...(order.client_gstin ? [{ text: `GSTIN:  ${order.client_gstin}`, fontSize: 6.5, bold: true, margin: [0, 2, 0, 0] }] : []),
+              ...(order.client_pan ? [{ text: `PAN:  ${order.client_pan}`, fontSize: 6.5, bold: true }] : []),
             ],
           },
           {
-            stack: invDetailRows.map(([l, v]) => ({
-              columns: [
-                { text: l, width: 65, fontSize: 6.5, color: '#888', bold: true },
-                { text: v, width: '*', fontSize: 6.5, color: '#111', bold: l === 'Invoice No.' },
-              ],
-              margin: [0, 0, 0, 1] as any,
-            })),
+            table: {
+              widths: [60, 'auto'],
+              body: invDetailRows.map(([l, v]) => [
+                { text: l, fontSize: 6.5, color: '#888' },
+                { text: v, fontSize: 6.5, bold: l === 'Invoice No.' },
+              ]),
+            },
+            layout: 'noBorders',
           },
         ]],
       },
-      layout: 'noBorders',
+      layout: {
+        hLineWidth: () => 0.5, vLineWidth: () => 0.5,
+        hLineColor: () => '#ccc', vLineColor: () => '#ccc',
+        paddingLeft: () => 8, paddingRight: () => 8,
+        paddingTop: () => 6, paddingBottom: () => 6,
+      },
       margin: [0, 0, 0, 6],
     });
 
@@ -318,78 +323,108 @@ export async function GET(
       margin: [0, 0, 0, 6],
     });
 
-    // Amount in words — no border, just text
+    // Amount in Words — bordered box
     content.push({
-      stack: [
-        { text: 'AMOUNT IN WORDS', fontSize: 6.5, bold: true, color: '#888' },
-        { text: amountInWords(total), fontSize: 9, bold: true, color: '#111', margin: [0, 2, 0, 0] },
-        ...(order.tds_applicable ? [{ text: `* Subject to TDS @ ${order.tds_rate}%. Net receivable: ${fmtN(total - tds)}`, fontSize: 7, color: '#777', margin: [0, 2, 0, 0] }] : []),
-      ],
-      margin: [0, 4, 0, 6],
+      table: {
+        widths: ['*'],
+        body: [[{
+          stack: [
+            { text: 'AMOUNT IN WORDS', fontSize: 6, bold: true, color: '#888', margin: [0, 0, 0, 2] },
+            { text: amountInWords(total), fontSize: 9, bold: true, color: '#111' },
+            ...(order.tds_applicable ? [{ text: `* Subject to TDS @ ${order.tds_rate}%. Net receivable: ${fmtN(total - tds)}`, fontSize: 6.5, color: '#777', margin: [0, 2, 0, 0] }] : []),
+          ],
+        }]],
+      },
+      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ccc', vLineColor: () => '#ccc', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 5, paddingBottom: () => 5 },
+      margin: [0, 0, 0, 4],
     });
 
-    // Payment summary (if any) — no borders, clean rows
+    // Payment & Adjustment Summary — bordered box
     if (totalPaid > 0 || totalAdj > 0) {
       const netDue = total - totalPaid - totalAdj;
       const pmtRows: any[][] = [
-        [{ text: 'Invoice Total', bold: true, fontSize: 7.5 }, { text: fmtN(total), alignment: 'right', bold: true, fontSize: 7.5 }],
+        [{ text: 'PAYMENT & ADJUSTMENT SUMMARY', colSpan: 2, fontSize: 6, bold: true, color: '#888' }, {}],
+        [{ text: 'Invoice Total', bold: true, fontSize: 7 }, { text: fmtN(total), alignment: 'right', bold: true, fontSize: 7 }],
       ];
       for (const p of payments) {
         pmtRows.push([
-          { text: `Less: Payment (${fmtDate(p.payment_date)})${p.payment_mode ? ' - ' + p.payment_mode : ''}`, color: '#555', fontSize: 7 },
-          { text: `-${fmtN(p.amount_received)}`, alignment: 'right', color: '#16a34a', fontSize: 7 },
+          { text: `Less: Payment Received (${fmtDate(p.payment_date)}) \u2014 ${p.payment_mode ?? ''}`, color: '#555', fontSize: 6.5 },
+          { text: `\u2013${fmtN(p.amount_received)}`, alignment: 'right', color: '#16a34a', fontSize: 6.5 },
         ]);
       }
       for (const a of adjustments) {
         pmtRows.push([
-          { text: `Less: ${a.description}`, color: '#555', fontSize: 7 },
-          { text: `-${fmtN(a.amount)}`, alignment: 'right', color: '#16a34a', fontSize: 7 },
+          { text: `Less: ${a.description}`, color: '#555', fontSize: 6.5 },
+          { text: `\u2013${fmtN(a.amount)}`, alignment: 'right', color: '#16a34a', fontSize: 6.5 },
         ]);
       }
       pmtRows.push([
-        { text: 'Balance Due', bold: true, fontSize: 9 },
-        { text: fmtN(netDue), alignment: 'right', bold: true, fontSize: 9, color: netDue > 0 ? '#dc2626' : '#16a34a' },
+        { text: 'Balance Due', bold: true, fontSize: 8 },
+        { text: fmtN(netDue), alignment: 'right', bold: true, fontSize: 8, color: netDue > 0 ? '#dc2626' : '#111' },
       ]);
       content.push({
         table: { widths: ['*', 100], body: pmtRows },
-        layout: 'noBorders',
-        margin: [0, 0, 0, 6],
+        layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ccc', vLineColor: () => '#ccc', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 3, paddingBottom: () => 3 },
+        margin: [0, 0, 0, 4],
       });
     }
 
-    // ── Bank details: single compact row ────────────────────────────
-    content.push({
-      text: [
-        { text: 'Bank Details: ', fontSize: 6.5, bold: true, color: '#b45309' },
-        { text: `${CO.name}  |  A/c: `, fontSize: 6, color: '#666' },
-        { text: CO.acc, fontSize: 6, bold: true },
-        { text: `  |  IFSC: ${CO.ifsc}  |  ${CO.bank}  |  UPI: ${CO.upi}`, fontSize: 6, color: '#666' },
-      ],
-      margin: [0, 4, 0, 4],
-    });
-
-    // ── Declaration + QR + Signature ─────────────────────────────
+    // Bank Details (left with QR) + Declaration & Signature (right) — two bordered boxes
     content.push({
       table: {
-        widths: ['*', 45, '*'],
+        widths: ['*', '*'],
         body: [[
+          // Left: Bank Details + QR
           {
             stack: [
-              { text: 'We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.', fontSize: 5.5, color: '#888', italics: true, lineHeight: 1.3 },
+              { text: 'BANK DETAILS', fontSize: 6, bold: true, color: '#888', margin: [0, 0, 0, 3] },
+              {
+                table: {
+                  widths: ['*', 60],
+                  body: [[
+                    {
+                      table: {
+                        widths: [30, '*'],
+                        body: [
+                          [{ text: 'Name', fontSize: 6.5, color: '#888' }, { text: CO.name, fontSize: 6.5 }],
+                          [{ text: 'A/c No.', fontSize: 6.5, color: '#888' }, { text: CO.acc, fontSize: 6.5, bold: true }],
+                          [{ text: 'IFSC', fontSize: 6.5, color: '#888' }, { text: CO.ifsc, fontSize: 6.5 }],
+                          [{ text: 'Bank', fontSize: 6.5, color: '#888' }, { text: CO.bank, fontSize: 6.5 }],
+                          [{ text: 'UPI', fontSize: 6.5, color: '#888' }, { text: CO.upi, fontSize: 6.5 }],
+                        ],
+                      },
+                      layout: 'noBorders',
+                    },
+                    {
+                      stack: [
+                        { image: upiQr, fit: [55, 55] },
+                        { text: 'Scan to Pay (UPI)', fontSize: 5, color: '#888', alignment: 'center', margin: [0, 1, 0, 0] },
+                      ],
+                      alignment: 'center',
+                    },
+                  ]],
+                },
+                layout: 'noBorders',
+              },
             ],
           },
-          { image: upiQr, fit: [40, 40], alignment: 'center' },
+          // Right: Declaration + Signature
           {
             stack: [
-              { text: `For ${CO.name}`, fontSize: 6, bold: true, color: '#333', alignment: 'right' },
-              ...(sigUrl ? [{ image: sigUrl, width: 48, alignment: 'right' as const, margin: [0, 2, 0, 1] as any }] : [{ text: '', margin: [0, 12, 0, 0] }]),
-              { text: 'Sivakumar Shanmugam', fontSize: 6.5, bold: true, alignment: 'right' },
-              { text: 'CEO, Roteh\u00fcgels | Authorised Signatory', fontSize: 5.5, color: '#888', alignment: 'right' },
+              { text: 'DECLARATION', fontSize: 6, bold: true, color: '#888', margin: [0, 0, 0, 3] },
+              { text: 'We declare that this invoice shows the actual price of the goods / services described and that all particulars are true and correct to the best of our knowledge.', fontSize: 6, color: '#555', lineHeight: 1.3 },
+              { text: '', margin: [0, 4, 0, 0] },
+              { text: `FOR ${CO.name.toUpperCase()}`, fontSize: 6.5, bold: true, alignment: 'right' },
+              ...(sigUrl ? [{ image: sigUrl, width: 50, alignment: 'right' as const, margin: [0, 3, 0, 1] as any }] : [{ text: '', margin: [0, 16, 0, 0] }]),
+              { text: 'Sivakumar Shanmugam', fontSize: 7, bold: true, alignment: 'right' },
+              { text: 'CEO, Roteh\u00fcgels', fontSize: 6, color: '#555', alignment: 'right' },
+              { text: 'Authorised Signatory', fontSize: 6, color: '#888', alignment: 'right' },
             ],
           },
         ]],
       },
-      layout: 'noBorders',
+      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ccc', vLineColor: () => '#ccc', paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 6, paddingBottom: () => 6 },
+      margin: [0, 0, 0, 4],
     });
 
     // Generate PDF using smart auto-scaling system

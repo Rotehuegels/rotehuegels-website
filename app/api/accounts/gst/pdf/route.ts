@@ -105,7 +105,7 @@ export async function GET(_req: Request) {
           ]},
         ]],
       },
-      layout: { hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 10, paddingRight: () => 10, paddingTop: () => 8, paddingBottom: () => 8 },
+      layout: { hLineWidth: () => 0.3, vLineWidth: () => 0.3, hLineColor: () => '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 10, paddingRight: () => 10, paddingTop: () => 8, paddingBottom: () => 8 },
       margin: [0, 0, 0, 10],
     });
 
@@ -114,13 +114,13 @@ export async function GET(_req: Request) {
     content.push({ text: 'Output GST by order date  |  ITC by expense date', fontSize: 7, color: '#888', margin: [0, 0, 0, 4] });
 
     const monthHeader = [
-      { text: 'Month', bold: true, fillColor: '#1a1a1a', color: 'white' },
-      { text: 'CGST', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
-      { text: 'SGST', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
-      { text: 'IGST', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
-      { text: 'Total Output', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
-      { text: 'ITC', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
-      { text: 'Net Payable', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
+      { text: 'Month', bold: true, fillColor: '#f0f0f0', color: '#111' },
+      { text: 'CGST', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      { text: 'SGST', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      { text: 'IGST', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      { text: 'Total Output', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      { text: 'ITC', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      { text: 'Net Payable', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
     ];
 
     const monthRows = months.map(({ year, month }) => {
@@ -156,7 +156,7 @@ export async function GET(_req: Request) {
 
     content.push({
       table: { headerRows: 1, widths: [55, '*', '*', '*', '*', '*', '*'], body: [monthHeader, ...monthRows, totalRow] },
-      layout: { hLineWidth: (i: number) => i <= 1 ? 1.5 : 0.5, vLineWidth: () => 0.5, hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 4, paddingBottom: () => 4 },
+      layout: { hLineWidth: (i: number) => i <= 1 ? 1.5 : 0.5, vLineWidth: () => 0.3, hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 4, paddingBottom: () => 4 },
       margin: [0, 0, 0, 8],
     });
 

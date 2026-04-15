@@ -118,10 +118,10 @@ export async function GET(_req: Request) {
 
     // Table
     const headerRow = [
-      { text: 'Account', bold: true, fillColor: '#1a1a1a', color: 'white' },
-      { text: 'Group', bold: true, fillColor: '#1a1a1a', color: 'white' },
-      { text: 'Debit (Dr)', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
-      { text: 'Credit (Cr)', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
+      { text: 'Account', bold: true, fillColor: '#f0f0f0', color: '#111' },
+      { text: 'Group', bold: true, fillColor: '#f0f0f0', color: '#111' },
+      { text: 'Debit (Dr)', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      { text: 'Credit (Cr)', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
     ];
     const dataRows = rows.map(r => [
       { text: r.account },
@@ -142,7 +142,7 @@ export async function GET(_req: Request) {
 
     content.push({
       table: { headerRows: 1, widths: ['*', 100, 100, 100], body: [headerRow, ...dataRows, totalRow, diffRow] },
-      layout: { hLineWidth: (i: number) => i <= 1 ? 1.5 : 0.5, vLineWidth: () => 0.5, hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 4, paddingBottom: () => 4 },
+      layout: { hLineWidth: (i: number) => i <= 1 ? 1.5 : 0.5, vLineWidth: () => 0.3, hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 6, paddingRight: () => 6, paddingTop: () => 4, paddingBottom: () => 4 },
       margin: [0, 0, 0, 8],
     });
 

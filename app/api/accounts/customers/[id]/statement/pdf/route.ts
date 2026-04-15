@@ -123,13 +123,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     // Transaction table
     const headerRow = [
-      { text: '#', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'center' },
-      { text: 'Invoice', bold: true, fillColor: '#1a1a1a', color: 'white' },
-      { text: 'Date', bold: true, fillColor: '#1a1a1a', color: 'white' },
-      { text: 'Description', bold: true, fillColor: '#1a1a1a', color: 'white' },
-      { text: 'Invoiced', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
-      { text: 'Received', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
-      { text: 'Outstanding', bold: true, fillColor: '#1a1a1a', color: 'white', alignment: 'right' },
+      { text: '#', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'center' },
+      { text: 'Invoice', bold: true, fillColor: '#f0f0f0', color: '#111' },
+      { text: 'Date', bold: true, fillColor: '#f0f0f0', color: '#111' },
+      { text: 'Description', bold: true, fillColor: '#f0f0f0', color: '#111' },
+      { text: 'Invoiced', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      { text: 'Received', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
+      { text: 'Outstanding', bold: true, fillColor: '#f0f0f0', color: '#111', alignment: 'right' },
     ];
 
     let runningBalance = 0;
@@ -157,7 +157,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     content.push({
       table: { headerRows: 1, widths: [18, 50, 55, '*', 65, 65, 65], body: [headerRow, ...dataRows, totalDataRow], dontBreakRows: true },
-      layout: { hLineWidth: (i: number) => i <= 1 ? 1.5 : 0.5, vLineWidth: () => 0.5, hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3 },
+      layout: { hLineWidth: (i: number) => i <= 1 ? 1.5 : 0.5, vLineWidth: () => 0.3, hLineColor: (i: number) => i <= 1 ? '#555' : '#ddd', vLineColor: () => '#ddd', paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3 },
       margin: [0, 0, 0, 8],
     });
 

@@ -1,0 +1,4 @@
+-- Gujarat final (71-75) + Haryana NFMR (1-24): 29 entries
+-- Haryana is a massive zinc dross hub: Bahadurgarh, Hisar, Yamunanagar, Rewari
+-- Key: Upper India Smelting 12,000 MTA, Shree Ganpati Metal 9,900 MTA
+-- DB crossed 1,000 recyclers milestone!

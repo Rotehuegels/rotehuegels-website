@@ -1,5 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/app/api/ewaste/recyclers/verify/route';
 import {
   Factory, CheckCircle2, Clock, Truck, Package, XCircle,
   MapPin, Phone, Mail, Calendar,
@@ -20,6 +22,12 @@ const STATUS_CONFIG: Record<string, { cls: string; icon: React.ElementType; labe
 
 export default async function RecyclerDashboard({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  // Auth: verify signed session cookie matches this recycler
+  const cookieStore = await cookies();
+  const session = cookieStore.get('recycler_session')?.value;
+  const sessionId = session ? verifyToken(session) : null;
+  if (!sessionId || sessionId !== id) redirect('/recycler');
 
   const { data: recycler, error } = await supabaseAdmin
     .from('ewaste_recyclers')
@@ -53,7 +61,7 @@ export default async function RecyclerDashboard({ params }: { params: Promise<{ 
               <p className="text-xs text-zinc-500 font-mono">{recycler.recycler_code}</p>
             </div>
           </div>
-          <a href="/recycler" className="text-xs text-zinc-500 hover:text-zinc-300">Sign Out</a>
+          <a href="/api/ewaste/recyclers/logout" className="text-xs text-zinc-500 hover:text-zinc-300">Sign Out</a>
         </div>
       </header>
 

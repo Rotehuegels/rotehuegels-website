@@ -1,9 +1,26 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
-// GET — verify recycler by code + email (simple auth for recycler portal)
+const SECRET = process.env.RECYCLER_SESSION_SECRET ?? process.env.NEXTAUTH_SECRET ?? 'rh-recycler-portal-2026';
+
+/** Sign a recycler ID so the cookie can't be forged */
+function signToken(id: string): string {
+  const hmac = crypto.createHmac('sha256', SECRET).update(id).digest('hex');
+  return `${id}:${hmac}`;
+}
+
+/** Verify a signed token — returns recycler ID or null */
+export function verifyToken(token: string): string | null {
+  const [id, sig] = token.split(':');
+  if (!id || !sig) return null;
+  const expected = crypto.createHmac('sha256', SECRET).update(id).digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected)) ? id : null;
+}
+
+// GET — verify recycler by code + email, set session cookie
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
@@ -28,5 +45,16 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'This recycler account is inactive' }, { status: 403 });
   }
 
-  return NextResponse.json({ id: data.id, code: data.recycler_code, name: data.company_name });
+  const res = NextResponse.json({ id: data.id, code: data.recycler_code, name: data.company_name });
+
+  // Set signed session cookie — httpOnly, 7 days
+  res.cookies.set('recycler_session', signToken(data.id), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+  });
+
+  return res;
 }

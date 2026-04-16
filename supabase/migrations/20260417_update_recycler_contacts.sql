@@ -397,6 +397,44 @@ UPDATE ewaste_recyclers SET email = 'shreya@hulladek.re', phone = '6292251188' W
 UPDATE ewaste_recyclers SET email = 'csr@greenscape-eco.com' WHERE recycler_code = 'CPCB-RJ-010';
 UPDATE ewaste_recyclers SET email = 'csr@greenscape-eco.com' WHERE recycler_code = 'CPCB-RJ-011';
 
+-- ═══ BATCH 4: UTTAR PRADESH REMAINING (UP-015 to UP-121) ════════════════════
+-- Source: Company websites, IndiaMART, JustDial, UPPCB
+-- Date: 2026-04-17 Batch 4
+
+UPDATE ewaste_recyclers SET email = 'naveen.prakash@simsmm.com', phone = '8048372442', contact_person = 'Harsh Khurana' WHERE recycler_code = 'CPCB-UP-023';
+UPDATE ewaste_recyclers SET email = 'info@greenzon.in', phone = '18001035712' WHERE recycler_code = 'CPCB-UP-034';
+UPDATE ewaste_recyclers SET phone = '9911088901' WHERE recycler_code = 'CPCB-UP-038';
+UPDATE ewaste_recyclers SET email = 'info@greenzon.in', phone = '18001035712' WHERE recycler_code = 'CPCB-UP-005';
+UPDATE ewaste_recyclers SET phone = '18002002450' WHERE recycler_code = 'CPCB-UP-044';
+UPDATE ewaste_recyclers SET phone = '18002002450' WHERE recycler_code = 'CPCB-UP-087';
+UPDATE ewaste_recyclers SET email = 'info@brpinfotech.in', phone = '18002587587' WHERE recycler_code = 'CPCB-UP-043';
+UPDATE ewaste_recyclers SET email = 'info@brpinfotech.in', phone = '18002587587' WHERE recycler_code = 'CPCB-UP-077';
+UPDATE ewaste_recyclers SET email = 'safdarerecycling@gmail.com', phone = '8459494010' WHERE recycler_code = 'CPCB-UP-051';
+UPDATE ewaste_recyclers SET email = 'info@horizonworld.in', phone = '8171000900' WHERE recycler_code = 'CPCB-UP-052';
+UPDATE ewaste_recyclers SET contact_person = 'Gotam Rishi' WHERE recycler_code = 'CPCB-UP-053';
+UPDATE ewaste_recyclers SET email = 'contact@greentekreman.com', phone = '01142333333' WHERE recycler_code = 'CPCB-UP-058';
+UPDATE ewaste_recyclers SET email = 'recology.recycling@gmail.com', contact_person = 'Dr. Uvesh Malik' WHERE recycler_code = 'CPCB-UP-078';
+UPDATE ewaste_recyclers SET email = 'info@3rrecycler.com', phone = '18002128632' WHERE recycler_code = 'CPCB-UP-121';
+UPDATE ewaste_recyclers SET phone = '9811209463' WHERE recycler_code = 'CPCB-UP-119';
+UPDATE ewaste_recyclers SET email = 'info@ewri.in', phone = '18001025679' WHERE recycler_code = 'CPCB-UP-030';
+UPDATE ewaste_recyclers SET email = 'info@ewri.in', phone = '18001025679' WHERE recycler_code = 'CPCB-UP-031';
+UPDATE ewaste_recyclers SET email = 'info@ewri.in', phone = '18001025679' WHERE recycler_code = 'CPCB-UP-104';
+UPDATE ewaste_recyclers SET email = 'info@ewri.in', phone = '18001025679' WHERE recycler_code = 'CPCB-UP-105';
+UPDATE ewaste_recyclers SET email = 'info@rajdhanirecycling.com', phone = '9009009817' WHERE recycler_code = 'CPCB-UP-102';
+
+-- ═══ BATCH 4: PUNJAB REMAINING (PB-002 to PB-008) ══════════════════════════
+
+UPDATE ewaste_recyclers SET phone = '7041519410' WHERE recycler_code = 'CPCB-PB-005';
+UPDATE ewaste_recyclers SET email = 'info@kjrecyclers.com', phone = '18007527756' WHERE recycler_code = 'CPCB-PB-003';
+
+-- ═══ BATCH 4: ODISHA REMAINING (OR-004 to OR-007) ══════════════════════════
+
+UPDATE ewaste_recyclers SET email = 'cosmicnet.net@gmail.com', phone = '9861095616', contact_person = 'Kapil Das' WHERE recycler_code = 'CPCB-OR-006';
+
+-- ═══ BATCH 4: TAMIL NADU REMAINING ═════════════════════════════════════════
+
+UPDATE ewaste_recyclers SET email = 'naveen.prakash@simsmm.com', phone = '9840897125', contact_person = 'Naveen Prakash' WHERE recycler_code = 'CPCB-TN-023';
+
 -- ────────────────────────────────────────────────────────────────────────────
 -- Update timestamp for all modified records
 UPDATE ewaste_recyclers SET updated_at = now() WHERE email NOT LIKE 'cpcb.%@recycler.in' OR phone IS NOT NULL;

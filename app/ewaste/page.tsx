@@ -1,12 +1,21 @@
 import Link from 'next/link';
 import { Recycle, ArrowRight, Shield, Truck, Award, Leaf, AlertTriangle, Clock, Building2 } from 'lucide-react';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
-  title: 'E-Waste Collection — Rotehügels',
-  description: 'Rotehügels is building an e-waste collection platform connecting generators with CPCB-registered recyclers. Currently in pre-launch — building recycler network and obtaining regulatory approvals.',
+  title: 'Recycling Platform — Rotehügels',
+  description: 'Rotehügels connects waste generators with authorized recyclers and reprocessors across India. E-waste, batteries, non-ferrous metals, zinc dross — all categories.',
 };
 
-export default function EWasteLandingPage() {
+export default async function EWasteLandingPage() {
+  const { count } = await supabaseAdmin
+    .from('ewaste_recyclers')
+    .select('*', { count: 'exact', head: true })
+    .eq('is_active', true);
+  const recyclerCount = count ?? 0;
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       {/* intentionally empty — disclaimer at bottom */}
@@ -45,7 +54,7 @@ export default function EWasteLandingPage() {
               href="/ewaste/recyclers"
               className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
             >
-              View 569 Registered Recyclers
+              View {recyclerCount.toLocaleString('en-IN')} Registered Recyclers
             </Link>
           </div>
         </div>

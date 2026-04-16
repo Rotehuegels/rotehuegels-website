@@ -301,15 +301,19 @@ export default function RecyclerDirectory({ rawList }: Props) {
         <div className="text-xs text-zinc-600 space-y-2">
           <p className="font-semibold text-zinc-500">References &amp; Data Sources</p>
           <ol className="list-decimal list-inside space-y-1">
-            <li>Central Pollution Control Board (CPCB) — <em>List of Dismantlers/Recyclers as per the authorisation issued by SPCBs/PCCs under E-Waste (Management) Rules, 2022 (As on 08-06-2023)</em> — <a href="https://www.cpcb.nic.in/e-waste-recyclers-dismantler/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">cpcb.nic.in</a></li>
-            <li>NDMC — <em>CPCB Approved List of E-Waste Recyclers/Dismantler</em> — <a href="https://www.ndmc.gov.in/pdf/cpcb_approved_list_of_e-waste_recyclers_dismantler.pdf" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">ndmc.gov.in (PDF)</a></li>
-            <li>E-Waste (Management) Rules, 2022 — Ministry of Environment, Forest and Climate Change, Government of India</li>
+            <li>CPCB — List of E-Waste Dismantlers/Recyclers under E-Waste (Management) Rules, 2022 — <a href="https://www.cpcb.nic.in/e-waste-recyclers-dismantler/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">cpcb.nic.in</a></li>
+            <li>MoEF/CPCB — List of Non-Ferrous Metal Waste Reprocessors (376 units) — <a href="http://ciiwasteexchange.org/Data/Non-ferrous%20metal%20waste%20reprocessors.pdf" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">CII Waste Exchange</a></li>
+            <li>MPCB — Authorized E-Waste Recyclers, Refurbishers &amp; Dismantlers in Maharashtra (May 2024) — <a href="https://mpcb.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">mpcb.gov.in</a></li>
+            <li>TNPCB — List of Authorized E-Waste Dismantling Units in Tamil Nadu — <a href="https://tnpcb.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">tnpcb.gov.in</a></li>
+            <li>TSPCB — Details of Authorised E-Waste Dismantlers, Recyclers and Producers — <a href="https://tspcb.cgg.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">tspcb.cgg.gov.in</a></li>
+            <li>RSPCB — List of Dismantlers/Refurbishers/Recyclers Authorized by RSPCB — <a href="https://environment.rajasthan.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">environment.rajasthan.gov.in</a></li>
+            <li>KSPCB — List of E-Waste Dismantlers &amp; Recyclers in Karnataka — <a href="https://kspcb.karnataka.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">kspcb.karnataka.gov.in</a></li>
+            <li>CPCB — Battery Waste Management Rules, 2022 &amp; EPR Portal — <a href="https://eprbattery.cpcb.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">eprbattery.cpcb.gov.in</a></li>
+            <li>E-Waste (Management) Rules, 2022 &amp; Hazardous Waste Management Rules — MoEFCC, Government of India</li>
           </ol>
           <p className="italic text-zinc-700 mt-2">
-            Any omissions or errors in the data presented are not intentional. Information is sourced from publicly
-            available government records and may not reflect the most current status of authorisations.
-            Users are advised to verify recycler credentials independently with the respective SPCB/PCC.
-            The data is as on 08-06-2023 and new authorisations issued after this date may not be reflected.
+            Data compiled from multiple government registries and official SPCB publications. Information may not reflect the most
+            current status of authorisations. Users are advised to verify credentials independently with the respective SPCB/PCC.
           </p>
         </div>
       </div>

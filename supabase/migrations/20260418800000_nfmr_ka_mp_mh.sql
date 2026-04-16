@@ -1,0 +1,4 @@
+-- JH (1) + Karnataka (10) + MP (6) + Maharashtra NFMR (8) = 25 entries
+-- Karnataka: Rajeshwari Copper 8060 MTA, Pranil 3600, Metcorp 3500
+-- MP: Cable Processors India 6860 MTA, Siddharth Wires 3800
+-- MH: Bharti Rubber 10000 MTA, Astron Engineers 4500, J.K. Corp 2700

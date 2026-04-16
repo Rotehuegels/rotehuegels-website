@@ -8,7 +8,8 @@ export default async function RecyclersPage() {
   const { data: recyclers } = await supabaseAdmin
     .from('recyclers')
     .select('state, waste_type, capacity_per_month, is_active')
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .limit(5000);
 
   // Pass raw list to client for dynamic filtering
   const rawList = (recyclers ?? []).map(r => ({

@@ -10,7 +10,8 @@ export default async function RecyclersPage() {
   const { data: recyclers } = await supabaseAdmin
     .from('recyclers')
     .select('*')
-    .order('state, company_name');
+    .order('state, company_name')
+    .limit(5000);
 
   return (
     <div className="p-5 md:p-8 space-y-6">

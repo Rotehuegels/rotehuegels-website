@@ -1,0 +1,6 @@
+-- MPCB Maharashtra Pages 6-10 (entries 49-102)
+-- 36 Refurbishers + 18 Dismantlers = 54 new entries
+-- All with verified email + phone + capacity from MPCB May 2024 PDF
+-- 2 duplicates removed (Lilashana Sales, Masstech)
+-- Applied to Supabase 2026-04-17
+-- See main MPCB migration for full details

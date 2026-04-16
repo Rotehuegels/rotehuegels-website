@@ -15,7 +15,6 @@ const WASTE_BADGE: Record<string, { cls: string; label: string }> = {
   'zinc-dross': { cls: 'bg-orange-500/10 text-orange-400 border-orange-500/20', label: 'Zinc Dross' },
   'hazardous': { cls: 'bg-purple-500/10 text-purple-400 border-purple-500/20', label: 'Non-Ferrous' },
   'both':      { cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', label: 'E-Waste + Battery' },
-  'hazardous': { cls: 'bg-red-500/10 text-red-400 border-red-500/20', label: 'Hazardous' },
 };
 
 type Recycler = Record<string, any>;

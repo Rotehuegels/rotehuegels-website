@@ -46,11 +46,11 @@ export default function RecyclerDirectory({ states: STATES, totalRecyclers: TOTA
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
           <Factory className="h-7 w-7 text-emerald-400" />
-          <h1 className="text-2xl font-bold">Registered E-Waste & Battery Recyclers in India</h1>
+          <h1 className="text-2xl font-bold">Registered Recyclers & Reprocessors in India</h1>
         </div>
         <p className="text-sm text-zinc-500 mb-8">
-          Directory of {fmtNum(TOTAL_RECYCLERS)} authorized recyclers, dismantlers and battery processors across {statesCount} states.
-          Includes CPCB e-waste, battery waste (BWM), MRAI material recyclers and SPCB-registered facilities.
+          Directory of {fmtNum(TOTAL_RECYCLERS)} authorized facilities across {statesCount} states — e-waste, battery, non-ferrous metals,
+          zinc dross, copper, brass, and material recyclers. Data sourced from CPCB, SPCB, MPCB, MoEF registries.
         </p>
 
         {/* Summary stats */}

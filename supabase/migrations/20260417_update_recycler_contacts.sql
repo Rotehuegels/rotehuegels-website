@@ -639,6 +639,12 @@ UPDATE ewaste_recyclers SET email = 'info@cleanwastemanagement.in' WHERE recycle
 UPDATE ewaste_recyclers SET email = 'info@elgreenrecycling.com' WHERE recycler_code = 'CPCB-UP-060';
 UPDATE ewaste_recyclers SET email = 'info@aimstechnologies.in' WHERE recycler_code = 'CPCB-UP-061';
 
+-- ═══ BATCH 19: DELHI DPCC OFFICIAL + MORE ════════════════════════════════════
+UPDATE ewaste_recyclers SET email = 'info@foziatraders.in', phone = '9999439029', contact_person = 'Mr. Mohd Suleman' WHERE recycler_code = 'CPCB-DL-001';
+UPDATE ewaste_recyclers SET phone = '9971906090', contact_person = 'Mr. Malik' WHERE recycler_code = 'CPCB-DL-002';
+UPDATE ewaste_recyclers SET phone = '9971052499', contact_person = 'Mr. Ashok Kumar' WHERE recycler_code = 'CPCB-DL-003';
+UPDATE ewaste_recyclers SET phone = '9873236000', contact_person = 'Mr. Shivanku Sehgal' WHERE recycler_code = 'CPCB-DL-006';
+
 -- ────────────────────────────────────────────────────────────────────────────
 -- Update timestamp for all modified records
 UPDATE ewaste_recyclers SET updated_at = now() WHERE email NOT LIKE 'cpcb.%@recycler.in' OR phone IS NOT NULL;

@@ -631,6 +631,14 @@ UPDATE ewaste_recyclers SET email = 'dsatheesh218@gmail.com' WHERE recycler_code
 UPDATE ewaste_recyclers SET email = 'info@arockiaenterprises.in' WHERE recycler_code = 'CPCB-TN-031';
 UPDATE ewaste_recyclers SET email = 'info@envirocareindia.co.in' WHERE recycler_code = 'CPCB-MH-044';
 
+-- ═══ BATCH 18: MH + GJ + WB + UP ═════════════════════════════════════════════
+UPDATE ewaste_recyclers SET email = 'hemant@justdispose.com', phone = '9833030124' WHERE recycler_code = 'CPCB-MH-068';
+UPDATE ewaste_recyclers SET email = 'info@egnus.in' WHERE recycler_code = 'CPCB-GJ-041';
+UPDATE ewaste_recyclers SET email = 'info@hulladek.in', phone = '18002127880' WHERE recycler_code = 'CPCB-WB-001';
+UPDATE ewaste_recyclers SET email = 'info@cleanwastemanagement.in' WHERE recycler_code = 'CPCB-UP-059';
+UPDATE ewaste_recyclers SET email = 'info@elgreenrecycling.com' WHERE recycler_code = 'CPCB-UP-060';
+UPDATE ewaste_recyclers SET email = 'info@aimstechnologies.in' WHERE recycler_code = 'CPCB-UP-061';
+
 -- ────────────────────────────────────────────────────────────────────────────
 -- Update timestamp for all modified records
 UPDATE ewaste_recyclers SET updated_at = now() WHERE email NOT LIKE 'cpcb.%@recycler.in' OR phone IS NOT NULL;

@@ -435,6 +435,20 @@ UPDATE ewaste_recyclers SET email = 'cosmicnet.net@gmail.com', phone = '98610956
 
 UPDATE ewaste_recyclers SET email = 'naveen.prakash@simsmm.com', phone = '9840897125', contact_person = 'Naveen Prakash' WHERE recycler_code = 'CPCB-TN-023';
 
+-- ═══ BATCH 5: UP MISSING CONTACTS (web research) ════════════════════════════
+-- Source: Company websites, IndiaMART, JustDial, ZaubaCorp
+-- Date: 2026-04-17 Batch 5
+
+UPDATE ewaste_recyclers SET email = 'aerspl2@gmail.com', phone = '9540062335', contact_person = 'Imran Malik' WHERE recycler_code = 'CPCB-UP-001';
+UPDATE ewaste_recyclers SET email = 'info@rrrecyclers.com', phone = '9646007592', contact_person = 'Shahjad Malik' WHERE recycler_code = 'CPCB-UP-010';
+UPDATE ewaste_recyclers SET email = 'arshrecycling@gmail.com' WHERE recycler_code = 'CPCB-UP-015';
+UPDATE ewaste_recyclers SET email = 'aerspl2@gmail.com', phone = '9540062335', contact_person = 'Imran Malik' WHERE recycler_code = 'CPCB-UP-016';
+UPDATE ewaste_recyclers SET email = 'oaborecyclers@gmail.com' WHERE recycler_code = 'CPCB-UP-022';
+UPDATE ewaste_recyclers SET email = 'info@greenivarecycler.com', phone = '9910000146' WHERE recycler_code = 'CPCB-UP-036';
+UPDATE ewaste_recyclers SET email = 'info@royalfaiz.com', phone = '9911088901' WHERE recycler_code = 'CPCB-UP-038';
+UPDATE ewaste_recyclers SET phone = '8044566432', contact_person = 'Anas Malik' WHERE recycler_code = 'CPCB-UP-044';
+UPDATE ewaste_recyclers SET email = 'info@faizrecycling.com', phone = '9557478603', contact_person = 'Sahid Malik' WHERE recycler_code = 'CPCB-UP-048';
+
 -- ────────────────────────────────────────────────────────────────────────────
 -- Update timestamp for all modified records
 UPDATE ewaste_recyclers SET updated_at = now() WHERE email NOT LIKE 'cpcb.%@recycler.in' OR phone IS NOT NULL;

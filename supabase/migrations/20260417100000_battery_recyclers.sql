@@ -51,6 +51,8 @@ INSERT INTO ewaste_recyclers (recycler_code, company_name, contact_person, email
 
 ('BWM-KA-004', 'Liven Lithium Pvt. Ltd.', 'Registered Facility', 'info@livenlithium.com', NULL, 'Bengaluru', 'Bengaluru', 'Karnataka', '3000 MTA', 'CPCB/BWM/KA/004', 'battery', 'recycler', NULL, true, true, now())
 
+('BWM-TN-002', 'Bridge Green Upcycle Pvt. Ltd.', 'Balakrishnan Iyer (Founder)', 'info@bridgegreenupcycle.com', NULL, '2nd Floor, 24/1 Subramaniyam Street, Abhiramapuram', 'Chennai', 'Tamil Nadu', NULL, 'CPCB/BWM/TN/002', 'battery', 'recycler', 'https://bridgegreenupcycle.com', true, false, NULL)
+
 ON CONFLICT (recycler_code) DO NOTHING;
 
 -- ── Mark existing e-waste recyclers that also handle batteries ──────────────

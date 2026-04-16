@@ -16,36 +16,9 @@ const CODE_TO_NAME: Record<string, string> = {
   'IN-UP': 'Uttar Pradesh', 'IN-UT': 'Uttarakhand', 'IN-WB': 'West Bengal',
 };
 
-// State-wise recycler data from CPCB (as on 08-06-2023)
-const STATE_DATA: Record<string, { recyclers: number; capacity: number }> = {
-  'Andhra Pradesh':    { recyclers: 10,  capacity: 44003 },
-  'Assam':             { recyclers: 1,   capacity: 120 },
-  'Chhattisgarh':      { recyclers: 2,   capacity: 6750 },
-  'Delhi':             { recyclers: 6,   capacity: 1989 },
-  'Goa':               { recyclers: 2,   capacity: 153 },
-  'Gujarat':           { recyclers: 41,  capacity: 158605 },
-  'Haryana':           { recyclers: 43,  capacity: 157188 },
-  'Himachal Pradesh':  { recyclers: 2,   capacity: 1500 },
-  'Jammu & Kashmir':   { recyclers: 3,   capacity: 705 },
-  'Jharkhand':         { recyclers: 2,   capacity: 660 },
-  'Karnataka':         { recyclers: 72,  capacity: 126015 },
-  'Kerala':            { recyclers: 1,   capacity: 1200 },
-  'Madhya Pradesh':    { recyclers: 3,   capacity: 13600 },
-  'Maharashtra':       { recyclers: 140, capacity: 118032 },
-  'Odisha':            { recyclers: 7,   capacity: 9050 },
-  'Punjab':            { recyclers: 8,   capacity: 10092 },
-  'Rajasthan':         { recyclers: 27,  capacity: 82008 },
-  'Tamil Nadu':        { recyclers: 42,  capacity: 130636 },
-  'Telangana':         { recyclers: 23,  capacity: 148115 },
-  'Uttar Pradesh':     { recyclers: 121, capacity: 624219 },
-  'Uttarakhand':       { recyclers: 8,   capacity: 153068 },
-  'West Bengal':       { recyclers: 5,   capacity: 2640 },
-};
-
-function getStateColor(stateName: string): string {
-  const data = STATE_DATA[stateName];
-  if (!data) return '#3f3f46'; // zinc-700 — no recyclers
-  const r = data.recyclers;
+function getStateColor(recyclerCount: number): string {
+  if (recyclerCount === 0) return '#3f3f46'; // zinc-700 — no recyclers
+  const r = recyclerCount;
   if (r >= 40) return '#10b981'; // emerald-500
   if (r >= 20) return '#34d399'; // emerald-400
   if (r >= 5)  return '#38bdf8'; // sky-400
@@ -56,9 +29,10 @@ interface IndiaMapProps {
   onStateClick?: (stateName: string) => void;
   selectedState?: string | null;
   className?: string;
+  stateData?: Record<string, { recyclers: number; capacity: number }>;
 }
 
-export default function IndiaMap({ onStateClick, selectedState, className = '' }: IndiaMapProps) {
+export default function IndiaMap({ onStateClick, selectedState, className = '', stateData = {} }: IndiaMapProps) {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [paths, setPaths] = useState<Record<string, string>>({});
@@ -76,7 +50,7 @@ export default function IndiaMap({ onStateClick, selectedState, className = '' }
     setTooltipPos({ x: e.clientX - svg.left, y: e.clientY - svg.top - 10 });
   }, []);
 
-  const hoveredData = hoveredState ? STATE_DATA[hoveredState] : null;
+  const hoveredData = hoveredState ? stateData[hoveredState] : null;
   const fmtNum = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 
   if (loading) {
@@ -100,8 +74,8 @@ export default function IndiaMap({ onStateClick, selectedState, className = '' }
           if (!name) return null;
           const isSelected = selectedState === name;
           const isHovered = hoveredState === name;
-          const color = getStateColor(name);
-          const data = STATE_DATA[name];
+          const data = stateData[name];
+          const color = getStateColor(data?.recyclers ?? 0);
 
           return (
             <path

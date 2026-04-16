@@ -192,6 +192,7 @@ export default function RecyclerDirectory({ rawList }: Props) {
               <IndiaMap
                 onStateClick={(state) => setSelectedState(prev => prev === state ? null : state)}
                 selectedState={selectedState}
+                stateData={Object.fromEntries(STATES.map(s => [s.name, { recyclers: s.recyclers, capacity: s.capacity }]))}
               />
             </div>
           </div>

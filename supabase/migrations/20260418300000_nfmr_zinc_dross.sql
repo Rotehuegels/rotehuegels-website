@@ -1,0 +1,7 @@
+-- CPCB/MoEF Non-Ferrous Metal Reprocessors (NFMR)
+-- Source: ciiwasteexchange.org — 376 registered units with ESM facilities
+-- Pages 1-10: AP (12), Bihar (1), Chandigarh (3), Chhattisgarh (5),
+--            Daman/Silvassa (18), Goa (1), Gujarat (7) = 47 entries
+-- waste_type='zinc-dross' for zinc-specific facilities
+-- waste_type='hazardous' for copper/brass/mixed non-ferrous
+-- Applied to Supabase 2026-04-17. More pages to follow.

@@ -76,7 +76,7 @@ export default function RecyclerRegisterPage() {
     fd.forEach((val, key) => { if (val !== '') body[key] = val; });
     body.service_radius_km = Number(body.service_radius_km) || 100;
 
-    const res = await fetch('/api/ewaste/recyclers', {
+    const res = await fetch('/api/recycling/recyclers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -114,7 +114,7 @@ export default function RecyclerRegisterPage() {
               regulatory credentials and activate your account once approved.
             </p>
           </div>
-          <Link href="/ewaste" className="inline-block mt-6 text-sm text-zinc-400 hover:text-white transition-colors">
+          <Link href="/recycling" className="inline-block mt-6 text-sm text-zinc-400 hover:text-white transition-colors">
             &larr; Back to E-Waste Collection
           </Link>
         </div>

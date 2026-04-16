@@ -27,31 +27,31 @@ export default async function EWasteLandingPage() {
         <div className="relative max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 mb-6">
             <Recycle className="h-4 w-4 text-emerald-400" />
-            <span className="text-xs font-medium text-emerald-400">Responsible E-Waste Disposal</span>
+            <span className="text-xs font-medium text-emerald-400">Responsible Recycling Platform</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black leading-tight">
-            Your E-Waste,<br />
+            Your Waste,<br />
             <span className="text-emerald-400">Recycled Right.</span>
           </h1>
           <p className="mt-6 text-lg text-zinc-400 max-w-2xl mx-auto">
-            Connecting e-waste generators directly with CPCB-registered recyclers.
-            No middlemen, no landfills — waste goes straight from your door to the recycler.
+            Connecting waste generators directly with authorized recyclers and reprocessors across India.
+            E-waste, batteries, non-ferrous metals, zinc dross — no middlemen, no landfills.
           </p>
           <div className="flex flex-wrap gap-4 justify-center mt-10">
             <Link
-              href="/ewaste/quote"
+              href="/recycling/quote"
               className="flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-4 text-base font-semibold text-white transition-colors"
             >
               Get Instant Quote <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
-              href="/ewaste/recycler-register"
+              href="/recycling/recycler-register"
               className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
             >
               Register as Recycler
             </Link>
             <Link
-              href="/ewaste/recyclers"
+              href="/recycling/recyclers"
               className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
             >
               View {recyclerCount.toLocaleString('en-IN')} Registered Recyclers
@@ -69,7 +69,7 @@ export default async function EWasteLandingPage() {
             {[
               {
                 icon: Recycle, title: 'No Physical Handling',
-                desc: 'We never collect, store, or transport e-waste. Waste moves directly from generator to recycler.',
+                desc: 'We never collect, store, or transport waste. Materials move directly from generator to recycler.',
               },
               {
                 icon: Shield, title: 'Only Registered Recyclers',
@@ -77,7 +77,7 @@ export default async function EWasteLandingPage() {
               },
               {
                 icon: Award, title: 'Full Traceability',
-                desc: 'Every transaction is tracked end-to-end. Processing certificates issued by the recycler. E-waste passport compliant.',
+                desc: 'Every transaction is tracked end-to-end. Processing certificates issued by the recycler. Fully compliant.',
               },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
@@ -97,7 +97,7 @@ export default async function EWasteLandingPage() {
           <p className="text-zinc-500 text-center mb-12 max-w-xl mx-auto">Simple, traceable, and compliant.</p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
-              { step: '1', title: 'Request Pickup', desc: 'Fill the form with your e-waste details and preferred date', icon: Recycle },
+              { step: '1', title: 'Request Pickup', desc: 'Fill the form with your waste details and preferred date', icon: Recycle },
               { step: '2', title: 'We Match', desc: 'We assign the nearest CPCB-registered recycler for your waste type', icon: Shield },
               { step: '3', title: 'Doorstep Collection', desc: 'Recycler picks up directly from your location — no drop-off needed', icon: Truck },
               { step: '4', title: 'Certificate Issued', desc: 'Get a recycling certificate for your records and compliance', icon: Award },
@@ -161,7 +161,7 @@ export default async function EWasteLandingPage() {
           <p className="text-zinc-400 mb-4">Join our network now. We&apos;re onboarding CPCB-registered recyclers ahead of launch.</p>
           <p className="text-sm text-zinc-500 mb-8">Once we obtain authorization, we&apos;ll match you with e-waste generators in your area.</p>
           <Link
-            href="/ewaste/recycler-register"
+            href="/recycling/recycler-register"
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-4 text-base font-semibold text-white transition-colors"
           >
             Register as Recycler <ArrowRight className="h-5 w-5" />

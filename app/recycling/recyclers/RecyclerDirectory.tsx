@@ -77,7 +77,7 @@ export default function RecyclerDirectory({ rawList }: Props) {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <Link href="/ewaste" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
+        <Link href="/recycling" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
           <ArrowLeft className="h-3 w-3" /> Back to E-Waste Recycling
         </Link>
 
@@ -291,7 +291,7 @@ export default function RecyclerDirectory({ rawList }: Props) {
           <Recycle className="h-8 w-8 text-emerald-400 mx-auto mb-3" />
           <h3 className="text-lg font-bold mb-2">Are you a registered recycler or reprocessor?</h3>
           <p className="text-sm text-zinc-400 mb-4">Join our platform to connect with waste generators and material suppliers across India.</p>
-          <Link href="/ewaste/recycler-register"
+          <Link href="/recycling/recycler-register"
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-6 py-3 text-sm font-semibold text-white transition-colors">
             Register Your Facility
           </Link>

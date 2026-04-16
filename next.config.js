@@ -66,6 +66,12 @@ const nextConfig = {
   },
 
   // ── Clean URL rewrites — hide internal folder structure ──────────────
+  async redirects() {
+    return [
+      { source: '/ewaste', destination: '/recycling', permanent: true },
+      { source: '/ewaste/:path*', destination: '/recycling/:path*', permanent: true },
+    ];
+  },
   async rewrites() {
     return [
       // ── Mobile PWA shortcuts (/m/...) ──────────────────────────────

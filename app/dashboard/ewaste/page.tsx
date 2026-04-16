@@ -46,10 +46,10 @@ export default async function EWasteDashboard() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Link href="/d/ewaste/recyclers" className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+          <Link href="/d/recycling/recyclers" className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
             Recyclers
           </Link>
-          <Link href="/ewaste" target="_blank" className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition-colors">
+          <Link href="/recycling" target="_blank" className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition-colors">
             Public Page <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

@@ -149,9 +149,6 @@ export default function RecyclerDirectory({ states: STATES, totalRecyclers: TOTA
                         <div className="flex items-center gap-2">
                           <MapPin className={`h-3.5 w-3.5 ${getColor(s.recyclers)}`} />
                           <span className="text-zinc-200 font-medium">{s.name}</span>
-                          {s.name === 'Tamil Nadu' && (
-                            <span className="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded-full">Our State</span>
-                          )}
                         </div>
                       </td>
                       <td className={`px-4 py-3 text-right font-bold ${getColor(s.recyclers)}`}>{s.recyclers}</td>

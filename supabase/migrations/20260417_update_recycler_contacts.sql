@@ -650,6 +650,13 @@ UPDATE ewaste_recyclers SET phone = '18001202626' WHERE recycler_code = 'CPCB-UP
 UPDATE ewaste_recyclers SET email = 'info@weee-pro.org' WHERE recycler_code = 'CPCB-UP-120';
 UPDATE ewaste_recyclers SET email = 'info@morebrightewaste.com' WHERE recycler_code = 'CPCB-UP-094';
 
+-- ═══ BATCH 21: MH remaining ══════════════════════════════════════════════════
+UPDATE ewaste_recyclers SET email = 'sales@gnge.in' WHERE recycler_code = 'CPCB-MH-051';
+UPDATE ewaste_recyclers SET email = 'info@scaperecycler.com' WHERE recycler_code = 'CPCB-MH-123';
+UPDATE ewaste_recyclers SET phone = '9371015373' WHERE recycler_code = 'CPCB-MH-019';
+UPDATE ewaste_recyclers SET phone = '9764279786' WHERE recycler_code = 'CPCB-MH-028';
+UPDATE ewaste_recyclers SET phone = '8805996742' WHERE recycler_code = 'CPCB-MH-140';
+
 -- ────────────────────────────────────────────────────────────────────────────
 -- Update timestamp for all modified records
 UPDATE ewaste_recyclers SET updated_at = now() WHERE email NOT LIKE 'cpcb.%@recycler.in' OR phone IS NOT NULL;

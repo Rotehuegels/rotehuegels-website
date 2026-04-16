@@ -1,0 +1,4 @@
+-- Punjab NFMR (29 entries) — massive zinc dross/zinc ash hub
+-- Sangrur district alone has 10+ facilities
+-- Key: D.D. Agro Industries Ludhiana 11,600 MTA,
+--   Bhoomi Sudhar Chemical 7,000 MTA, Shri Ram Chemical 5,000 MTA

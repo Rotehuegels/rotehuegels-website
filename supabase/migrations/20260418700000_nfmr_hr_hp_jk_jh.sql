@@ -1,0 +1,4 @@
+-- Haryana final (25-28) + HP (3) + J&K (19!) + Jharkhand (2) = 28 entries
+-- J&K is a massive copper/zinc hub: Kathua, Samba, Jammu, Udhampur
+-- Key: Metal Extrusion Kathua 16,000 MTA, D.D. Agro 14,760 MTA,
+--   Ess Vee Udyog 14,500 MTA, Shri Ganga Metals 10,800 MTA

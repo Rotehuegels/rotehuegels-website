@@ -557,6 +557,45 @@ UPDATE ewaste_recyclers SET email = 'info@payasrecyclers.com', phone = '98254575
 UPDATE ewaste_recyclers SET email = 'info@starrecycling.com' WHERE recycler_code = 'CPCB-GJ-023';
 UPDATE ewaste_recyclers SET phone = '9500101738' WHERE recycler_code = 'CPCB-TN-002';
 
+-- ═══ BATCH 13: KA CODE FIX + TS TSPCB + HR + GJ ═════════════════════════════
+-- Date: 2026-04-17 Batch 13
+
+-- KA code fixes (contacts were researched earlier but mapped to wrong codes)
+UPDATE ewaste_recyclers SET email = 'recycle@ewasteindia.com', phone = '08028360902' WHERE recycler_code = 'CPCB-KA-001';
+UPDATE ewaste_recyclers SET email = 'info@ecoglobe.in' WHERE recycler_code = 'CPCB-KA-003';
+UPDATE ewaste_recyclers SET email = 'info@greenenabledit.com' WHERE recycler_code = 'CPCB-KA-005';
+UPDATE ewaste_recyclers SET email = 'recycle@ewasteindia.com', phone = '08028360902' WHERE recycler_code = 'CPCB-KA-012';
+UPDATE ewaste_recyclers SET email = 'mkkewasterecyclers@gmail.com' WHERE recycler_code = 'CPCB-KA-013';
+UPDATE ewaste_recyclers SET email = 'info@escrappyrecyclers.com', phone = '9980997863' WHERE recycler_code = 'CPCB-KA-014';
+UPDATE ewaste_recyclers SET email = 'Info.india@ctdi.com' WHERE recycler_code = 'CPCB-KA-017';
+UPDATE ewaste_recyclers SET email = 'csr@greenscape-eco.com', phone = '7558426313' WHERE recycler_code = 'CPCB-KA-018';
+UPDATE ewaste_recyclers SET email = 'naveen.prakash@simsmm.com', phone = '9840897125' WHERE recycler_code = 'CPCB-KA-019';
+UPDATE ewaste_recyclers SET email = 'ramesh@epragathi.com', phone = '9880455517' WHERE recycler_code = 'CPCB-KA-020';
+UPDATE ewaste_recyclers SET email = 'info@resustainability.com' WHERE recycler_code = 'CPCB-KA-021';
+UPDATE ewaste_recyclers SET email = 'mkkewasterecyclers@gmail.com' WHERE recycler_code = 'CPCB-KA-025';
+UPDATE ewaste_recyclers SET email = 'info@coralwaters.in', phone = '08027971130' WHERE recycler_code = 'CPCB-KA-036';
+UPDATE ewaste_recyclers SET email = 'info.ashrecyclers@yahoo.com', phone = '08025300377' WHERE recycler_code = 'CPCB-KA-037';
+UPDATE ewaste_recyclers SET email = 'naveen.prakash@simsmm.com', phone = '9840897124' WHERE recycler_code = 'CPCB-KA-065';
+
+-- TS from TSPCB official website
+UPDATE ewaste_recyclers SET email = 'ewastehyderabad@earthsense.in', phone = '9676931233' WHERE recycler_code = 'CPCB-TS-001';
+UPDATE ewaste_recyclers SET email = 'mujeebquadri@zenviroindustries.com', phone = '9246176867' WHERE recycler_code = 'CPCB-TS-002';
+UPDATE ewaste_recyclers SET phone = '8008364639' WHERE recycler_code = 'CPCB-TS-005';
+
+-- HR
+UPDATE ewaste_recyclers SET email = 'info@smsenterprises.org', phone = '01122010310' WHERE recycler_code = 'CPCB-HR-024';
+UPDATE ewaste_recyclers SET email = 'info@endeavorrecyclers.com' WHERE recycler_code = 'CPCB-HR-012';
+UPDATE ewaste_recyclers SET email = 'info@endeavorrecyclers.com' WHERE recycler_code = 'CPCB-HR-043';
+
+-- GJ
+UPDATE ewaste_recyclers SET email = 'info@goecogreen.in' WHERE recycler_code = 'CPCB-GJ-012';
+
+-- DL
+UPDATE ewaste_recyclers SET email = 'info@techchefewaste.in', phone = '9910288223' WHERE recycler_code = 'CPCB-DL-004';
+
+-- MH
+UPDATE ewaste_recyclers SET email = 'info@envirocareindia.co.in', phone = '9820094450' WHERE recycler_code = 'CPCB-MH-007';
+
 -- ────────────────────────────────────────────────────────────────────────────
 -- Update timestamp for all modified records
 UPDATE ewaste_recyclers SET updated_at = now() WHERE email NOT LIKE 'cpcb.%@recycler.in' OR phone IS NOT NULL;

@@ -1,0 +1,3 @@
+-- NFMR Gujarat (entries 8-42): 35 non-ferrous metal reprocessors
+-- Jamnagar brass/copper hub + Ahmedabad/Vapi/Ankleshwar zinc facilities
+-- Source: CPCB/MoEF registered list pages 11-15

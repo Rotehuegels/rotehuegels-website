@@ -64,8 +64,8 @@ export default function RecyclerDirectory({ states: STATES, totalRecyclers: TOTA
             <p className="text-xs text-zinc-500 mt-1">States Covered</p>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 text-center">
-            <p className="text-3xl font-black text-amber-400">{fmtNum(Math.round(TOTAL_CAPACITY / 1000))}</p>
-            <p className="text-xs text-zinc-500 mt-1">Thousand MTA Capacity</p>
+            <p className="text-3xl font-black text-amber-400">{fmtNum(Math.round(TOTAL_CAPACITY))}</p>
+            <p className="text-xs text-zinc-500 mt-1">MTA Total Capacity</p>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 text-center">
             <p className="text-3xl font-black text-zinc-400">{MISSING_STATES.length}</p>

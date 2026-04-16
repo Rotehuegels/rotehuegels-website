@@ -78,9 +78,9 @@ const nextConfig = {
       { source: '/m/reinvoice', destination: '/mobile/reinvoice' },
 
       // ── E-Waste shortcuts ──────────────────────────────────────────
-      { source: '/d/ewaste', destination: '/dashboard/ewaste' },
-      { source: '/d/ewaste/requests', destination: '/dashboard/ewaste/requests' },
-      { source: '/d/ewaste/recyclers', destination: '/dashboard/ewaste/recyclers' },
+      { source: '/d/recycling', destination: '/dashboard/recycling' },
+      { source: '/d/recycling/requests', destination: '/dashboard/recycling/requests' },
+      { source: '/d/recycling/recyclers', destination: '/dashboard/recycling/recyclers' },
 
       // ── IMS shortcuts ─────────────────────────────────────────────
       { source: '/d/ims', destination: '/dashboard/ims' },

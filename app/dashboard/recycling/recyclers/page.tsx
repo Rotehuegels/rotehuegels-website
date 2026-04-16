@@ -8,7 +8,7 @@ export const revalidate = 0;
 
 export default async function RecyclersPage() {
   const { data: recyclers } = await supabaseAdmin
-    .from('ewaste_recyclers')
+    .from('recyclers')
     .select('*')
     .order('state, company_name');
 

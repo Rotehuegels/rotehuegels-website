@@ -30,7 +30,7 @@ export default async function RecyclerDashboard({ params }: { params: Promise<{ 
   if (!sessionId || sessionId !== id) redirect('/recycler');
 
   const { data: recycler, error } = await supabaseAdmin
-    .from('ewaste_recyclers')
+    .from('recyclers')
     .select('*')
     .eq('id', id)
     .single();
@@ -38,7 +38,7 @@ export default async function RecyclerDashboard({ params }: { params: Promise<{ 
   if (error || !recycler) notFound();
 
   const { data: requests } = await supabaseAdmin
-    .from('ewaste_collection_requests')
+    .from('collection_requests')
     .select('*')
     .eq('recycler_id', id)
     .order('created_at', { ascending: false });

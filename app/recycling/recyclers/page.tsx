@@ -6,7 +6,7 @@ export const revalidate = 0;
 
 export default async function RecyclersPage() {
   const { data: recyclers } = await supabaseAdmin
-    .from('ewaste_recyclers')
+    .from('recyclers')
     .select('state, waste_type, capacity_per_month, is_active')
     .eq('is_active', true);
 

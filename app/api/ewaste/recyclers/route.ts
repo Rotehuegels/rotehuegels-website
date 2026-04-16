@@ -28,7 +28,7 @@ const RecyclerSchema = z.object({
 // GET — list recyclers
 export async function GET() {
   const { data, error } = await supabaseAdmin
-    .from('ewaste_recyclers')
+    .from('recyclers')
     .select('*')
     .order('company_name');
 
@@ -46,12 +46,12 @@ export async function POST(req: Request) {
   const parsed = RecyclerSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
-  const { count } = await supabaseAdmin.from('ewaste_recyclers').select('*', { count: 'exact', head: true });
+  const { count } = await supabaseAdmin.from('recyclers').select('*', { count: 'exact', head: true });
   const seq = String((count ?? 0) + 1).padStart(3, '0');
   const recyclerCode = `RCY-${seq}`;
 
   const { data, error } = await supabaseAdmin
-    .from('ewaste_recyclers')
+    .from('recyclers')
     .insert({ ...parsed.data, recycler_code: recyclerCode })
     .select('id, recycler_code')
     .single();

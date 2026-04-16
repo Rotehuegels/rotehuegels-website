@@ -18,8 +18,8 @@ export default async function TrackPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
 
   const { data: request, error } = await supabaseAdmin
-    .from('ewaste_collection_requests')
-    .select('*, ewaste_recyclers(company_name, recycler_code, city)')
+    .from('collection_requests')
+    .select('*, recyclers(company_name, recycler_code, city)')
     .eq('id', id)
     .single();
 
@@ -36,7 +36,7 @@ export default async function TrackPage({ params }: { params: Promise<{ id: stri
     .eq('request_id', id)
     .order('created_at', { ascending: false });
 
-  const recycler = request.ewaste_recyclers as { company_name: string; recycler_code: string; city: string } | null;
+  const recycler = request.recyclers as { company_name: string; recycler_code: string; city: string } | null;
   const currentStepIdx = STEPS.findIndex(s => s.status === request.status);
   const isCancelled = request.status === 'cancelled';
 

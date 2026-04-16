@@ -12,7 +12,7 @@ export const metadata = {
 
 export default async function EWasteLandingPage() {
   const { count } = await supabaseAdmin
-    .from('ewaste_recyclers')
+    .from('recyclers')
     .select('*', { count: 'exact', head: true })
     .eq('is_active', true);
   const recyclerCount = count ?? 0;

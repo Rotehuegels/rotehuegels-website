@@ -22,11 +22,11 @@ const STATUS_CONFIG: Record<string, { cls: string; icon: React.ElementType; labe
 
 export default async function EWasteDashboard() {
   const [{ data: requests }, { data: recyclers }] = await Promise.all([
-    supabaseAdmin.from('ewaste_collection_requests')
-      .select('*, ewaste_recyclers(company_name)')
+    supabaseAdmin.from('collection_requests')
+      .select('*, recyclers(company_name)')
       .order('created_at', { ascending: false })
       .limit(50),
-    supabaseAdmin.from('ewaste_recyclers').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('recyclers').select('*', { count: 'exact', head: true }),
   ]);
 
   const list = requests ?? [];
@@ -96,7 +96,7 @@ export default async function EWasteDashboard() {
             {list.map(req => {
               const cfg = STATUS_CONFIG[req.status] ?? STATUS_CONFIG.submitted;
               const Icon = cfg.icon;
-              const recyclerName = (req.ewaste_recyclers as { company_name: string } | null)?.company_name;
+              const recyclerName = (req.recyclers as { company_name: string } | null)?.company_name;
               return (
                 <div key={req.id} className="px-6 py-4 hover:bg-zinc-800/20 transition-colors">
                   <div className="flex items-center justify-between">

@@ -31,7 +31,7 @@ export async function GET(req: Request) {
   }
 
   const { data, error } = await supabaseAdmin
-    .from('ewaste_recyclers')
+    .from('recyclers')
     .select('id, recycler_code, company_name, is_active')
     .eq('recycler_code', code.toUpperCase())
     .eq('email', email.toLowerCase())

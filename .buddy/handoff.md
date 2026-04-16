@@ -2,58 +2,64 @@
 Generated: 2026-04-17
 Agent: Claude
 
-## Completed This Session
+## Completed This Session (17 Apr 2026)
 
-### 1. Batch 2 Contact Updates (44 entries) — PUSHED
-- Karnataka: 29 new entries (KA-023 to KA-072) — web research from company sites, IndiaMART, KSPCB
-- Rajasthan: 7 entries (RJ-003 to RJ-009) — company websites, RSPCB
-- Gujarat: 8 entries (GJ-011 to GJ-039) — GPCB, company websites
+### Recycler Database — Massive Expansion
+- **Started**: 468 recyclers, 217 with real email
+- **Now**: 723 recyclers, 350 with real email (48.4%)
+- **16 batches** of contact research pushed to git + applied to Supabase
 
-### 2. Batch 3 Contact Updates (18 entries) — PUSHED
-- Haryana: 13 entries (Exigo, Adinath, Dotline, Nirvana, Deshwal, Green Vortex, Pegasus, etc.)
-- Telangana: 2 entries (Z Enviro, Ramky)
-- West Bengal: 1 entry (Hulladek updated)
-- Rajasthan: 2 entries (Greenscape units)
+### New Categories Added
+- 15 battery/Li-ion recyclers (Lohum, Rubamin, Li-Circle, MiniMines, Gravita, ACE Green, BatX, ReBAT, Ziptrax, SungEel, Tata, Exigo Battery, Eco Tantra, Liven, Bridge Green Upcycle)
+- 114 MRAI material recyclers (names only from membership directory)
+- 21 RSPCB Rajasthan recyclers from official PDF
+- 4 TNPCB Tamil Nadu dismantlers from official PDF
+- Schema: waste_type, facility_type, website columns added
 
-### 3. Battery Waste Recyclers — PUSHED
-- Schema: Added `waste_type`, `facility_type`, `website` columns to ewaste_recyclers
-- 14 battery recyclers seeded (Lohum, Rubamin, Li-Circle, MiniMines, Gravita, ACE Green, BatX, ReBAT, Ziptrax, SungEel, Tata Chemicals, Exigo Battery, Eco Tantra, Liven Lithium)
-- 7 existing e-waste recyclers marked as `waste_type = 'both'`
+### Security Fix
+- Recycler portal (/recycler/[id]) now protected with signed session cookie (HMAC-SHA256)
+- Logout endpoint clears cookie
+- Unauthorized access redirects to login
 
-### Current State
-- **Total UPDATE statements**: 296 (contacts for ~300 of 569 e-waste recyclers)
-- **Battery recyclers**: 14 new entries
-- **Total recyclers in DB**: ~583
+### Dashboard Improvements
+- Search + filter (waste type, state, contact status) on /dashboard/ewaste/recyclers
+- Full contact details shown (email/phone/website/address/capacity)
+
+### Public Page Fixed
+- /ewaste/recyclers now pulls live data from Supabase (was hardcoded at 569)
+- Capacity parsing fixed (was producing garbage numbers)
+
+### Bridge Green Upcycle (from Siva's direct conversation)
+- Gummidipundi: shredding unit, 10 MT black mass/day
+- Guindy: hydromet R&D, 30-50 kg/day commercial grade
+- Navallur: hydromet plant (upcoming), 3 TPD
 
 ## Pending for Next Session
 
-### 1. Run migrations on Supabase
-```bash
-npx supabase db push
-```
+### 1. Continue Missing Contact Research (~237 CPCB entries missing)
+- UP: ~85 (Hapur/Meerut micro-operators, no web presence)
+- KA: ~25, HR: ~25, GJ: ~22, TN: ~18, TS: ~12, RJ: ~15
+- Best source: state SPCB PDFs (TNPCB worked great, try GPCB, HSPCB)
 
-### 2. Research remaining e-waste recycler contacts (~270 still need data)
-- **UP**: 107 remaining (UP-015 to UP-121) — mostly small Hapur/Meerut operators
-- **Rajasthan**: 18 remaining (RJ-010 to RJ-027)
-- **Telangana**: 20 remaining (TS-004 to TS-023)
-- **Tamil Nadu**: 21 remaining
-- **Small states**: Odisha (4), Punjab (7), WB (4), JK (3), JH (2), Goa (2), Assam (1), MP (1)
+### 2. MRAI Full Directory
+- 117 MRAI entries have placeholder emails
+- Need Scribd PDF download: https://www.scribd.com/document/436933701/mrai-membership-directory-2019-20-pdf
+- User was going to try downloading it
 
-### 3. Fix KA recycler code mapping issue
-- Existing KA-001 to KA-021 updates use ILIKE patterns that don't match seed data company names
-- The ILIKE check prevents incorrect updates (safe fail), but means ~21 KA entries aren't being applied
-- Need to either remove ILIKE checks or fix the code mappings
+### 3. Run `npx supabase db push` with migration repair
+- Many migrations have non-standard naming (now fixed to numeric timestamps)
+- Need to mark all old migrations as applied via repair
 
-### 4. Research more battery recyclers
-- CPCB BWM portal has 487 registered recyclers
-- Focus on top players: Green Li-Ion, Gravita (more units), TES-AMM battery, etc.
-
-### 5. UI updates for recycler directory
-- Show waste_type filter (e-waste / battery / both)
-- Show facility_type badges
-- Add website links
-
-## Files Modified This Session
-- `supabase/migrations/20260417_update_recycler_contacts.sql` — 296 UPDATE statements (was 234)
-- `supabase/migrations/20260417b_battery_recyclers.sql` — NEW: battery recycler schema + 14 companies
+## Files Modified
+- `supabase/migrations/20260417_update_recycler_contacts.sql` — 441 UPDATE statements
+- `supabase/migrations/20260417100000_battery_recyclers.sql` — 15 battery recyclers + Bridge Green
+- `supabase/migrations/20260417200000_mrai_recyclers.sql` — 114 MRAI members
+- `supabase/migrations/20260417300000_rspcb_rajasthan.sql` — 21 RSPCB entries
+- `app/ewaste/recyclers/page.tsx` — Server page fetching live Supabase data
+- `app/ewaste/recyclers/RecyclerDirectory.tsx` — Client component with dynamic props
+- `app/dashboard/ewaste/recyclers/page.tsx` — Server wrapper
+- `app/dashboard/ewaste/recyclers/RecyclerList.tsx` — Search + filter client component
+- `app/recycler/[id]/page.tsx` — Session cookie auth check
+- `app/api/ewaste/recyclers/verify/route.ts` — HMAC signed cookie
+- `app/api/ewaste/recyclers/logout/route.ts` — Cookie clear endpoint
 - `.buddy/handoff.md` — updated

@@ -358,7 +358,7 @@ export async function discoverAndSave(type: LeadType, supabase: any): Promise<Di
   // Save to DB with dedup against existing
   const table = type === 'supplier' ? 'supplier_leads'
     : type === 'customer' ? 'customer_leads'
-    : type === 'recycler' ? 'ewaste_recyclers'
+    : type === 'recycler' ? 'recyclers'
     : 'trading_leads';
 
   for (const lead of unique) {

@@ -39,8 +39,8 @@ export async function GET(req: Request) {
   const status = url.searchParams.get('status');
 
   let query = supabaseAdmin
-    .from('ewaste_collection_requests')
-    .select('*, ewaste_recyclers(company_name, recycler_code)')
+    .from('collection_requests')
+    .select('*, recyclers(company_name, recycler_code)')
     .order('created_at', { ascending: false });
 
   if (status) query = query.eq('status', status);
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
 
     // Generate request number: EW-YYYYMMDD-XXXX
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    const { count } = await supabaseAdmin.from('ewaste_collection_requests').select('*', { count: 'exact', head: true });
+    const { count } = await supabaseAdmin.from('collection_requests').select('*', { count: 'exact', head: true });
     const seq = String((count ?? 0) + 1).padStart(4, '0');
     const requestNo = `EW-${today}-${seq}`;
 
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
 
     // Insert request
     const { data: request, error } = await supabaseAdmin
-      .from('ewaste_collection_requests')
+      .from('collection_requests')
       .insert({
         request_no: requestNo,
         generator_name: d.generator_name,

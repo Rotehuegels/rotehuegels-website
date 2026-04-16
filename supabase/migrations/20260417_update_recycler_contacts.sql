@@ -624,6 +624,13 @@ UPDATE ewaste_recyclers SET email = 'info@attero.in', phone = '01204087100' WHER
 UPDATE ewaste_recyclers SET email = 'info@attero.in', phone = '01204087100' WHERE recycler_code = 'CPCB-UK-008';
 UPDATE ewaste_recyclers SET email = 'info@prometheusrecycling.in' WHERE recycler_code = 'CPCB-MP-003';
 
+-- ═══ BATCH 17: TN + MH remaining ═════════════════════════════════════════════
+UPDATE ewaste_recyclers SET email = 'info@skvewasterecycling.com', phone = '9094345145' WHERE recycler_code = 'CPCB-TN-041';
+UPDATE ewaste_recyclers SET email = 'info@punithanenterprises.com' WHERE recycler_code = 'CPCB-TN-019';
+UPDATE ewaste_recyclers SET email = 'dsatheesh218@gmail.com' WHERE recycler_code = 'CPCB-TN-040';
+UPDATE ewaste_recyclers SET email = 'info@arockiaenterprises.in' WHERE recycler_code = 'CPCB-TN-031';
+UPDATE ewaste_recyclers SET email = 'info@envirocareindia.co.in' WHERE recycler_code = 'CPCB-MH-044';
+
 -- ────────────────────────────────────────────────────────────────────────────
 -- Update timestamp for all modified records
 UPDATE ewaste_recyclers SET updated_at = now() WHERE email NOT LIKE 'cpcb.%@recycler.in' OR phone IS NOT NULL;

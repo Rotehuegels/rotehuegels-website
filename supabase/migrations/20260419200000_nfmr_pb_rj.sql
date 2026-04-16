@@ -1,0 +1,4 @@
+-- Punjab final (30-39) + Rajasthan (1-19) = 29 entries
+-- Key: Rose Zinc Ltd Udaipur 21,200 MTA (largest single facility!)
+--   Gupta Smelters Punjab 6,750 MTA, Ganesh Fertichem 6,000 MTA
+--   Resource Recycling Chittorgarh 6,300 MTA, G.L. Metallica Jaipur 4,320 MTA

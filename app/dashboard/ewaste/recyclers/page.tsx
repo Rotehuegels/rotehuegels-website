@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { Factory } from 'lucide-react';
 import RecyclerList from './RecyclerList';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function RecyclersPage() {
   const { data: recyclers } = await supabaseAdmin
     .from('ewaste_recyclers')

@@ -134,9 +134,9 @@ const NAV: NavItem[] = [
   {
     label: 'Recycling', icon: Package,
     children: [
-      { label: 'Dashboard',  href: '/d/ewaste',           icon: Package },
-      { label: 'Requests',   href: '/d/ewaste/requests',  icon: ClipboardList },
-      { label: 'Recyclers',  href: '/d/ewaste/recyclers', icon: Factory },
+      { label: 'Dashboard',  href: '/d/recycling',           icon: Package },
+      { label: 'Requests',   href: '/d/recycling/requests',  icon: ClipboardList },
+      { label: 'Recyclers',  href: '/d/recycling/recyclers', icon: Factory },
     ],
   },
 
@@ -156,7 +156,7 @@ const NAV: NavItem[] = [
       { label: 'Supplier Registrations', href: '/d/supplier-reg/registrations', icon: Building2 },
       { label: 'Customer Registrations', href: '/d/customers/registrations',    icon: UserCheck },
       { label: 'Trading Partners',       href: '/d/trading',                    icon: Scale },
-      { label: 'Recycler Registrations', href: '/d/ewaste/recyclers',          icon: Package },
+      { label: 'Recycler Registrations', href: '/d/recycling/recyclers',          icon: Package },
     ],
   },
 

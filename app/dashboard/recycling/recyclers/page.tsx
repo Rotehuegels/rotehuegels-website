@@ -7,11 +7,22 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function RecyclersPage() {
-  const { data: recyclers } = await supabaseAdmin
-    .from('recyclers')
-    .select('*')
-    .order('state, company_name')
-    .limit(5000);
+  // Fetch all rows (paginate past Supabase 1000 row default limit)
+  let allRecyclers: any[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data } = await supabaseAdmin
+      .from('recyclers')
+      .select('*')
+      .order('state, company_name')
+      .range(from, from + pageSize - 1);
+    if (!data || data.length === 0) break;
+    allRecyclers = allRecyclers.concat(data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  const recyclers = allRecyclers;
 
   return (
     <div className="p-5 md:p-8 space-y-6">

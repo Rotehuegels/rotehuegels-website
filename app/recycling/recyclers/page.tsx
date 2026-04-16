@@ -5,11 +5,22 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function RecyclersPage() {
-  const { data: recyclers } = await supabaseAdmin
-    .from('recyclers')
-    .select('state, waste_type, capacity_per_month, is_active')
-    .eq('is_active', true)
-    .limit(5000);
+  // Fetch all rows (Supabase default limit is 1000, so paginate)
+  let allRecyclers: any[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data } = await supabaseAdmin
+      .from('recyclers')
+      .select('state, waste_type, capacity_per_month, is_active')
+      .eq('is_active', true)
+      .range(from, from + pageSize - 1);
+    if (!data || data.length === 0) break;
+    allRecyclers = allRecyclers.concat(data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  const recyclers = allRecyclers;
 
   // Pass raw list to client for dynamic filtering
   const rawList = (recyclers ?? []).map(r => ({

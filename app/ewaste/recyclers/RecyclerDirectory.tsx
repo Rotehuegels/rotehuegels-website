@@ -289,8 +289,8 @@ export default function RecyclerDirectory({ rawList }: Props) {
         {/* CTA */}
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-center mb-8">
           <Recycle className="h-8 w-8 text-emerald-400 mx-auto mb-3" />
-          <h3 className="text-lg font-bold mb-2">Are you a CPCB-registered recycler?</h3>
-          <p className="text-sm text-zinc-400 mb-4">Join our platform to get connected with e-waste generators.</p>
+          <h3 className="text-lg font-bold mb-2">Are you a registered recycler or reprocessor?</h3>
+          <p className="text-sm text-zinc-400 mb-4">Join our platform to connect with waste generators and material suppliers across India.</p>
           <Link href="/ewaste/recycler-register"
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-6 py-3 text-sm font-semibold text-white transition-colors">
             Register Your Facility

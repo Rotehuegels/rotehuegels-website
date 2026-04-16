@@ -19,8 +19,7 @@ function getColor(recyclers: number): string {
   return 'text-zinc-400';
 }
 
-type StateData = { name: string; recyclers: number; capacity: number };
-type CategoryData = { name: string; count: number };
+type RawEntry = { state: string; waste_type: string; capacity: number };
 
 const CATEGORY_LABELS: Record<string, string> = {
   'e-waste': 'E-Waste',
@@ -31,16 +30,45 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 interface Props {
-  states: StateData[];
-  totalRecyclers: number;
-  totalCapacity: number;
-  statesCount: number;
-  categories?: CategoryData[];
+  rawList: RawEntry[];
 }
 
-export default function RecyclerDirectory({ states: STATES, totalRecyclers: TOTAL_RECYCLERS, totalCapacity: TOTAL_CAPACITY, statesCount, categories }: Props) {
+export default function RecyclerDirectory({ rawList }: Props) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [view, setView] = useState<'map' | 'table'>('map');
+
+  // Filter by category first
+  const filtered = selectedCategory
+    ? rawList.filter(r => r.waste_type === selectedCategory)
+    : rawList;
+
+  // Aggregate state-wise from filtered data
+  const stateMap = new Map<string, { recyclers: number; capacity: number }>();
+  for (const r of filtered) {
+    if (!r.state) continue;
+    const existing = stateMap.get(r.state) ?? { recyclers: 0, capacity: 0 };
+    existing.recyclers += 1;
+    existing.capacity += r.capacity;
+    stateMap.set(r.state, existing);
+  }
+
+  const STATES = Array.from(stateMap.entries())
+    .map(([name, data]) => ({ name, ...data }))
+    .sort((a, b) => b.recyclers - a.recyclers);
+
+  const TOTAL_RECYCLERS = filtered.length;
+  const TOTAL_CAPACITY = STATES.reduce((s, st) => s + st.capacity, 0);
+  const statesCount = STATES.length;
+
+  // Category breakdown (from full list, not filtered)
+  const categoryMap = new Map<string, number>();
+  for (const r of rawList) {
+    categoryMap.set(r.waste_type, (categoryMap.get(r.waste_type) ?? 0) + 1);
+  }
+  const categories = Array.from(categoryMap.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 
   const filteredStates = selectedState
     ? STATES.filter(s => s.name === selectedState)
@@ -83,16 +111,46 @@ export default function RecyclerDirectory({ states: STATES, totalRecyclers: TOTA
           </div>
         </div>
 
-        {/* Industry Classification */}
-        {categories && categories.length > 0 && (
+        {/* Industry Classification — clickable filter */}
+        {categories.length > 0 && (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
-            <h2 className="text-sm font-semibold text-zinc-300 mb-4">Industry Classification</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-zinc-300">Industry Classification</h2>
+              {selectedCategory && (
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
+                >
+                  <X className="h-3 w-3" /> Clear filter
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {/* All categories button */}
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`rounded-xl border p-3 text-center transition-colors cursor-pointer ${
+                  !selectedCategory
+                    ? 'border-emerald-500/50 bg-emerald-500/10'
+                    : 'border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600'
+                }`}
+              >
+                <p className={`text-lg font-black ${!selectedCategory ? 'text-emerald-400' : 'text-white'}`}>{fmtNum(rawList.length)}</p>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">All</p>
+              </button>
               {categories.map(cat => (
-                <div key={cat.name} className="rounded-xl border border-zinc-700/50 bg-zinc-800/30 p-3 text-center hover:border-emerald-500/30 transition-colors">
-                  <p className="text-lg font-black text-white">{fmtNum(cat.count)}</p>
+                <button
+                  key={cat.name}
+                  onClick={() => setSelectedCategory(prev => prev === cat.name ? null : cat.name)}
+                  className={`rounded-xl border p-3 text-center transition-colors cursor-pointer ${
+                    selectedCategory === cat.name
+                      ? 'border-emerald-500/50 bg-emerald-500/10'
+                      : 'border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600'
+                  }`}
+                >
+                  <p className={`text-lg font-black ${selectedCategory === cat.name ? 'text-emerald-400' : 'text-white'}`}>{fmtNum(cat.count)}</p>
                   <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">{CATEGORY_LABELS[cat.name] ?? cat.name}</p>
-                </div>
+                </button>
               ))}
             </div>
           </div>

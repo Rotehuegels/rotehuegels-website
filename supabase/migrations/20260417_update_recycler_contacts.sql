@@ -449,6 +449,22 @@ UPDATE ewaste_recyclers SET email = 'info@royalfaiz.com', phone = '9911088901' W
 UPDATE ewaste_recyclers SET phone = '8044566432', contact_person = 'Anas Malik' WHERE recycler_code = 'CPCB-UP-044';
 UPDATE ewaste_recyclers SET email = 'info@faizrecycling.com', phone = '9557478603', contact_person = 'Sahid Malik' WHERE recycler_code = 'CPCB-UP-048';
 
+-- ═══ BATCH 6: KARNATAKA + TELANGANA MISSING (web research) ══════════════════
+-- Source: Company websites, IndiaMART, JustDial, ZaubaCorp, KSPCB, TSPCB
+-- Date: 2026-04-17 Batch 6
+
+UPDATE ewaste_recyclers SET email = 'info@efriendly.co.in', phone = '9164567778' WHERE recycler_code = 'CPCB-KA-002';
+UPDATE ewaste_recyclers SET email = 'info@ehasiru.com', phone = '9845937366' WHERE recycler_code = 'CPCB-KA-004';
+UPDATE ewaste_recyclers SET email = 'info@coralwaters.in', phone = '08027971130' WHERE recycler_code = 'CPCB-KA-006';
+UPDATE ewaste_recyclers SET email = 'khan@royaltouchrecycler.com', phone = '9663358571' WHERE recycler_code = 'CPCB-KA-007';
+UPDATE ewaste_recyclers SET email = 'info@cerebragreen.com', phone = '18004254696' WHERE recycler_code = 'CPCB-KA-009';
+UPDATE ewaste_recyclers SET email = 'info@aptusrecycling.com', phone = '9663998569' WHERE recycler_code = 'CPCB-KA-011';
+UPDATE ewaste_recyclers SET email = 'info@envirokare.in', phone = '9885207171' WHERE recycler_code = 'CPCB-TS-004';
+UPDATE ewaste_recyclers SET email = 'compliance@elima.in' WHERE recycler_code = 'CPCB-TS-006';
+UPDATE ewaste_recyclers SET email = 'snlanilmalpani@gmail.com', phone = '9160677730' WHERE recycler_code = 'CPCB-TS-007';
+UPDATE ewaste_recyclers SET email = 'info@pureearth.co.in' WHERE recycler_code = 'CPCB-TS-009';
+UPDATE ewaste_recyclers SET phone = '9885538905' WHERE recycler_code = 'CPCB-TS-010';
+
 -- ────────────────────────────────────────────────────────────────────────────
 -- Update timestamp for all modified records
 UPDATE ewaste_recyclers SET updated_at = now() WHERE email NOT LIKE 'cpcb.%@recycler.in' OR phone IS NOT NULL;

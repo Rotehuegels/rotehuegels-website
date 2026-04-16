@@ -30,7 +30,7 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
     return Array.from(s).sort();
   }, [recyclers]);
 
-  const withEmail = recyclers.filter(r => r.email && !r.email.startsWith('cpcb.'));
+  const withEmail = recyclers.filter(r => r.email && !r.email.includes('@placeholder.in') && !r.email.startsWith('cpcb.'));
   const battery = recyclers.filter(r => r.waste_type === 'battery' || r.waste_type === 'both');
 
   const filtered = useMemo(() => {
@@ -182,7 +182,7 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
           <div className="divide-y divide-zinc-800/60">
             {filtered.map(r => {
               const wb = WASTE_BADGE[r.waste_type ?? 'e-waste'] ?? WASTE_BADGE['e-waste'];
-              const hasRealEmail = r.email && !r.email.startsWith('cpcb.');
+              const hasRealEmail = r.email && !r.email.includes('@placeholder.in') && !r.email.startsWith('cpcb.');
               return (
                 <div key={r.id} className="px-6 py-4 hover:bg-zinc-800/20 transition-colors">
                   <div className="flex items-start justify-between gap-4">

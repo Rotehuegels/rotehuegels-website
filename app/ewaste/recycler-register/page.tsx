@@ -5,29 +5,42 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CheckCircle2, Recycle, Loader2 } from 'lucide-react';
 
-const EWASTE_CATEGORIES: { group: string; items: string[] }[] = [
-  { group: 'Consumer Electronics', items: [
+const WASTE_CATEGORIES: { group: string; items: string[] }[] = [
+  { group: 'E-Waste / Electronics', items: [
     'Computers & Laptops',
     'Mobile Phones & Tablets',
     'Monitors & Displays (CRT, LCD, LED)',
     'Printers & Peripherals',
     'Networking Equipment',
+    'Home Appliances (AC, Fridge, Washing Machine)',
+    'Industrial Electronics (PLCs, Drives)',
+    'Medical Equipment',
+    'E-Waste Mixed / Unsorted',
   ]},
-  { group: 'Power & Energy', items: [
-    'Batteries (Li-ion, Lead-acid, NiMH)',
+  { group: 'Batteries & Energy Storage', items: [
+    'Li-Ion Batteries',
+    'Lead-Acid Batteries',
+    'NiMH / NiCd Batteries',
+    'Black Mass / Battery Waste',
     'UPS & Power Supply Units',
     'Solar Panels & Inverters',
   ]},
-  { group: 'Industrial & Specialized', items: [
-    'PCBs & Circuit Boards',
-    'Cables & Wiring (Copper, Data)',
-    'Industrial Electronics (PLCs, Drives)',
-    'Medical Equipment',
+  { group: 'Non-Ferrous Metals', items: [
+    'Copper Scrap / Copper Dross',
+    'Brass Scrap / Brass Dross',
+    'Zinc Dross / Zinc Ash / Zinc Skimmings',
+    'Aluminium Scrap / Aluminium Dross',
+    'Copper Oxide Mill Scale',
+    'Copper Reverts / Copper Druid',
+    'Insulated Copper Wire Scrap',
+    'Spent Catalyst (Ni, Cu, Co, Zn)',
   ]},
-  { group: 'Appliances & Other', items: [
-    'Home Appliances (AC, Fridge, Washing Machine)',
-    'Black Mass / Battery Waste',
-    'E-Waste Mixed / Unsorted',
+  { group: 'Other Materials', items: [
+    'PCBs & Circuit Boards',
+    'Cables & Wiring',
+    'Precious Metals (Au, Ag, Pt, Pd)',
+    'Lead Scrap',
+    'Plastic Waste (from electronics)',
   ]},
 ];
 
@@ -54,7 +67,7 @@ export default function RecyclerRegisterPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (capabilities.length === 0) { setError('Please select at least one e-waste category.'); return; }
+    if (capabilities.length === 0) { setError('Please select at least one waste category.'); return; }
     setStatus('loading');
     setError('');
 
@@ -97,8 +110,8 @@ export default function RecyclerRegisterPage() {
               </div>
             )}
             <p className="text-sm text-zinc-400">
-              Thank you for registering as a recycler with Roteh&uuml;gels. We will verify your
-              CPCB/SPCB credentials and activate your account once approved.
+              Thank you for registering with Roteh&uuml;gels. We will verify your
+              regulatory credentials and activate your account once approved.
             </p>
           </div>
           <Link href="/ewaste" className="inline-block mt-6 text-sm text-zinc-400 hover:text-white transition-colors">
@@ -115,9 +128,9 @@ export default function RecyclerRegisterPage() {
         <div className="text-center mb-8">
           <Link href="/"><Image src="/logo.png" alt="Rotehügels" width={150} height={42} className="mx-auto" priority /></Link>
           <h1 className="mt-4 text-xl font-bold text-white flex items-center justify-center gap-2">
-            <Recycle className="h-5 w-5 text-emerald-400" /> E-Waste Recycler Registration
+            <Recycle className="h-5 w-5 text-emerald-400" /> Recycler & Reprocessor Registration
           </h1>
-          <p className="mt-2 text-sm text-zinc-500">Join our network of CPCB-registered recyclers</p>
+          <p className="mt-2 text-sm text-zinc-500">Join our network of authorized recyclers, dismantlers and metal reprocessors</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm p-6 sm:p-8">
@@ -183,7 +196,7 @@ export default function RecyclerRegisterPage() {
           <fieldset>
             <legend className="text-sm font-semibold text-zinc-300 mb-4">Regulatory Credentials</legend>
             <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 px-4 py-3 text-xs text-amber-400 mb-4">
-              CPCB or SPCB registration is mandatory for e-waste recycling in India. Your credentials will be verified before activation.
+              Valid authorization from CPCB, SPCB, or MoEF is required for recycling/reprocessing operations in India. Your credentials will be verified before activation.
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
@@ -212,11 +225,11 @@ export default function RecyclerRegisterPage() {
           {/* E-Waste Categories */}
           <fieldset>
             <legend className="text-sm font-semibold text-zinc-300 mb-4">
-              E-Waste Categories You Accept <span className="text-rose-400">*</span>
+              Waste Categories You Accept <span className="text-rose-400">*</span>
             </legend>
-            <p className="text-xs text-zinc-500 mb-4">Select all categories your facility can process.</p>
+            <p className="text-xs text-zinc-500 mb-4">Select all waste types and materials your facility can process.</p>
             <div className="space-y-5">
-              {EWASTE_CATEGORIES.map(grp => (
+              {WASTE_CATEGORIES.map(grp => (
                 <div key={grp.group}>
                   <p className="text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wider">{grp.group}</p>
                   <div className="flex flex-wrap gap-2">
@@ -247,7 +260,7 @@ export default function RecyclerRegisterPage() {
 
           {/* Compliance */}
           <div className="rounded-xl border border-zinc-700 bg-zinc-800/40 px-5 py-4 text-xs text-zinc-500 space-y-1.5">
-            <p>By submitting, you confirm that your facility holds valid CPCB/SPCB authorization for e-waste recycling under the E-Waste (Management) Rules, 2022.</p>
+            <p>By submitting, you confirm that your facility holds valid authorization from CPCB/SPCB/MoEF for recycling or reprocessing operations under applicable waste management rules.</p>
             <p>You agree to provide processing certificates and maintain records as required by law. Delivery/transportation charges to your facility will be borne by you.</p>
           </div>
 

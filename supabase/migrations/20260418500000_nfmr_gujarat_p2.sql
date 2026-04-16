@@ -1,0 +1,3 @@
+-- Gujarat NFMR Part 2 (entries 43-70): 28 more non-ferrous metal reprocessors
+-- Includes Rubamin (3 units: 20160+8000+6000 MTA), Jhagadia Copper (35000 MTA!)
+-- Major zinc dross hub in Gandhinagar, Vadodara, Jamnagar, Surat, Bharuch

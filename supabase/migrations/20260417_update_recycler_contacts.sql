@@ -496,6 +496,25 @@ UPDATE ewaste_recyclers SET email = 'snlanilmalpani@gmail.com', phone = '9160677
 UPDATE ewaste_recyclers SET email = 'info@pureearth.co.in' WHERE recycler_code = 'CPCB-TS-009';
 UPDATE ewaste_recyclers SET phone = '9885538905' WHERE recycler_code = 'CPCB-TS-010';
 
+-- ═══ BATCH 8: UP + MH + SMALL STATES DEEP RESEARCH ══════════════════════════
+-- Date: 2026-04-17 Batch 8
+
+-- UP
+UPDATE ewaste_recyclers SET email = 'Uniquetraders9311@gmail.com' WHERE recycler_code = 'CPCB-UP-011';
+UPDATE ewaste_recyclers SET email = 'Uniquetraders9311@gmail.com' WHERE recycler_code = 'CPCB-UP-083';
+UPDATE ewaste_recyclers SET email = 'hingreenewaste@gmail.com', phone = '9760207786' WHERE recycler_code = 'CPCB-UP-073';
+UPDATE ewaste_recyclers SET email = 'info@ezwaste.in' WHERE recycler_code = 'CPCB-UP-099';
+UPDATE ewaste_recyclers SET email = 'info@grpltd.in' WHERE recycler_code = 'CPCB-UP-115';
+
+-- MH
+UPDATE ewaste_recyclers SET email = 'info@gvewastes.com' WHERE recycler_code = 'CPCB-MH-060';
+UPDATE ewaste_recyclers SET email = 'hemant@justdispose.com', phone = '9833030124' WHERE recycler_code = 'CPCB-MH-068';
+UPDATE ewaste_recyclers SET email = 'info@envirocareindia.co.in', phone = '9820094450' WHERE recycler_code = 'CPCB-MH-048';
+
+-- Small states
+UPDATE ewaste_recyclers SET email = 'info@mlubes.in' WHERE recycler_code = 'CPCB-JH-001';
+UPDATE ewaste_recyclers SET email = 'info@globalewaste.net' WHERE recycler_code = 'CPCB-GA-001';
+
 -- ────────────────────────────────────────────────────────────────────────────
 -- Update timestamp for all modified records
 UPDATE ewaste_recyclers SET updated_at = now() WHERE email NOT LIKE 'cpcb.%@recycler.in' OR phone IS NOT NULL;

@@ -1,0 +1,4 @@
+-- Maharashtra NFMR entries 9-35 (27 non-ferrous metal reprocessors)
+-- Key: Shri Hari Extrusion 9000 MTA, Arjandas Metals 8100 MTA,
+--   Accent Metals 4900 MTA, Maurya Metal 4800 MTA, B.R.Steel 4800 MTA
+-- Namdev Silicates has verified email (namdev@mtnl.net.in)

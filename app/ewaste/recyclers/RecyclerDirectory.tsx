@@ -20,15 +20,25 @@ function getColor(recyclers: number): string {
 }
 
 type StateData = { name: string; recyclers: number; capacity: number };
+type CategoryData = { name: string; count: number };
+
+const CATEGORY_LABELS: Record<string, string> = {
+  'e-waste': 'E-Waste',
+  'battery': 'Battery / Li-Ion',
+  'both': 'E-Waste + Battery',
+  'hazardous': 'Non-Ferrous Metals',
+  'zinc-dross': 'Zinc Dross / Zinc Ash',
+};
 
 interface Props {
   states: StateData[];
   totalRecyclers: number;
   totalCapacity: number;
   statesCount: number;
+  categories?: CategoryData[];
 }
 
-export default function RecyclerDirectory({ states: STATES, totalRecyclers: TOTAL_RECYCLERS, totalCapacity: TOTAL_CAPACITY, statesCount }: Props) {
+export default function RecyclerDirectory({ states: STATES, totalRecyclers: TOTAL_RECYCLERS, totalCapacity: TOTAL_CAPACITY, statesCount, categories }: Props) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [view, setView] = useState<'map' | 'table'>('map');
 
@@ -72,6 +82,21 @@ export default function RecyclerDirectory({ states: STATES, totalRecyclers: TOTA
             <p className="text-xs text-zinc-500 mt-1">States Without Recyclers *</p>
           </div>
         </div>
+
+        {/* Industry Classification */}
+        {categories && categories.length > 0 && (
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
+            <h2 className="text-sm font-semibold text-zinc-300 mb-4">Industry Classification</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {categories.map(cat => (
+                <div key={cat.name} className="rounded-xl border border-zinc-700/50 bg-zinc-800/30 p-3 text-center hover:border-emerald-500/30 transition-colors">
+                  <p className="text-lg font-black text-white">{fmtNum(cat.count)}</p>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">{CATEGORY_LABELS[cat.name] ?? cat.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* View toggle */}
         <div className="flex items-center gap-2 mb-6">

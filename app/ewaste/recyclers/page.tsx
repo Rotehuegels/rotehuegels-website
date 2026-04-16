@@ -39,12 +39,23 @@ export default async function RecyclersPage() {
   const totalCapacity = states.reduce((s, st) => s + st.capacity, 0);
   const statesWithRecyclers = states.length;
 
+  // Industry category breakdown
+  const categoryMap = new Map<string, number>();
+  for (const r of list) {
+    const cat = r.waste_type ?? 'other';
+    categoryMap.set(cat, (categoryMap.get(cat) ?? 0) + 1);
+  }
+  const categories = Array.from(categoryMap.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
   return (
     <RecyclerDirectory
       states={states}
       totalRecyclers={totalRecyclers}
       totalCapacity={totalCapacity}
       statesCount={statesWithRecyclers}
+      categories={categories}
     />
   );
 }

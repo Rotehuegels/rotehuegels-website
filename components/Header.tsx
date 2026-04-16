@@ -21,7 +21,7 @@ const NAV = [
     label: 'Services',
     children: [
       { label: 'Overview',              href: '/services' },
-      { label: 'E-Waste Recycling',     href: '/ewaste' },
+      { label: 'Recycling',             href: '/ewaste' },
       { label: 'Digital Solutions',     href: '/digital-solutions' },
       { label: 'Success Stories',       href: '/success-stories' },
     ],
@@ -33,7 +33,7 @@ const NAV = [
       { label: 'Customer Registration',   href: '/customers/register' },
       { label: 'Supplier Registration',   href: '/suppliers/register' },
       { label: 'Trading Partner',         href: '/trading/register' },
-      { label: 'E-Waste Recycler',        href: '/ewaste/recycler-register' },
+      { label: 'Recycler Registration',   href: '/ewaste/recycler-register' },
       { label: 'Careers',                 href: '/careers' },
     ],
   },

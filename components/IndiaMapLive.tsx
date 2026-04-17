@@ -1,7 +1,11 @@
 'use client';
 
-import { MapContainer, TileLayer, WMSTileLayer, CircleMarker, Popup, LayersControl, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, Marker, Popup, LayersControl, ZoomControl } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import type { MapPin } from './IndiaMap';
 
 const PIN_COLOR: Record<string, string> = {
@@ -13,6 +17,34 @@ const PIN_COLOR: Record<string, string> = {
   'zinc-dross':    '#fb923c',
   'primary-metal': '#fb7185',
 };
+
+// Build a compact dot icon per category, cached per colour.
+const iconCache = new Map<string, L.DivIcon>();
+function dotIcon(color: string): L.DivIcon {
+  const hit = iconCache.get(color);
+  if (hit) return hit;
+  const icon = L.divIcon({
+    className: 'recycler-pin',
+    html: `<span style="display:block;width:10px;height:10px;border-radius:50%;background:${color};border:1px solid #0a0a0a;box-shadow:0 0 2px rgba(0,0,0,.4);"></span>`,
+    iconSize: [10, 10],
+    iconAnchor: [5, 5],
+  });
+  iconCache.set(color, icon);
+  return icon;
+}
+
+// Cluster icon — scales and colors by child count
+// (L.MarkerCluster type isn't exported by the core leaflet types; accept any.)
+function clusterIconFactory(cluster: { getChildCount: () => number }): L.DivIcon {
+  const n = cluster.getChildCount();
+  const size = n < 10 ? 28 : n < 50 ? 34 : n < 200 ? 40 : 48;
+  const bg = n < 10 ? '#34d399' : n < 50 ? '#38bdf8' : n < 200 ? '#a78bfa' : '#fb7185';
+  return L.divIcon({
+    html: `<div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:50%;background:${bg};color:#0a0a0a;font-weight:700;font-size:${size >= 40 ? 13 : 12}px;border:2px solid #0a0a0a;box-shadow:0 0 6px rgba(0,0,0,.45);">${n}</div>`,
+    className: 'recycler-cluster',
+    iconSize: [size, size],
+  });
+}
 
 // India centre approx + nation-view zoom
 const INDIA_CENTER: [number, number] = [22.5, 80.0];
@@ -44,7 +76,6 @@ export default function IndiaMapLive({ pins, className = '', height = '560px' }:
         <ZoomControl position="topright" />
 
         <LayersControl position="topleft">
-          {/* Default: OpenStreetMap — unlimited, open data, free */}
           <LayersControl.BaseLayer checked name="OpenStreetMap">
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -53,7 +84,6 @@ export default function IndiaMapLive({ pins, className = '', height = '560px' }:
             />
           </LayersControl.BaseLayer>
 
-          {/* Esri World Imagery — global satellite, free with attribution */}
           <LayersControl.BaseLayer name="Satellite (Esri)">
             <TileLayer
               attribution='Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community'
@@ -62,13 +92,6 @@ export default function IndiaMapLive({ pins, className = '', height = '560px' }:
             />
           </LayersControl.BaseLayer>
 
-          {/* Bhuvan India boundaries (ISRO / NRSC) — checked by DEFAULT.
-              OSM / Esri / Carto base layers use international boundary
-              interpretations that do not match the Government of India's
-              official position on J&K, Ladakh, Aksai Chin, and Arunachal
-              Pradesh. Overlaying this ISRO-served Survey-of-India layer
-              on top renders the Indian government's official boundaries
-              as the authoritative reference on this map. */}
           <LayersControl.Overlay checked name="🇮🇳 India boundaries — Survey of India / ISRO Bhuvan (official)">
             <WMSTileLayer
               url="https://bhuvan-vec1.nrsc.gov.in/bhuvan/wms"
@@ -81,7 +104,6 @@ export default function IndiaMapLive({ pins, className = '', height = '560px' }:
             />
           </LayersControl.Overlay>
 
-          {/* Carto dark — monochrome base fits the site's dark theme */}
           <LayersControl.BaseLayer name="Dark (Carto)">
             <TileLayer
               attribution='&copy; OpenStreetMap contributors &copy; <a href="https://carto.com">CARTO</a>'
@@ -92,39 +114,38 @@ export default function IndiaMapLive({ pins, className = '', height = '560px' }:
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        {/* Facility pins — real lat/lng, sub-metre accuracy */}
-        {valid.map((p, idx) => {
-          const color = PIN_COLOR[p.waste_type ?? ''] ?? '#d4d4d8';
-          return (
-            <CircleMarker
-              key={p.id ?? idx}
-              center={[p.lat, p.lng]}
-              radius={4}
-              pathOptions={{
-                color: '#0a0a0a',
-                weight: 0.8,
-                fillColor: color,
-                fillOpacity: 0.85,
-              }}
-            >
-              <Popup>
-                <div style={{ minWidth: '180px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: 4 }}>{p.label}</div>
-                  {p.sub && <div style={{ fontSize: '11px', color: '#555' }}>{p.sub}</div>}
-                  <div style={{ fontSize: '10px', color: '#888', marginTop: 4 }}>
-                    {p.lat.toFixed(4)}°N, {p.lng.toFixed(4)}°E
+        {/* Facility pins — clustered at lower zoom levels for performance */}
+        <MarkerClusterGroup
+          chunkedLoading
+          maxClusterRadius={40}
+          spiderfyOnMaxZoom
+          showCoverageOnHover={false}
+          iconCreateFunction={clusterIconFactory}
+        >
+          {valid.map((p, idx) => {
+            const color = PIN_COLOR[p.waste_type ?? ''] ?? '#d4d4d8';
+            return (
+              <Marker
+                key={p.id ?? idx}
+                position={[p.lat, p.lng]}
+                icon={dotIcon(color)}
+              >
+                <Popup>
+                  <div style={{ minWidth: '180px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: 4 }}>{p.label}</div>
+                    {p.sub && <div style={{ fontSize: '11px', color: '#555' }}>{p.sub}</div>}
+                    <div style={{ fontSize: '10px', color: '#888', marginTop: 4 }}>
+                      {p.lat.toFixed(4)}°N, {p.lng.toFixed(4)}°E
+                    </div>
                   </div>
-                </div>
-              </Popup>
-            </CircleMarker>
-          );
-        })}
+                </Popup>
+              </Marker>
+            );
+          })}
+        </MarkerClusterGroup>
       </MapContainer>
 
-      {/* Border disclaimer — international base tiles (OSM, Esri, Carto)
-          do NOT show Government of India's official boundaries; the
-          Bhuvan/ISRO overlay (enabled by default) provides the authoritative
-          Survey of India reference. */}
+      {/* Border disclaimer */}
       <div className="absolute top-2 right-2 z-[1000] bg-amber-500/10 border border-amber-500/30 rounded-lg px-2 py-1 text-[10px] text-amber-300 backdrop-blur-sm max-w-[200px] leading-tight">
         Official India boundaries overlaid from <a href="https://bhuvan.nrsc.gov.in" className="underline" target="_blank" rel="noopener noreferrer">Bhuvan / ISRO</a> (Survey of India)
       </div>

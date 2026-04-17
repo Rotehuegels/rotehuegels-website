@@ -119,18 +119,20 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
           <Factory className="h-7 w-7 text-emerald-400" />
-          <h1 className="text-2xl font-bold">Registered Recyclers & Reprocessors in India</h1>
+          <h1 className="text-2xl font-bold">India Metals & Recycling Directory</h1>
         </div>
         <p className="text-sm text-zinc-500 mb-8">
-          Directory of {fmtNum(TOTAL_RECYCLERS)} authorised facilities across {statesCount} states — e-waste, battery, non-ferrous metals,
-          zinc dross, copper, brass, material recyclers, and primary metal producers. Data sourced from CPCB, SPCB, MPCB, MoEF registries.
+          Directory of {fmtNum(TOTAL_RECYCLERS)} facilities across {statesCount} states — covering the full non-ferrous value chain:
+          authorised <strong className="text-zinc-400">recyclers</strong> (e-waste, battery, black mass, non-ferrous, zinc dross) and the
+          upstream <strong className="text-zinc-400">primary metal producers</strong> (smelters, refineries) whose material eventually
+          feeds the recycling loop. Data sourced from CPCB, SPCB, MPCB, MoEF registries plus publicly disclosed facility information.
         </p>
 
         {/* Summary stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 text-center">
             <p className="text-3xl font-black text-emerald-400">{fmtNum(TOTAL_RECYCLERS)}</p>
-            <p className="text-xs text-zinc-500 mt-1">Registered Recyclers</p>
+            <p className="text-xs text-zinc-500 mt-1">Facilities Listed</p>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 text-center">
             <p className="text-3xl font-black text-sky-400">{STATES.length}</p>

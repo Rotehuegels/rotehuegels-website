@@ -58,16 +58,16 @@ export default function EWasteQuotePage() {
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-3xl mx-auto px-6 py-12">
         <Link href="/recycling" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
-          <ArrowLeft className="h-3 w-3" /> Back to E-Waste Recycling
+          <ArrowLeft className="h-3 w-3" /> Back to Recycling
         </Link>
 
         <div className="flex items-center gap-3 mb-2">
           <Leaf className="h-7 w-7 text-emerald-400" />
-          <h1 className="text-2xl font-bold">Discover the Value in Your E-Waste</h1>
+          <h1 className="text-2xl font-bold">Discover the Value in Your Recyclables</h1>
         </div>
         <p className="text-sm text-zinc-500 mb-8">
-          Electronic waste contains valuable recoverable materials — copper, gold, silver, lithium, rare earths.
-          Find out what&apos;s locked inside your old electronics.
+          Electronics, batteries, and metal scrap contain valuable recoverable materials — copper, gold, silver, lithium, cobalt, rare earths.
+          Find out what&apos;s locked inside.
         </p>
 
         {!showResult ? (
@@ -129,8 +129,8 @@ export default function EWasteQuotePage() {
               <h2 className="text-lg font-bold mb-2">Would you like to put this value back into the economy?</h2>
               <p className="text-sm text-zinc-400 max-w-lg mx-auto">
                 Instead of letting these materials end up in landfills, we connect you with
-                CPCB-registered recyclers near you who recover and reuse these resources responsibly.
-                Your e-waste becomes someone else&apos;s raw material.
+                CPCB, SPCB, or MoEF-authorised recyclers and reprocessors near you who recover and reuse these resources responsibly.
+                Your waste becomes someone else&apos;s raw material.
               </p>
               <Link
                 href="/recycling/quote"
@@ -143,7 +143,7 @@ export default function EWasteQuotePage() {
             {/* Breakdown */}
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">
               <div className="px-6 py-3 border-b border-zinc-800/60">
-                <h3 className="text-sm font-semibold text-zinc-300">What&apos;s Inside Your E-Waste</h3>
+                <h3 className="text-sm font-semibold text-zinc-300">What&apos;s Inside Your Materials</h3>
               </div>
               <div className="divide-y divide-zinc-800/60">
                 {breakdown.map((b, idx) => (
@@ -187,7 +187,7 @@ export default function EWasteQuotePage() {
             <p className="text-xs text-zinc-600 text-center">
               Values are estimates based on average commodity recovery rates and publicly available market data.
               Actual recoverable value depends on item condition, age, and processing method.
-              Roteh&uuml;gels is a digital facilitator — we do not physically handle e-waste.
+              Roteh&uuml;gels is a digital facilitator — we do not physically handle any waste.
             </p>
 
             <button onClick={() => { setShowResult(false); setItems([{ category: '', quantity: 1 }]); }}

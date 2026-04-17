@@ -115,7 +115,7 @@ export default function RecyclerRegisterPage() {
             </p>
           </div>
           <Link href="/recycling" className="inline-block mt-6 text-sm text-zinc-400 hover:text-white transition-colors">
-            &larr; Back to E-Waste Collection
+            &larr; Back to Recycling
           </Link>
         </div>
       </main>

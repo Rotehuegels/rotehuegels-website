@@ -118,13 +118,14 @@ export default async function EWasteLandingPage() {
       {/* What we will collect */}
       <section className="py-16 px-6 bg-zinc-900/50 border-t border-zinc-800">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-4">What We Collect</h2>
-          <p className="text-zinc-500 text-center mb-10 max-w-xl mx-auto">From household electronics to industrial equipment — all categories of e-waste.</p>
+          <h2 className="text-2xl font-bold text-center mb-4">What We Cover</h2>
+          <p className="text-zinc-500 text-center mb-10 max-w-xl mx-auto">From household electronics to industrial metal scrap — all major recyclable waste streams.</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              'Computers & Laptops', 'Mobile Phones', 'Batteries (all types)', 'Monitors & TVs',
-              'Printers & Peripherals', 'Cables & Wiring', 'PCBs & Circuit Boards', 'UPS & Power Supply',
-              'Networking Equipment', 'Home Appliances', 'Industrial Electronics', 'Solar Panels',
+              'Computers & Laptops', 'Mobile Phones', 'Monitors & TVs', 'PCBs & Circuit Boards',
+              'Lithium-ion Batteries', 'Lead-acid Batteries', 'UPS & Power Supply', 'Solar Panels',
+              'Copper Scrap & Wiring', 'Aluminium Scrap', 'Brass & Bronze', 'Zinc Dross & Ash',
+              'Stainless Steel Scrap', 'Industrial Electronics', 'Home Appliances', 'Cables & Harnesses',
             ].map(item => (
               <div key={item} className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 text-sm text-zinc-300">
                 {item}
@@ -140,9 +141,9 @@ export default async function EWasteLandingPage() {
           <h2 className="text-2xl font-bold text-center mb-10">Why Roteh&uuml;gels</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { icon: Shield, title: 'CPCB Registered Partners', desc: 'We only partner with recyclers holding valid CPCB/SPCB registrations.' },
-              { icon: Leaf, title: 'Zero Landfill Goal', desc: 'Every item will be responsibly recycled or refurbished — nothing to landfill.' },
-              { icon: Truck, title: 'Full Traceability', desc: 'Every waste item tracked from collection to processing — e-waste passport compliant.' },
+              { icon: Shield, title: 'CPCB / MoEF Registered Partners', desc: 'We only partner with recyclers and reprocessors holding valid CPCB, SPCB, or MoEF authorisation.' },
+              { icon: Leaf, title: 'Zero Landfill Goal', desc: 'Every material is responsibly recovered, reprocessed or refurbished — nothing to landfill.' },
+              { icon: Truck, title: 'Full Traceability', desc: 'Every consignment tracked from generator to processor — compliant with E-Waste, Battery Waste, and Hazardous Waste Rules.' },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
                 <Icon className="h-8 w-8 text-emerald-400 mb-4" />
@@ -157,9 +158,9 @@ export default async function EWasteLandingPage() {
       {/* CTA — Register as Recycler */}
       <section className="py-16 px-6 border-t border-zinc-800">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Are you a registered recycler?</h2>
-          <p className="text-zinc-400 mb-4">Join our network now. We&apos;re onboarding CPCB-registered recyclers ahead of launch.</p>
-          <p className="text-sm text-zinc-500 mb-8">Once we obtain authorization, we&apos;ll match you with e-waste generators in your area.</p>
+          <h2 className="text-3xl font-bold mb-4">Are you a registered recycler or reprocessor?</h2>
+          <p className="text-zinc-400 mb-4">Join our network now. We&apos;re onboarding CPCB, SPCB, and MoEF-authorised facilities ahead of launch.</p>
+          <p className="text-sm text-zinc-500 mb-8">Once we obtain authorisation, we&apos;ll match you with waste generators across e-waste, batteries, non-ferrous metals, and zinc dross in your region.</p>
           <Link
             href="/recycling/recycler-register"
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-4 text-base font-semibold text-white transition-colors"
@@ -175,17 +176,20 @@ export default async function EWasteLandingPage() {
           <p><strong className="text-zinc-500">Disclaimer:</strong></p>
           <p>
             Rotehuegel Research Business Consultancy Private Limited (&ldquo;Roteh&uuml;gels&rdquo;) operates solely as a digital platform facilitating
-            the connection between e-waste generators and CPCB/SPCB-registered recyclers. Roteh&uuml;gels does not physically collect, store, handle,
-            or transport any e-waste. All e-waste is transported directly from the generator to the registered recycler.
+            the connection between waste generators and authorised recyclers, reprocessors, and dismantlers across categories including
+            e-waste, batteries, non-ferrous metals, and zinc dross. Roteh&uuml;gels does not physically collect, store, handle, or transport
+            any waste. All material is moved directly from the generator to the authorised recycler or reprocessor.
           </p>
           <p>
-            Roteh&uuml;gels is not an e-waste aggregator, dismantler, or recycler. The responsibility for lawful collection, transportation,
-            processing, and disposal of e-waste lies solely with the CPCB/SPCB-authorized recycler.
+            Roteh&uuml;gels is not an aggregator, dismantler, reprocessor, or recycler. The responsibility for lawful collection, transportation,
+            processing, and disposal of any waste stream lies solely with the CPCB, SPCB, or MoEF-authorised facility.
           </p>
           <p>
-            All recyclers listed on this platform are required to hold valid authorizations under the E-Waste (Management) Rules, 2022.
+            All facilities listed on this platform are required to hold valid authorisations under the applicable rules, including but not limited to
+            the E-Waste (Management) Rules, 2022, the Battery Waste Management Rules, 2022, the Hazardous and Other Wastes (Management and
+            Transboundary Movement) Rules, 2016, and relevant MoEF/CPCB reprocessor registrations.
             Roteh&uuml;gels verifies credentials at the time of registration but does not guarantee ongoing compliance.
-            Users are advised to independently verify recycler credentials before engaging.
+            Users are advised to independently verify facility credentials before engaging.
           </p>
           <p>
             This platform is provided &ldquo;as is&rdquo; for informational and facilitation purposes. Roteh&uuml;gels shall not be liable for
@@ -200,10 +204,16 @@ export default async function EWasteLandingPage() {
         <div className="max-w-5xl mx-auto text-xs text-zinc-600 space-y-3">
           <p className="font-semibold text-zinc-500">References &amp; Data Sources</p>
           <ol className="list-decimal list-inside space-y-1">
-            <li>Central Pollution Control Board (CPCB) — <em>List of Dismantlers/Recyclers as per the authorisation issued by SPCBs/PCCs under E-Waste (Management) Rules, 2022 (As on 08-06-2023)</em> — <a href="https://www.cpcb.nic.in/e-waste-recyclers-dismantler/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">cpcb.nic.in</a></li>
-            <li>NDMC — <em>CPCB Approved List of E-Waste Recyclers/Dismantler</em> — <a href="https://www.ndmc.gov.in/pdf/cpcb_approved_list_of_e-waste_recyclers_dismantler.pdf" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">ndmc.gov.in (PDF)</a></li>
-            <li>CPCB E-Waste EPR Portal — <a href="https://eprewastecpcb.in/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">eprewastecpcb.in</a></li>
-            <li>E-Waste (Management) Rules, 2022 — Ministry of Environment, Forest and Climate Change, Government of India</li>
+            <li>Central Pollution Control Board (CPCB) — <em>List of Dismantlers/Recyclers as per authorisation issued by SPCBs/PCCs under E-Waste (Management) Rules, 2022</em> — <a href="https://www.cpcb.nic.in/e-waste-recyclers-dismantler/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">cpcb.nic.in</a></li>
+            <li>Maharashtra Pollution Control Board (MPCB) — <em>Authorised E-Waste Recyclers, May 2024</em></li>
+            <li>Tamil Nadu Pollution Control Board (TNPCB) — <em>List of E-Waste Dismantlers/Recyclers</em></li>
+            <li>Telangana State Pollution Control Board (TSPCB) — <em>E-Waste Authorised Recyclers</em></li>
+            <li>Rajasthan State Pollution Control Board (RSPCB) — <em>E-Waste Recyclers/Dismantlers</em></li>
+            <li>Karnataka State Pollution Control Board (KSPCB) — <em>E-Waste Authorised Recyclers/Dismantlers</em></li>
+            <li>MoEF&amp;CC / CPCB — <em>List of Registered Non-Ferrous Metal Reprocessors (NFMR)</em> under the Hazardous and Other Wastes (Management and Transboundary Movement) Rules, 2016</li>
+            <li>Material Recycling Association of India (MRAI) — <em>Membership Directory</em> — <a href="https://www.mrai.org.in/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">mrai.org.in</a></li>
+            <li>CPCB Battery Waste Management Portal and published list of registered battery recyclers under the Battery Waste Management Rules, 2022</li>
+            <li>E-Waste (Management) Rules, 2022 &amp; Battery Waste Management Rules, 2022 — Ministry of Environment, Forest and Climate Change, Government of India</li>
           </ol>
           <p className="italic text-zinc-700">
             Any omissions or errors in the data presented on this platform are not intentional. Information is sourced from publicly

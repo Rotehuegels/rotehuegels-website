@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { FileCheck, Plus, Clock, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { FileCheck, Plus, Clock, CheckCircle2, AlertCircle, XCircle, Truck, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +22,8 @@ export default async function EwayBillsPage() {
     .order('created_at', { ascending: false });
 
   const allBills = bills ?? [];
-  const active = allBills.filter(b => b.status === 'generated');
+  const active = allBills.filter(b => b.status === 'generated' && b.vehicle_no);
+  const pendingPartB = allBills.filter(b => b.status === 'generated' && !b.vehicle_no);
   const drafts = allBills.filter(b => b.status === 'draft');
 
   return (
@@ -41,14 +42,18 @@ export default async function EwayBillsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className={`${glass} p-5`}>
           <p className="text-xs text-zinc-500 uppercase mb-1">Total</p>
           <p className="text-2xl font-bold text-white">{allBills.length}</p>
         </div>
         <div className={`${glass} p-5`}>
-          <p className="text-xs text-zinc-500 uppercase mb-1">Active</p>
+          <p className="text-xs text-zinc-500 uppercase mb-1">Valid (Part A+B)</p>
           <p className="text-2xl font-bold text-emerald-400">{active.length}</p>
+        </div>
+        <div className={`${glass} p-5`}>
+          <p className="text-xs text-zinc-500 uppercase mb-1 flex items-center gap-1"><Truck className="h-3 w-3" /> Part B Pending</p>
+          <p className="text-2xl font-bold text-amber-400">{pendingPartB.length}</p>
         </div>
         <div className={`${glass} p-5`}>
           <p className="text-xs text-zinc-500 uppercase mb-1">Drafts</p>
@@ -110,19 +115,39 @@ export default async function EwayBillsPage() {
                       <td className="py-2.5 pr-3 text-xs font-mono text-zinc-400">{b.hsn_code}</td>
                       <td className="py-2.5 pr-3 text-right text-zinc-200">{fmt(b.total_value)}</td>
                       <td className="py-2.5 pr-3 text-xs text-zinc-400">
-                        {b.vehicle_no ?? b.transporter_name ?? b.transport_mode ?? '—'}
+                        {b.vehicle_no ? (
+                          <span className="text-zinc-200 font-mono">{b.vehicle_no}</span>
+                        ) : (
+                          <span className="text-amber-400 inline-flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            Part B pending
+                          </span>
+                        )}
+                        {b.transporter_name && (
+                          <p className="text-[10px] text-zinc-600 mt-0.5">{b.transporter_name}</p>
+                        )}
                       </td>
                       <td className="py-2.5 pr-3 text-xs">
-                        {b.valid_upto ? (
-                          <span className={isExpired ? 'text-red-400' : 'text-zinc-400'}>
-                            {fmtDate(b.valid_upto)} {isExpired ? '(EXPIRED)' : ''}
-                          </span>
-                        ) : '—'}
+                        {b.vehicle_no ? (
+                          b.valid_upto ? (
+                            <span className={isExpired ? 'text-red-400' : 'text-zinc-400'}>
+                              {fmtDate(b.valid_upto)} {isExpired ? '(EXPIRED)' : ''}
+                            </span>
+                          ) : '—'
+                        ) : (
+                          <span className="text-zinc-600 italic">Starts after Part B</span>
+                        )}
                       </td>
                       <td className="py-2.5">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
-                          <Icon className="h-3 w-3" /> {b.status}
-                        </span>
+                        {b.status === 'generated' && !b.vehicle_no ? (
+                          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400">
+                            <Clock className="h-3 w-3" /> Part A only
+                          </span>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                            <Icon className="h-3 w-3" /> {b.status === 'generated' ? 'Valid' : b.status}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );

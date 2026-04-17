@@ -16,6 +16,25 @@ const CODE_TO_NAME: Record<string, string> = {
   'IN-UP': 'Uttar Pradesh', 'IN-UT': 'Uttarakhand', 'IN-WB': 'West Bengal',
 };
 
+// Affine projection fitted to Survey of India polygon centroids (23 reference states).
+// Max residual ~16 px on a 612x632 viewBox (<2.5% error). See MAP_CALIBRATION below.
+// x = A*lng + B*lat + C   |   y = D*lng + E*lat + F
+const PROJ = {
+  xLng:  20.132165,
+  xLat:  -0.180155,
+  xC:   -1355.752301,
+  yLng:  -0.160240,
+  yLat: -20.764888,
+  yC:   784.078530,
+};
+
+function project(lat: number, lng: number): [number, number] {
+  return [
+    PROJ.xLng * lng + PROJ.xLat * lat + PROJ.xC,
+    PROJ.yLng * lng + PROJ.yLat * lat + PROJ.yC,
+  ];
+}
+
 function getStateColor(recyclerCount: number): string {
   if (recyclerCount === 0) return '#3f3f46'; // zinc-700 — no recyclers
   const r = recyclerCount;
@@ -25,15 +44,44 @@ function getStateColor(recyclerCount: number): string {
   return '#71717a';              // zinc-500
 }
 
+// Category → pin color (matches dashboard RecyclerList badges)
+const PIN_COLOR: Record<string, string> = {
+  'e-waste':       '#818cf8', // indigo-400
+  'battery':       '#fbbf24', // amber-400
+  'both':          '#34d399', // emerald-400
+  'hazardous':     '#c084fc', // purple-400
+  'zinc-dross':    '#fb923c', // orange-400
+  'primary-metal': '#fb7185', // rose-400
+};
+
+export interface MapPin {
+  id?: string;
+  lat: number;
+  lng: number;
+  label: string;
+  sub?: string;
+  waste_type?: string;
+}
+
 interface IndiaMapProps {
   onStateClick?: (stateName: string) => void;
   selectedState?: string | null;
   className?: string;
   stateData?: Record<string, { recyclers: number; capacity: number }>;
+  pins?: MapPin[];
+  showPins?: boolean;
 }
 
-export default function IndiaMap({ onStateClick, selectedState, className = '', stateData = {} }: IndiaMapProps) {
+export default function IndiaMap({
+  onStateClick,
+  selectedState,
+  className = '',
+  stateData = {},
+  pins = [],
+  showPins = true,
+}: IndiaMapProps) {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
+  const [hoveredPin, setHoveredPin] = useState<MapPin | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [paths, setPaths] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -52,6 +100,14 @@ export default function IndiaMap({ onStateClick, selectedState, className = '', 
 
   const hoveredData = hoveredState ? stateData[hoveredState] : null;
   const fmtNum = (n: number) => new Intl.NumberFormat('en-IN').format(n);
+
+  // Pre-project pins (once per render)
+  const projected = pins
+    .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng))
+    .map(p => {
+      const [x, y] = project(p.lat, p.lng);
+      return { ...p, x, y };
+    });
 
   if (loading) {
     return (
@@ -101,10 +157,46 @@ export default function IndiaMap({ onStateClick, selectedState, className = '', 
             />
           );
         })}
+
+        {/* GPS pins — facility-level markers */}
+        {showPins && projected.map((p, idx) => {
+          const fill = PIN_COLOR[p.waste_type ?? ''] ?? '#d4d4d8';
+          const isHover = hoveredPin === p;
+          return (
+            <g key={p.id ?? idx}>
+              <circle
+                cx={p.x} cy={p.y}
+                r={isHover ? 4.5 : 2.8}
+                fill={fill}
+                fillOpacity={0.85}
+                stroke="#0a0a0a"
+                strokeWidth={0.6}
+                className="cursor-pointer transition-all"
+                onMouseEnter={() => setHoveredPin(p)}
+                onMouseLeave={() => setHoveredPin(null)}
+              />
+            </g>
+          );
+        })}
       </svg>
 
-      {/* Tooltip */}
-      {hoveredState && (
+      {/* Tooltip — prioritise pin over state */}
+      {hoveredPin ? (
+        <div
+          className="absolute pointer-events-none z-20 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 shadow-lg max-w-xs"
+          style={{
+            left: tooltipPos.x,
+            top: tooltipPos.y,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <p className="text-xs font-semibold text-white">{hoveredPin.label}</p>
+          {hoveredPin.sub && <p className="text-[10px] text-zinc-400 mt-0.5">{hoveredPin.sub}</p>}
+          <p className="text-[10px] text-zinc-500 mt-0.5">
+            {hoveredPin.lat.toFixed(4)}°N, {hoveredPin.lng.toFixed(4)}°E
+          </p>
+        </div>
+      ) : hoveredState && (
         <div
           className="absolute pointer-events-none z-10 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 shadow-lg"
           style={{
@@ -139,6 +231,42 @@ export default function IndiaMap({ onStateClick, selectedState, className = '', 
           </div>
         ))}
       </div>
+
+      {/* Pin legend (only if pins present) */}
+      {showPins && projected.length > 0 && (
+        <div className="flex flex-wrap gap-3 justify-center mt-2">
+          <span className="text-[10px] text-zinc-600 mr-1">Facility pins ({projected.length}):</span>
+          {[
+            { hex: '#818cf8', label: 'E-Waste' },
+            { hex: '#fbbf24', label: 'Battery' },
+            { hex: '#34d399', label: 'E-Waste + Battery' },
+            { hex: '#c084fc', label: 'Non-Ferrous' },
+            { hex: '#fb923c', label: 'Zinc Dross' },
+            { hex: '#fb7185', label: 'Primary Metal' },
+          ].map(it => (
+            <div key={it.label} className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full" style={{ background: it.hex }} />
+              <span className="text-[10px] text-zinc-500">{it.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+
+/*
+ * MAP_CALIBRATION — how the projection constants were fitted
+ *
+ * The SVG state paths are in a 612x632 viewBox (Survey of India, claimed territory).
+ * A simple affine transform from (lat, lng) → (x, y) was fitted via ordinary least
+ * squares using 23 reference states' geographic centroids (government-published
+ * lat/lng) paired against the area-weighted polygon centroids of their SVG paths.
+ *
+ * Residuals: max ~16 px (Odisha, complex coastline); mean ~8 px. Good enough for
+ * facility-scale pin placement at national zoom.
+ *
+ * If the SVG paths are ever regenerated from a different source / projection,
+ * rerun the fit: compute polygon centroids per state code, pair with the real
+ * lat/lng, and solve the 3x3 normal equations for each of {x, y}.
+ */

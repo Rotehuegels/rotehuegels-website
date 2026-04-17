@@ -12,7 +12,7 @@ export default async function RecyclersPage() {
   while (true) {
     const { data } = await supabaseAdmin
       .from('recyclers')
-      .select('state, waste_type, capacity_per_month, is_active')
+      .select('id, company_name, city, state, waste_type, capacity_per_month, latitude, longitude, is_active')
       .eq('is_active', true)
       .range(from, from + pageSize - 1);
     if (!data || data.length === 0) break;
@@ -22,7 +22,6 @@ export default async function RecyclersPage() {
   }
   const recyclers = allRecyclers;
 
-  // Pass raw list to client for dynamic filtering
   const rawList = (recyclers ?? []).map(r => ({
     state: r.state ?? '',
     waste_type: r.waste_type ?? 'other',
@@ -36,5 +35,17 @@ export default async function RecyclersPage() {
     })(),
   }));
 
-  return <RecyclerDirectory rawList={rawList} />;
+  // Facility-level pins for the calibrated GPS overlay
+  const pins = (recyclers ?? [])
+    .filter(r => r.latitude != null && r.longitude != null)
+    .map(r => ({
+      id: r.id,
+      lat: Number(r.latitude),
+      lng: Number(r.longitude),
+      label: r.company_name ?? 'Facility',
+      sub: [r.city, r.state].filter(Boolean).join(', '),
+      waste_type: r.waste_type ?? undefined,
+    }));
+
+  return <RecyclerDirectory rawList={rawList} pins={pins} />;
 }

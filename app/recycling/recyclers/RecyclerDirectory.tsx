@@ -20,6 +20,7 @@ function getColor(recyclers: number): string {
 }
 
 type RawEntry = { state: string; waste_type: string; capacity: number };
+type Pin = { id?: string; lat: number; lng: number; label: string; sub?: string; waste_type?: string };
 
 const CATEGORY_LABELS: Record<string, string> = {
   'e-waste': 'E-Waste',
@@ -32,12 +33,14 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 interface Props {
   rawList: RawEntry[];
+  pins?: Pin[];
 }
 
-export default function RecyclerDirectory({ rawList }: Props) {
+export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [view, setView] = useState<'map' | 'table'>('map');
+  const [showPins, setShowPins] = useState(true);
 
   // Filter by category first
   const filtered = selectedCategory
@@ -188,12 +191,27 @@ export default function RecyclerDirectory({ rawList }: Props) {
         {/* Map View */}
         {view === 'map' && (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
-            <h2 className="text-sm font-semibold text-zinc-300 mb-4">Interactive India Map — Click a state to filter</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-zinc-300">Interactive India Map — Click a state to filter</h2>
+              {pins.length > 0 && (
+                <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showPins}
+                    onChange={e => setShowPins(e.target.checked)}
+                    className="accent-emerald-500"
+                  />
+                  Show {pins.filter(p => !selectedCategory || p.waste_type === selectedCategory).length} GPS pins
+                </label>
+              )}
+            </div>
             <div className="max-w-lg mx-auto">
               <IndiaMap
                 onStateClick={(state) => setSelectedState(prev => prev === state ? null : state)}
                 selectedState={selectedState}
                 stateData={Object.fromEntries(STATES.map(s => [s.name, { recyclers: s.recyclers, capacity: s.capacity }]))}
+                pins={selectedCategory ? pins.filter(p => p.waste_type === selectedCategory) : pins}
+                showPins={showPins}
               />
             </div>
           </div>

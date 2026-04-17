@@ -44,6 +44,7 @@ function getStateColor(recyclerCount: number): string {
 const PIN_COLOR: Record<string, string> = {
   'e-waste':       '#818cf8', // indigo-400
   'battery':       '#fbbf24', // amber-400
+  'black-mass':    '#22d3ee', // cyan-400 — mechanical / shredders
   'both':          '#34d399', // emerald-400
   'hazardous':     '#c084fc', // purple-400
   'zinc-dross':    '#fb923c', // orange-400
@@ -536,7 +537,8 @@ export default function IndiaMap({
           <span className="text-[10px] text-zinc-600 mr-1">Facility pins ({projected.length}):</span>
           {[
             { hex: '#818cf8', label: 'E-Waste' },
-            { hex: '#fbbf24', label: 'Battery' },
+            { hex: '#fbbf24', label: 'Battery (hydromet)' },
+            { hex: '#22d3ee', label: 'Black Mass / Mechanical' },
             { hex: '#34d399', label: 'E-Waste + Battery' },
             { hex: '#c084fc', label: 'Non-Ferrous' },
             { hex: '#fb923c', label: 'Zinc Dross' },

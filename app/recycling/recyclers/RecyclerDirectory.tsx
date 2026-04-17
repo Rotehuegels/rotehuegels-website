@@ -35,7 +35,8 @@ type Pin = { id?: string; lat: number; lng: number; label: string; sub?: string;
 
 const CATEGORY_LABELS: Record<string, string> = {
   'e-waste': 'E-Waste',
-  'battery': 'Battery / Li-Ion',
+  'battery': 'Battery / Li-Ion (full hydromet)',
+  'black-mass': 'Black Mass / Mechanical',
   'both': 'E-Waste + Battery',
   'hazardous': 'Non-Ferrous Metals',
   'zinc-dross': 'Zinc Dross / Zinc Ash',

@@ -7,6 +7,7 @@ import type { MapPin } from './IndiaMap';
 const PIN_COLOR: Record<string, string> = {
   'e-waste':       '#818cf8',
   'battery':       '#fbbf24',
+  'black-mass':    '#22d3ee',
   'both':          '#34d399',
   'hazardous':     '#c084fc',
   'zinc-dross':    '#fb923c',
@@ -61,19 +62,22 @@ export default function IndiaMapLive({ pins, className = '', height = '560px' }:
             />
           </LayersControl.BaseLayer>
 
-          {/* Bhuvan India boundaries (ISRO / NRSC) — public WMS overlay.
-              Bhuvan's full-resolution satellite tile service requires an
-              NRSC API token for production use. This layer shows India's
-              administrative boundaries served by ISRO's public WMS. */}
-          <LayersControl.Overlay name="Bhuvan India boundaries (ISRO)">
+          {/* Bhuvan India boundaries (ISRO / NRSC) — checked by DEFAULT.
+              OSM / Esri / Carto base layers use international boundary
+              interpretations that do not match the Government of India's
+              official position on J&K, Ladakh, Aksai Chin, and Arunachal
+              Pradesh. Overlaying this ISRO-served Survey-of-India layer
+              on top renders the Indian government's official boundaries
+              as the authoritative reference on this map. */}
+          <LayersControl.Overlay checked name="🇮🇳 India boundaries — Survey of India / ISRO Bhuvan (official)">
             <WMSTileLayer
               url="https://bhuvan-vec1.nrsc.gov.in/bhuvan/wms"
               layers="india3"
               format="image/png"
               transparent
               version="1.1.1"
-              attribution='Boundaries &copy; <a href="https://bhuvan.nrsc.gov.in">Bhuvan &mdash; NRSC / ISRO</a>'
-              opacity={0.7}
+              attribution='Boundaries &copy; <a href="https://bhuvan.nrsc.gov.in">Bhuvan &mdash; NRSC / ISRO</a> (Survey of India)'
+              opacity={0.85}
             />
           </LayersControl.Overlay>
 
@@ -117,13 +121,22 @@ export default function IndiaMapLive({ pins, className = '', height = '560px' }:
         })}
       </MapContainer>
 
+      {/* Border disclaimer — international base tiles (OSM, Esri, Carto)
+          do NOT show Government of India's official boundaries; the
+          Bhuvan/ISRO overlay (enabled by default) provides the authoritative
+          Survey of India reference. */}
+      <div className="absolute top-2 right-2 z-[1000] bg-amber-500/10 border border-amber-500/30 rounded-lg px-2 py-1 text-[10px] text-amber-300 backdrop-blur-sm max-w-[200px] leading-tight">
+        Official India boundaries overlaid from <a href="https://bhuvan.nrsc.gov.in" className="underline" target="_blank" rel="noopener noreferrer">Bhuvan / ISRO</a> (Survey of India)
+      </div>
+
       {/* Pin legend */}
       {valid.length > 0 && (
         <div className="absolute bottom-2 left-2 z-[1000] bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-2 text-[10px] text-zinc-400 backdrop-blur-sm">
           <span className="text-zinc-500 mr-1">{valid.length} pins:</span>
           {[
             ['#818cf8', 'E-Waste'],
-            ['#fbbf24', 'Battery'],
+            ['#fbbf24', 'Battery (hydromet)'],
+            ['#22d3ee', 'Black Mass / Mechanical'],
             ['#34d399', 'E-Waste + Battery'],
             ['#c084fc', 'Non-Ferrous'],
             ['#fb923c', 'Zinc Dross'],

@@ -1,65 +1,89 @@
 # Buddy Handoff → Next Session
-Generated: 2026-04-17
-Agent: Claude
+Generated: 2026-04-17 (evening)
+Agent: Claude (Opus 4.7, 1M context)
 
-## Completed This Session (17 Apr 2026)
+## Completed This Session — Map accuracy, AI chat, category expansion
 
-### Recycler Database — Massive Expansion
-- **Started**: 468 recyclers, 217 with real email
-- **Now**: 723 recyclers, 350 with real email (48.4%)
-- **16 batches** of contact research pushed to git + applied to Supabase
+### Database — 1,228 → 1,261 active facilities
+- Added **primary-metal** category (18 smelters/refineries — Hindustan Zinc, Hindalco, NALCO, Vedanta Al, BALCO, HCL, Adani Copper, JSW Al with plant-level entries and CIN/GPS)
+- Added **Runaya Group** (Refining + Enviro + Solutions)
+- Added **10 missing majors** (Cero Recycling, Tata Re.Wi.Re, Re Sustainability, GEM Enviro, Saahas Zero Waste, Epsilon Advanced Materials, plus 4 tangential players)
+- Added schema columns: `cin`, `latitude`, `longitude` + lookup indexes
+- **100% GPS coverage** across all 1,261 active rows (previously ~34)
+- **32 CIN codes** seeded (primary-metal producers + missing majors from MCA public data)
 
-### New Categories Added
-- 15 battery/Li-ion recyclers (Lohum, Rubamin, Li-Circle, MiniMines, Gravita, ACE Green, BatX, ReBAT, Ziptrax, SungEel, Tata, Exigo Battery, Eco Tantra, Liven, Bridge Green Upcycle)
-- 114 MRAI material recyclers (names only from membership directory)
-- 21 RSPCB Rajasthan recyclers from official PDF
-- 4 TNPCB Tamil Nadu dismantlers from official PDF
-- Schema: waste_type, facility_type, website columns added
+### Geocoder — new tool at `scripts/geocode-recyclers.mjs`
+- Priority chain: website scrape (JSON-LD / og:meta / Google Maps URL) → Nominatim address → city → pincode → state
+- Capacity-ordered (largest facilities first)
+- Respects Nominatim 1 req/sec, India bbox filter
+- Idempotent — run with `node --env-file=.env.local scripts/geocode-recyclers.mjs`
+- Last run: 265 rows in 10 min (262 Nominatim, 1 gmap-url, 1 json-ld, 1 og-meta)
 
-### Security Fix
-- Recycler portal (/recycler/[id]) now protected with signed session cookie (HMAC-SHA256)
-- Logout endpoint clears cookie
-- Unauthorized access redirects to login
+### Map — two views now
+1. **SVG Choropleth** (existing, state-tinted):
+   - Calibrated affine lat/lng → pixel projection (mean ~40 km residual)
+   - **Wheel zoom + drag pan + scale slider** (1x–20x)
+   - **Polygon-snap correction** — pins outside their state polygon snap to nearest boundary
+2. **Live Map · Satellite** (new, Leaflet-based):
+   - OpenStreetMap base (default)
+   - Esri World Imagery satellite (free)
+   - Carto dark (theme-matched)
+   - Bhuvan / ISRO boundaries WMS overlay (public, 70% opacity)
+   - Real Mercator projection — sub-metre pin accuracy
+   - CircleMarker per facility, coloured by waste_type, popup with name + GPS
 
-### Dashboard Improvements
-- Search + filter (waste type, state, contact status) on /dashboard/ewaste/recyclers
-- Full contact details shown (email/phone/website/address/capacity)
+### Page & content
+- `/recycling` landing: broadened "What We Cover" (16 items), references expanded 4 → 10 sources, disclaimer covers Battery Waste Rules + MoEF NFMR
+- `/recycling/quote`: back-link + hero broadened ("Your Recyclables" not "Your E-Waste")
+- `/recycling/recyclers`: widened from `max-w-5xl` (1024px) to `max-w-[1800px]`
+- Stale `/ewaste` redirect in `/recycling/request` fixed
+- View toggle: Choropleth / Live Map · Satellite / Table
 
-### Public Page Fixed
-- /ewaste/recyclers now pulls live data from Supabase (was hardcoded at 569)
-- Capacity parsing fixed (was producing garbage numbers)
+### AI chat — `/components/AssistWidget.tsx` + `/lib/agents.ts`
+- COMPANY_CONTEXT now describes the full recycling platform: 1,260+ facilities, 6 categories, data sources (CPCB/SPCB/MoEF/MRAI), all public URLs, tile layers
+- New hard rules:
+  - Never recite specific recycler contacts, CIN, GSTIN, or capacities from memory
+  - Always direct users to the live public directory for specific lookups
+  - Only answer from public data
+- Sales agent is now the owner of all recycling-platform queries
+- Supplier agent routes recycling-facility registrations to Sales
 
-### Bridge Green Upcycle (from Siva's direct conversation)
-- Gummidipundi: shredding unit, 10 MT black mass/day
-- Guindy: hydromet R&D, 30-50 kg/day commercial grade
-- Navallur: hydromet plant (upcoming), 3 TPD
+### Infrastructure
+- **ewaste_ → recyclers rename** captured as idempotent migration (was applied via Supabase UI only)
+- pnpm is the sole lockfile — `package-lock.json` and duplicate `package-lock 2.json` deleted (~20K lines)
+- Next.js `canvas` build failure (pdfjs-dist transitive) fixed via serverExternalPackages + webpack/turbopack aliases
+- Bhuvan satellite base-layer replaced with public WMS overlay (full tiles need NRSC API token)
 
 ## Pending for Next Session
 
-### 1. Continue Missing Contact Research (~237 CPCB entries missing)
-- UP: ~85 (Hapur/Meerut micro-operators, no web presence)
-- KA: ~25, HR: ~25, GJ: ~22, TN: ~18, TS: ~12, RJ: ~15
-- Best source: state SPCB PDFs (TNPCB worked great, try GPCB, HSPCB)
+### Data enrichment (deferred — low priority, grind work)
+1. **MRAI directory** — 113 entries have placeholder emails; user had link to a Scribd PDF of the 2019-20 membership directory
+2. **CPCB UP micro-operators** — ~230 with placeholder emails; mostly Hapur/Meerut small scrap operators with zero web presence (phone calls / SPCB PDFs only)
+3. **NFMR contact enrichment** — ~680 entries still without email/phone; top 20 facilities have contacts now, next targets are 1,000-5,000 MTA mid-tier
 
-### 2. MRAI Full Directory
-- 117 MRAI entries have placeholder emails
-- Need Scribd PDF download: https://www.scribd.com/document/436933701/mrai-membership-directory-2019-20-pdf
-- User was going to try downloading it
+### Nice-to-have tool upgrades
+1. **Dissolve districts → states GeoJSON** — for a proper state-level choropleth overlay on the Live Map (currently no state polygons on Leaflet view)
+2. **Marker clustering** — 1,261 pins on a single viewport can lag on slow devices; `leaflet.markercluster` would group them
+3. **Bhuvan API token** — register at bhuvan.nrsc.gov.in for real satellite base-layer tiles; replace the current boundaries overlay
+4. **Street-level geocoding pass** — many pins land at city centroids; a second pass using full address could bring them closer to the actual plant
 
-### 3. Run `npx supabase db push` with migration repair
-- Many migrations have non-standard naming (now fixed to numeric timestamps)
-- Need to mark all old migrations as applied via repair
+### Possible follow-ups
+- Verify on the live Vercel deploy that Live Map tiles load, CircleMarkers cluster sensibly, and the AI chat answers recycling questions correctly
+- Audit widget-width / stat cards now that page is wide
 
-## Files Modified
-- `supabase/migrations/20260417_update_recycler_contacts.sql` — 441 UPDATE statements
-- `supabase/migrations/20260417100000_battery_recyclers.sql` — 15 battery recyclers + Bridge Green
-- `supabase/migrations/20260417200000_mrai_recyclers.sql` — 114 MRAI members
-- `supabase/migrations/20260417300000_rspcb_rajasthan.sql` — 21 RSPCB entries
-- `app/ewaste/recyclers/page.tsx` — Server page fetching live Supabase data
-- `app/ewaste/recyclers/RecyclerDirectory.tsx` — Client component with dynamic props
-- `app/dashboard/ewaste/recyclers/page.tsx` — Server wrapper
-- `app/dashboard/ewaste/recyclers/RecyclerList.tsx` — Search + filter client component
-- `app/recycler/[id]/page.tsx` — Session cookie auth check
-- `app/api/ewaste/recyclers/verify/route.ts` — HMAC signed cookie
-- `app/api/ewaste/recyclers/logout/route.ts` — Cookie clear endpoint
-- `.buddy/handoff.md` — updated
+## Useful locations
+- Seed migrations: `supabase/migrations/20260419*.sql`
+- Geocoder: `scripts/geocode-recyclers.mjs`
+- Live map: `components/IndiaMapLive.tsx`
+- SVG choropleth: `components/IndiaMap.tsx`
+- Chat agents: `lib/agents.ts`
+- Directory page: `app/recycling/recyclers/RecyclerDirectory.tsx`
+
+## Coverage snapshot
+- **Active rows:** 1,261
+- **GPS:** 1,261 (100%)
+- **Real email:** 562 (45%)
+- **Phone:** 477 (38%)
+- **CIN:** 32 (top producers)
+- **States covered:** 28
+- **Categories:** 6 (e-waste, battery, both, hazardous/non-ferrous, zinc-dross, primary-metal)

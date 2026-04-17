@@ -12,6 +12,7 @@ const input = 'w-full rounded-xl bg-zinc-900 border border-zinc-800 px-4 py-2.5 
 const WASTE_BADGE: Record<string, { cls: string; label: string }> = {
   'e-waste':       { cls: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20', label: 'E-Waste' },
   'battery':       { cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20', label: 'Battery' },
+  'black-mass':    { cls: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20', label: 'Black Mass / Mechanical' },
   'zinc-dross':    { cls: 'bg-orange-500/10 text-orange-400 border-orange-500/20', label: 'Zinc Dross' },
   'hazardous':     { cls: 'bg-purple-500/10 text-purple-400 border-purple-500/20', label: 'Non-Ferrous' },
   'both':          { cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', label: 'E-Waste + Battery' },
@@ -116,7 +117,8 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
             >
               <option value="all">All Types</option>
               <option value="e-waste">E-Waste</option>
-              <option value="battery">Battery</option>
+              <option value="battery">Battery (full hydromet)</option>
+              <option value="black-mass">Black Mass / Mechanical</option>
               <option value="both">E-Waste + Battery</option>
               <option value="zinc-dross">Zinc Dross / Zinc Ash</option>
               <option value="hazardous">Non-Ferrous Metals</option>

@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import {
   Factory, CheckCircle2, MapPin, Shield, Mail, Phone, Globe,
-  Battery, Recycle, Search, Filter, X, ChevronDown,
+  Battery, Recycle, Search, Filter, X, ChevronDown, AlertTriangle,
 } from 'lucide-react';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -187,6 +187,9 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
             {filtered.map(r => {
               const wb = WASTE_BADGE[r.waste_type ?? 'e-waste'] ?? WASTE_BADGE['e-waste'];
               const hasRealEmail = r.email && !r.email.includes('@placeholder.in') && !r.email.startsWith('cpcb.');
+              // Detect duplicate-disclaimer rows — notes contain [dup] or [cross-category dup]
+              const dupMatch = r.notes && /\[(cross-category )?dup/i.test(r.notes);
+              const dupRef = dupMatch ? (r.notes.match(/under\s+([A-Z]+-[A-Z]+-\d+)/i)?.[1] ?? null) : null;
               return (
                 <div key={r.id} className="px-6 py-4 hover:bg-zinc-800/20 transition-colors">
                   <div className="flex items-start justify-between gap-4">
@@ -203,6 +206,15 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
                           {r.waste_type === 'battery' || r.waste_type === 'both' ? <Battery className="h-3 w-3" /> : <Recycle className="h-3 w-3" />}
                           {wb.label}
                         </span>
+                        {dupMatch && (
+                          <span
+                            className="inline-flex items-center gap-1 text-[10px] text-yellow-400 bg-yellow-500/10 border border-yellow-500/30 rounded-full px-2 py-0.5 shrink-0"
+                            title={r.notes}
+                          >
+                            <AlertTriangle className="h-3 w-3" />
+                            {dupRef ? `Capacity on ${dupRef}` : 'Duplicate — capacity elsewhere'}
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500 flex-wrap">

@@ -202,7 +202,7 @@ async function fetchMissing() {
   while (true) {
     const { data, error } = await sb
       .from('recyclers')
-      .select('id, recycler_code, company_name, address, city, state, pincode, website')
+      .select('id, recycler_code, company_name, address, city, state, pincode, website, capacity_per_month, waste_type')
       .is('latitude', null)
       .eq('is_active', true)
       .range(from, from + size - 1);
@@ -212,6 +212,17 @@ async function fetchMissing() {
     if (data.length < size) break;
     from += size;
   }
+  // Parse the free-text capacity_per_month field into a number so we can
+  // geocode the biggest facilities first. Values like "50000", "50000 MTA",
+  // "10,000 MT/month" all reduce to ~50000 / ~10000.
+  const parseCap = (s) => {
+    if (s == null) return 0;
+    const m = String(s).match(/([\d,]+(?:\.\d+)?)/);
+    if (!m) return 0;
+    const n = parseFloat(m[1].replace(/,/g, ''));
+    return Number.isFinite(n) ? n : 0;
+  };
+  all.sort((a, b) => parseCap(b.capacity_per_month) - parseCap(a.capacity_per_month));
   return all;
 }
 
@@ -226,7 +237,8 @@ async function main() {
 
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
-    const prefix = `[${String(i + 1).padStart(4)}/${rows.length}] ${r.recycler_code ?? r.id}`;
+    const capLabel = r.capacity_per_month ? ` (${String(r.capacity_per_month).slice(0, 18)})` : '';
+    const prefix = `[${String(i + 1).padStart(4)}/${rows.length}] ${r.recycler_code ?? r.id}${capLabel}`;
     const hit = await tryAllStrategies(r);
     if (!hit) { counters.fail++; console.log(`${prefix} ✗ no match`); continue; }
     const { error } = await sb.from('recyclers').update({ latitude: hit.lat, longitude: hit.lng }).eq('id', r.id);

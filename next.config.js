@@ -161,6 +161,7 @@ const nextConfig = {
       { source: '/d/expenses/:id/edit', destination: '/dashboard/accounts/expenses/:id/edit' },
       { source: '/d/eway-bills', destination: '/dashboard/accounts/eway-bills' },
       { source: '/d/eway-bills/new', destination: '/dashboard/accounts/eway-bills/new' },
+      { source: '/d/eway-bills/:id', destination: '/dashboard/accounts/eway-bills/:id' },
       { source: '/d/credit-notes', destination: '/dashboard/accounts/credit-notes' },
       { source: '/d/credit-notes/new', destination: '/dashboard/accounts/credit-notes/new' },
       { source: '/d/receipts', destination: '/dashboard/accounts/receipts' },

@@ -95,9 +95,11 @@ export default async function EwayBillsPage() {
                   const order = b.orders as { order_no: string; client_name: string } | null;
                   const isExpired = b.valid_upto && new Date(b.valid_upto) < new Date() && b.status === 'generated';
                   return (
-                    <tr key={b.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                    <tr key={b.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 cursor-pointer">
                       <td className="py-2.5 pr-3">
-                        <span className="font-mono text-xs text-rose-400 font-bold">{b.eway_bill_no ?? 'DRAFT'}</span>
+                        <Link href={`/d/eway-bills/${b.id}`} className="font-mono text-xs text-rose-400 font-bold hover:text-rose-300">
+                          {b.eway_bill_no ?? 'DRAFT'}
+                        </Link>
                         <p className="text-xs text-zinc-600">{fmtDate(b.doc_date)}</p>
                       </td>
                       <td className="py-2.5 pr-3">

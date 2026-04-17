@@ -12,7 +12,7 @@ INSERT INTO recyclers (
 ) VALUES
 
 -- Runaya Refining — zinc dross reprocessing JV-style at HZL Dariba
-('RUN-RJ-001', 'Runaya Refining LLP', 'Registered Facility', NULL, NULL,
+('RUN-RJ-001', 'Runaya Refining LLP', 'Registered Facility', 'run-rj-001@placeholder.in', NULL,
  'Dariba Smelting Complex, Rajpura Dariba', 'Rajsamand', 'Rajasthan', 'zinc-dross', 'reprocessor',
  2500, 'AAT-5791',
  'https://www.runaya.in',
@@ -20,7 +20,7 @@ INSERT INTO recyclers (
  true, true, now()),
 
 -- Runaya Enviro Solutions — solar PV recycling & green materials
-('RUN-TG-001', 'Runaya Enviro Solutions Private Limited', 'Registered Facility', NULL, NULL,
+('RUN-TG-001', 'Runaya Enviro Solutions Private Limited', 'Registered Facility', 'run-tg-001@placeholder.in', NULL,
  'Jubilee Hills', 'Hyderabad', 'Telangana', 'e-waste', 'recycler',
  1000, 'U38210TG2019PTC134117',
  'https://www.runaya.in',
@@ -28,7 +28,7 @@ INSERT INTO recyclers (
  true, false, NULL),
 
 -- Runaya Solutions Pvt Ltd — engineering / materials services arm
-('RUN-TG-002', 'Runaya Solutions Private Limited', 'Registered Facility', NULL, NULL,
+('RUN-TG-002', 'Runaya Solutions Private Limited', 'Registered Facility', 'run-tg-002@placeholder.in', NULL,
  'Jubilee Hills', 'Hyderabad', 'Telangana', 'hazardous', 'reprocessor',
  NULL, 'U74999TG2018PTC126489',
  'https://www.runaya.in',

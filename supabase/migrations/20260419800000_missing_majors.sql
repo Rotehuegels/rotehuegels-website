@@ -32,7 +32,7 @@ INSERT INTO recyclers (
  true, true, now()),
 
 -- 3. Tata Motors Re.Wi.Re (Recycling with Respect) — ELV at Chinchwad Pune
-('MAJ-MH-003', 'Tata Motors — Re.Wi.Re Chinchwad', 'Registered Facility', NULL, NULL,
+('MAJ-MH-003', 'Tata Motors — Re.Wi.Re Chinchwad', 'Registered Facility', 'maj-mh-003@placeholder.in', NULL,
  'Chinchwad, Pune', 'Pune', 'Maharashtra', 'hazardous', 'recycler',
  3000, 'L28920MH1945PLC004520', 'https://www.tatamotors.com',
  'ELV scrapping facility launched 2023 with Ganatra Auto. Capacity ~36,000 ELVs/year. Re.Wi.Re = "Recycling with Respect".',
@@ -67,7 +67,7 @@ INSERT INTO recyclers (
  true, false, NULL),
 
 -- 8. Binani Industries Ltd — zinc/lead/tin (upstream, marginal)
-('MAJ-WB-001', 'Binani Industries Limited', 'Registered Facility', NULL, NULL,
+('MAJ-WB-001', 'Binani Industries Limited', 'Registered Facility', 'maj-wb-001@placeholder.in', NULL,
  '37-B, Mittal Tower, 210 Backbay Reclamation', 'Mumbai', 'Maharashtra', 'primary-metal', 'producer',
  NULL, 'L24117WB1962PLC025584', 'https://www.binaniindustries.com',
  'Holding company — zinc, lead, tin, and alloy products via Binani Metals. Primarily downstream / secondary use of primary metals, not a recycler in the strict sense.',

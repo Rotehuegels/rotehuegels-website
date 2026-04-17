@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
   ClipboardCheck, ArrowLeft, Building2, Truck, MapPin,
   FileText, Calendar, User, CheckCircle2, Clock, AlertCircle, XCircle, PackageCheck,
+  Printer, Download,
 } from 'lucide-react';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -69,9 +70,27 @@ export default async function GRNDetailPage({ params }: { params: Promise<{ id: 
             </div>
           </div>
         </div>
-        <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${cfg.cls}`}>
-          <StatusIcon className="h-3.5 w-3.5" /> {cfg.label}
-        </span>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/accounts/grn/${id}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-700 transition-colors"
+            title="Open PDF"
+          >
+            <Printer className="h-3.5 w-3.5" /> Print
+          </a>
+          <a
+            href={`/api/accounts/grn/${id}/pdf?download=1`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 hover:text-white hover:bg-emerald-500/20 transition-colors"
+            title="Download PDF"
+          >
+            <Download className="h-3.5 w-3.5" /> PDF
+          </a>
+          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${cfg.cls}`}>
+            <StatusIcon className="h-3.5 w-3.5" /> {cfg.label}
+          </span>
+        </div>
       </div>
 
       {/* Summary grid */}

@@ -30,8 +30,8 @@ function getColor(recyclers: number): string {
   return 'text-zinc-400';
 }
 
-type RawEntry = { state: string; waste_type: string; capacity: number };
-type Pin = { id?: string; lat: number; lng: number; label: string; sub?: string; waste_type?: string; state?: string };
+type RawEntry = { state: string; waste_type: string; capacity: number; black_mass_mta?: number | null };
+type Pin = { id?: string; lat: number; lng: number; label: string; sub?: string; waste_type?: string; state?: string; black_mass_mta?: number };
 
 const CATEGORY_LABELS: Record<string, string> = {
   'e-waste': 'E-Waste',
@@ -48,15 +48,31 @@ interface Props {
   pins?: Pin[];
 }
 
+function matchCategory(
+  record: { waste_type?: string; black_mass_mta?: number | null },
+  category: string,
+): boolean {
+  if (category === 'black-mass') {
+    return record.waste_type === 'black-mass' || (record.black_mass_mta ?? 0) > 0;
+  }
+  return record.waste_type === category;
+}
+
 export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [view, setView] = useState<'map' | 'live' | 'table'>('map');
   const [showPins, setShowPins] = useState(true);
 
-  // Filter by category first
+  // Filter by category first. "black-mass" category is special: it unions
+  // pure-mechanical shredders (waste_type='black-mass') with integrated
+  // recyclers that produce black mass as an intermediate step (black_mass_mta set).
   const filtered = selectedCategory
-    ? rawList.filter(r => r.waste_type === selectedCategory)
+    ? rawList.filter(r =>
+        selectedCategory === 'black-mass'
+          ? r.waste_type === 'black-mass' || (r.black_mass_mta ?? 0) > 0
+          : r.waste_type === selectedCategory,
+      )
     : rawList;
 
   // Aggregate state-wise from filtered data
@@ -77,11 +93,14 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const TOTAL_CAPACITY = STATES.reduce((s, st) => s + st.capacity, 0);
   const statesCount = STATES.length;
 
-  // Category breakdown (from full list, not filtered)
+  // Category breakdown (from full list, not filtered). 'black-mass' is a union:
+  // pure-mechanical shredders + integrated recyclers with a black_mass_mta value.
   const categoryMap = new Map<string, number>();
   for (const r of rawList) {
     categoryMap.set(r.waste_type, (categoryMap.get(r.waste_type) ?? 0) + 1);
   }
+  const blackMassUnion = rawList.filter(r => r.waste_type === 'black-mass' || (r.black_mass_mta ?? 0) > 0).length;
+  if (blackMassUnion > 0) categoryMap.set('black-mass', blackMassUnion);
   const categories = Array.from(categoryMap.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
@@ -221,7 +240,7 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
                     onChange={e => setShowPins(e.target.checked)}
                     className="accent-emerald-500"
                   />
-                  Show {pins.filter(p => !selectedCategory || p.waste_type === selectedCategory).length} GPS pins
+                  Show {pins.filter(p => !selectedCategory || matchCategory(p, selectedCategory)).length} GPS pins
                 </label>
               )}
             </div>
@@ -230,7 +249,7 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
                 onStateClick={(state) => setSelectedState(prev => prev === state ? null : state)}
                 selectedState={selectedState}
                 stateData={Object.fromEntries(STATES.map(s => [s.name, { recyclers: s.recyclers, capacity: s.capacity }]))}
-                pins={selectedCategory ? pins.filter(p => p.waste_type === selectedCategory) : pins}
+                pins={selectedCategory ? pins.filter(p => matchCategory(p, selectedCategory)) : pins}
                 showPins={showPins}
               />
             </div>
@@ -245,11 +264,11 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
                 Live Map — real GPS, satellite imagery (OSM · Esri · Bhuvan/ISRO)
               </h2>
               <span className="text-[10px] text-zinc-500">
-                {(selectedCategory ? pins.filter(p => p.waste_type === selectedCategory) : pins).length} facilities plotted
+                {(selectedCategory ? pins.filter(p => matchCategory(p, selectedCategory)) : pins).length} facilities plotted
               </span>
             </div>
             <IndiaMapLive
-              pins={selectedCategory ? pins.filter(p => p.waste_type === selectedCategory) : pins}
+              pins={selectedCategory ? pins.filter(p => matchCategory(p, selectedCategory)) : pins}
               height="620px"
             />
           </div>

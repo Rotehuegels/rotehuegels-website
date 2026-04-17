@@ -12,7 +12,7 @@ export default async function RecyclersPage() {
   while (true) {
     const { data } = await supabaseAdmin
       .from('recyclers')
-      .select('id, company_name, city, state, waste_type, capacity_per_month, latitude, longitude, is_active')
+      .select('id, company_name, city, state, waste_type, capacity_per_month, black_mass_mta, latitude, longitude, is_active')
       .eq('is_active', true)
       .range(from, from + pageSize - 1);
     if (!data || data.length === 0) break;
@@ -25,6 +25,7 @@ export default async function RecyclersPage() {
   const rawList = (recyclers ?? []).map(r => ({
     state: r.state ?? '',
     waste_type: r.waste_type ?? 'other',
+    black_mass_mta: r.black_mass_mta ? Number(r.black_mass_mta) : null,
     capacity: (() => {
       const cap = r.capacity_per_month;
       if (!cap) return 0;
@@ -43,9 +44,11 @@ export default async function RecyclersPage() {
       lat: Number(r.latitude),
       lng: Number(r.longitude),
       label: r.company_name ?? 'Facility',
-      sub: [r.city, r.state].filter(Boolean).join(', '),
+      sub: [r.city, r.state].filter(Boolean).join(', ')
+        + (r.black_mass_mta ? ` · ${Number(r.black_mass_mta).toLocaleString('en-IN')} MTA black mass` : ''),
       waste_type: r.waste_type ?? undefined,
       state: r.state ?? undefined,
+      black_mass_mta: r.black_mass_mta ? Number(r.black_mass_mta) : undefined,
     }));
 
   return <RecyclerDirectory rawList={rawList} pins={pins} />;

@@ -7,7 +7,7 @@
 -- Facility-level plants listed where practical (they are the capacity).
 -- Headquarters-only entries marked with facility_type = 'producer'.
 
-INSERT INTO ewaste_recyclers (
+INSERT INTO recyclers (
   recycler_code, company_name, contact_person, email, phone,
   address, city, state, waste_type, facility_type,
   capacity_per_month, website, notes,

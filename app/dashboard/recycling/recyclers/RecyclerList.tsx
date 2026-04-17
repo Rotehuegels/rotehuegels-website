@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import {
   Factory, CheckCircle2, MapPin, Shield, Mail, Phone, Globe,
-  Battery, Recycle, Search, Filter, X, ChevronDown, AlertTriangle,
+  Battery, Recycle, Search, Filter, X, ChevronDown, AlertTriangle, FileDown,
 } from 'lucide-react';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -57,6 +57,32 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
   }, [recyclers, search, wasteFilter, stateFilter, contactFilter]);
 
   const hasFilters = wasteFilter !== 'all' || stateFilter !== 'all' || contactFilter !== 'all' || search !== '';
+
+  function exportCsv() {
+    const cols = [
+      'recycler_code', 'company_name', 'waste_type', 'city', 'state', 'pincode',
+      'email', 'phone', 'website', 'contact_person', 'address',
+      'cpcb_registration', 'spcb_registration', 'capacity_per_month', 'black_mass_mta',
+      'cin', 'gstin', 'latitude', 'longitude', 'is_verified', 'facility_type', 'notes',
+    ];
+    const esc = (v: unknown) => {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const header = cols.join(',');
+    const lines = filtered.map(r => cols.map(c => esc(r[c])).join(','));
+    const csv = [header, ...lines].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const today = new Date().toISOString().slice(0, 10);
+    const filterTag = hasFilters ? `-filtered-${filtered.length}` : `-all-${filtered.length}`;
+    a.download = `recyclers-${today}${filterTag}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <>
@@ -163,6 +189,14 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
               <X className="h-3 w-3" /> Clear All
             </button>
           )}
+
+          <button
+            onClick={exportCsv}
+            className="flex items-center gap-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-xs text-emerald-400 hover:bg-emerald-500/20 transition-colors ml-auto"
+            title={`Export ${filtered.length} row${filtered.length !== 1 ? 's' : ''} as CSV`}
+          >
+            <FileDown className="h-3 w-3" /> Export CSV ({filtered.length})
+          </button>
         </div>
       </div>
 

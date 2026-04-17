@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
   FileCheck, ArrowLeft, Building2, Truck, MapPin,
   FileText, Calendar, Package, CheckCircle2, Clock, AlertCircle, XCircle, AlertTriangle,
+  Printer, Download,
 } from 'lucide-react';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -72,9 +73,19 @@ export default async function EWBDetailPage({ params }: { params: Promise<{ id: 
             </div>
           </div>
         </div>
-        <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${displayStatus.cls}`}>
-          <DisplayIcon className="h-3.5 w-3.5" /> {displayStatus.label}
-        </span>
+        <div className="flex items-center gap-2">
+          <a href={`/api/eway-bills/${id}/pdf`} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-700 transition-colors" title="Open PDF">
+            <Printer className="h-3.5 w-3.5" /> Print
+          </a>
+          <a href={`/api/eway-bills/${id}/pdf?download=1`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 hover:text-white hover:bg-rose-500/20 transition-colors" title="Download PDF">
+            <Download className="h-3.5 w-3.5" /> PDF
+          </a>
+          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${displayStatus.cls}`}>
+            <DisplayIcon className="h-3.5 w-3.5" /> {displayStatus.label}
+          </span>
+        </div>
       </div>
 
       {/* Expiry banner */}

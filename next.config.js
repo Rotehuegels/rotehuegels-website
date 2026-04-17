@@ -46,6 +46,10 @@ const nextConfig = {
       './public/assets/Logo2_black.png',
       './private/signature.jpg',
     ],
+    '/api/eway-bills/[id]/pdf': [
+      './public/fonts/Roboto/**',
+      './public/assets/Logo2_black.png',
+    ],
     '/api/accounts/gst/pdf': [
       './public/fonts/Roboto/**',
       './public/assets/Logo2_black.png',

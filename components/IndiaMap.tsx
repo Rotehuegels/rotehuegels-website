@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { Plus, Minus, RotateCcw } from 'lucide-react';
 
 // ISO 3166-2:IN code → display name mapping (28 States + 8 UTs, post-2019 reorganization)
 const CODE_TO_NAME: Record<string, string> = {
@@ -18,14 +19,9 @@ const CODE_TO_NAME: Record<string, string> = {
 
 // Affine projection fitted to Survey of India polygon centroids (23 reference states).
 // Max residual ~16 px on a 612x632 viewBox (<2.5% error). See MAP_CALIBRATION below.
-// x = A*lng + B*lat + C   |   y = D*lng + E*lat + F
 const PROJ = {
-  xLng:  20.132165,
-  xLat:  -0.180155,
-  xC:   -1355.752301,
-  yLng:  -0.160240,
-  yLat: -20.764888,
-  yC:   784.078530,
+  xLng:  20.132165, xLat:  -0.180155, xC:   -1355.752301,
+  yLng:  -0.160240, yLat: -20.764888, yC:    784.078530,
 };
 
 function project(lat: number, lng: number): [number, number] {
@@ -63,6 +59,12 @@ export interface MapPin {
   waste_type?: string;
 }
 
+// Base (un-zoomed) viewBox
+const BASE_W = 612;
+const BASE_H = 632;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 20;
+
 interface IndiaMapProps {
   onStateClick?: (stateName: string) => void;
   selectedState?: string | null;
@@ -86,6 +88,14 @@ export default function IndiaMap({
   const [paths, setPaths] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
+  // zoom + pan state (viewBox top-left corner in base coords + scale)
+  const [zoom, setZoom] = useState(1);
+  const [viewX, setViewX] = useState(0);
+  const [viewY, setViewY] = useState(0);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const dragRef = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+
   useEffect(() => {
     fetch('/data/india-states.json')
       .then(r => r.json())
@@ -93,21 +103,129 @@ export default function IndiaMap({
       .catch(() => setLoading(false));
   }, []);
 
+  // Convert a client (mouse) point to SVG base coordinates given current viewBox
+  const clientToSvg = useCallback((clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const rect = svg.getBoundingClientRect();
+    const vbW = BASE_W / zoom;
+    const vbH = BASE_H / zoom;
+    const fracX = (clientX - rect.left) / rect.width;
+    const fracY = (clientY - rect.top) / rect.height;
+    return { x: viewX + fracX * vbW, y: viewY + fracY * vbH };
+  }, [zoom, viewX, viewY]);
+
+  const clampView = useCallback((x: number, y: number, z: number) => {
+    const vbW = BASE_W / z;
+    const vbH = BASE_H / z;
+    // Allow the viewBox to drift a bit past the edge so corners remain reachable,
+    // but keep most of the map on-screen. A zero clamp at 1x, loosening at higher zoom.
+    const slack = 0.15 * (z - 1) * BASE_W;
+    const xMin = -slack;
+    const xMax = BASE_W - vbW + slack;
+    const yMin = -slack;
+    const yMax = BASE_H - vbH + slack;
+    return {
+      x: Math.max(xMin, Math.min(xMax, x)),
+      y: Math.max(yMin, Math.min(yMax, y)),
+    };
+  }, []);
+
+  const zoomAt = useCallback((clientX: number, clientY: number, newZoom: number) => {
+    const z = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
+    if (z === zoom) return;
+    // Zoom toward the cursor: keep the svg-coord under the cursor fixed.
+    const { x: cx, y: cy } = clientToSvg(clientX, clientY);
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const fracX = (clientX - rect.left) / rect.width;
+    const fracY = (clientY - rect.top) / rect.height;
+    const newVbW = BASE_W / z;
+    const newVbH = BASE_H / z;
+    const nx = cx - fracX * newVbW;
+    const ny = cy - fracY * newVbH;
+    const { x, y } = clampView(nx, ny, z);
+    setZoom(z);
+    setViewX(x);
+    setViewY(y);
+  }, [zoom, clientToSvg, clampView]);
+
+  // Wheel zoom — passive:false required to call preventDefault on wheel
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.2 : 1 / 1.2;
+      zoomAt(e.clientX, e.clientY, zoom * factor);
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, [zoom, zoomAt]);
+
+  const centerViewOnCenter = useCallback((z: number) => {
+    const vbW = BASE_W / z;
+    const vbH = BASE_H / z;
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    // Keep the centre of the current view (or the true centre if reset).
+    zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, z);
+    void vbW; void vbH;
+  }, [zoomAt]);
+
+  const resetView = useCallback(() => {
+    setZoom(1);
+    setViewX(0);
+    setViewY(0);
+  }, []);
+
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const svg = e.currentTarget.getBoundingClientRect();
     setTooltipPos({ x: e.clientX - svg.left, y: e.clientY - svg.top - 10 });
+    if (dragRef.current) {
+      // Convert pixel delta → svg-coord delta
+      const { x: x0, y: y0, vx, vy } = dragRef.current;
+      const rect = svgRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const dxPix = e.clientX - x0;
+      const dyPix = e.clientY - y0;
+      const vbW = BASE_W / zoom;
+      const vbH = BASE_H / zoom;
+      const dx = (dxPix / rect.width) * vbW;
+      const dy = (dyPix / rect.height) * vbH;
+      const { x, y } = clampView(vx - dx, vy - dy, zoom);
+      setViewX(x);
+      setViewY(y);
+    }
+  }, [zoom, clampView]);
+
+  const onPanStart = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    dragRef.current = { x: e.clientX, y: e.clientY, vx: viewX, vy: viewY };
+    setIsPanning(true);
+  }, [viewX, viewY]);
+
+  const onPanEnd = useCallback(() => {
+    dragRef.current = null;
+    setIsPanning(false);
   }, []);
 
   const hoveredData = hoveredState ? stateData[hoveredState] : null;
   const fmtNum = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 
-  // Pre-project pins (once per render)
-  const projected = pins
+  const projected = useMemo(() => pins
     .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng))
     .map(p => {
       const [x, y] = project(p.lat, p.lng);
       return { ...p, x, y };
-    });
+    }), [pins]);
+
+  // Scale strokes + pin sizes inversely with zoom so they stay visually constant
+  const invZoom = 1 / zoom;
+  const vbW = BASE_W / zoom;
+  const vbH = BASE_H / zoom;
+  const viewBox = `${viewX} ${viewY} ${vbW} ${vbH}`;
 
   if (loading) {
     return (
@@ -120,9 +238,14 @@ export default function IndiaMap({
   return (
     <div className={`relative ${className}`}>
       <svg
-        viewBox="0 0 612 632"
-        className="w-full h-auto"
+        ref={svgRef}
+        viewBox={viewBox}
+        className={`w-full h-auto select-none ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
         onMouseMove={handleMouseMove}
+        onMouseDown={onPanStart}
+        onMouseUp={onPanEnd}
+        onMouseLeave={onPanEnd}
+        onDoubleClick={(e) => zoomAt(e.clientX, e.clientY, zoom * 2)}
       >
         {/* State paths — Survey of India boundaries, includes Ladakh UT + full claimed territory */}
         {Object.entries(paths).map(([code, d]) => {
@@ -139,12 +262,13 @@ export default function IndiaMap({
               d={d}
               fill={isSelected ? '#f59e0b' : isHovered ? '#fbbf24' : color}
               stroke="#27272a"
-              strokeWidth={isHovered || isSelected ? 1.2 : 0.5}
-              className="cursor-pointer transition-colors duration-150"
+              strokeWidth={(isHovered || isSelected ? 1.2 : 0.5) * invZoom}
+              className="transition-colors duration-150"
+              style={{ cursor: isPanning ? 'grabbing' : 'pointer' }}
               opacity={isHovered || isSelected ? 1 : 0.85}
               onMouseEnter={() => setHoveredState(name)}
               onMouseLeave={() => setHoveredState(null)}
-              onClick={() => onStateClick?.(name)}
+              onClick={(e) => { if (!isPanning) { e.stopPropagation(); onStateClick?.(name); } }}
               role="button"
               tabIndex={0}
               aria-label={`${name}: ${data ? data.recyclers : 0} recyclers`}
@@ -158,7 +282,7 @@ export default function IndiaMap({
           );
         })}
 
-        {/* GPS pins — facility-level markers */}
+        {/* GPS pins — facility-level markers (size stays visually constant with zoom) */}
         {showPins && projected.map((p, idx) => {
           const fill = PIN_COLOR[p.waste_type ?? ''] ?? '#d4d4d8';
           const isHover = hoveredPin === p;
@@ -166,12 +290,12 @@ export default function IndiaMap({
             <g key={p.id ?? idx}>
               <circle
                 cx={p.x} cy={p.y}
-                r={isHover ? 4.5 : 2.8}
+                r={(isHover ? 4.5 : 2.8) * invZoom}
                 fill={fill}
                 fillOpacity={0.85}
                 stroke="#0a0a0a"
-                strokeWidth={0.6}
-                className="cursor-pointer transition-all"
+                strokeWidth={0.6 * invZoom}
+                style={{ cursor: isPanning ? 'grabbing' : 'pointer' }}
                 onMouseEnter={() => setHoveredPin(p)}
                 onMouseLeave={() => setHoveredPin(null)}
               />
@@ -179,6 +303,64 @@ export default function IndiaMap({
           );
         })}
       </svg>
+
+      {/* Zoom controls */}
+      <div className="absolute top-2 right-2 flex flex-col gap-1 z-20">
+        <button
+          onClick={() => {
+            const rect = svgRef.current?.getBoundingClientRect();
+            if (rect) zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, zoom * 1.5);
+          }}
+          disabled={zoom >= MAX_ZOOM}
+          className="h-7 w-7 flex items-center justify-center rounded-md bg-zinc-800/90 border border-zinc-700 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-300"
+          aria-label="Zoom in"
+          title="Zoom in"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => {
+            const rect = svgRef.current?.getBoundingClientRect();
+            if (rect) zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, zoom / 1.5);
+          }}
+          disabled={zoom <= MIN_ZOOM}
+          className="h-7 w-7 flex items-center justify-center rounded-md bg-zinc-800/90 border border-zinc-700 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-300"
+          aria-label="Zoom out"
+          title="Zoom out"
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <button
+          onClick={resetView}
+          disabled={zoom === 1 && viewX === 0 && viewY === 0}
+          className="h-7 w-7 flex items-center justify-center rounded-md bg-zinc-800/90 border border-zinc-700 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-300"
+          aria-label="Reset view"
+          title="Reset view"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      {/* Zoom scale slider */}
+      <div className="absolute bottom-16 right-2 w-7 h-28 flex flex-col items-center gap-1 z-20 pointer-events-none">
+        <input
+          type="range"
+          min={MIN_ZOOM}
+          max={MAX_ZOOM}
+          step={0.1}
+          value={zoom}
+          onChange={(e) => {
+            const rect = svgRef.current?.getBoundingClientRect();
+            if (rect) zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, Number(e.target.value));
+          }}
+          className="h-24 w-2 pointer-events-auto"
+          style={{ writingMode: 'vertical-lr' as const, WebkitAppearance: 'slider-vertical' as any }}
+          aria-label="Zoom scale"
+        />
+        <span className="text-[10px] font-mono tabular-nums text-zinc-500 bg-zinc-900/80 px-1 rounded pointer-events-auto">
+          {zoom.toFixed(1)}×
+        </span>
+      </div>
 
       {/* Tooltip — prioritise pin over state */}
       {hoveredPin ? (
@@ -251,6 +433,11 @@ export default function IndiaMap({
           ))}
         </div>
       )}
+
+      {/* Hint */}
+      <p className="text-center text-[10px] text-zinc-600 mt-2">
+        Scroll to zoom · drag to pan · double-click to zoom in
+      </p>
     </div>
   );
 }

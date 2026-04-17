@@ -178,12 +178,18 @@ export default function IndiaMapLive({ pins, className = '', height = '560px', s
                 icon={dotIcon(color)}
               >
                 <Popup>
-                  <div style={{ minWidth: '180px' }}>
+                  <div style={{ minWidth: '200px' }}>
                     <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: 4 }}>{p.label}</div>
                     {p.sub && <div style={{ fontSize: '11px', color: '#555' }}>{p.sub}</div>}
                     <div style={{ fontSize: '10px', color: '#888', marginTop: 4 }}>
                       {p.lat.toFixed(4)}°N, {p.lng.toFixed(4)}°E
                     </div>
+                    {p.code && (
+                      <a href={`/recycling/recyclers/${p.code}`}
+                         style={{ display: 'inline-block', marginTop: 8, padding: '4px 10px', background: '#10b981', color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 500, textDecoration: 'none' }}>
+                        View profile →
+                      </a>
+                    )}
                   </div>
                 </Popup>
               </Marker>

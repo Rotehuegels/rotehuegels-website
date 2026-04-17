@@ -31,7 +31,7 @@ function getColor(recyclers: number): string {
 }
 
 type RawEntry = { state: string; waste_type: string; capacity: number; black_mass_mta?: number | null };
-type Pin = { id?: string; lat: number; lng: number; label: string; sub?: string; waste_type?: string; state?: string; black_mass_mta?: number };
+type Pin = { id?: string; code?: string; lat: number; lng: number; label: string; sub?: string; waste_type?: string; state?: string; black_mass_mta?: number };
 
 const CATEGORY_LABELS: Record<string, string> = {
   'e-waste': 'E-Waste',
@@ -344,6 +344,46 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
             </table>
           </div>
         </div>
+
+        {/* Facility list when a state is selected */}
+        {selectedState && (() => {
+          const facilities = pins
+            .filter(p => p.state === selectedState && (!selectedCategory || matchCategory(p, selectedCategory)))
+            .sort((a, b) => a.label.localeCompare(b.label));
+          return (
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden mb-8">
+              <div className="px-6 py-4 border-b border-zinc-800/60 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-zinc-300">
+                  Facilities in <span className="text-emerald-400">{selectedState}</span>
+                  {selectedCategory && <span className="text-zinc-500"> · {CATEGORY_LABELS[selectedCategory] ?? selectedCategory}</span>}
+                </h2>
+                <span className="text-xs text-zinc-500">{facilities.length} listed</span>
+              </div>
+              <div className="divide-y divide-zinc-800/60 max-h-[500px] overflow-y-auto">
+                {facilities.length === 0 ? (
+                  <div className="p-8 text-center text-sm text-zinc-500">No facilities match the current filter in this state.</div>
+                ) : (
+                  facilities.map(f => (
+                    <Link
+                      key={f.code ?? f.id}
+                      href={f.code ? `/recycling/recyclers/${f.code}` : '#'}
+                      className="flex items-start justify-between gap-4 px-6 py-3 hover:bg-zinc-800/30 transition-colors group"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-zinc-200 group-hover:text-white transition-colors">{f.label}</p>
+                        <p className="text-[11px] text-zinc-500 truncate">{f.sub}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-[10px] font-mono text-zinc-500">{f.code}</p>
+                        <p className="text-[11px] text-emerald-400/70 group-hover:text-emerald-300">View →</p>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Missing states */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">

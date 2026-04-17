@@ -53,6 +53,7 @@ const PIN_COLOR: Record<string, string> = {
 
 export interface MapPin {
   id?: string;
+  code?: string;
   lat: number;
   lng: number;
   label: string;

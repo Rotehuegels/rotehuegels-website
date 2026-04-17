@@ -12,7 +12,7 @@ export default async function RecyclersPage() {
   while (true) {
     const { data } = await supabaseAdmin
       .from('recyclers')
-      .select('id, company_name, city, state, waste_type, capacity_per_month, black_mass_mta, latitude, longitude, is_active')
+      .select('id, recycler_code, company_name, city, state, waste_type, capacity_per_month, black_mass_mta, latitude, longitude, is_active')
       .eq('is_active', true)
       .range(from, from + pageSize - 1);
     if (!data || data.length === 0) break;
@@ -41,6 +41,7 @@ export default async function RecyclersPage() {
     .filter(r => r.latitude != null && r.longitude != null)
     .map(r => ({
       id: r.id,
+      code: r.recycler_code ?? undefined,
       lat: Number(r.latitude),
       lng: Number(r.longitude),
       label: r.company_name ?? 'Facility',

@@ -1,6 +1,6 @@
 'use client';
 
-import { MapContainer, TileLayer, CircleMarker, Popup, LayersControl, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, CircleMarker, Popup, LayersControl, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { MapPin } from './IndiaMap';
 
@@ -61,14 +61,21 @@ export default function IndiaMapLive({ pins, className = '', height = '560px' }:
             />
           </LayersControl.BaseLayer>
 
-          {/* Bhuvan Satellite — ISRO / NRSC, official Indian satellite imagery */}
-          <LayersControl.BaseLayer name="Satellite (Bhuvan · ISRO)">
-            <TileLayer
-              attribution='Imagery &copy; <a href="https://bhuvan.nrsc.gov.in">Bhuvan &mdash; NRSC / ISRO</a>'
-              url="https://bhuvanmaps.nrsc.gov.in/tilecache/tilecache.py/1.0.0/bhuvan_imagery/{z}/{x}/{y}.jpg"
-              maxZoom={15}
+          {/* Bhuvan India boundaries (ISRO / NRSC) — public WMS overlay.
+              Bhuvan's full-resolution satellite tile service requires an
+              NRSC API token for production use. This layer shows India's
+              administrative boundaries served by ISRO's public WMS. */}
+          <LayersControl.Overlay name="Bhuvan India boundaries (ISRO)">
+            <WMSTileLayer
+              url="https://bhuvan-vec1.nrsc.gov.in/bhuvan/wms"
+              layers="india3"
+              format="image/png"
+              transparent
+              version="1.1.1"
+              attribution='Boundaries &copy; <a href="https://bhuvan.nrsc.gov.in">Bhuvan &mdash; NRSC / ISRO</a>'
+              opacity={0.7}
             />
-          </LayersControl.BaseLayer>
+          </LayersControl.Overlay>
 
           {/* Carto dark — monochrome base fits the site's dark theme */}
           <LayersControl.BaseLayer name="Dark (Carto)">

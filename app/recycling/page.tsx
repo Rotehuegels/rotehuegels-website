@@ -16,6 +16,24 @@ export default async function EWasteLandingPage() {
     .select('*', { count: 'exact', head: true })
     .eq('is_active', true);
   const recyclerCount = count ?? 0;
+
+  // Category breakdown for the stats band (union count for black-mass: pure + integrated)
+  const [ewasteCount, batteryCount, nfCount, zincCount, primaryCount, bmRows] = await Promise.all([
+    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).in('waste_type', ['e-waste', 'both']),
+    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).in('waste_type', ['battery', 'both']),
+    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('waste_type', 'hazardous'),
+    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('waste_type', 'zinc-dross'),
+    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('waste_type', 'primary-metal'),
+    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).or('waste_type.eq.black-mass,black_mass_mta.not.is.null'),
+  ]);
+  const stats = [
+    { label: 'E-Waste', value: ewasteCount.count ?? 0, color: 'text-indigo-400' },
+    { label: 'Battery / Li-Ion', value: batteryCount.count ?? 0, color: 'text-amber-400' },
+    { label: 'Black Mass / Mechanical', value: bmRows.count ?? 0, color: 'text-cyan-400' },
+    { label: 'Non-Ferrous Metals', value: nfCount.count ?? 0, color: 'text-purple-400' },
+    { label: 'Zinc Dross', value: zincCount.count ?? 0, color: 'text-orange-400' },
+    { label: 'Primary Metal Producers', value: primaryCount.count ?? 0, color: 'text-rose-400' },
+  ];
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       {/* intentionally empty — disclaimer at bottom */}
@@ -56,6 +74,22 @@ export default async function EWasteLandingPage() {
             >
               View {recyclerCount.toLocaleString('en-IN')} Registered Recyclers
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Category coverage stats */}
+      <section className="py-10 px-6 border-t border-zinc-800 bg-zinc-900/20">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-center text-xs text-zinc-500 uppercase tracking-wider mb-4">Full non-ferrous recycling value chain · directory coverage</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {stats.map(s => (
+              <Link key={s.label} href="/recycling/recyclers"
+                className="group rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 text-center hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors">
+                <p className={`text-2xl font-black ${s.color}`}>{s.value.toLocaleString('en-IN')}</p>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1 group-hover:text-zinc-400 transition-colors">{s.label}</p>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

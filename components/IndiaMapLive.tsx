@@ -1,8 +1,10 @@
 'use client';
 
-import { MapContainer, TileLayer, WMSTileLayer, Marker, Popup, LayersControl, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, Marker, Popup, LayersControl, ZoomControl, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
+import { useEffect, useState, useMemo } from 'react';
+import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -50,14 +52,53 @@ function clusterIconFactory(cluster: { getChildCount: () => number }): L.DivIcon
 const INDIA_CENTER: [number, number] = [22.5, 80.0];
 const INDIA_ZOOM = 5;
 
+function choroplethColor(n: number): string {
+  if (n === 0) return '#3f3f46';   // zinc-700
+  if (n >= 100) return '#065f46';  // emerald-800
+  if (n >= 40)  return '#047857';  // emerald-700
+  if (n >= 20)  return '#059669';  // emerald-600
+  if (n >= 10)  return '#0891b2';  // cyan-600
+  if (n >= 5)   return '#0e7490';  // cyan-700
+  return '#52525b';                 // zinc-600
+}
+
 interface Props {
   pins: MapPin[];
   className?: string;
   height?: string;
+  stateData?: Record<string, { recyclers: number; capacity: number }>;
 }
 
-export default function IndiaMapLive({ pins, className = '', height = '560px' }: Props) {
+export default function IndiaMapLive({ pins, className = '', height = '560px', stateData = {} }: Props) {
   const valid = pins.filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
+  const [geo, setGeo] = useState<FeatureCollection | null>(null);
+
+  useEffect(() => {
+    fetch('/data/india-states-leaflet.geojson')
+      .then(r => r.json())
+      .then(setGeo)
+      .catch(() => setGeo(null));
+  }, []);
+
+  const styleFeature = useMemo(() => (feature?: Feature<Geometry, { name?: string }>) => {
+    const name = feature?.properties?.name ?? '';
+    const n = stateData[name]?.recyclers ?? 0;
+    return {
+      fillColor: choroplethColor(n),
+      fillOpacity: 0.42,
+      color: '#27272a',
+      weight: 0.8,
+    };
+  }, [stateData]);
+
+  const onEach = useMemo(() => (feature: Feature, layer: L.Layer) => {
+    const name = (feature.properties as { name?: string })?.name ?? '?';
+    const data = stateData[name];
+    const count = data?.recyclers ?? 0;
+    const cap = data?.capacity ?? 0;
+    const html = `<div style="min-width:160px"><div style="font-weight:600;font-size:13px;margin-bottom:2px">${name}</div><div style="font-size:11px;color:#555">${count} facilit${count !== 1 ? 'ies' : 'y'} · ${cap.toLocaleString('en-IN')} MTA capacity</div></div>`;
+    (layer as L.Layer & { bindTooltip: (html: string, opts: L.TooltipOptions) => unknown }).bindTooltip(html, { sticky: true, direction: 'top', offset: [0, -6] });
+  }, [stateData]);
 
   return (
     <div className={`relative ${className}`} style={{ height }}>
@@ -103,6 +144,12 @@ export default function IndiaMapLive({ pins, className = '', height = '560px' }:
               opacity={0.85}
             />
           </LayersControl.Overlay>
+
+          {geo && (
+            <LayersControl.Overlay name="State choropleth (by recycler count)">
+              <GeoJSON data={geo} style={styleFeature as unknown as L.StyleFunction} onEachFeature={onEach} />
+            </LayersControl.Overlay>
+          )}
 
           <LayersControl.BaseLayer name="Dark (Carto)">
             <TileLayer

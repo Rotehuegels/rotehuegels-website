@@ -271,6 +271,7 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
             </div>
             <IndiaMapLive
               pins={selectedCategory ? pins.filter(p => matchCategory(p, selectedCategory)) : pins}
+              stateData={Object.fromEntries(STATES.map(s => [s.name, { recyclers: s.recyclers, capacity: s.capacity }]))}
               height="620px"
             />
           </div>

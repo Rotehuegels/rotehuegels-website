@@ -22,6 +22,13 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 // GSTIN format: dd + 5 letters + 4 digits + 1 letter + 1 alphanum + Z + 1 alphanum
 const GSTIN_RE = /\b(\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[A-Z0-9])\b/g;
 
+// Domains known to be unsafe — flagged by Norton / hosting providers / etc.
+// Never fetch these. Extend as new cases surface.
+const DOMAIN_BLOCKLIST = new Set([
+  'nicoex.com',
+  'www.nicoex.com',
+]);
+
 // State name → GSTIN 2-digit prefix (for validation)
 const STATE_CODE = {
   'Jammu & Kashmir': '01', 'Himachal Pradesh': '02', 'Punjab': '03', 'Chandigarh': '04',
@@ -68,6 +75,7 @@ function toUrl(website) {
 async function enrichRow(row) {
   const siteUrl = toUrl(row.website);
   if (!siteUrl) return { error: 'bad url' };
+  if (DOMAIN_BLOCKLIST.has(siteUrl.host)) return { error: 'blocklisted domain' };
   const paths = ['/', '/contact', '/contact-us', '/privacy-policy', '/privacy',
                  '/terms', '/terms-of-use', '/terms-and-conditions',
                  '/legal', '/about', '/about-us', '/invoice-details'];

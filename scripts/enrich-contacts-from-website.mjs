@@ -22,6 +22,12 @@ const sb = createClient(SUPA_URL, SUPA_KEY, { auth: { persistSession: false } })
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
 const FETCH_TIMEOUT_MS = 20_000;
+
+// Domains known to be unsafe — flagged by Norton / hosting providers. Never fetch.
+const DOMAIN_BLOCKLIST = new Set([
+  'nicoex.com',
+  'www.nicoex.com',
+]);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function httpGet(url) {
@@ -125,6 +131,7 @@ function toUrl(website) {
 async function enrichRow(row) {
   const siteUrl = toUrl(row.website);
   if (!siteUrl) return { error: 'bad url' };
+  if (DOMAIN_BLOCKLIST.has(siteUrl.host)) return { error: 'blocklisted domain' };
   const host = siteUrl.host;
   const paths = ['/', '/contact', '/contact-us', '/contact.html', '/about', '/about-us', '/reach-us', '/get-in-touch'];
   let lastStatus = 'no-match';

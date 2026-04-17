@@ -91,7 +91,7 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-12">
         <Link href="/recycling" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
           <ArrowLeft className="h-3 w-3" /> Back to Recycling
         </Link>
@@ -224,7 +224,7 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
                 </label>
               )}
             </div>
-            <div className="max-w-lg mx-auto">
+            <div className="max-w-2xl mx-auto lg:max-w-3xl">
               <IndiaMap
                 onStateClick={(state) => setSelectedState(prev => prev === state ? null : state)}
                 selectedState={selectedState}

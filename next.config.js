@@ -1,5 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // pdfjs-dist (via @react-pdf-viewer) does a runtime `require('canvas')` for
+  // its Node-only fallback. We never render PDFs server-side, so stub canvas
+  // to an empty module — works for both Turbopack and Webpack builds.
+  serverExternalPackages: ['canvas'],
+  webpack: (config) => {
+    config.resolve = config.resolve || {};
+    config.resolve.alias = { ...(config.resolve.alias || {}), canvas: false };
+    return config;
+  },
+  turbopack: {
+    resolveAlias: {
+      canvas: './scripts/empty.js',
+    },
+  },
+
   outputFileTracingIncludes: {
     '/api/private/signature': ['./private/**'],
     '/api/ims/sops/[id]/pdf': [

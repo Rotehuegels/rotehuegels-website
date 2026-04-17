@@ -2,8 +2,19 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Recycle, MapPin, Factory, ArrowLeft, List, Map as MapIcon, X } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { Recycle, MapPin, Factory, ArrowLeft, List, Map as MapIcon, Satellite, X } from 'lucide-react';
 import IndiaMap from '@/components/IndiaMap';
+
+// Leaflet needs `window` — load only on the client after mount
+const IndiaMapLive = dynamic(() => import('@/components/IndiaMapLive'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-[560px] rounded-xl border border-zinc-800 bg-zinc-900/40">
+      <span className="text-sm text-zinc-500">Loading live map…</span>
+    </div>
+  ),
+});
 
 const MISSING_STATES = [
   'Bihar', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Sikkim', 'Tripura',
@@ -39,7 +50,7 @@ interface Props {
 export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [view, setView] = useState<'map' | 'table'>('map');
+  const [view, setView] = useState<'map' | 'live' | 'table'>('map');
   const [showPins, setShowPins] = useState(true);
 
   // Filter by category first
@@ -168,7 +179,15 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
               view === 'map' ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-300'
             }`}
           >
-            <MapIcon className="h-3.5 w-3.5" /> Map View
+            <MapIcon className="h-3.5 w-3.5" /> Choropleth
+          </button>
+          <button
+            onClick={() => setView('live')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              view === 'live' ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-300'
+            }`}
+          >
+            <Satellite className="h-3.5 w-3.5" /> Live Map · Satellite
           </button>
           <button
             onClick={() => setView('table')}
@@ -214,6 +233,24 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
                 showPins={showPins}
               />
             </div>
+          </div>
+        )}
+
+        {/* Live Map View — Leaflet with OSM / Esri Satellite / Bhuvan toggles */}
+        {view === 'live' && (
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 mb-8">
+            <div className="flex items-center justify-between mb-3 px-2">
+              <h2 className="text-sm font-semibold text-zinc-300">
+                Live Map — real GPS, satellite imagery (OSM · Esri · Bhuvan/ISRO)
+              </h2>
+              <span className="text-[10px] text-zinc-500">
+                {(selectedCategory ? pins.filter(p => p.waste_type === selectedCategory) : pins).length} facilities plotted
+              </span>
+            </div>
+            <IndiaMapLive
+              pins={selectedCategory ? pins.filter(p => p.waste_type === selectedCategory) : pins}
+              height="620px"
+            />
           </div>
         )}
 

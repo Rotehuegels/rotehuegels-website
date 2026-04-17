@@ -94,8 +94,16 @@ Agent: Claude (Opus 4.7, 1M context)
 9. NFMR mid-tier contacts — ~680 missing email/phone
 10. Street-level geocoding second pass — most pins at city centroid; needs paid Google Geocoding
 
+### Autonomous work done after user stepped away (second wind)
+- **EWB PDF export route** ✓ — with Print/Download buttons on detail page
+- **GRN PDF export route** ✓ — same pattern
+- **CSV export** on dashboard recycler list ✓
+- **Category coverage stats band** on /recycling landing ✓
+- **Public recycler profile pages** ✓ — `/recycling/recyclers/[code]` with hero, contacts, authorisation, mini-map, related facilities, SEO metadata
+- **Directory drilldown** ✓ — state selection now shows a facility list; each entry links to the profile page. Live Map popups also link.
+- **Tally importer script** ✓ — ready for when user exports Tally ledgers
+
 ### Autonomous work available (no paid service)
-11. **EWB PDF export route** — matching GRN PDF, for internal copies (NIC portal gives the official one, but a house-styled copy fits the ERP)
 12. **Headless-browser scraper** — Playwright for SPA sites (Runaya, Cero, Tata Motors) that failed the current scraper; 18 failed rows could become 10-15 enriched
 13. **Verify prod features** — marker clustering, state choropleth, dup badges, GRN/EWB detail pages on the live deploy
 14. **Chat smoke test** — confirm "which recyclers in Karnataka?" surfaces the platform info on prod

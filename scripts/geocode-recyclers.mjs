@@ -17,14 +17,14 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!URL || !KEY) {
+const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SUPA_URL || !SUPA_KEY) {
   console.error('Missing Supabase env vars. Run with: node --env-file=.env.local scripts/geocode-recyclers.mjs');
   process.exit(1);
 }
 
-const sb = createClient(URL, KEY, { auth: { persistSession: false } });
+const sb = createClient(SUPA_URL, SUPA_KEY, { auth: { persistSession: false } });
 
 const UA = 'Rotehuegels-Recycler-Directory/1.0 (sivakumarshanmugam@outlook.com)';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';

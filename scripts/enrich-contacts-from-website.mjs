@@ -1,31 +1,27 @@
 #!/usr/bin/env node
 /**
- * Enrich `recyclers.email` and `recyclers.phone` for rows that have a
- * `website` set by scraping the homepage + /contact, /contact-us, /about.
- *
- * Conservative extraction:
- *   - Email: must match standard RFC + domain sanity, prefers addresses
- *     that share the site's own domain (avoids emails of third-party
- *     CMS / agency contacts on generic pages).
- *   - Phone: Indian number patterns only (10-digit mobile starting 6-9,
- *     or 11-digit with leading 0, or +91 prefixed).
- *
- * Only updates placeholder-email rows (email LIKE '%placeholder%' etc.).
- * Idempotent — re-running only processes rows still on placeholders.
+ * Enrich recyclers.email / recyclers.phone for rows that have a `website`
+ * set but a placeholder email or missing phone. Walks the homepage and
+ * a handful of common contact paths, extracts the first plausible
+ * corporate email + Indian phone number.
  *
  * Run: node --env-file=.env.local scripts/enrich-contacts-from-website.mjs
+ *
+ * Notes:
+ *  - Uses a real Chrome User-Agent — the bot-identifying UA caused some
+ *    sites (Hindalco, HZL, Vedanta, GEM) to return empty cached responses
+ *    or a WAF challenge page instead of real content.
+ *  - Idempotent. Safe to re-run.
  */
 import { createClient } from '@supabase/supabase-js';
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!URL || !KEY) { console.error('Missing Supabase env'); process.exit(1); }
-const sb = createClient(URL, KEY, { auth: { persistSession: false } });
+const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SUPA_URL || !SUPA_KEY) { console.error('Missing Supabase env'); process.exit(1); }
+const sb = createClient(SUPA_URL, SUPA_KEY, { auth: { persistSession: false } });
 
-const UA = 'Rotehuegels-Recycler-Directory/1.0 (sivakumarshanmugam@outlook.com)';
-const FETCH_TIMEOUT_MS = 25_000;
-const VERBOSE = process.env.VERBOSE === '1';
-
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
+const FETCH_TIMEOUT_MS = 20_000;
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function httpGet(url) {
@@ -35,115 +31,113 @@ async function httpGet(url) {
     const res = await fetch(url, {
       signal: ctl.signal,
       redirect: 'follow',
-      headers: { 'User-Agent': UA, 'Accept-Language': 'en,en-IN;q=0.9' },
+      headers: {
+        'User-Agent': UA,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-IN,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Sec-Ch-Ua': '"Chromium";v="125", "Not.A/Brand";v="24"',
+        'Sec-Ch-Ua-Platform': '"macOS"',
+      },
     });
-    if (!res.ok) { if (VERBOSE) console.log(`    ${url} — HTTP ${res.status}`); return null; }
+    if (!res.ok) return { error: `HTTP ${res.status}` };
     const ct = res.headers.get('content-type') || '';
-    if (!ct.includes('text/html') && !ct.includes('xml')) {
-      if (VERBOSE) console.log(`    ${url} — skip ct=${ct}`);
-      return null;
-    }
-    const html = await res.text();
-    if (VERBOSE) console.log(`    ${url} — ${html.length} bytes`);
-    return html;
-  } catch (e) { if (VERBOSE) console.log(`    ${url} — ERR ${e.message}`); return null; } finally { clearTimeout(t); }
+    if (!ct.includes('text/html') && !ct.includes('xml')) return { error: `ct=${ct}` };
+    return { html: await res.text() };
+  } catch (e) { return { error: e.message }; } finally { clearTimeout(t); }
 }
 
-// Blocklist of third-party / generic / tracker emails
-const EMAIL_BLOCK = new Set([
-  'info@example.com', 'noreply@', 'no-reply@', 'wordpress@', 'admin@wix.com',
-  'sentry@', 'example@example.com', 'test@test.com',
-]);
-const EMAIL_BLOCK_DOMAINS = new Set([
-  'sentry.io', 'wordpress.com', 'wix.com', 'godaddy.com', 'gmail.com', // gmail = personal; catch when we can find a corporate one
-  'example.com', 'domain.com', 'yourdomain.com',
+const BAD_EMAIL_DOMAINS = new Set([
+  'sentry.io', 'wordpress.com', 'wix.com', 'godaddy.com',
+  'example.com', 'domain.com', 'yourdomain.com', 'test.com',
 ]);
 
-function extractEmails(html, siteHost) {
-  const set = new Set();
+function extractEmail(html, siteHost) {
   const re = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,24}/g;
+  const addrs = new Set();
   let m;
   while ((m = re.exec(html)) !== null) {
-    const addr = m[0].toLowerCase();
-    if ([...EMAIL_BLOCK].some(b => addr.startsWith(b) || addr === b)) continue;
-    const domain = addr.split('@')[1];
-    if (EMAIL_BLOCK_DOMAINS.has(domain)) continue;
-    // Skip image/font/js filenames mistakenly matched
-    if (/\.(png|jpg|jpeg|gif|svg|webp|js|css|woff)$/i.test(addr)) continue;
-    set.add(addr);
+    const a = m[0].toLowerCase();
+    if (/\.(png|jpg|jpeg|gif|svg|webp|js|css|woff|ico)$/i.test(a)) continue;
+    if (a.startsWith('noreply@') || a.startsWith('no-reply@')) continue;
+    const domain = a.split('@')[1];
+    if (BAD_EMAIL_DOMAINS.has(domain)) continue;
+    addrs.add(a);
   }
-  const arr = [...set];
-  // Prefer same-domain emails
-  if (siteHost) {
-    const hostKey = siteHost.replace(/^www\./, '');
-    const same = arr.filter(a => a.endsWith('@' + hostKey) || a.endsWith('.' + hostKey));
-    if (same.length) return same[0];
+  const arr = [...addrs];
+  if (!arr.length) return null;
+
+  // 1st pass: prefer same-domain corporate addresses
+  const hostKey = siteHost.replace(/^www\./, '');
+  const same = arr.filter(a => {
+    const d = a.split('@')[1];
+    return d === hostKey || d.endsWith('.' + hostKey);
+  });
+  // 2nd pass: preferred prefixes
+  const preferred = ['info@', 'sales@', 'contact@', 'enquiry@', 'enquiries@', 'hello@', 'care@', 'support@', 'admin@'];
+  function best(list) {
+    for (const p of preferred) {
+      const hit = list.find(a => a.startsWith(p));
+      if (hit) return hit;
+    }
+    return list[0];
   }
-  // Prefer "info@", "sales@", "contact@" over random personal
-  const preferredPrefixes = ['info@', 'sales@', 'contact@', 'enquiry@', 'hello@', 'admin@'];
-  for (const p of preferredPrefixes) {
-    const hit = arr.find(a => a.startsWith(p));
-    if (hit) return hit;
-  }
-  return arr[0] ?? null;
+  if (same.length) return best(same);
+  return best(arr);
 }
 
 function extractPhone(html) {
-  // Indian mobile patterns
-  //   +91 XXXXXXXXXX / +91-XXXXXXXXXX
-  //   0 XXXXXXXXXX / 0-XXXXXXXXXX
-  //   10-digit starting with 6-9
-  const candidates = new Set();
-
-  // +91 variants (allow spaces, dashes, brackets between groups)
-  const reIntl = /\+?91[\s\-().]{0,3}[6-9]\d{2}[\s\-().]{0,3}\d{3}[\s\-().]{0,3}\d{4}/g;
-  for (const m of html.matchAll(reIntl)) candidates.add(m[0]);
-
-  // Landline with STD code: (0XX) XXXXXXXX — at least 10 digits total after leading 0
-  const reStd = /\b0\d{2,4}[\s\-()]*\d{6,8}\b/g;
-  for (const m of html.matchAll(reStd)) candidates.add(m[0]);
-
-  // Plain 10-digit mobile (word-boundary protected)
+  // Priority 1: tel: links — most reliable
+  const tel = html.match(/href=["']tel:([+\d\s\-()]+)["']/gi);
+  if (tel && tel.length) {
+    for (const t of tel) {
+      const num = t.replace(/.*tel:/i, '').replace(/["']$/, '').trim();
+      const digits = num.replace(/\D/g, '');
+      if (digits.length >= 10 && digits.length <= 13) return normalise(digits);
+    }
+  }
+  // Priority 2: 10-digit Indian mobile numbers in body (word-boundary protected)
   const reMobile = /(?<![\d])[6-9]\d{9}(?![\d])/g;
-  for (const m of html.matchAll(reMobile)) candidates.add(m[0]);
-
-  // Pick the first non-junk candidate. Normalise to digits-only with +91 prefix for mobiles.
-  for (const raw of candidates) {
-    const digits = raw.replace(/\D/g, '');
-    // Strip leading 91 / 0
-    let core = digits;
-    if (core.startsWith('91') && core.length === 12) core = core.slice(2);
-    if (core.startsWith('0') && core.length === 11) core = core.slice(1);
-    if (core.length === 10 && /^[6-9]/.test(core)) return '+91' + core;
-    if (core.length >= 10 && core.length <= 11) return raw.trim(); // landline as-is
+  const matches = [...new Set(html.match(reMobile) || [])];
+  if (matches.length) return normalise(matches[0]);
+  // Priority 3: +91 prefixed
+  const reIntl = /\+?91[\s\-().]{0,3}([6-9]\d{9})/g;
+  for (const mm of html.matchAll(reIntl)) {
+    if (mm[1]) return normalise(mm[1]);
   }
   return null;
 }
 
+function normalise(raw) {
+  let d = String(raw).replace(/\D/g, '');
+  if (d.startsWith('91') && d.length === 12) d = d.slice(2);
+  if (d.startsWith('0') && d.length === 11) d = d.slice(1);
+  if (d.length === 10 && /^[6-9]/.test(d)) return '+91' + d;
+  return raw.trim();
+}
+
 function toUrl(website) {
-  let u = website.trim();
+  let u = String(website).trim();
   if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
   try { return new URL(u); } catch { return null; }
 }
 
 async function enrichRow(row) {
   const siteUrl = toUrl(row.website);
-  if (!siteUrl) return null;
+  if (!siteUrl) return { error: 'bad url' };
   const host = siteUrl.host;
-  const paths = ['/', '/contact', '/contact-us', '/contact.html', '/about', '/about-us', '/reach-us'];
+  const paths = ['/', '/contact', '/contact-us', '/contact.html', '/about', '/about-us', '/reach-us', '/get-in-touch'];
+  let lastStatus = 'no-match';
   for (const p of paths) {
     const url = new URL(p, siteUrl).toString();
-    const html = await httpGet(url);
-    if (!html) continue;
-    const email = extractEmails(html, host);
-    const phone = extractPhone(html);
-    if (email || phone) {
-      return { email, phone, source: url };
-    }
-    // tiny gap between requests to same host
-    await sleep(400);
+    const r = await httpGet(url);
+    if (r.error) { lastStatus = r.error; continue; }
+    const email = extractEmail(r.html, host);
+    const phone = extractPhone(r.html);
+    if (email || phone) return { email, phone, source: url };
+    await sleep(350);
   }
-  return null;
+  return { error: lastStatus };
 }
 
 async function fetchTargets() {
@@ -158,7 +152,7 @@ async function fetchTargets() {
 }
 
 async function main() {
-  console.log('Loading recyclers that have a website + placeholder contact…');
+  console.log('Loading rows with website + placeholder contact…');
   const rows = await fetchTargets();
   console.log(`${rows.length} candidates\n`);
 
@@ -166,22 +160,24 @@ async function main() {
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
     const prefix = `[${String(i + 1).padStart(3)}/${rows.length}] ${r.recycler_code}`;
-    const hit = await enrichRow(r);
-    if (!hit || (!hit.email && !hit.phone)) { fail++; console.log(`${prefix} ✗ nothing found on ${r.website}`); continue; }
+    const res = await enrichRow(r);
+    if (res.error) { fail++; console.log(`${prefix} ✗ ${res.error}  (${r.website})`); continue; }
     const update = {};
     const isPlaceholder = (r.email ?? '').match(/(placeholder|^cpcb\.|^mrai\.)/i);
-    if (hit.email && isPlaceholder) update.email = hit.email;
-    if (hit.phone && !r.phone) update.phone = hit.phone;
-    if (Object.keys(update).length === 0) { skip++; console.log(`${prefix} — kept existing (${r.company_name.slice(0,30)})`); continue; }
+    if (res.email && isPlaceholder) update.email = res.email;
+    if (res.phone && !r.phone) update.phone = res.phone;
+    if (!Object.keys(update).length) {
+      skip++; console.log(`${prefix} — existing kept (got ${res.email ?? '-'} / ${res.phone ?? '-'})`); continue;
+    }
     const { error } = await sb.from('recyclers').update(update).eq('id', r.id);
-    if (error) { fail++; console.warn(`${prefix} ✗ update error ${error.message}`); continue; }
+    if (error) { fail++; console.warn(`${prefix} ✗ db ${error.message}`); continue; }
     ok++;
     const parts = [];
     if (update.email) parts.push(`email=${update.email}`);
     if (update.phone) parts.push(`phone=${update.phone}`);
-    console.log(`${prefix} ✓ ${parts.join(' ')}  [${hit.source}]`);
+    console.log(`${prefix} ✓ ${parts.join(' ')}  [${res.source}]`);
   }
-  console.log(`\nDone. updated=${ok}, skipped=${skip}, failed=${fail}`);
+  console.log(`\nDone. updated=${ok} skipped=${skip} failed=${fail}`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

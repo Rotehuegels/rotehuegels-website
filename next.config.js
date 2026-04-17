@@ -58,6 +58,10 @@ const nextConfig = {
       './public/fonts/Roboto/**',
       './public/assets/Logo2_black.png',
     ],
+    '/api/accounts/balance-sheet/pdf': [
+      './public/fonts/Roboto/**',
+      './public/assets/Logo2_black.png',
+    ],
     '/api/accounts/customers/[id]/statement/pdf': [
       './public/fonts/Roboto/**',
       './public/assets/Logo2_black.png',
@@ -182,6 +186,7 @@ const nextConfig = {
       { source: '/d/gst', destination: '/dashboard/accounts/gst' },
       { source: '/d/gst/filing', destination: '/dashboard/accounts/gst/filing' },
       { source: '/d/pl', destination: '/dashboard/accounts/pl' },
+      { source: '/d/balance-sheet', destination: '/dashboard/accounts/balance-sheet' },
       { source: '/d/trial-balance', destination: '/dashboard/accounts/trial-balance' },
       { source: '/d/cash-flow', destination: '/dashboard/accounts/cash-flow' },
       { source: '/d/pl/preview', destination: '/dashboard/accounts/pl/preview' },

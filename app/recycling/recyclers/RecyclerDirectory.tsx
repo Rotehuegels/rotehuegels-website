@@ -27,6 +27,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'both': 'E-Waste + Battery',
   'hazardous': 'Non-Ferrous Metals',
   'zinc-dross': 'Zinc Dross / Zinc Ash',
+  'primary-metal': 'Primary Metal Producers',
 };
 
 interface Props {
@@ -87,8 +88,8 @@ export default function RecyclerDirectory({ rawList }: Props) {
           <h1 className="text-2xl font-bold">Registered Recyclers & Reprocessors in India</h1>
         </div>
         <p className="text-sm text-zinc-500 mb-8">
-          Directory of {fmtNum(TOTAL_RECYCLERS)} authorized facilities across {statesCount} states — e-waste, battery, non-ferrous metals,
-          zinc dross, copper, brass, and material recyclers. Data sourced from CPCB, SPCB, MPCB, MoEF registries.
+          Directory of {fmtNum(TOTAL_RECYCLERS)} authorised facilities across {statesCount} states — e-waste, battery, non-ferrous metals,
+          zinc dross, copper, brass, material recyclers, and primary metal producers. Data sourced from CPCB, SPCB, MPCB, MoEF registries.
         </p>
 
         {/* Summary stats */}

@@ -10,11 +10,12 @@ const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-s
 const input = 'w-full rounded-xl bg-zinc-900 border border-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50';
 
 const WASTE_BADGE: Record<string, { cls: string; label: string }> = {
-  'e-waste':   { cls: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20', label: 'E-Waste' },
-  'battery':   { cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20', label: 'Battery' },
-  'zinc-dross': { cls: 'bg-orange-500/10 text-orange-400 border-orange-500/20', label: 'Zinc Dross' },
-  'hazardous': { cls: 'bg-purple-500/10 text-purple-400 border-purple-500/20', label: 'Non-Ferrous' },
-  'both':      { cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', label: 'E-Waste + Battery' },
+  'e-waste':       { cls: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20', label: 'E-Waste' },
+  'battery':       { cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20', label: 'Battery' },
+  'zinc-dross':    { cls: 'bg-orange-500/10 text-orange-400 border-orange-500/20', label: 'Zinc Dross' },
+  'hazardous':     { cls: 'bg-purple-500/10 text-purple-400 border-purple-500/20', label: 'Non-Ferrous' },
+  'both':          { cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', label: 'E-Waste + Battery' },
+  'primary-metal': { cls: 'bg-rose-500/10 text-rose-400 border-rose-500/20', label: 'Primary Metal' },
 };
 
 type Recycler = Record<string, any>;
@@ -119,6 +120,7 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
               <option value="both">E-Waste + Battery</option>
               <option value="zinc-dross">Zinc Dross / Zinc Ash</option>
               <option value="hazardous">Non-Ferrous Metals</option>
+              <option value="primary-metal">Primary Metal Producers</option>
             </select>
             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-500 pointer-events-none" />
           </div>

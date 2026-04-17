@@ -45,6 +45,7 @@ export default async function RecyclersPage() {
       label: r.company_name ?? 'Facility',
       sub: [r.city, r.state].filter(Boolean).join(', '),
       waste_type: r.waste_type ?? undefined,
+      state: r.state ?? undefined,
     }));
 
   return <RecyclerDirectory rawList={rawList} pins={pins} />;

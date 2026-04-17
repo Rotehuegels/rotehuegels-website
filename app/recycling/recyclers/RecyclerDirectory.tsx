@@ -20,7 +20,7 @@ function getColor(recyclers: number): string {
 }
 
 type RawEntry = { state: string; waste_type: string; capacity: number };
-type Pin = { id?: string; lat: number; lng: number; label: string; sub?: string; waste_type?: string };
+type Pin = { id?: string; lat: number; lng: number; label: string; sub?: string; waste_type?: string; state?: string };
 
 const CATEGORY_LABELS: Record<string, string> = {
   'e-waste': 'E-Waste',

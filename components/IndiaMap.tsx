@@ -57,6 +57,100 @@ export interface MapPin {
   label: string;
   sub?: string;
   waste_type?: string;
+  state?: string;
+}
+
+// Reverse map: display name → ISO code so we can look up a pin's state polygon
+const NAME_TO_CODE: Record<string, string> = Object.fromEntries(
+  Object.entries(CODE_TO_NAME).map(([code, name]) => [name, code])
+);
+
+// Parse an SVG path "M x,y L x,y L … Z" into an array of sub-polygons.
+function parsePathPolygons(d: string): Array<Array<[number, number]>> {
+  const subpaths: Array<Array<[number, number]>> = [];
+  let current: Array<[number, number]> = [];
+  const tokens = d.matchAll(/([MLZ])\s*(-?\d+(?:\.\d+)?)?\s*,?\s*(-?\d+(?:\.\d+)?)?/gi);
+  for (const t of tokens) {
+    const cmd = t[1].toUpperCase();
+    if (cmd === 'M') {
+      if (current.length) subpaths.push(current);
+      current = [[parseFloat(t[2]), parseFloat(t[3])]];
+    } else if (cmd === 'L') {
+      current.push([parseFloat(t[2]), parseFloat(t[3])]);
+    } else if (cmd === 'Z') {
+      if (current.length) subpaths.push(current);
+      current = [];
+    }
+  }
+  if (current.length) subpaths.push(current);
+  return subpaths.filter(p => p.length >= 3);
+}
+
+function pointInPolygon(x: number, y: number, poly: Array<[number, number]>): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    const intersect = ((yi > y) !== (yj > y)) && (x < ((xj - xi) * (y - yi)) / (yj - yi + 1e-12) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+function pointInAny(x: number, y: number, polys: Array<Array<[number, number]>>): boolean {
+  for (const p of polys) if (pointInPolygon(x, y, p)) return true;
+  return false;
+}
+
+// Distance² from a point to a line segment, and the nearest point on that segment.
+function nearestOnSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number): [number, number, number] {
+  const dx = bx - ax, dy = by - ay;
+  const len2 = dx * dx + dy * dy;
+  let t = len2 === 0 ? 0 : ((px - ax) * dx + (py - ay) * dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  const cx = ax + t * dx, cy = ay + t * dy;
+  return [cx, cy, (px - cx) ** 2 + (py - cy) ** 2];
+}
+
+// Snap a point to the nearest boundary of the polygon set (closest edge).
+// Returns [x, y, distSq]. If already inside, returns the input unchanged with distSq=0.
+function snapToPolygons(x: number, y: number, polys: Array<Array<[number, number]>>): [number, number, number] {
+  if (pointInAny(x, y, polys)) return [x, y, 0];
+  let best: [number, number, number] = [x, y, Infinity];
+  for (const poly of polys) {
+    for (let i = 0; i < poly.length; i++) {
+      const [ax, ay] = poly[i];
+      const [bx, by] = poly[(i + 1) % poly.length];
+      const [nx, ny, d2] = nearestOnSegment(x, y, ax, ay, bx, by);
+      if (d2 < best[2]) best = [nx, ny, d2];
+    }
+  }
+  // Nudge ~2 px inward from the boundary so the pin sits visibly inside, not on the line
+  const d = Math.sqrt(best[2]);
+  if (d > 0) {
+    // push toward the polygon's own vicinity by moving toward the centre of the first polygon
+    const cen = polyCentroid(polys[0]);
+    const vx = cen[0] - best[0], vy = cen[1] - best[1];
+    const vn = Math.sqrt(vx * vx + vy * vy) || 1;
+    const push = 2;
+    best[0] += (vx / vn) * push;
+    best[1] += (vy / vn) * push;
+  }
+  return best;
+}
+
+function polyCentroid(poly: Array<[number, number]>): [number, number] {
+  let a = 0, cx = 0, cy = 0;
+  const n = poly.length;
+  for (let i = 0; i < n; i++) {
+    const [x0, y0] = poly[i];
+    const [x1, y1] = poly[(i + 1) % n];
+    const cross = x0 * y1 - x1 * y0;
+    a += cross; cx += (x0 + x1) * cross; cy += (y0 + y1) * cross;
+  }
+  a /= 2;
+  if (Math.abs(a) < 1e-6) return poly[0];
+  return [cx / (6 * a), cy / (6 * a)];
 }
 
 // Base (un-zoomed) viewBox
@@ -214,12 +308,34 @@ export default function IndiaMap({
   const hoveredData = hoveredState ? stateData[hoveredState] : null;
   const fmtNum = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 
+  // Per-state polygon set (cached after paths load).
+  const statePolys = useMemo(() => {
+    const out: Record<string, Array<Array<[number, number]>>> = {};
+    for (const [code, d] of Object.entries(paths)) {
+      out[code] = parsePathPolygons(d);
+    }
+    return out;
+  }, [paths]);
+
   const projected = useMemo(() => pins
     .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng))
     .map(p => {
-      const [x, y] = project(p.lat, p.lng);
-      return { ...p, x, y };
-    }), [pins]);
+      const [rawX, rawY] = project(p.lat, p.lng);
+      // If pin declares a state, snap into that state's polygon set when the
+      // projected point falls outside (common for coastal facilities the
+      // affine pushes into the ocean, and for Nominatim state-fallback hits).
+      let x = rawX, y = rawY;
+      let snapped = false;
+      if (p.state) {
+        const code = NAME_TO_CODE[p.state];
+        const polys = code ? statePolys[code] : undefined;
+        if (polys && polys.length) {
+          const [sx, sy, d2] = snapToPolygons(rawX, rawY, polys);
+          if (d2 > 0) { x = sx; y = sy; snapped = true; }
+        }
+      }
+      return { ...p, x, y, snapped };
+    }), [pins, statePolys]);
 
   // Scale strokes + pin sizes inversely with zoom so they stay visually constant
   const invZoom = 1 / zoom;

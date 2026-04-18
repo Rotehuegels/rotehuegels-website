@@ -1,6 +1,6 @@
 'use client';
 
-import { MapContainer, TileLayer, Marker, Popup, LayersControl, ZoomControl, GeoJSON } from 'react-leaflet';
+import { MapContainer, WMSTileLayer, Marker, Popup, LayersControl, ZoomControl, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import { useEffect, useState, useMemo } from 'react';
@@ -116,43 +116,30 @@ export default function IndiaMapLive({ pins, className = '', height = '560px', s
       >
         <ZoomControl position="topright" />
 
-        <LayersControl position="topleft">
-          <LayersControl.BaseLayer checked name="OpenStreetMap">
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              maxZoom={19}
-            />
-          </LayersControl.BaseLayer>
+        {/* Only ISRO/Bhuvan as the base — OSM/Esri/Carto are not approved
+            for our Survey-of-India-compliant presentation. `basemap:admin_group_ntl`
+            is Bhuvan's national administrative base map; it is slower than
+            commercial tiles (~3-5s per 256px tile) but is the mandated source. */}
+        <WMSTileLayer
+          url="https://bhuvan-vec1.nrsc.gov.in/bhuvan/wms"
+          layers="basemap:admin_group_ntl"
+          format="image/png"
+          version="1.1.1"
+          attribution='Base &copy; <a href="https://bhuvan.nrsc.gov.in">Bhuvan &mdash; NRSC / ISRO</a> (Survey of India)'
+          maxZoom={18}
+        />
 
-          <LayersControl.BaseLayer name="Satellite (Esri)">
-            <TileLayer
-              attribution='Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community'
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              maxZoom={18}
-            />
-          </LayersControl.BaseLayer>
-
-          <LayersControl.BaseLayer name="Dark (Carto)">
-            <TileLayer
-              attribution='&copy; OpenStreetMap contributors &copy; <a href="https://carto.com">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              maxZoom={20}
-              subdomains="abcd"
-            />
-          </LayersControl.BaseLayer>
-
-          {geo && (
+        {geo && (
+          <LayersControl position="topleft">
             <LayersControl.Overlay name="State choropleth (by recycler count)">
               <GeoJSON data={geo} style={styleFeature as unknown as L.StyleFunction} onEachFeature={onEach} />
             </LayersControl.Overlay>
-          )}
-        </LayersControl>
+          </LayersControl>
+        )}
 
         {/* Always-on India borders — rendered from the local Survey-of-India-
-            compliant GeoJSON so it works over every base layer with no
-            external dependency. No fill so base tiles stay crisp; thin amber
-            outline is visible on OSM, Satellite and Dark tiles alike. */}
+            compliant GeoJSON. No fill so base tiles stay crisp; thin black
+            outline for maximum contrast on Bhuvan's light administrative map. */}
         {geo && (
           <GeoJSON
             key="india-borders-always-on"
@@ -161,7 +148,7 @@ export default function IndiaMapLive({ pins, className = '', height = '560px', s
             style={() => ({
               fill: false,
               fillOpacity: 0,
-              color: '#fbbf24',
+              color: '#000000',
               weight: 1.1,
               opacity: 0.85,
             })}

@@ -4,17 +4,27 @@ import RecyclerDirectory from './RecyclerDirectory';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// Public page: only aggregate counts are exposed. Company-level identifiers
-// (name, code, contact, address, GPS coordinates) stay internal — see
-// /dashboard/recycling/recyclers for the authenticated full view.
+// Public page: aggregate counts + pins showing company name on hover
+// (same info the govt CPCB/SPCB registries publish). What stays internal
+// is contact info (email/phone), GSTIN/CIN, recycler_code, and the full
+// profile page — those live under /d/recycling/recyclers.
 export default async function RecyclersPage() {
-  let allRecyclers: { state: string | null; waste_type: string | null; capacity_per_month: string | null; black_mass_mta: number | string | null }[] = [];
+  let allRecyclers: {
+    company_name: string | null;
+    state: string | null;
+    city: string | null;
+    waste_type: string | null;
+    capacity_per_month: string | null;
+    black_mass_mta: number | string | null;
+    latitude: number | string | null;
+    longitude: number | string | null;
+  }[] = [];
   let from = 0;
   const pageSize = 1000;
   while (true) {
     const { data } = await supabaseAdmin
       .from('recyclers')
-      .select('state, waste_type, capacity_per_month, black_mass_mta')
+      .select('company_name, state, city, waste_type, capacity_per_month, black_mass_mta, latitude, longitude')
       .eq('is_active', true)
       .range(from, from + pageSize - 1);
     if (!data || data.length === 0) break;
@@ -37,5 +47,20 @@ export default async function RecyclersPage() {
     })(),
   }));
 
-  return <RecyclerDirectory rawList={rawList} />;
+  // Pin payload: lat/lng + company_name + city/state + waste_type. No
+  // recycler_code / id / contact info — so the map can't link to the
+  // internal profile page or leak contact details.
+  const pins = allRecyclers
+    .filter(r => r.latitude != null && r.longitude != null)
+    .map(r => ({
+      lat: Number(r.latitude),
+      lng: Number(r.longitude),
+      label: r.company_name ?? 'Recycling facility',
+      sub: [r.city, r.state].filter(Boolean).join(', '),
+      waste_type: r.waste_type ?? undefined,
+      state: r.state ?? undefined,
+      black_mass_mta: r.black_mass_mta ? Number(r.black_mass_mta) : undefined,
+    }));
+
+  return <RecyclerDirectory rawList={rawList} pins={pins} />;
 }

@@ -20,6 +20,8 @@ function getColor(recyclers: number): string {
 }
 
 type RawEntry = { state: string; waste_type: string; capacity: number; black_mass_mta?: number | null };
+// Public pin: position + category + state only — no id, code, name, sub.
+type PublicPin = { lat: number; lng: number; label: string; sub?: string; waste_type?: string; state?: string; black_mass_mta?: number };
 
 const CATEGORY_LABELS: Record<string, string> = {
   'e-waste': 'E-Waste',
@@ -31,13 +33,25 @@ const CATEGORY_LABELS: Record<string, string> = {
   'primary-metal': 'Primary Metal Producers',
 };
 
-interface Props {
-  rawList: RawEntry[];
+function matchCategory(
+  record: { waste_type?: string; black_mass_mta?: number | null },
+  category: string,
+): boolean {
+  if (category === 'black-mass') {
+    return record.waste_type === 'black-mass' || (record.black_mass_mta ?? 0) > 0;
+  }
+  return record.waste_type === category;
 }
 
-export default function RecyclerDirectory({ rawList }: Props) {
+interface Props {
+  rawList: RawEntry[];
+  pins?: PublicPin[];
+}
+
+export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [view, setView] = useState<'map' | 'table'>('map');
+  const [showPins, setShowPins] = useState(true);
 
   // Filter by category first. "black-mass" category is special: it unions
   // pure-mechanical shredders (waste_type='black-mass') with integrated
@@ -184,15 +198,30 @@ export default function RecyclerDirectory({ rawList }: Props) {
           </button>
         </div>
 
-        {/* Map View — aggregate choropleth only, no GPS pins, no state drilldown */}
+        {/* Map — choropleth + anonymised GPS dots. Hover shows category name
+            and state only; no company identifiers. No click-through to a
+            facility profile. */}
         {view === 'map' && (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-zinc-300">State-wise Recycler Density</h2>
+              {pins.length > 0 && (
+                <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showPins}
+                    onChange={e => setShowPins(e.target.checked)}
+                    className="accent-emerald-500"
+                  />
+                  Show {pins.filter(p => !selectedCategory || matchCategory(p, selectedCategory)).length} facility locations
+                </label>
+              )}
             </div>
             <div className="max-w-2xl mx-auto lg:max-w-3xl">
               <IndiaMap
                 stateData={Object.fromEntries(STATES.map(s => [s.name, { recyclers: s.recyclers, capacity: s.capacity }]))}
+                pins={selectedCategory ? pins.filter(p => matchCategory(p, selectedCategory)) : pins}
+                showPins={showPins}
               />
             </div>
           </div>

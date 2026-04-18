@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * Scrape GSTINs from company websites. Starts with largest-capacity rows
- * so the most valuable facilities get enriched first.
+ * Scrape GSTIN candidates from company websites and stage them in
+ * recycler_gstin_candidates. A separate validator script promotes them to
+ * recyclers.gstin only after gstincheck.co.in confirms a name match.
  *
- * Target pages (GSTINs are usually on): /, /contact, /contact-us,
- * /privacy-policy, /terms, /terms-of-use, /legal, /about, /invoice.
+ * Target pages: /, /contact, /contact-us, /privacy-policy, /terms,
+ * /terms-of-use, /legal, /about, /invoice-details.
  *
  * Run: node --env-file=.env.local scripts/enrich-gstin.mjs
  */
@@ -79,24 +80,24 @@ async function enrichRow(row) {
   const paths = ['/', '/contact', '/contact-us', '/privacy-policy', '/privacy',
                  '/terms', '/terms-of-use', '/terms-and-conditions',
                  '/legal', '/about', '/about-us', '/invoice-details'];
-  const all = new Set();
+  const found = []; // { gstin, sourceUrl }
+  const seen = new Set();
   let lastStatus = 'no-match';
   for (const p of paths) {
     const url = new URL(p, siteUrl).toString();
     const r = await httpGet(url);
     if (r.error) { lastStatus = r.error; continue; }
     const gstins = findGstins(r.html);
-    for (const g of gstins) all.add(g);
+    for (const g of gstins) {
+      if (seen.has(g)) continue;
+      seen.add(g);
+      found.push({ gstin: g, sourceUrl: url });
+    }
     await sleep(250);
-    if (all.size) break; // first hit is usually enough
+    if (found.length) break; // first hit is usually enough
   }
-  if (!all.size) return { error: lastStatus };
-
-  const list = [...all];
-  const expected = STATE_CODE[row.state];
-  // Prefer one that matches the declared state
-  const matching = list.find(g => g.startsWith(expected ?? 'ZZ'));
-  return { gstin: matching ?? list[0], candidates: list };
+  if (!found.length) return { error: lastStatus };
+  return { candidates: found };
 }
 
 async function fetchTargets() {
@@ -129,7 +130,7 @@ async function main() {
   const rows = await fetchTargets();
   console.log(`${rows.length} rows with website and no GSTIN\n`);
 
-  let ok = 0, fail = 0;
+  let inserted = 0, rowsWithHits = 0, fail = 0;
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
     const prefix = `[${String(i + 1).padStart(3)}/${rows.length}] ${r.recycler_code.padEnd(14)}`;
@@ -137,14 +138,27 @@ async function main() {
     if (res.error) { fail++; console.log(`${prefix} ✗ ${res.error}`); continue; }
 
     const expected = STATE_CODE[r.state];
-    const matches = expected && res.gstin.startsWith(expected);
-    const tag = matches ? '✓' : '⚠ state-mismatch';
-    const { error } = await sb.from('recyclers').update({ gstin: res.gstin }).eq('id', r.id);
+    const payload = res.candidates.map(c => ({
+      recycler_id: r.id,
+      candidate_gstin: c.gstin,
+      source: 'website',
+      source_url: c.sourceUrl,
+      source_context: `regex-matched on ${c.sourceUrl}`,
+      state_prefix_match: expected ? c.gstin.startsWith(expected) : null,
+    }));
+    const { error, count } = await sb
+      .from('recycler_gstin_candidates')
+      .upsert(payload, { onConflict: 'recycler_id,candidate_gstin', ignoreDuplicates: true, count: 'exact' });
     if (error) { fail++; console.warn(`${prefix} ✗ db ${error.message}`); continue; }
-    ok++;
-    console.log(`${prefix} ${tag} ${res.gstin} (expected prefix ${expected ?? '?'}) — ${r.company_name.slice(0, 40)}${res.candidates.length > 1 ? ` [+${res.candidates.length - 1} other]` : ''}`);
+    inserted += count ?? 0;
+    rowsWithHits++;
+    const tags = res.candidates.map(c => {
+      const match = expected && c.gstin.startsWith(expected);
+      return `${match ? '✓' : '⚠'}${c.gstin}`;
+    }).join(' ');
+    console.log(`${prefix} ${tags} (expected ${expected ?? '?'}) — ${r.company_name.slice(0, 40)}`);
   }
-  console.log(`\nDone. updated=${ok} failed=${fail}`);
+  console.log(`\nDone. rows_with_hits=${rowsWithHits} candidates_inserted=${inserted} failed=${fail}`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

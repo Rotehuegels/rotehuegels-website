@@ -133,7 +133,12 @@ export default function IndiaMapLive({ pins, className = '', height = '560px', s
             />
           </LayersControl.BaseLayer>
 
-          <LayersControl.Overlay checked name="🇮🇳 India boundaries — Survey of India / ISRO Bhuvan (official)">
+          {/* Bhuvan WMS is off by default — the NRSC GetMap endpoint times out
+              (verified 2026-04-18, GetCapabilities 5s but GetMap >15s per tile),
+              which blocks the browser's connection pool and makes the whole map
+              appear broken. Users can opt in when they need the Survey-of-India
+              -approved boundaries. */}
+          <LayersControl.Overlay name="🇮🇳 India boundaries — Survey of India / ISRO Bhuvan (slow; opt-in)">
             <WMSTileLayer
               url="https://bhuvan-vec1.nrsc.gov.in/bhuvan/wms"
               layers="india3"
@@ -199,8 +204,8 @@ export default function IndiaMapLive({ pins, className = '', height = '560px', s
       </MapContainer>
 
       {/* Border disclaimer */}
-      <div className="absolute top-2 right-2 z-[1000] bg-amber-500/10 border border-amber-500/30 rounded-lg px-2 py-1 text-[10px] text-amber-300 backdrop-blur-sm max-w-[200px] leading-tight">
-        Official India boundaries overlaid from <a href="https://bhuvan.nrsc.gov.in" className="underline" target="_blank" rel="noopener noreferrer">Bhuvan / ISRO</a> (Survey of India)
+      <div className="absolute top-2 right-2 z-[1000] bg-amber-500/10 border border-amber-500/30 rounded-lg px-2 py-1 text-[10px] text-amber-300 backdrop-blur-sm max-w-[220px] leading-tight">
+        For Survey-of-India-approved borders, enable the Bhuvan overlay in the layers control (slow; may take several seconds to load).
       </div>
 
       {/* Pin legend */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { MapContainer, TileLayer, WMSTileLayer, Marker, Popup, LayersControl, ZoomControl, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, LayersControl, ZoomControl, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import { useEffect, useState, useMemo } from 'react';
@@ -133,29 +133,6 @@ export default function IndiaMapLive({ pins, className = '', height = '560px', s
             />
           </LayersControl.BaseLayer>
 
-          {/* Bhuvan WMS is off by default — the NRSC GetMap endpoint times out
-              (verified 2026-04-18, GetCapabilities 5s but GetMap >15s per tile),
-              which blocks the browser's connection pool and makes the whole map
-              appear broken. Users can opt in when they need the Survey-of-India
-              -approved boundaries. */}
-          <LayersControl.Overlay name="🇮🇳 India boundaries — Survey of India / ISRO Bhuvan (slow; opt-in)">
-            <WMSTileLayer
-              url="https://bhuvan-vec1.nrsc.gov.in/bhuvan/wms"
-              layers="india3"
-              format="image/png"
-              transparent
-              version="1.1.1"
-              attribution='Boundaries &copy; <a href="https://bhuvan.nrsc.gov.in">Bhuvan &mdash; NRSC / ISRO</a> (Survey of India)'
-              opacity={0.85}
-            />
-          </LayersControl.Overlay>
-
-          {geo && (
-            <LayersControl.Overlay name="State choropleth (by recycler count)">
-              <GeoJSON data={geo} style={styleFeature as unknown as L.StyleFunction} onEachFeature={onEach} />
-            </LayersControl.Overlay>
-          )}
-
           <LayersControl.BaseLayer name="Dark (Carto)">
             <TileLayer
               attribution='&copy; OpenStreetMap contributors &copy; <a href="https://carto.com">CARTO</a>'
@@ -164,7 +141,32 @@ export default function IndiaMapLive({ pins, className = '', height = '560px', s
               subdomains="abcd"
             />
           </LayersControl.BaseLayer>
+
+          {geo && (
+            <LayersControl.Overlay name="State choropleth (by recycler count)">
+              <GeoJSON data={geo} style={styleFeature as unknown as L.StyleFunction} onEachFeature={onEach} />
+            </LayersControl.Overlay>
+          )}
         </LayersControl>
+
+        {/* Always-on India borders — rendered from the local Survey-of-India-
+            compliant GeoJSON so it works over every base layer with no
+            external dependency. No fill so base tiles stay crisp; thin amber
+            outline is visible on OSM, Satellite and Dark tiles alike. */}
+        {geo && (
+          <GeoJSON
+            key="india-borders-always-on"
+            data={geo}
+            interactive={false}
+            style={() => ({
+              fill: false,
+              fillOpacity: 0,
+              color: '#fbbf24',
+              weight: 1.1,
+              opacity: 0.85,
+            })}
+          />
+        )}
 
         {/* Facility pins — clustered at lower zoom levels for performance */}
         <MarkerClusterGroup
@@ -202,11 +204,6 @@ export default function IndiaMapLive({ pins, className = '', height = '560px', s
           })}
         </MarkerClusterGroup>
       </MapContainer>
-
-      {/* Border disclaimer */}
-      <div className="absolute top-2 right-2 z-[1000] bg-amber-500/10 border border-amber-500/30 rounded-lg px-2 py-1 text-[10px] text-amber-300 backdrop-blur-sm max-w-[220px] leading-tight">
-        For Survey-of-India-approved borders, enable the Bhuvan overlay in the layers control (slow; may take several seconds to load).
-      </div>
 
       {/* Pin legend */}
       {valid.length > 0 && (

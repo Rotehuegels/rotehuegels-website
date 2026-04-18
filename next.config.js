@@ -120,6 +120,7 @@ const nextConfig = {
       { source: '/d/recycling', destination: '/dashboard/recycling' },
       { source: '/d/recycling/requests', destination: '/dashboard/recycling/requests' },
       { source: '/d/recycling/recyclers', destination: '/dashboard/recycling/recyclers' },
+      { source: '/d/recycling/recyclers/:code', destination: '/dashboard/recycling/recyclers/:code' },
 
       // ── IMS shortcuts ─────────────────────────────────────────────
       { source: '/d/ims', destination: '/dashboard/ims' },

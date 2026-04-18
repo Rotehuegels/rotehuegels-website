@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import {
   Factory, CheckCircle2, MapPin, Shield, Mail, Phone, Globe,
   Battery, Recycle, Search, Filter, X, ChevronDown, AlertTriangle, FileDown,
+  ExternalLink,
 } from 'lucide-react';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -229,8 +231,11 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-mono text-amber-400 font-bold shrink-0">{r.recycler_code}</span>
-                        <span className="text-sm font-medium text-white truncate">{r.company_name}</span>
+                        <Link href={`/d/recycling/recyclers/${r.recycler_code}`} className="text-xs font-mono text-amber-400 hover:text-amber-300 font-bold shrink-0">{r.recycler_code}</Link>
+                        <Link href={`/d/recycling/recyclers/${r.recycler_code}`} className="text-sm font-medium text-white hover:text-indigo-300 truncate inline-flex items-center gap-1 group">
+                          {r.company_name}
+                          <ExternalLink className="h-3 w-3 text-zinc-600 group-hover:text-indigo-300 shrink-0" />
+                        </Link>
                         {r.is_verified && (
                           <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2 py-0.5 shrink-0">
                             <CheckCircle2 className="h-3 w-3" /> Verified

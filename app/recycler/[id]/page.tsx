@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { verifyToken } from '@/app/api/ewaste/recyclers/verify/route';
+import { verifyToken } from '@/lib/recyclerSession';
 import {
   Factory, CheckCircle2, Clock, Truck, Package, XCircle,
   MapPin, Phone, Mail, Calendar,

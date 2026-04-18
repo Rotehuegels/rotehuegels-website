@@ -4,6 +4,17 @@ const nextConfig = {
   // its Node-only fallback. We never render PDFs server-side, so stub canvas
   // to an empty module — works for both Turbopack and Webpack builds.
   serverExternalPackages: ['canvas'],
+  // Turbopack's production chunk splitter fails for these packages with
+  // "module factory is not available" when they're loaded via next/dynamic
+  // (they use older CJS patterns Turbopack doesn't correctly register in
+  // async chunks). Transpiling them through Next's full pipeline avoids it.
+  transpilePackages: [
+    'leaflet',
+    'leaflet.markercluster',
+    'react-leaflet',
+    '@react-leaflet/core',
+    'react-leaflet-cluster',
+  ],
   webpack: (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = { ...(config.resolve.alias || {}), canvas: false };

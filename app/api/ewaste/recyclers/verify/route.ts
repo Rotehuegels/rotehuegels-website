@@ -1,24 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import crypto from 'crypto';
+import { signToken } from '@/lib/recyclerSession';
 
 export const dynamic = 'force-dynamic';
-
-const SECRET = process.env.RECYCLER_SESSION_SECRET ?? process.env.NEXTAUTH_SECRET ?? 'rh-recycler-portal-2026';
-
-/** Sign a recycler ID so the cookie can't be forged */
-function signToken(id: string): string {
-  const hmac = crypto.createHmac('sha256', SECRET).update(id).digest('hex');
-  return `${id}:${hmac}`;
-}
-
-/** Verify a signed token — returns recycler ID or null */
-export function verifyToken(token: string): string | null {
-  const [id, sig] = token.split(':');
-  if (!id || !sig) return null;
-  const expected = crypto.createHmac('sha256', SECRET).update(id).digest('hex');
-  return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected)) ? id : null;
-}
 
 // GET — verify recycler by code + email, set session cookie
 export async function GET(req: Request) {

@@ -61,7 +61,7 @@ function matchCategory(
 export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [view, setView] = useState<'map' | 'live' | 'table'>('map');
+  const [view, setView] = useState<'map' | 'live' | 'table'>('live');
   const [showPins, setShowPins] = useState(true);
 
   // Filter by category first. "black-mass" category is special: it unions
@@ -196,20 +196,20 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
         {/* View toggle */}
         <div className="flex items-center gap-2 mb-6">
           <button
-            onClick={() => setView('map')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              view === 'map' ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-300'
-            }`}
-          >
-            <MapIcon className="h-3.5 w-3.5" /> Choropleth
-          </button>
-          <button
             onClick={() => setView('live')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               view === 'live' ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-300'
             }`}
           >
             <Satellite className="h-3.5 w-3.5" /> Live Map · Satellite
+          </button>
+          <button
+            onClick={() => setView('map')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              view === 'map' ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-300'
+            }`}
+          >
+            <MapIcon className="h-3.5 w-3.5" /> Choropleth
           </button>
           <button
             onClick={() => setView('table')}

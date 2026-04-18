@@ -20,7 +20,6 @@ function getColor(recyclers: number): string {
 }
 
 type RawEntry = { state: string; waste_type: string; capacity: number; black_mass_mta?: number | null };
-type Pin = { id?: string; code?: string; lat: number; lng: number; label: string; sub?: string; waste_type?: string; state?: string; black_mass_mta?: number };
 
 const CATEGORY_LABELS: Record<string, string> = {
   'e-waste': 'E-Waste',
@@ -34,24 +33,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 interface Props {
   rawList: RawEntry[];
-  pins?: Pin[];
 }
 
-function matchCategory(
-  record: { waste_type?: string; black_mass_mta?: number | null },
-  category: string,
-): boolean {
-  if (category === 'black-mass') {
-    return record.waste_type === 'black-mass' || (record.black_mass_mta ?? 0) > 0;
-  }
-  return record.waste_type === category;
-}
-
-export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
-  const [selectedState, setSelectedState] = useState<string | null>(null);
+export default function RecyclerDirectory({ rawList }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [view, setView] = useState<'map' | 'table'>('map');
-  const [showPins, setShowPins] = useState(true);
 
   // Filter by category first. "black-mass" category is special: it unions
   // pure-mechanical shredders (waste_type='black-mass') with integrated
@@ -93,10 +79,6 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const categories = Array.from(categoryMap.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
-
-  const filteredStates = selectedState
-    ? STATES.filter(s => s.name === selectedState)
-    : STATES;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -200,54 +182,27 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
           >
             <List className="h-3.5 w-3.5" /> Table View
           </button>
-          {selectedState && (
-            <button
-              onClick={() => setSelectedState(null)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors ml-auto"
-            >
-              <X className="h-3 w-3" /> Clear: {selectedState}
-            </button>
-          )}
         </div>
 
-        {/* Map View */}
+        {/* Map View — aggregate choropleth only, no GPS pins, no state drilldown */}
         {view === 'map' && (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-300">Interactive India Map — Click a state to filter</h2>
-              {pins.length > 0 && (
-                <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={showPins}
-                    onChange={e => setShowPins(e.target.checked)}
-                    className="accent-emerald-500"
-                  />
-                  Show {pins.filter(p => !selectedCategory || matchCategory(p, selectedCategory)).length} GPS pins
-                </label>
-              )}
+              <h2 className="text-sm font-semibold text-zinc-300">State-wise Recycler Density</h2>
             </div>
             <div className="max-w-2xl mx-auto lg:max-w-3xl">
               <IndiaMap
-                onStateClick={(state) => setSelectedState(prev => prev === state ? null : state)}
-                selectedState={selectedState}
                 stateData={Object.fromEntries(STATES.map(s => [s.name, { recyclers: s.recyclers, capacity: s.capacity }]))}
-                pins={selectedCategory ? pins.filter(p => matchCategory(p, selectedCategory)) : pins}
-                showPins={showPins}
               />
             </div>
           </div>
         )}
 
-        {/* State-wise table */}
+        {/* State-wise counts table (aggregates only — no drilldown to facility names) */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-zinc-800/60 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-300">
-              {selectedState ? `Recyclers in ${selectedState}` : 'State-wise Distribution'}
-            </h2>
-            <span className="text-xs text-zinc-500">
-              {selectedState ? `${filteredStates[0]?.recyclers ?? 0} recyclers` : 'Sorted by number of recyclers'}
-            </span>
+            <h2 className="text-sm font-semibold text-zinc-300">State-wise Distribution</h2>
+            <span className="text-xs text-zinc-500">Sorted by number of recyclers</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -261,15 +216,11 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
-                {filteredStates.map((s, i) => {
+                {STATES.map((s, i) => {
                   const pct = Math.round((s.recyclers / TOTAL_RECYCLERS) * 100);
                   return (
-                    <tr
-                      key={s.name}
-                      className={`hover:bg-zinc-800/20 transition-colors cursor-pointer ${selectedState === s.name ? 'bg-amber-500/5' : ''}`}
-                      onClick={() => setSelectedState(prev => prev === s.name ? null : s.name)}
-                    >
-                      <td className="px-6 py-3 text-zinc-600">{selectedState ? 1 : i + 1}</td>
+                    <tr key={s.name} className="hover:bg-zinc-800/20 transition-colors">
+                      <td className="px-6 py-3 text-zinc-600">{i + 1}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <MapPin className={`h-3.5 w-3.5 ${getColor(s.recyclers)}`} />
@@ -292,60 +243,18 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
                   );
                 })}
               </tbody>
-              {!selectedState && (
-                <tfoot>
-                  <tr className="border-t border-zinc-700 bg-zinc-800/20">
-                    <td className="px-6 py-3"></td>
-                    <td className="px-4 py-3 font-bold text-white">Total</td>
-                    <td className="px-4 py-3 text-right font-black text-emerald-400">{fmtNum(TOTAL_RECYCLERS)}</td>
-                    <td className="px-4 py-3 text-right font-bold text-zinc-300 font-mono">{fmtNum(TOTAL_CAPACITY)}</td>
-                    <td className="px-6 py-3 text-xs text-zinc-500">100%</td>
-                  </tr>
-                </tfoot>
-              )}
+              <tfoot>
+                <tr className="border-t border-zinc-700 bg-zinc-800/20">
+                  <td className="px-6 py-3"></td>
+                  <td className="px-4 py-3 font-bold text-white">Total</td>
+                  <td className="px-4 py-3 text-right font-black text-emerald-400">{fmtNum(TOTAL_RECYCLERS)}</td>
+                  <td className="px-4 py-3 text-right font-bold text-zinc-300 font-mono">{fmtNum(TOTAL_CAPACITY)}</td>
+                  <td className="px-6 py-3 text-xs text-zinc-500">100%</td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>
-
-        {/* Facility list when a state is selected */}
-        {selectedState && (() => {
-          const facilities = pins
-            .filter(p => p.state === selectedState && (!selectedCategory || matchCategory(p, selectedCategory)))
-            .sort((a, b) => a.label.localeCompare(b.label));
-          return (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden mb-8">
-              <div className="px-6 py-4 border-b border-zinc-800/60 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-zinc-300">
-                  Facilities in <span className="text-emerald-400">{selectedState}</span>
-                  {selectedCategory && <span className="text-zinc-500"> · {CATEGORY_LABELS[selectedCategory] ?? selectedCategory}</span>}
-                </h2>
-                <span className="text-xs text-zinc-500">{facilities.length} listed</span>
-              </div>
-              <div className="divide-y divide-zinc-800/60 max-h-[500px] overflow-y-auto">
-                {facilities.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-zinc-500">No facilities match the current filter in this state.</div>
-                ) : (
-                  facilities.map(f => (
-                    <Link
-                      key={f.code ?? f.id}
-                      href={f.code ? `/recycling/recyclers/${f.code}` : '#'}
-                      className="flex items-start justify-between gap-4 px-6 py-3 hover:bg-zinc-800/30 transition-colors group"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm text-zinc-200 group-hover:text-white transition-colors">{f.label}</p>
-                        <p className="text-[11px] text-zinc-500 truncate">{f.sub}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-[10px] font-mono text-zinc-500">{f.code}</p>
-                        <p className="text-[11px] text-emerald-400/70 group-hover:text-emerald-300">View →</p>
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </div>
-            </div>
-          );
-        })()}
 
         {/* Missing states */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">

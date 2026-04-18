@@ -4,15 +4,17 @@ import RecyclerDirectory from './RecyclerDirectory';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// Public page: only aggregate counts are exposed. Company-level identifiers
+// (name, code, contact, address, GPS coordinates) stay internal — see
+// /dashboard/recycling/recyclers for the authenticated full view.
 export default async function RecyclersPage() {
-  // Fetch all rows (Supabase default limit is 1000, so paginate)
-  let allRecyclers: any[] = [];
+  let allRecyclers: { state: string | null; waste_type: string | null; capacity_per_month: string | null; black_mass_mta: number | string | null }[] = [];
   let from = 0;
   const pageSize = 1000;
   while (true) {
     const { data } = await supabaseAdmin
       .from('recyclers')
-      .select('id, recycler_code, company_name, city, state, waste_type, capacity_per_month, black_mass_mta, latitude, longitude, is_active')
+      .select('state, waste_type, capacity_per_month, black_mass_mta')
       .eq('is_active', true)
       .range(from, from + pageSize - 1);
     if (!data || data.length === 0) break;
@@ -20,9 +22,8 @@ export default async function RecyclersPage() {
     if (data.length < pageSize) break;
     from += pageSize;
   }
-  const recyclers = allRecyclers;
 
-  const rawList = (recyclers ?? []).map(r => ({
+  const rawList = allRecyclers.map(r => ({
     state: r.state ?? '',
     waste_type: r.waste_type ?? 'other',
     black_mass_mta: r.black_mass_mta ? Number(r.black_mass_mta) : null,
@@ -36,21 +37,5 @@ export default async function RecyclersPage() {
     })(),
   }));
 
-  // Facility-level pins for the calibrated GPS overlay
-  const pins = (recyclers ?? [])
-    .filter(r => r.latitude != null && r.longitude != null)
-    .map(r => ({
-      id: r.id,
-      code: r.recycler_code ?? undefined,
-      lat: Number(r.latitude),
-      lng: Number(r.longitude),
-      label: r.company_name ?? 'Facility',
-      sub: [r.city, r.state].filter(Boolean).join(', ')
-        + (r.black_mass_mta ? ` · ${Number(r.black_mass_mta).toLocaleString('en-IN')} MTA black mass` : ''),
-      waste_type: r.waste_type ?? undefined,
-      state: r.state ?? undefined,
-      black_mass_mta: r.black_mass_mta ? Number(r.black_mass_mta) : undefined,
-    }));
-
-  return <RecyclerDirectory rawList={rawList} pins={pins} />;
+  return <RecyclerDirectory rawList={rawList} />;
 }

@@ -61,7 +61,7 @@ function matchCategory(
 export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [view, setView] = useState<'map' | 'live' | 'table'>('live');
+  const [view, setView] = useState<'map' | 'live' | 'table'>('map');
   const [showPins, setShowPins] = useState(true);
 
   // Filter by category first. "black-mass" category is special: it unions

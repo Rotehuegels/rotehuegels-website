@@ -5,7 +5,7 @@ export default function Footer() {
 
   return (
     <footer className="mt-16 border-t border-white/10 bg-black/60 backdrop-blur text-xs text-zinc-400">
-      <div className="container mx-auto px-6 py-6 grid gap-6 md:grid-cols-4">
+      <div className="container mx-auto px-6 py-6 grid gap-6 md:grid-cols-5">
 
         {/* 1. Company */}
         <div>
@@ -57,6 +57,17 @@ export default function Footer() {
               <Linkedin className="h-3.5 w-3.5" />
             </a>
           </div>
+        </div>
+
+        {/* 5. Legal */}
+        <div>
+          <p className="font-semibold text-white text-xs uppercase tracking-wider mb-2">Legal</p>
+          <ul className="space-y-0.5">
+            <li><a href="/terms" className="hover:underline hover:text-white">Terms of Use</a></li>
+            <li><a href="/privacy" className="hover:underline hover:text-white">Privacy Policy</a></li>
+            <li><a href="/grievance" className="hover:underline hover:text-white">Grievance Redressal</a></li>
+            <li><a href="/data-sources" className="hover:underline hover:text-white">Data Sources</a></li>
+          </ul>
         </div>
       </div>
 

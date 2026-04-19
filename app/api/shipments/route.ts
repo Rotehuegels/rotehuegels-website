@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseServer } from '@/lib/supabaseServer';
+
+async function requireUser() {
+  const sb = await supabaseServer();
+  const { data: { user } } = await sb.auth.getUser();
+  return user;
+}
 
 const CARRIER_URLS: Record<string, string> = {
   'ARC':      'https://online.arclimited.com/cnstrk/cnstrk.aspx',
@@ -21,6 +28,8 @@ const CARRIER_URLS: Record<string, string> = {
 };
 
 export async function GET() {
+  if (!(await requireUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { data, error } = await supabaseAdmin
     .from('shipments')
     .select('*, tracking_data, tracking_updated_at, purchase_orders(po_no, supplier_id, suppliers(legal_name)), orders(order_no, client_name)')
@@ -31,6 +40,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!(await requireUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const body = await req.json();
 
   const { data, error } = await supabaseAdmin

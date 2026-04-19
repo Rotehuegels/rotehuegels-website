@@ -7,10 +7,10 @@ export const maxDuration = 120;
 
 // Weekly cron: find orders with outstanding receivables and send reminders.
 export async function GET(req: Request) {
-  // Validate CRON_SECRET
+  // Validate CRON_SECRET — required
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

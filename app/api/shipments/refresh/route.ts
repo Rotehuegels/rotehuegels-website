@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseServer } from '@/lib/supabaseServer';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -8,6 +9,13 @@ export const maxDuration = 60;
 // Called by: Refresh button (fire-and-forget), cron job, or manual trigger.
 
 export async function POST(req: Request) {
+  const sb = await supabaseServer();
+  const { data: { user } } = await sb.auth.getUser();
+  const cronAuth = req.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET;
+  const isCron = !!cronSecret && cronAuth === `Bearer ${cronSecret}`;
+  if (!user && !isCron) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await req.json().catch(() => ({}));
     const shipmentId = body.shipment_id as string | undefined;

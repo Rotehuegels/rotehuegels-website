@@ -10,10 +10,10 @@ export const maxDuration = 60;
 // Fetches live tracking for all active shipments and sends email + WhatsApp.
 
 export async function GET(req: Request) {
-  // Auth
+  // Auth — CRON_SECRET is required; route must not be callable without it.
   const authHeader = req.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

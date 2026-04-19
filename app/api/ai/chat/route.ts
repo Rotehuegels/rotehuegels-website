@@ -120,7 +120,12 @@ async function sendSecurityAlert(session: Record<string, unknown>, violations: u
     const url = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
     await fetch(`${url}/api/ai/security-alert`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.SECURITY_ALERT_SECRET
+          ? { Authorization: `Bearer ${process.env.SECURITY_ALERT_SECRET}` }
+          : {}),
+      },
       body: JSON.stringify({
         sessionId: session.id,
         sessionToken: session.session_token,

@@ -28,6 +28,13 @@ interface AlertRequest {
 }
 
 export async function POST(req: Request) {
+  // Server-to-server secret — blocks anonymous abuse of the security inbox.
+  const secret = process.env.SECURITY_ALERT_SECRET;
+  const auth = req.headers.get('authorization');
+  if (!secret || auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   let body: AlertRequest;
   try {
     body = await req.json();

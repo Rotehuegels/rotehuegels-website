@@ -25,8 +25,12 @@ const RecyclerSchema = z.object({
   notes: z.string().optional(),
 });
 
-// GET — list recyclers
+// GET — list recyclers (auth required; dashboard users only)
 export async function GET() {
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { data, error } = await supabaseAdmin
     .from('recyclers')
     .select('*')

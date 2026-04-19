@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseServer } from '@/lib/supabaseServer';
 import { sendRegistrationConfirmation } from '@/lib/registrationEmails';
 import { z } from 'zod';
 
@@ -33,8 +34,12 @@ const RequestSchema = z.object({
   source: z.string().default('website'),
 });
 
-// GET — list all requests (admin)
+// GET — list all requests (admin only)
 export async function GET(req: Request) {
+  const sb = await supabaseServer();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const url = new URL(req.url);
   const status = url.searchParams.get('status');
 

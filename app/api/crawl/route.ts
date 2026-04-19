@@ -1,14 +1,22 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseServer } from '@/lib/supabaseServer';
 import { discoverAndSave, type LeadType } from '@/lib/leadDiscovery';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
+async function requireUser() {
+  const sb = await supabaseServer();
+  const { data: { user } } = await sb.auth.getUser();
+  return user;
+}
+
 // ── POST — Trigger AI-powered lead discovery ─────────────────────────────────
 // Kept for backward compat — proxies to new multi-AI discovery system
 
 export async function POST(req: Request) {
+  if (!(await requireUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await req.json();
     const type: LeadType = body.type ?? 'supplier';
@@ -34,6 +42,7 @@ export async function POST(req: Request) {
 // ── GET — List recent crawl jobs (legacy) ────────────────────────────────────
 
 export async function GET() {
+  if (!(await requireUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const { data, error } = await supabaseAdmin
       .from('crawl_jobs')

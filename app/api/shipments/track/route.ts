@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { supabaseServer } from '@/lib/supabaseServer';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -30,6 +31,10 @@ interface TrackingResult {
 }
 
 export async function GET(req: Request) {
+  const sb = await supabaseServer();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { searchParams } = new URL(req.url);
   const trackingNo = searchParams.get('tracking_no');
   const carrier = searchParams.get('carrier') ?? 'ARC';

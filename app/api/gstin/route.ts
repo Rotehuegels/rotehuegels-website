@@ -7,6 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseServer } from '@/lib/supabaseServer';
 
 const GSTIN_RE = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
@@ -40,6 +41,10 @@ async function incrementCreditsUsed(currentUsed: number) {
 }
 
 export async function GET(req: Request) {
+  const sb = await supabaseServer();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const url    = new URL(req.url);
   const gstin  = url.searchParams.get('gstin')?.trim().toUpperCase() ?? '';
   const onlyCredits = url.searchParams.get('credits') === '1';

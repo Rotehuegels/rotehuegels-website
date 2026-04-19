@@ -17,8 +17,8 @@ export default async function EWasteLandingPage() {
     .eq('is_active', true);
   const facilityCount = count ?? 0;
 
-  // Category breakdown — all 10 tiers, no double-counting.
-  const waste_types = ['e-waste', 'battery', 'black-mass', 'hazardous', 'zinc-dross', 'primary-metal', 'ev-oem', 'battery-pack', 'cell-maker', 'both'];
+  // Category breakdown — all 11 tiers, no double-counting.
+  const waste_types = ['e-waste', 'battery', 'black-mass', 'hazardous', 'zinc-dross', 'primary-metal', 'critical-minerals', 'ev-oem', 'battery-pack', 'cell-maker', 'both'];
   const counts = await Promise.all(
     waste_types.map(t =>
       supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('waste_type', t),
@@ -32,6 +32,7 @@ export default async function EWasteLandingPage() {
     { label: 'Non-Ferrous Metals', value: byType['hazardous'], color: 'text-purple-400' },
     { label: 'Zinc Dross', value: byType['zinc-dross'], color: 'text-orange-400' },
     { label: 'Primary Metal Producers', value: byType['primary-metal'], color: 'text-rose-400' },
+    { label: 'Critical Minerals', value: byType['critical-minerals'], color: 'text-fuchsia-400' },
     { label: 'EV OEMs', value: byType['ev-oem'], color: 'text-lime-400' },
     { label: 'Battery Pack Makers', value: byType['battery-pack'], color: 'text-yellow-400' },
     { label: 'Cell / CAM Makers', value: byType['cell-maker'], color: 'text-sky-400' },

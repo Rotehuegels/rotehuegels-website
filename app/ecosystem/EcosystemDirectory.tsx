@@ -39,6 +39,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'hazardous': 'Non-Ferrous Metals',
   'zinc-dross': 'Zinc Dross / Zinc Ash',
   'primary-metal': 'Primary Metal Producers',
+  'critical-minerals': 'Critical Minerals',
   'ev-oem': 'EV OEMs (vehicle + battery pack)',
   'battery-pack': 'Battery Pack Makers',
   'cell-maker': 'Li-Ion Cell / CAM Makers',
@@ -60,8 +61,8 @@ const TIER_ORDER = ['upstream', 'forward', 'reverse'] as const;
 const TIER_META: Record<typeof TIER_ORDER[number], { label: string; description: string; members: string[] }> = {
   upstream: {
     label: 'Upstream',
-    description: 'Primary metal producers + cell / CAM makers',
-    members: ['primary-metal', 'cell-maker'],
+    description: 'Primary metal producers, critical / heavy minerals, cell / CAM makers',
+    members: ['primary-metal', 'critical-minerals', 'cell-maker'],
   },
   forward: {
     label: 'Forward chain',

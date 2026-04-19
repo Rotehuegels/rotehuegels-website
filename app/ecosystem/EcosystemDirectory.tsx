@@ -280,13 +280,20 @@ export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
           </button>
         </div>
 
-        {/* Map — choropleth + anonymised GPS dots. Hover shows category name
-            and state only; no company identifiers. No click-through to a
-            facility profile. */}
+        {/* Map — choropleth + anonymised GPS dots. State counts reflect the
+            active category filter. Remounting via `key` on filter change
+            guarantees hover state can't carry stale counts. */}
         {view === 'map' && (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-300">State-wise Recycler Density</h2>
+              <h2 className="text-sm font-semibold text-zinc-300">
+                State-wise Distribution
+                {selectedCategory && (
+                  <span className="ml-2 text-[11px] font-normal text-emerald-400">
+                    · filtered: {CATEGORY_LABELS[selectedCategory] ?? selectedCategory} ({fmtNum(TOTAL_RECYCLERS)} rows)
+                  </span>
+                )}
+              </h2>
               {pins.length > 0 && (
                 <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
                   <input
@@ -301,11 +308,18 @@ export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
             </div>
             <div className="max-w-2xl mx-auto lg:max-w-3xl">
               <IndiaMap
+                key={selectedCategory ?? 'all'}
                 stateData={Object.fromEntries(STATES.map(s => [s.name, { recyclers: s.recyclers, capacity: s.capacity }]))}
                 pins={selectedCategory ? pins.filter(p => matchCategory(p, selectedCategory)) : pins}
                 showPins={showPins}
               />
             </div>
+            {selectedCategory && TOTAL_RECYCLERS > 0 && (
+              <p className="text-[11px] text-zinc-500 mt-3 text-center">
+                Hover any state for the <strong className="text-zinc-400">{CATEGORY_LABELS[selectedCategory] ?? selectedCategory}</strong> count in that state.
+                States not shown on the map have zero facilities in this category.
+              </p>
+            )}
           </div>
         )}
 

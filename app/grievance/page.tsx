@@ -137,7 +137,6 @@ export default function GrievancePage() {
             <ul className="list-disc pl-6 space-y-1">
               <li><Link href="/terms" className="text-emerald-400 underline">Terms of Use</Link></li>
               <li><Link href="/privacy" className="text-emerald-400 underline">Privacy Policy</Link></li>
-              <li><Link href="/data-sources" className="text-emerald-400 underline">Data Sources</Link></li>
             </ul>
           </Section>
 

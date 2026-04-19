@@ -83,10 +83,8 @@ export default function TermsPage() {
 
           <Section title="4. Data accuracy disclaimer">
             <p>
-              The Directory is compiled from publicly available government registries (CPCB, SPCB, MPCB, MoEF), regulatory disclosures
-              (BSE, NSE, SEBI), credit-rating agency public releases (ICRA, CARE, Infomerics, Acuité), State Pollution Control Board
-              consent-to-operate filings, and publicly disclosed facility information. See{' '}
-              <Link href="/data-sources" className="text-emerald-400 underline">Data Sources</Link> for the full list.
+              The Directory is compiled from publicly available information. We verify data on a rolling basis but cannot guarantee
+              that any specific entry is current, complete, or accurate at the moment of use.
             </p>
             <p>
               This ecosystem is continuously evolving. We verify data on a rolling basis but cannot guarantee that any specific entry is
@@ -158,11 +156,9 @@ export default function TermsPage() {
               non-infringement. We do not warrant that the Platform will be uninterrupted, error-free, or free of viruses.
             </p>
             <p>
-              To the maximum extent permitted by law, Rotehügels, its directors, employees, and agents shall not be liable for any
-              indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of (or inability
-              to use) the Platform, any transaction with a third party, or any reliance placed on Directory data. Our aggregate
-              liability for any claim shall not exceed INR 10,000 (Indian Rupees Ten Thousand) or the amount you paid us for the
-              specific service in question in the twelve months preceding the claim, whichever is greater.
+              To the maximum extent permitted by law, Rotehügels shall not be liable for any indirect, incidental, special,
+              consequential, or punitive damages arising out of or relating to your use of (or inability to use) the Platform, any
+              transaction with a third party, or any reliance placed on Directory data.
             </p>
           </Section>
 

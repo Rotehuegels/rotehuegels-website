@@ -130,6 +130,9 @@ const nextConfig = {
       { source: '/d/ecosystem', destination: '/dashboard/ecosystem' },
       { source: '/d/ecosystem/:code', destination: '/dashboard/ecosystem/:code' },
 
+      // ── Marketplace moderation (internal) ─────────────────────────
+      { source: '/d/marketplace', destination: '/dashboard/marketplace' },
+
       // ── IMS shortcuts ─────────────────────────────────────────────
       { source: '/d/ims', destination: '/dashboard/ims' },
       { source: '/d/ims/sops', destination: '/dashboard/ims/sops' },

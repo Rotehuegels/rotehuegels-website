@@ -134,9 +134,10 @@ const NAV: NavItem[] = [
   {
     label: 'Ecosystem', icon: Package,
     children: [
-      { label: 'Overview',   href: '/d/recycling',           icon: Package },
-      { label: 'Requests',   href: '/d/recycling/requests',  icon: ClipboardList },
-      { label: 'Directory',  href: '/d/ecosystem',           icon: Factory },
+      { label: 'Overview',    href: '/d/recycling',           icon: Package },
+      { label: 'Requests',    href: '/d/recycling/requests',  icon: ClipboardList },
+      { label: 'Directory',   href: '/d/ecosystem',           icon: Factory },
+      { label: 'Marketplace', href: '/d/marketplace',         icon: Package },
     ],
   },
 

@@ -27,6 +27,8 @@ const PUBLIC_API = [
   '/api/ewaste/requests',              // POST public; GET gated in handler
   '/api/ewaste/recyclers/verify',
   '/api/ewaste/recyclers/logout',
+  // Marketplace — public GET browse + POST submit (moderation handled in handler)
+  '/api/listings',                     // GET/POST public; moderate sub-route is NOT allowlisted
   // Cron endpoints (carry CRON_SECRET)
   '/api/cron/crawl',
   '/api/cron/reminders',

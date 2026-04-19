@@ -45,6 +45,23 @@ const CATEGORY_LABELS: Record<string, string> = {
   'cell-maker': 'Li-Ion Cell / CAM Makers',
 };
 
+// Category-specific noun for the IndiaMap hover tooltip + legend. Avoids
+// always saying 'recyclers' when the filter is on a non-recycler tier
+// like primary metal producers or critical minerals.
+const CATEGORY_NOUN: Record<string, string> = {
+  'e-waste': 'e-waste recyclers',
+  'battery': 'battery recyclers',
+  'black-mass': 'black-mass processors',
+  'both': 'e-waste + battery recyclers',
+  'hazardous': 'non-ferrous reprocessors',
+  'zinc-dross': 'zinc-dross recoverers',
+  'primary-metal': 'primary metal producers',
+  'critical-minerals': 'critical-minerals producers',
+  'ev-oem': 'EV OEMs',
+  'battery-pack': 'battery pack makers',
+  'cell-maker': 'cell / CAM makers',
+};
+
 function matchCategory(
   record: { waste_type?: string; black_mass_mta?: number | null },
   category: string,
@@ -312,6 +329,7 @@ export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
                 stateData={Object.fromEntries(STATES.map(s => [s.name, { recyclers: s.recyclers, capacity: s.capacity }]))}
                 pins={selectedCategory ? pins.filter(p => matchCategory(p, selectedCategory)) : pins}
                 showPins={showPins}
+                facilityNoun={selectedCategory ? (CATEGORY_NOUN[selectedCategory] ?? 'facilities') : 'facilities'}
               />
             </div>
             {selectedCategory && TOTAL_RECYCLERS > 0 && (

@@ -173,6 +173,22 @@ interface IndiaMapProps {
   showPins?: boolean;
   /** If set, clicking a pin navigates to `${pinHrefBase}/${pin.code}`. */
   pinHrefBase?: string;
+  /** Noun used in the hover tooltip + legend for a facility of the current
+   *  filter. Default 'facilities' (works for every category). Pass
+   *  'primary metal producers', 'critical-minerals units', 'recyclers',
+   *  etc. for category-specific framing. */
+  facilityNoun?: string;
+}
+
+function pluralize(n: number, noun: string): string {
+  // 'facility' → 'facilities', 'recycler' → 'recyclers', multi-word is passed
+  // through as-is (caller should provide already-plural form for phrases).
+  if (n === 1) {
+    if (noun === 'facilities') return 'facility';
+    if (noun === 'recyclers') return 'recycler';
+    return noun.replace(/s$/, '');
+  }
+  return noun;
 }
 
 export default function IndiaMap({
@@ -183,6 +199,7 @@ export default function IndiaMap({
   pins = [],
   showPins = true,
   pinHrefBase,
+  facilityNoun = 'facilities',
 }: IndiaMapProps) {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [hoveredPin, setHoveredPin] = useState<MapPin | null>(null);
@@ -395,7 +412,7 @@ export default function IndiaMap({
               onClick={(e) => { if (!isPanning) { e.stopPropagation(); onStateClick?.(name); } }}
               role="button"
               tabIndex={0}
-              aria-label={`${name}: ${data ? data.recyclers : 0} recyclers`}
+              aria-label={`${name}: ${data ? data.recyclers : 0} ${pluralize(data?.recyclers ?? 0, facilityNoun)}`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -518,10 +535,10 @@ export default function IndiaMap({
           <p className="text-xs font-semibold text-white whitespace-nowrap">{hoveredState}</p>
           {hoveredData ? (
             <p className="text-[10px] text-zinc-400 whitespace-nowrap">
-              {hoveredData.recyclers} recycler{hoveredData.recyclers !== 1 ? 's' : ''} &middot; {fmtNum(hoveredData.capacity)} MTA
+              {hoveredData.recyclers} {pluralize(hoveredData.recyclers, facilityNoun)} &middot; {fmtNum(hoveredData.capacity)} MTA
             </p>
           ) : (
-            <p className="text-[10px] text-zinc-500 whitespace-nowrap">No registered recyclers</p>
+            <p className="text-[10px] text-zinc-500 whitespace-nowrap">No {facilityNoun} in this state</p>
           )}
         </div>
       )}
@@ -529,7 +546,7 @@ export default function IndiaMap({
       {/* Legend */}
       <div className="flex flex-wrap gap-3 justify-center mt-4">
         {[
-          { color: 'bg-emerald-500', label: '40+ recyclers' },
+          { color: 'bg-emerald-500', label: `40+ ${facilityNoun}` },
           { color: 'bg-emerald-400', label: '20–39' },
           { color: 'bg-sky-400', label: '5–19' },
           { color: 'bg-zinc-500', label: '1–4' },

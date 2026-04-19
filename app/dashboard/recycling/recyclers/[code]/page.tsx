@@ -90,7 +90,7 @@ export default async function RecyclerProfilePage({ params }: { params: Promise<
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className={`relative bg-gradient-to-br ${cat.tint} via-zinc-950 to-zinc-950`}>
-        <div className="max-w-5xl mx-auto px-6 pt-10 pb-8">
+        <div className="max-w-[1800px] mx-auto px-6 pt-10 pb-8">
           <Link href="/d/recycling/recyclers" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
             <ArrowLeft className="h-3 w-3" /> Back to directory
           </Link>
@@ -127,7 +127,7 @@ export default async function RecyclerProfilePage({ params }: { params: Promise<
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-[1800px] mx-auto px-6 py-8 space-y-6">
         {/* Key stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {r.capacity_per_month && (

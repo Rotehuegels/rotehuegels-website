@@ -206,16 +206,16 @@ export default function ServicesPage() {
           </div>
           <div className="flex md:flex-col gap-3 md:min-w-[180px]">
             <Link
-              href="/contact"
+              href="/services/custom-electrodes"
               className="inline-flex items-center justify-center rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white hover:bg-rose-600 transition-colors whitespace-nowrap"
             >
-              Request a quote
+              Learn more →
             </Link>
             <Link
               href="/contact"
               className="inline-flex items-center justify-center rounded-xl border border-zinc-700 hover:border-zinc-500 px-5 py-3 text-sm font-medium text-zinc-300 transition-colors whitespace-nowrap"
             >
-              Share your spec
+              Request a quote
             </Link>
           </div>
         </div>

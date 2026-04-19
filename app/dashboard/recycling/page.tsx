@@ -2,10 +2,12 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import Link from 'next/link';
 import {
   Recycle, ArrowRight, Clock, CheckCircle2, Truck,
-  Factory, Users, Package, AlertTriangle,
+  Factory, Package, AlertTriangle, MapIcon,
 } from 'lucide-react';
+import IndiaMap from '@/components/IndiaMap';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
+const fmtNum = (n: number) => new Intl.NumberFormat('en-IN').format(n);
 const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
 const STATUS_CONFIG: Record<string, { cls: string; icon: React.ElementType; label: string }> = {
@@ -20,14 +22,64 @@ const STATUS_CONFIG: Record<string, { cls: string; icon: React.ElementType; labe
   cancelled:   { cls: 'bg-red-500/10 text-red-400 border-red-500/20', icon: AlertTriangle, label: 'Cancelled' },
 };
 
-export default async function EWasteDashboard() {
-  const [{ data: requests }, { data: recyclers }] = await Promise.all([
-    supabaseAdmin.from('collection_requests')
-      .select('*, recyclers(company_name)')
-      .order('created_at', { ascending: false })
-      .limit(50),
-    supabaseAdmin.from('recyclers').select('*', { count: 'exact', head: true }),
-  ]);
+function parseCap(s: string | null | undefined): number {
+  if (!s) return 0;
+  const m = String(s).match(/([\d,]+(?:\.\d+)?)/);
+  if (!m) return 0;
+  const num = parseFloat(m[1].replace(/,/g, ''));
+  return (!isNaN(num) && num < 500000) ? num : 0;
+}
+
+export default async function RecyclingDashboard() {
+  // Collection requests (e-waste + other pickup flows we may add later)
+  const { data: requests } = await supabaseAdmin
+    .from('collection_requests')
+    .select('*, recyclers(company_name)')
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  // Full recycler set — paginate past Supabase default 1000 limit
+  const recyclers: Array<{
+    id: string; recycler_code: string | null; company_name: string | null;
+    state: string | null; city: string | null; waste_type: string | null;
+    capacity_per_month: string | null; latitude: number | string | null;
+    longitude: number | string | null;
+  }> = [];
+  for (let from = 0; ; from += 1000) {
+    const { data } = await supabaseAdmin.from('recyclers')
+      .select('id, recycler_code, company_name, state, city, waste_type, capacity_per_month, latitude, longitude')
+      .eq('is_active', true)
+      .range(from, from + 999);
+    if (!data || !data.length) break;
+    recyclers.push(...data);
+    if (data.length < 1000) break;
+  }
+
+  // State aggregates for the choropleth
+  const stateMap = new Map<string, { recyclers: number; capacity: number }>();
+  for (const r of recyclers) {
+    if (!r.state) continue;
+    const e = stateMap.get(r.state) ?? { recyclers: 0, capacity: 0 };
+    e.recyclers += 1;
+    e.capacity += parseCap(r.capacity_per_month);
+    stateMap.set(r.state, e);
+  }
+  const stateData = Object.fromEntries(stateMap);
+  const totalCapacity = Array.from(stateMap.values()).reduce((s, x) => s + x.capacity, 0);
+
+  // Facility pins — clickable → internal profile
+  const pins = recyclers
+    .filter(r => r.latitude != null && r.longitude != null)
+    .map(r => ({
+      id: r.id,
+      code: r.recycler_code ?? undefined,
+      lat: Number(r.latitude),
+      lng: Number(r.longitude),
+      label: r.company_name ?? 'Facility',
+      sub: [r.city, r.state].filter(Boolean).join(', '),
+      waste_type: r.waste_type ?? undefined,
+      state: r.state ?? undefined,
+    }));
 
   const list = requests ?? [];
   const pending = list.filter(r => ['submitted', 'reviewing'].includes(r.status));
@@ -41,8 +93,12 @@ export default async function EWasteDashboard() {
         <div className="flex items-center gap-3">
           <Recycle className="h-6 w-6 text-emerald-400" />
           <div>
-            <h1 className="text-2xl font-bold text-white">E-Waste Collection</h1>
-            <p className="mt-0.5 text-sm text-zinc-500">{list.length} requests &middot; {recyclers?.length ?? 0} recyclers</p>
+            <h1 className="text-2xl font-bold text-white">Recycling</h1>
+            <p className="mt-0.5 text-sm text-zinc-500">
+              {fmtNum(recyclers.length)} facilities · {stateMap.size} states · {fmtNum(Math.round(totalCapacity))} MTA capacity
+              <span className="text-zinc-700"> · </span>
+              {list.length} collection requests
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -55,7 +111,25 @@ export default async function EWasteDashboard() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Network overview — India map with clickable GPS pins */}
+      <div className={`${glass} p-4`}>
+        <div className="flex items-center justify-between mb-3 px-2">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-300">
+            <MapIcon className="h-4 w-4 text-indigo-400" /> Network — click any pin to open the facility profile
+          </h2>
+          <span className="text-[10px] text-zinc-500">{pins.length} GPS pins · internal</span>
+        </div>
+        <div className="max-w-3xl mx-auto">
+          <IndiaMap
+            stateData={stateData}
+            pins={pins}
+            showPins
+            pinHrefBase="/d/recycling/recyclers"
+          />
+        </div>
+      </div>
+
+      {/* Collection-request stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
           { label: 'Total', value: list.length, color: 'text-white' },

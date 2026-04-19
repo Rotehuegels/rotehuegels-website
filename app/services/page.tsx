@@ -62,14 +62,16 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 function PillarCard({
   title,
+  href,
   points,
 }: {
   title: string;
+  href: string;
   points: string[];
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 md:p-8 hover:border-zinc-700 transition-colors">
-      <h3 className="text-xl font-semibold">{title}</h3>
+    <Link href={href} className="block rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 md:p-8 hover:border-emerald-500/40 hover:bg-zinc-900/60 transition-colors group">
+      <h3 className="text-xl font-semibold group-hover:text-emerald-400 transition-colors">{title}</h3>
       <ul className="mt-4 space-y-2 text-sm text-zinc-300 leading-relaxed text-left">
         {points.map((p, i) => (
           <li key={i} className="flex gap-3">
@@ -78,7 +80,8 @@ function PillarCard({
           </li>
         ))}
       </ul>
-    </div>
+      <p className="mt-5 text-xs text-emerald-400/80 group-hover:text-emerald-400">Learn more →</p>
+    </Link>
   );
 }
 
@@ -135,33 +138,36 @@ export default function ServicesPage() {
       {/* Pillars */}
       <div className="grid gap-6 md:grid-cols-3">
         <PillarCard
-          title="Research"
+          title="Testwork & Feasibility"
+          href="/services/testwork-feasibility"
           points={[
             "Hydrometallurgy R&D: chalcopyrite, mixed/lean ores, black mass, NdFeB",
             "Pilot design & scale-up: bench → pilot → demo (M&E balance, PFD/PNID)",
-            "Process modeling & simulation: LIX systems, kinetics, speciation, RTD",
-            "Analytical methods & SOPs: AAS/AES/ICP; QA/QC",
-            "Environmental & circularity: effluent treatment, reagent recycling, LCA snapshots",
+            "Techno-economic analysis: OPEX/CAPEX, sensitivity, scenarios",
+            "Process modelling & simulation: LIX systems, kinetics, speciation, RTD",
+            "Bankable feasibility studies for investor due diligence",
           ]}
         />
         <PillarCard
-          title="Business"
+          title="Plant Engineering & EPC"
+          href="/services/plant-epc"
           points={[
-            "Techno-economic analysis (OPEX/CAPEX, sensitivity, scenarios)",
-            "Market entry (India focus), vendor development, policy & incentives",
-            "Investor collateral: investment decks, data rooms, risk registers",
-            "Procurement strategy: long-lead items, EPC/EPCM bids, Incoterms",
-            "Policy & compliance watch: Ministry of Mines, DGFT, BIS",
+            "Detailed engineering: PFD, P&ID, equipment sizing, layout",
+            "Procurement & vendor development: long-lead items, EPC/EPCM bids",
+            "Construction management: site mobilisation, QA/QC, HSE",
+            "Commissioning & ramp-up: flotation, leach, SX-EW to steady state",
+            "Turnkey delivery: greenfield plant from paper to production",
           ]}
         />
         <PillarCard
-          title="Consultancy"
+          title="Operations Advisory"
+          href="/services/operations-advisory"
           points={[
-            "Commissioning & ramp-up: flotation, leach, SX–EW (design to steady-state)",
-            "Troubleshooting: phase disengagement, crud, raffinate pH, hydraulics",
-            "Training & SOPs: workforce upskilling, safety & risk management",
-            "Audits: process health, reagent/energy efficiency, maintenance",
-            "Remote dashboards: KPIs, exceptions, alerting",
+            "Process audits: yield, reagent efficiency, energy, maintenance",
+            "Debottlenecking: phase disengagement, crud, raffinate pH, hydraulics",
+            "SOPs & training: workforce upskilling, safety, risk management",
+            "Remote monitoring dashboards: KPIs, exceptions, alerting",
+            "Compliance watch: Ministry of Mines, DGFT, BIS, SPCB/CPCB",
           ]}
         />
       </div>

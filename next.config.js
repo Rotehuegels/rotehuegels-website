@@ -115,6 +115,10 @@ const nextConfig = {
       // Public directory moved from /recycling/recyclers → /ecosystem
       { source: '/recycling/recyclers', destination: '/ecosystem', permanent: true },
       { source: '/recycling/recyclers/:code', destination: '/ecosystem/:code', permanent: true },
+      // Service-pillar rename (Apr 2026)
+      { source: '/services/research', destination: '/services/testwork-feasibility', permanent: true },
+      { source: '/services/business', destination: '/services/plant-epc', permanent: true },
+      { source: '/services/consultancy', destination: '/services/operations-advisory', permanent: true },
     ];
   },
   async rewrites() {

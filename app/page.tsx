@@ -167,19 +167,19 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                h: "Research",
-                p: "Hydrometallurgy R&D, pilot design, process modeling, and analytical SOPs — turning lab innovation into scalable flowsheets.",
-                href: "/services/research",
+                h: "Testwork & Feasibility",
+                p: "Bench-to-pilot R&D, process modelling, techno-economic analysis, and bankable feasibility studies — turning lab innovation into investor-ready flowsheets.",
+                href: "/services/testwork-feasibility",
               },
               {
-                h: "Business",
-                p: "Techno-economic analysis, market intelligence, procurement collateral, and investor-ready documentation.",
-                href: "/services/business",
+                h: "Plant Engineering & EPC",
+                p: "Detailed engineering, procurement, construction, and commissioning — turnkey greenfield plant delivery from paper to production.",
+                href: "/services/plant-epc",
               },
               {
-                h: "Consultancy",
-                p: "Plant commissioning, ramp-up support, troubleshooting, operational audits, and sustainability roadmaps.",
-                href: "/services/consultancy",
+                h: "Operations Advisory",
+                p: "Process audits, debottlenecking, SOPs & training, remote monitoring, and compliance watch for running plants.",
+                href: "/services/operations-advisory",
               },
             ].map((c, i) => (
               <Link

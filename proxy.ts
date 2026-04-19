@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
 // ── Page auth: redirect to /login when not authenticated ─────────────────────
-const PROTECTED_PAGE_PREFIXES = ['/dashboard', '/admin', '/tickets', '/requests'];
+// Marketplace is in PREVIEW MODE — gated behind auth until we go public. When
+// ready to launch publicly, (a) remove '/marketplace' from this list, and
+// (b) un-comment '/api/listings' in the PUBLIC_API allowlist below, and
+// (c) remove the amber Preview banner from app/marketplace/page.tsx.
+const PROTECTED_PAGE_PREFIXES = ['/dashboard', '/admin', '/tickets', '/requests', '/marketplace'];
 
 // ── API auth: allowlist of routes reachable without a Supabase session ───────
 // Additions must be justified: public-facing flow, webhook receiver, cron
@@ -27,8 +31,9 @@ const PUBLIC_API = [
   '/api/ewaste/requests',              // POST public; GET gated in handler
   '/api/ewaste/recyclers/verify',
   '/api/ewaste/recyclers/logout',
-  // Marketplace — public GET browse + POST submit (moderation handled in handler)
-  '/api/listings',                     // GET/POST public; moderate sub-route is NOT allowlisted
+  // Marketplace — PREVIEW MODE: auth-gated at the page layer, so the API
+  // must also be auth-gated. Un-comment the line below when going public.
+  // '/api/listings',
   // Cron endpoints (carry CRON_SECRET)
   '/api/cron/crawl',
   '/api/cron/reminders',

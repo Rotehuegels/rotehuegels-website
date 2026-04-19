@@ -56,6 +56,15 @@ export default async function MarketplacePage() {
           end-of-life feedstock, byproducts, and process consumables. Every listing is reviewed before it goes public.
         </p>
 
+        {/* Preview-mode banner — remove when going public */}
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 mb-6 text-xs text-amber-300 flex items-center gap-2">
+          <span className="px-1.5 py-0.5 rounded bg-amber-400/20 font-semibold uppercase tracking-wider">Preview</span>
+          <span className="text-amber-300/90">
+            This marketplace is visible to logged-in team members only. Not yet open to the public. Use it to test the end-to-end flow
+            before we remove the auth gate.
+          </span>
+        </div>
+
         <div className="flex flex-wrap items-center gap-3 mb-8">
           <Link href="/marketplace/new"
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors">

@@ -6,8 +6,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export const metadata = {
-  title: 'Recycling Platform — Rotehügels',
-  description: 'Rotehügels connects waste generators with authorized recyclers and reprocessors across India. E-waste, batteries, non-ferrous metals, zinc dross — all categories.',
+  title: 'Request a Pickup — Responsible Recycling · Rotehügels',
+  description: 'Request an authorised recycler pickup for your e-waste, batteries, non-ferrous metals, zinc dross, or black mass. Rotehügels connects generators with CPCB/SPCB/MoEF-authorised facilities across India — no middlemen, no landfills.',
 };
 
 export default async function EWasteLandingPage() {
@@ -15,24 +15,27 @@ export default async function EWasteLandingPage() {
     .from('recyclers')
     .select('*', { count: 'exact', head: true })
     .eq('is_active', true);
-  const recyclerCount = count ?? 0;
+  const facilityCount = count ?? 0;
 
-  // Category breakdown for the stats band (union count for black-mass: pure + integrated)
-  const [ewasteCount, batteryCount, nfCount, zincCount, primaryCount, bmRows] = await Promise.all([
-    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).in('waste_type', ['e-waste', 'both']),
-    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).in('waste_type', ['battery', 'both']),
-    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('waste_type', 'hazardous'),
-    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('waste_type', 'zinc-dross'),
-    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('waste_type', 'primary-metal'),
-    supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).or('waste_type.eq.black-mass,black_mass_mta.not.is.null'),
-  ]);
+  // Category breakdown — all 10 tiers, no double-counting.
+  const waste_types = ['e-waste', 'battery', 'black-mass', 'hazardous', 'zinc-dross', 'primary-metal', 'ev-oem', 'battery-pack', 'cell-maker', 'both'];
+  const counts = await Promise.all(
+    waste_types.map(t =>
+      supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('waste_type', t),
+    ),
+  );
+  const byType = Object.fromEntries(waste_types.map((t, i) => [t, counts[i].count ?? 0]));
   const stats = [
-    { label: 'E-Waste', value: ewasteCount.count ?? 0, color: 'text-indigo-400' },
-    { label: 'Battery / Li-Ion', value: batteryCount.count ?? 0, color: 'text-amber-400' },
-    { label: 'Black Mass / Mechanical', value: bmRows.count ?? 0, color: 'text-cyan-400' },
-    { label: 'Non-Ferrous Metals', value: nfCount.count ?? 0, color: 'text-purple-400' },
-    { label: 'Zinc Dross', value: zincCount.count ?? 0, color: 'text-orange-400' },
-    { label: 'Primary Metal Producers', value: primaryCount.count ?? 0, color: 'text-rose-400' },
+    { label: 'E-Waste', value: byType['e-waste'], color: 'text-indigo-400' },
+    { label: 'Battery / Li-Ion', value: byType['battery'], color: 'text-amber-400' },
+    { label: 'Black Mass / Mechanical', value: byType['black-mass'], color: 'text-cyan-400' },
+    { label: 'Non-Ferrous Metals', value: byType['hazardous'], color: 'text-purple-400' },
+    { label: 'Zinc Dross', value: byType['zinc-dross'], color: 'text-orange-400' },
+    { label: 'Primary Metal Producers', value: byType['primary-metal'], color: 'text-rose-400' },
+    { label: 'EV OEMs', value: byType['ev-oem'], color: 'text-lime-400' },
+    { label: 'Battery Pack Makers', value: byType['battery-pack'], color: 'text-yellow-400' },
+    { label: 'Cell / CAM Makers', value: byType['cell-maker'], color: 'text-sky-400' },
+    { label: 'E-Waste + Battery', value: byType['both'], color: 'text-pink-400' },
   ];
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -52,8 +55,8 @@ export default async function EWasteLandingPage() {
             <span className="text-emerald-400">Recycled Right.</span>
           </h1>
           <p className="mt-6 text-lg text-zinc-400 max-w-2xl mx-auto">
-            Connecting waste generators directly with authorized recyclers and reprocessors across India.
-            E-waste, batteries, non-ferrous metals, zinc dross — no middlemen, no landfills.
+            Connecting waste generators directly with authorised recyclers and reprocessors across India —
+            e-waste, batteries, non-ferrous metals, zinc dross, black mass. No middlemen, no landfills.
           </p>
           <div className="flex flex-wrap gap-4 justify-center mt-10">
             <Link
@@ -72,18 +75,20 @@ export default async function EWasteLandingPage() {
               href="/ecosystem"
               className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
             >
-              View {recyclerCount.toLocaleString('en-IN')} Registered Recyclers
+              Browse the Full Ecosystem ({facilityCount.toLocaleString('en-IN')} facilities)
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Category coverage stats */}
+      {/* Ecosystem coverage band — links to /ecosystem for the full tier breakdown */}
       <section className="py-10 px-6 border-t border-zinc-800 bg-zinc-900/20">
         <div className="max-w-6xl mx-auto">
-          <p className="text-center text-xs text-zinc-500 uppercase tracking-wider mb-4">Full non-ferrous recycling value chain · directory coverage</p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {stats.map(s => (
+          <p className="text-center text-xs text-zinc-500 uppercase tracking-wider mb-4">
+            Part of the <Link href="/ecosystem" className="text-emerald-400 hover:text-emerald-300 underline">India Circular Economy Ecosystem</Link> · {facilityCount.toLocaleString('en-IN')} facilities across the value chain
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {stats.filter(s => s.value > 0).map(s => (
               <Link key={s.label} href="/ecosystem"
                 className="group rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 text-center hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors">
                 <p className={`text-2xl font-black ${s.color}`}>{s.value.toLocaleString('en-IN')}</p>

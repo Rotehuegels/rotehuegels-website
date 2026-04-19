@@ -58,7 +58,7 @@ const BAD_EMAIL_DOMAINS = new Set([
   'example.com', 'domain.com', 'yourdomain.com', 'test.com',
 ]);
 
-function extractEmail(html, siteHost) {
+function extractAllEmails(html) {
   const re = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,24}/g;
   const addrs = new Set();
   let m;
@@ -70,48 +70,35 @@ function extractEmail(html, siteHost) {
     if (BAD_EMAIL_DOMAINS.has(domain)) continue;
     addrs.add(a);
   }
-  const arr = [...addrs];
-  if (!arr.length) return null;
+  return [...addrs];
+}
 
-  // 1st pass: prefer same-domain corporate addresses
+function pickPrimary(addrs, siteHost) {
+  if (!addrs.length) return null;
   const hostKey = siteHost.replace(/^www\./, '');
-  const same = arr.filter(a => {
+  const same = addrs.filter(a => {
     const d = a.split('@')[1];
     return d === hostKey || d.endsWith('.' + hostKey);
   });
-  // 2nd pass: preferred prefixes
   const preferred = ['info@', 'sales@', 'contact@', 'enquiry@', 'enquiries@', 'hello@', 'care@', 'support@', 'admin@'];
   function best(list) {
-    for (const p of preferred) {
-      const hit = list.find(a => a.startsWith(p));
-      if (hit) return hit;
-    }
+    for (const p of preferred) { const hit = list.find(a => a.startsWith(p)); if (hit) return hit; }
     return list[0];
   }
-  if (same.length) return best(same);
-  return best(arr);
+  return same.length ? best(same) : best(addrs);
 }
 
-function extractPhone(html) {
-  // Priority 1: tel: links — most reliable
-  const tel = html.match(/href=["']tel:([+\d\s\-()]+)["']/gi);
-  if (tel && tel.length) {
-    for (const t of tel) {
-      const num = t.replace(/.*tel:/i, '').replace(/["']$/, '').trim();
-      const digits = num.replace(/\D/g, '');
-      if (digits.length >= 10 && digits.length <= 13) return normalise(digits);
-    }
+function extractAllPhones(html) {
+  const out = new Set();
+  const tel = html.match(/href=["']tel:([+\d\s\-()]+)["']/gi) ?? [];
+  for (const t of tel) {
+    const num = t.replace(/.*tel:/i, '').replace(/["']$/, '').trim();
+    const digits = num.replace(/\D/g, '');
+    if (digits.length >= 10 && digits.length <= 13) out.add(normalise(digits));
   }
-  // Priority 2: 10-digit Indian mobile numbers in body (word-boundary protected)
-  const reMobile = /(?<![\d])[6-9]\d{9}(?![\d])/g;
-  const matches = [...new Set(html.match(reMobile) || [])];
-  if (matches.length) return normalise(matches[0]);
-  // Priority 3: +91 prefixed
-  const reIntl = /\+?91[\s\-().]{0,3}([6-9]\d{9})/g;
-  for (const mm of html.matchAll(reIntl)) {
-    if (mm[1]) return normalise(mm[1]);
-  }
-  return null;
+  for (const m of (html.match(/(?<![\d])[6-9]\d{9}(?![\d])/g) ?? [])) out.add(normalise(m));
+  for (const mm of html.matchAll(/\+?91[\s\-().]{0,3}([6-9]\d{9})/g)) if (mm[1]) out.add(normalise(mm[1]));
+  return [...out];
 }
 
 function normalise(raw) {
@@ -134,57 +121,104 @@ async function enrichRow(row) {
   if (DOMAIN_BLOCKLIST.has(siteUrl.host)) return { error: 'blocklisted domain' };
   const host = siteUrl.host;
   const paths = ['/', '/contact', '/contact-us', '/contact.html', '/about', '/about-us', '/reach-us', '/get-in-touch'];
+  const emails = new Set();
+  const phones = new Set();
+  let firstHitUrl = null;
   let lastStatus = 'no-match';
   for (const p of paths) {
     const url = new URL(p, siteUrl).toString();
     const r = await httpGet(url);
     if (r.error) { lastStatus = r.error; continue; }
-    const email = extractEmail(r.html, host);
-    const phone = extractPhone(r.html);
-    if (email || phone) return { email, phone, source: url };
+    const pageEmails = extractAllEmails(r.html);
+    const pagePhones = extractAllPhones(r.html);
+    for (const e of pageEmails) emails.add(e);
+    for (const ph of pagePhones) phones.add(ph);
+    if ((pageEmails.length || pagePhones.length) && !firstHitUrl) firstHitUrl = url;
     await sleep(350);
   }
-  return { error: lastStatus };
+  if (!emails.size && !phones.size) return { error: lastStatus };
+  const allEmails = [...emails];
+  const allPhones = [...phones];
+  return {
+    primaryEmail: pickPrimary(allEmails, host),
+    primaryPhone: allPhones[0] ?? null,
+    emails: allEmails,
+    phones: allPhones,
+    source: firstHitUrl ?? siteUrl.toString(),
+  };
 }
 
 async function fetchTargets() {
-  const { data, error } = await sb
-    .from('recyclers')
-    .select('id, recycler_code, company_name, website, email, phone')
-    .eq('is_active', true)
-    .not('website', 'is', null)
-    .or('email.like.%placeholder%,email.like.cpcb.%,email.like.mrai.%,phone.is.null');
-  if (error) throw error;
-  return data ?? [];
+  // All active rows with a website. We'll enrich every one; dedup lives in
+  // the merge step so re-runs are safe.
+  const rows = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await sb.from('recyclers')
+      .select('id, recycler_code, company_name, website, email, phone, contacts_all')
+      .eq('is_active', true)
+      .not('website', 'is', null)
+      .range(from, from + 999);
+    if (error) throw error;
+    if (!data || !data.length) break;
+    rows.push(...data);
+    if (data.length < 1000) break;
+  }
+  return rows;
+}
+
+const SOURCE = 'website-scrape';
+const TODAY = new Date().toISOString().slice(0, 10);
+const normEmailKey = (e) => e?.toLowerCase().trim();
+const normPhoneKey = (p) => p?.replace(/\D/g, '').replace(/^91/, '');
+
+function mergeContacts(existing, rows) {
+  const out = [...(existing ?? [])];
+  const keys = new Set(out.map(c => [normEmailKey(c.email), normPhoneKey(c.phone), `${c.name}|${c.source}`].filter(Boolean).join('::')));
+  let added = 0;
+  for (const c of rows) {
+    const k = [normEmailKey(c.email), normPhoneKey(c.phone), c.name && `${c.name}|${c.source}`].filter(Boolean).join('::');
+    if (!k || keys.has(k)) continue;
+    keys.add(k); out.push(c); added++;
+  }
+  return { merged: out, added };
 }
 
 async function main() {
-  console.log('Loading rows with website + placeholder contact…');
   const rows = await fetchTargets();
-  console.log(`${rows.length} candidates\n`);
+  console.log(`${rows.length} rows with website to scrape\n`);
 
-  let ok = 0, skip = 0, fail = 0;
+  let ok = 0, skip = 0, fail = 0, totalContactsAdded = 0;
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
     const prefix = `[${String(i + 1).padStart(3)}/${rows.length}] ${r.recycler_code}`;
     const res = await enrichRow(r);
     if (res.error) { fail++; console.log(`${prefix} ✗ ${res.error}  (${r.website})`); continue; }
+
     const update = {};
-    const isPlaceholder = (r.email ?? '').match(/(placeholder|^cpcb\.|^mrai\.)/i);
-    if (res.email && isPlaceholder) update.email = res.email;
-    if (res.phone && !r.phone) update.phone = res.phone;
+    const isPlaceholder = !r.email || (r.email ?? '').match(/(placeholder|^cpcb\.|^mrai\.)/i);
+    if (res.primaryEmail && isPlaceholder) update.email = res.primaryEmail;
+    if (res.primaryPhone && !r.phone) update.phone = res.primaryPhone;
+
+    // Build contact rows for contacts_all — generic mailboxes (name=null).
+    const newRows = [];
+    for (const e of res.emails) newRows.push({ name: null, title: null, department: null, email: e, phone: null, source: SOURCE, first_seen: TODAY });
+    for (const p of res.phones) newRows.push({ name: null, title: null, department: null, email: null, phone: p, source: SOURCE, first_seen: TODAY });
+    const { merged, added } = mergeContacts(r.contacts_all, newRows);
+    if (added > 0) { update.contacts_all = merged; totalContactsAdded += added; }
+
     if (!Object.keys(update).length) {
-      skip++; console.log(`${prefix} — existing kept (got ${res.email ?? '-'} / ${res.phone ?? '-'})`); continue;
+      skip++; console.log(`${prefix} — no new data (got ${res.emails.length}e/${res.phones.length}p, all dups)`); continue;
     }
     const { error } = await sb.from('recyclers').update(update).eq('id', r.id);
     if (error) { fail++; console.warn(`${prefix} ✗ db ${error.message}`); continue; }
     ok++;
     const parts = [];
-    if (update.email) parts.push(`email=${update.email}`);
-    if (update.phone) parts.push(`phone=${update.phone}`);
+    if (update.email) parts.push(`primary_email=${update.email}`);
+    if (update.phone) parts.push(`primary_phone=${update.phone}`);
+    if (added) parts.push(`+${added} contacts_all`);
     console.log(`${prefix} ✓ ${parts.join(' ')}  [${res.source}]`);
   }
-  console.log(`\nDone. updated=${ok} skipped=${skip} failed=${fail}`);
+  console.log(`\nDone. rows_updated=${ok} skipped=${skip} failed=${fail} contacts_added=${totalContactsAdded}`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

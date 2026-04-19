@@ -168,6 +168,8 @@ interface IndiaMapProps {
   stateData?: Record<string, { recyclers: number; capacity: number }>;
   pins?: MapPin[];
   showPins?: boolean;
+  /** If set, clicking a pin navigates to `${pinHrefBase}/${pin.code}`. */
+  pinHrefBase?: string;
 }
 
 export default function IndiaMap({
@@ -177,6 +179,7 @@ export default function IndiaMap({
   stateData = {},
   pins = [],
   showPins = true,
+  pinHrefBase,
 }: IndiaMapProps) {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [hoveredPin, setHoveredPin] = useState<MapPin | null>(null);
@@ -404,19 +407,23 @@ export default function IndiaMap({
         {showPins && projected.map((p, idx) => {
           const fill = PIN_COLOR[p.waste_type ?? ''] ?? '#d4d4d8';
           const isHover = hoveredPin === p;
+          const circle = (
+            <circle
+              cx={p.x} cy={p.y}
+              r={(isHover ? 4.5 : 2.8) * invZoom}
+              fill={fill}
+              fillOpacity={0.85}
+              stroke="#0a0a0a"
+              strokeWidth={0.6 * invZoom}
+              style={{ cursor: isPanning ? 'grabbing' : 'pointer' }}
+              onMouseEnter={() => setHoveredPin(p)}
+              onMouseLeave={() => setHoveredPin(null)}
+            />
+          );
+          const href = pinHrefBase && p.code ? `${pinHrefBase}/${p.code}` : null;
           return (
             <g key={p.id ?? idx}>
-              <circle
-                cx={p.x} cy={p.y}
-                r={(isHover ? 4.5 : 2.8) * invZoom}
-                fill={fill}
-                fillOpacity={0.85}
-                stroke="#0a0a0a"
-                strokeWidth={0.6 * invZoom}
-                style={{ cursor: isPanning ? 'grabbing' : 'pointer' }}
-                onMouseEnter={() => setHoveredPin(p)}
-                onMouseLeave={() => setHoveredPin(null)}
-              />
+              {href ? <a href={href}>{circle}</a> : circle}
             </g>
           );
         })}

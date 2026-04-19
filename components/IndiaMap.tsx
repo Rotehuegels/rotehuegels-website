@@ -49,6 +49,9 @@ const PIN_COLOR: Record<string, string> = {
   'hazardous':     '#c084fc', // purple-400
   'zinc-dross':    '#fb923c', // orange-400
   'primary-metal': '#fb7185', // rose-400
+  'ev-oem':        '#a3e635', // lime-400
+  'battery-pack':  '#facc15', // yellow-400
+  'cell-maker':    '#38bdf8', // sky-400
 };
 
 export interface MapPin {

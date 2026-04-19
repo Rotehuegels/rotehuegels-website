@@ -6,6 +6,7 @@ import MiniMap from '@/components/RecyclerMiniMapClient';
 import {
   Factory, ArrowLeft, MapPin, Mail, Phone, Globe, Shield, Award, CheckCircle2,
   Building2, FileText, AlertTriangle, Calendar, Package, Recycle, Battery, Users,
+  Car, BatteryCharging, Zap,
 } from 'lucide-react';
 import OrgChart from '@/components/OrgChart';
 import { buildGroupTree } from '@/lib/recyclerGroupTree';
@@ -22,13 +23,16 @@ const fmtDate = (d: string | null | undefined) =>
   d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null;
 
 const CATEGORY_META: Record<string, { label: string; icon: typeof Recycle; colorCls: string; tint: string }> = {
-  'e-waste':       { label: 'E-Waste',                   icon: Recycle, colorCls: 'text-indigo-400 border-indigo-500/30 bg-indigo-500/10', tint: 'from-indigo-500/10' },
-  'battery':       { label: 'Battery (Hydromet)',        icon: Battery, colorCls: 'text-amber-400 border-amber-500/30 bg-amber-500/10',    tint: 'from-amber-500/10' },
-  'black-mass':    { label: 'Black Mass / Mechanical',   icon: Package, colorCls: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',       tint: 'from-cyan-500/10' },
-  'both':          { label: 'E-Waste + Battery',         icon: Recycle, colorCls: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10', tint: 'from-emerald-500/10' },
-  'hazardous':     { label: 'Non-Ferrous Metals',        icon: Factory, colorCls: 'text-purple-400 border-purple-500/30 bg-purple-500/10', tint: 'from-purple-500/10' },
-  'zinc-dross':    { label: 'Zinc Dross / Zinc Ash',     icon: Factory, colorCls: 'text-orange-400 border-orange-500/30 bg-orange-500/10', tint: 'from-orange-500/10' },
-  'primary-metal': { label: 'Primary Metal Producer',    icon: Factory, colorCls: 'text-rose-400 border-rose-500/30 bg-rose-500/10',       tint: 'from-rose-500/10' },
+  'e-waste':       { label: 'E-Waste',                   icon: Recycle,         colorCls: 'text-indigo-400 border-indigo-500/30 bg-indigo-500/10', tint: 'from-indigo-500/10' },
+  'battery':       { label: 'Battery (Hydromet)',        icon: Battery,         colorCls: 'text-amber-400 border-amber-500/30 bg-amber-500/10',    tint: 'from-amber-500/10' },
+  'black-mass':    { label: 'Black Mass / Mechanical',   icon: Package,         colorCls: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',       tint: 'from-cyan-500/10' },
+  'both':          { label: 'E-Waste + Battery',         icon: Recycle,         colorCls: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10', tint: 'from-emerald-500/10' },
+  'hazardous':     { label: 'Non-Ferrous Metals',        icon: Factory,         colorCls: 'text-purple-400 border-purple-500/30 bg-purple-500/10', tint: 'from-purple-500/10' },
+  'zinc-dross':    { label: 'Zinc Dross / Zinc Ash',     icon: Factory,         colorCls: 'text-orange-400 border-orange-500/30 bg-orange-500/10', tint: 'from-orange-500/10' },
+  'primary-metal': { label: 'Primary Metal Producer',    icon: Factory,         colorCls: 'text-rose-400 border-rose-500/30 bg-rose-500/10',       tint: 'from-rose-500/10' },
+  'ev-oem':        { label: 'EV OEM (vehicle + pack)',   icon: Car,             colorCls: 'text-lime-400 border-lime-500/30 bg-lime-500/10',       tint: 'from-lime-500/10' },
+  'battery-pack':  { label: 'Battery Pack Maker',        icon: BatteryCharging, colorCls: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10', tint: 'from-yellow-500/10' },
+  'cell-maker':    { label: 'Li-ion Cell / CAM Maker',   icon: Zap,             colorCls: 'text-sky-400 border-sky-500/30 bg-sky-500/10',          tint: 'from-sky-500/10' },
 };
 
 function isPlaceholder(email: string | null): boolean {

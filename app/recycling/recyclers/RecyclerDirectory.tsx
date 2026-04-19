@@ -31,6 +31,9 @@ const CATEGORY_LABELS: Record<string, string> = {
   'hazardous': 'Non-Ferrous Metals',
   'zinc-dross': 'Zinc Dross / Zinc Ash',
   'primary-metal': 'Primary Metal Producers',
+  'ev-oem': 'EV OEMs (vehicle + battery pack)',
+  'battery-pack': 'Battery Pack Makers',
+  'cell-maker': 'Li-Ion Cell / CAM Makers',
 };
 
 function matchCategory(

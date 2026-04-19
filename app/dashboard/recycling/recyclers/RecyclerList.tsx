@@ -19,6 +19,9 @@ const WASTE_BADGE: Record<string, { cls: string; label: string }> = {
   'hazardous':     { cls: 'bg-purple-500/10 text-purple-400 border-purple-500/20', label: 'Non-Ferrous' },
   'both':          { cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', label: 'E-Waste + Battery' },
   'primary-metal': { cls: 'bg-rose-500/10 text-rose-400 border-rose-500/20', label: 'Primary Metal' },
+  'ev-oem':        { cls: 'bg-lime-500/10 text-lime-400 border-lime-500/20',       label: 'EV OEM' },
+  'battery-pack':  { cls: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', label: 'Battery Pack' },
+  'cell-maker':    { cls: 'bg-sky-500/10 text-sky-400 border-sky-500/20',          label: 'Cell / CAM' },
 };
 
 type Recycler = Record<string, any>;
@@ -151,6 +154,9 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
               <option value="zinc-dross">Zinc Dross / Zinc Ash</option>
               <option value="hazardous">Non-Ferrous Metals</option>
               <option value="primary-metal">Primary Metal Producers</option>
+              <option value="ev-oem">EV OEMs (vehicle + pack)</option>
+              <option value="battery-pack">Battery Pack Makers</option>
+              <option value="cell-maker">Li-ion Cell / CAM Makers</option>
             </select>
             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-500 pointer-events-none" />
           </div>

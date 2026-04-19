@@ -5,10 +5,18 @@ import { useState } from 'react';
 import { Recycle, MapPin, Factory, ArrowLeft, List, Map as MapIcon, X } from 'lucide-react';
 import IndiaMap from '@/components/IndiaMap';
 
-const MISSING_STATES = [
-  'Bihar', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Sikkim', 'Tripura',
-  'Arunachal Pradesh', 'Lakshadweep', 'Andaman & Nicobar Islands', 'Chandigarh',
-  'Dadra & Nagar Haveli', 'Daman & Diu', 'Puducherry', 'Ladakh',
+// States/UTs with no facilities in our directory at all.
+// Computed dynamically in the component against the live rawList so it never
+// contradicts the State-wise Distribution table.
+const ALL_STATES_UTS = [
+  'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
+  'Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh',
+  'Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab',
+  'Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand',
+  'West Bengal',
+  // UTs
+  'Andaman & Nicobar Islands','Chandigarh','Dadra & Nagar Haveli','Daman & Diu',
+  'Delhi','Jammu & Kashmir','Ladakh','Lakshadweep','Puducherry',
 ];
 
 const fmtNum = (n: number) => new Intl.NumberFormat('en-IN').format(n);
@@ -85,17 +93,25 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const TOTAL_CAPACITY = STATES.reduce((s, st) => s + st.capacity, 0);
   const statesCount = STATES.length;
 
-  // Category breakdown (from full list, not filtered). 'black-mass' is a union:
-  // pure-mechanical shredders + integrated recyclers with a black_mass_mta value.
+  // Category breakdown by primary waste_type. Each row is counted exactly
+  // once so the categories sum to the total — no double-counting.
   const categoryMap = new Map<string, number>();
   for (const r of rawList) {
     categoryMap.set(r.waste_type, (categoryMap.get(r.waste_type) ?? 0) + 1);
   }
-  const blackMassUnion = rawList.filter(r => r.waste_type === 'black-mass' || (r.black_mass_mta ?? 0) > 0).length;
-  if (blackMassUnion > 0) categoryMap.set('black-mass', blackMassUnion);
   const categories = Array.from(categoryMap.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
+
+  // Integrated recyclers that also produce black-mass (but carry a different
+  // primary waste_type) — shown as a secondary note so users understand the
+  // black-mass filter button unions these in.
+  const blackMassExtras = rawList.filter(r => r.waste_type !== 'black-mass' && (r.black_mass_mta ?? 0) > 0).length;
+
+  // Missing states — dynamically computed to match the live data, so it
+  // can never contradict the State-wise Distribution table.
+  const presentStates = new Set(rawList.map(r => r.state).filter(Boolean));
+  const missingStates = ALL_STATES_UTS.filter(s => !presentStates.has(s)).sort();
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -131,8 +147,8 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
             <p className="text-xs text-zinc-500 mt-1">MTA Total Capacity</p>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 text-center">
-            <p className="text-3xl font-black text-zinc-400">{MISSING_STATES.length}</p>
-            <p className="text-xs text-zinc-500 mt-1">States Without Recyclers *</p>
+            <p className="text-3xl font-black text-zinc-400">{missingStates.length}</p>
+            <p className="text-xs text-zinc-500 mt-1">States / UTs With No Listed Facility *</p>
           </div>
         </div>
 
@@ -178,6 +194,12 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
                 </button>
               ))}
             </div>
+            {blackMassExtras > 0 && (
+              <p className="text-[10px] text-zinc-600 mt-3">
+                Counts sum to the full {fmtNum(rawList.length)}-row directory. Clicking <strong className="text-zinc-500">Black Mass / Mechanical</strong> also
+                includes {blackMassExtras} integrated recyclers that produce black mass but are classified under their primary category.
+              </p>
+            )}
           </div>
         )}
 
@@ -289,25 +311,25 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
         </div>
 
         {/* Missing states */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
-          <h3 className="text-sm font-semibold text-zinc-300 mb-3">
-            * States / UTs Without CPCB-Registered Recyclers
-          </h3>
-          <p className="text-xs text-zinc-500 mb-3">
-            The following states and union territories do not have any CPCB/SPCB-authorized e-waste
-            recyclers or dismantlers as per the data available (as on 08-06-2023):
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {MISSING_STATES.map(s => (
-              <span key={s} className="text-xs bg-zinc-800 text-zinc-400 border border-zinc-700 rounded-full px-3 py-1">
-                {s}
-              </span>
-            ))}
+        {missingStates.length > 0 && (
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
+            <h3 className="text-sm font-semibold text-zinc-300 mb-3">
+              * States / UTs With No Listed Facility
+            </h3>
+            <p className="text-xs text-zinc-500 mb-3">
+              The following states and union territories do not have any CPCB / SPCB / MoEF-authorised
+              recycling, reprocessing, or upstream-producer facility in our directory. Waste generated
+              in these regions may need to be transported to the nearest state with authorised units.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {missingStates.map(s => (
+                <span key={s} className="text-xs bg-zinc-800 text-zinc-400 border border-zinc-700 rounded-full px-3 py-1">
+                  {s}
+                </span>
+              ))}
+            </div>
           </div>
-          <p className="text-xs text-zinc-600 mt-3 italic">
-            E-waste generated in these regions may need to be transported to the nearest state with registered recyclers.
-          </p>
-        </div>
+        )}
 
         {/* CTA */}
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-center mb-8">

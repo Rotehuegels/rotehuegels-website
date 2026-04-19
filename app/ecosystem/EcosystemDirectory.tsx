@@ -183,6 +183,29 @@ export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
           </div>
         </div>
 
+        {/* Evolving-coverage disclaimer */}
+        <div className="rounded-2xl border border-sky-500/20 bg-sky-500/5 p-5 mb-8 flex gap-4">
+          <div className="shrink-0 pt-0.5">
+            <Recycle className="h-5 w-5 text-sky-400" />
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-sm text-sky-300 font-semibold">This ecosystem is continuously evolving.</p>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              We&apos;re actively expanding coverage and verifying data across every industry in India&apos;s
+              critical-minerals value chain — from mines, smelters, and rare-earth processors to cell / CAM
+              makers, EV OEMs, battery pack assemblers, authorised recyclers, and material-recovery
+              facilities. New tiers and verified entries are added on a rolling basis; plastics, paper, and
+              tyre-recycling coverage is in planning.
+            </p>
+            <p className="text-xs text-zinc-500">
+              Spot a missing facility, outdated contact, or incorrect classification? Help us keep the map
+              accurate — write to{' '}
+              <a href="mailto:info@rotehuegels.com?subject=Ecosystem%20directory%20—%20correction%20or%20addition"
+                 className="text-sky-400 hover:text-sky-300 underline">info@rotehuegels.com</a>.
+            </p>
+          </div>
+        </div>
+
         {/* Ecosystem tiers — primary → forward → reverse loop */}
         {categories.length > 0 && (
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8 space-y-5">

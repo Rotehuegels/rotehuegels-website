@@ -251,8 +251,8 @@ export default async function EWasteLandingPage() {
             <li>Rajasthan State Pollution Control Board (RSPCB) — <em>E-Waste Recyclers/Dismantlers</em></li>
             <li>Karnataka State Pollution Control Board (KSPCB) — <em>E-Waste Authorised Recyclers/Dismantlers</em></li>
             <li>MoEF&amp;CC / CPCB — <em>List of Registered Non-Ferrous Metal Reprocessors (NFMR)</em> under the Hazardous and Other Wastes (Management and Transboundary Movement) Rules, 2016</li>
-            <li>Material Recycling Association of India (MRAI) — <em>Membership Directory</em> — <a href="https://www.mrai.org.in/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">mrai.org.in</a></li>
             <li>CPCB Battery Waste Management Portal and published list of registered battery recyclers under the Battery Waste Management Rules, 2022</li>
+            <li>Listed-company disclosures (BSE, NSE, SEBI) and credit-rating agency public releases (ICRA, CARE, Infomerics, Acuité)</li>
             <li>E-Waste (Management) Rules, 2022 &amp; Battery Waste Management Rules, 2022 — Ministry of Environment, Forest and Climate Change, Government of India</li>
           </ol>
           <p className="italic text-zinc-700">

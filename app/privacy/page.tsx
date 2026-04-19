@@ -44,7 +44,7 @@ export default function PrivacyPage() {
               <li>
                 <strong>Publicly-sourced facility information</strong> — company names, registered / plant addresses, GPS coordinates,
                 authorisation numbers, capacity figures, category classifications. Sourced from CPCB, SPCB, MoEF registries, BSE/NSE
-                filings, MRAI, credit-rating-agency disclosures, and company websites. See{' '}
+                filings, credit-rating-agency disclosures, and company websites. See{' '}
                 <Link href="/data-sources" className="text-emerald-400 underline">/data-sources</Link>.
               </li>
               <li>

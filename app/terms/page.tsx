@@ -83,9 +83,9 @@ export default function TermsPage() {
 
           <Section title="4. Data accuracy disclaimer">
             <p>
-              The Directory is compiled from publicly available government registries (CPCB, SPCB, MPCB, MoEF), industry associations
-              (MRAI), regulatory disclosures (BSE, NSE), credit-rating agency public releases (ICRA, CARE, Infomerics, Acuité),
-              State Pollution Control Board consent-to-operate filings, and publicly disclosed facility information. See{' '}
+              The Directory is compiled from publicly available government registries (CPCB, SPCB, MPCB, MoEF), regulatory disclosures
+              (BSE, NSE, SEBI), credit-rating agency public releases (ICRA, CARE, Infomerics, Acuité), State Pollution Control Board
+              consent-to-operate filings, and publicly disclosed facility information. See{' '}
               <Link href="/data-sources" className="text-emerald-400 underline">Data Sources</Link> for the full list.
             </p>
             <p>

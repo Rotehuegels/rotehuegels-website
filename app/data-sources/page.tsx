@@ -3,7 +3,7 @@ import { BookOpen } from 'lucide-react';
 
 export const metadata = {
   title: 'Data Sources — Rotehügels',
-  description: 'Every public source that feeds the Rotehügels India Circular Economy Ecosystem directory — CPCB, SPCBs, MoEF, MRAI, BSE/NSE, credit-rating agencies, and curated editorial.',
+  description: 'Every public source that feeds the Rotehügels India Circular Economy Ecosystem directory — CPCB, SPCBs, MoEF, BSE/NSE, credit-rating agencies, and curated editorial.',
 };
 
 const LAST_UPDATED = '19 April 2026';
@@ -99,20 +99,14 @@ export default function DataSourcesPage() {
             <Source name="Brickwork Ratings" url="https://www.brickworkratings.com/" scope="Rating reports." />
           </Group>
 
-          <Group title="F. Industry associations">
-            <Source name="Material Recycling Association of India (MRAI)" url="https://www.mrai.org.in/" scope="Membership directory (used for fact-extraction only; our directory is our own compiled work)." />
-            <Source name="Non-Ferrous Metals Recycling Association" url="" scope="Industry data on non-ferrous scrap flow." />
-            <Source name="ALCircle" url="https://www.alcircle.com/" scope="Aluminium industry news + directory of producers, recyclers, extruders." />
-          </Group>
-
-          <Group title="G. Facility self-disclosures">
+          <Group title="F. Facility self-disclosures">
             <p className="text-xs text-zinc-500">
-              Company websites, investor-relations pages, sustainability reports, press releases, and public tender documents. Each is
-              cross-verified against a regulatory or rating source where possible.
+              Company websites, investor-relations pages, sustainability reports, annual reports, press releases, and public tender
+              documents. Each is cross-verified against a regulatory or rating source where possible.
             </p>
           </Group>
 
-          <Group title="H. Rotehügels editorial layer">
+          <Group title="G. Rotehügels editorial layer">
             <p className="text-xs text-zinc-500">
               The following layers are added by Rotehügels on top of the above public-record sources and constitute our own editorial
               work:
@@ -127,7 +121,7 @@ export default function DataSourcesPage() {
             </ul>
           </Group>
 
-          <Group title="I. Disclaimers">
+          <Group title="H. Disclaimers">
             <p>
               Information is compiled in good faith from the above public sources. We do not guarantee that any specific entry is
               current, complete, or accurate at the moment of use. Users must independently verify facility credentials

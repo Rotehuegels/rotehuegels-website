@@ -69,7 +69,7 @@ export default async function EWasteLandingPage() {
               Register as Recycler
             </Link>
             <Link
-              href="/recycling/recyclers"
+              href="/ecosystem"
               className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
             >
               View {recyclerCount.toLocaleString('en-IN')} Registered Recyclers
@@ -84,7 +84,7 @@ export default async function EWasteLandingPage() {
           <p className="text-center text-xs text-zinc-500 uppercase tracking-wider mb-4">Full non-ferrous recycling value chain · directory coverage</p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {stats.map(s => (
-              <Link key={s.label} href="/recycling/recyclers"
+              <Link key={s.label} href="/ecosystem"
                 className="group rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 text-center hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors">
                 <p className={`text-2xl font-black ${s.color}`}>{s.value.toLocaleString('en-IN')}</p>
                 <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1 group-hover:text-zinc-400 transition-colors">{s.label}</p>

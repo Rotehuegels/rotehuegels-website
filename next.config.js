@@ -112,6 +112,9 @@ const nextConfig = {
     return [
       { source: '/ewaste', destination: '/recycling', permanent: true },
       { source: '/ewaste/:path*', destination: '/recycling/:path*', permanent: true },
+      // Public directory moved from /recycling/recyclers → /ecosystem
+      { source: '/recycling/recyclers', destination: '/ecosystem', permanent: true },
+      { source: '/recycling/recyclers/:code', destination: '/ecosystem/:code', permanent: true },
     ];
   },
   async rewrites() {
@@ -119,11 +122,13 @@ const nextConfig = {
       // ── Mobile PWA shortcuts (/m/...) ──────────────────────────────
       { source: '/m/reinvoice', destination: '/mobile/reinvoice' },
 
-      // ── E-Waste shortcuts ──────────────────────────────────────────
+      // ── Recycling operations dashboard ────────────────────────────
       { source: '/d/recycling', destination: '/dashboard/recycling' },
       { source: '/d/recycling/requests', destination: '/dashboard/recycling/requests' },
-      { source: '/d/recycling/recyclers', destination: '/dashboard/recycling/recyclers' },
-      { source: '/d/recycling/recyclers/:code', destination: '/dashboard/recycling/recyclers/:code' },
+
+      // ── Ecosystem directory (internal) ────────────────────────────
+      { source: '/d/ecosystem', destination: '/dashboard/ecosystem' },
+      { source: '/d/ecosystem/:code', destination: '/dashboard/ecosystem/:code' },
 
       // ── IMS shortcuts ─────────────────────────────────────────────
       { source: '/d/ims', destination: '/dashboard/ims' },

@@ -80,7 +80,7 @@ function FacilityBlock({ facility }: { facility: FacilityNode }) {
   );
   return facility.is_current
     ? content
-    : <Link href={`/d/recycling/recyclers/${facility.recycler_code}`}>{content}</Link>;
+    : <Link href={`/d/ecosystem/${facility.recycler_code}`}>{content}</Link>;
 }
 
 function Node({ node, currentRecyclerId, depth }: { node: OrgTreeNode; currentRecyclerId: string; depth: number }) {

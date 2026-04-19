@@ -82,7 +82,7 @@ export default function DigitalSolutionsPage() {
           whileInView="show"
           viewport={{ once: true }}
           variants={fadeUp}
-          className="relative max-w-4xl mx-auto"
+          className="relative max-w-[1800px] mx-auto"
         >
 
           {/* FLOATING LOGO */}
@@ -167,7 +167,7 @@ export default function DigitalSolutionsPage() {
       <section className="py-24 px-6 text-center">
         <h2 className="text-3xl font-bold mb-12">Technology Stack</h2>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-[1800px] mx-auto">
 
           {[
             { icon: Cpu, title: 'AI & Machine Learning' },
@@ -194,7 +194,7 @@ export default function DigitalSolutionsPage() {
       <section className="py-24 px-6 text-center">
         <h2 className="text-3xl font-bold mb-12">Scalable Across Industries</h2>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-[1800px] mx-auto">
 
           {[
             { icon: Factory, title: 'Metals & Mining' },
@@ -224,7 +224,7 @@ export default function DigitalSolutionsPage() {
           whileInView="show"
           viewport={{ once: true }}
           variants={fadeUp}
-          className="max-w-4xl mx-auto text-center bg-gradient-to-r from-red-900/40 to-red-700/20 border border-red-500/30 p-12 rounded-2xl shadow-2xl"
+          className="max-w-[1800px] mx-auto text-center bg-gradient-to-r from-red-900/40 to-red-700/20 border border-red-500/30 p-12 rounded-2xl shadow-2xl"
         >
           <h2 className="text-3xl font-bold mb-4">Ready to Digitize Your Plant?</h2>
           <p className="text-gray-300 mb-6">

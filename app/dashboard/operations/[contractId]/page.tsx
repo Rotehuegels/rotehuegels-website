@@ -94,7 +94,7 @@ export default function OperationsDetailPage() {
   const { contract, logs, samples, stats } = data;
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 md:p-6 max-w-[1800px] mx-auto space-y-6">
       <Link href="/d/operations" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white">
         <ArrowLeft className="h-4 w-4" /> All Contracts
       </Link>

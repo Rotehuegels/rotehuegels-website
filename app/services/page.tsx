@@ -93,7 +93,7 @@ function Kpi({ value, label }: { value: string; label: string }) {
 
 export default function ServicesPage() {
   return (
-    <section className="max-w-6xl mx-auto px-4 py-12 md:py-16 space-y-12 md:space-y-16">
+    <section className="max-w-[1800px] mx-auto px-4 py-12 md:py-16 space-y-12 md:space-y-16">
       {/* Hero */}
       <header className="text-center">
         <p className="text-sm tracking-widest text-emerald-400/90 uppercase">
@@ -103,7 +103,7 @@ export default function ServicesPage() {
           Practical expertise across{" "}
           <span className="text-rose-400">Metals, Recycling & Strategy</span>
         </h1>
-        <p className="mt-4 max-w-3xl mx-auto text-zinc-300">
+        <p className="mt-4 max-w-[1800px] mx-auto text-zinc-300">
           We combine lab-grade research, on-ground commissioning experience, and
           boardroom strategy to deliver measurable outcomes—on time and within
           budget.
@@ -229,7 +229,7 @@ export default function ServicesPage() {
         <h2 className="text-xl md:text-2xl font-semibold text-center mb-6">
           Frequently asked questions
         </h2>
-        <div className="max-w-3xl mx-auto divide-y divide-zinc-800">
+        <div className="max-w-[1800px] mx-auto divide-y divide-zinc-800">
           {FAQ_ITEMS.map((item) => (
             <FaqItem key={item.q} q={item.q} a={item.a} />
           ))}
@@ -247,7 +247,7 @@ export default function ServicesPage() {
         <h2 className="text-xl md:text-2xl font-semibold">
           Ready to move from slides to results?
         </h2>
-        <p className="mt-2 max-w-3xl mx-auto text-zinc-300">
+        <p className="mt-2 max-w-[1800px] mx-auto text-zinc-300">
           Whether it’s de-bottlenecking, a pilot to prove recovery, or a
           greenfield ramp-up—our team integrates science, operations, and
           strategy to deliver outcomes.

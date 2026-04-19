@@ -53,7 +53,7 @@ export default async function RecyclerDashboard({ params }: { params: Promise<{ 
     <div className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
       <header className="border-b border-zinc-800 px-6 py-4 bg-zinc-950/95">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="max-w-[1800px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Factory className="h-6 w-6 text-indigo-400" />
             <div>
@@ -65,7 +65,7 @@ export default async function RecyclerDashboard({ params }: { params: Promise<{ 
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-[1800px] mx-auto px-6 py-8 space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[

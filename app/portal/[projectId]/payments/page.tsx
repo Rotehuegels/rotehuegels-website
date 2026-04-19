@@ -61,7 +61,7 @@ export default async function PaymentsPage({ params }: { params: Promise<{ proje
   const paidPct = totalContract > 0 ? Math.round((totalReceived / totalContract) * 100) : 0;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-6 max-w-[1800px] mx-auto space-y-6">
       <h1 className="text-xl font-bold text-white mb-1">Payment Tracker</h1>
       <p className="text-sm text-zinc-500">{project.name}</p>
 

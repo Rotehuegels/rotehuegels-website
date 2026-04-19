@@ -56,7 +56,7 @@ export default function EWasteQuotePage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-3xl mx-auto px-6 py-12">
+      <div className="max-w-[1800px] mx-auto px-6 py-12">
         <Link href="/recycling" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
           <ArrowLeft className="h-3 w-3" /> Back to Recycling
         </Link>

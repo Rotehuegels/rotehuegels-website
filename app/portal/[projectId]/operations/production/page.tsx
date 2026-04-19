@@ -48,7 +48,7 @@ export default async function ProductionLogPage({ params }: { params: Promise<{ 
   const totalPower = entries.reduce((s, e) => s + (e.power_kwh ?? 0), 0);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-6 max-w-[1800px] mx-auto space-y-6">
       <div>
         <Link href={`/p/${projectId}/operations`} className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 mb-3">
           <ArrowLeft className="h-3 w-3" /> Back to Operations

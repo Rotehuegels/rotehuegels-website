@@ -198,7 +198,7 @@ export default async function RecyclersPage({ searchParams }: { searchParams?: P
           </h2>
           <span className="text-[10px] text-zinc-500">{pins.length} GPS pins · internal</span>
         </div>
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-[1800px] mx-auto">
           <IndiaMap
             stateData={stateData}
             pins={pins}

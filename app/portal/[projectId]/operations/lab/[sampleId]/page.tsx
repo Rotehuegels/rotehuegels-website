@@ -72,7 +72,7 @@ export default async function SampleDetailPage({
   const sColor = statusColor[sample.status] ?? statusColor.pending;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-6 max-w-[1800px] mx-auto space-y-6">
 
       {/* Back Link */}
       <Link

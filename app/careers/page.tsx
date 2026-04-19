@@ -165,7 +165,7 @@ export default function CareersPage() {
       {/* Hero */}
       <section className="relative">
         {/* Remove light gradient; keep spacing; ensure contrast */}
-        <div className="max-w-6xl mx-auto px-6 pt-16 pb-10">
+        <div className="max-w-[1800px] mx-auto px-6 pt-16 pb-10">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -201,7 +201,7 @@ export default function CareersPage() {
 
       {/* Live job openings */}
       {jobs.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 pb-8">
+        <section className="max-w-[1800px] mx-auto px-6 pb-8">
           <h2 className="text-2xl font-bold text-slate-100 mb-4">Open Positions</h2>
           <div className="space-y-3">
             {jobs.map(job => (
@@ -223,7 +223,7 @@ export default function CareersPage() {
       )}
 
       {/* Values */}
-      <section className="max-w-6xl mx-auto px-6 py-8">
+      <section className="max-w-[1800px] mx-auto px-6 py-8">
         <div className="grid md:grid-cols-4 gap-4">
           {values.map((v, i) => (
             <motion.div
@@ -243,7 +243,7 @@ export default function CareersPage() {
       </section>
 
       {/* Domains */}
-      <section id="domains" className="max-w-6xl mx-auto px-6 py-6">
+      <section id="domains" className="max-w-[1800px] mx-auto px-6 py-6">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <h2 className="text-2xl md:text-3xl font-bold text-slate-100">
             Domains we’re hiring for
@@ -306,7 +306,7 @@ export default function CareersPage() {
       </section>
 
       {/* Consultants & Industry Experts */}
-      <section className="max-w-6xl mx-auto px-6 py-8">
+      <section className="max-w-[1800px] mx-auto px-6 py-8">
         <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow">
           <div className="flex items-start gap-4">
             <Users className="w-7 h-7 text-slate-200" />
@@ -340,7 +340,7 @@ export default function CareersPage() {
       </section>
 
       {/* What we look for */}
-      <section className="max-w-6xl mx-auto px-6 py-6">
+      <section className="max-w-[1800px] mx-auto px-6 py-6">
         <div className="grid md:grid-cols-3 gap-5">
           {["Evidence of excellence", "Systems thinking", "Hands-on bias"].map(
             (k, i) => (
@@ -368,7 +368,7 @@ export default function CareersPage() {
       </section>
 
       {/* What we offer */}
-      <section className="max-w-6xl mx-auto px-6 py-6">
+      <section className="max-w-[1800px] mx-auto px-6 py-6">
         <h2 className="text-2xl md:text-3xl font-bold text-slate-100 mb-6">
           What we offer
         </h2>
@@ -411,7 +411,7 @@ export default function CareersPage() {
       </section>
 
       {/* How to apply */}
-      <section className="max-w-6xl mx-auto px-6 py-8">
+      <section className="max-w-[1800px] mx-auto px-6 py-8">
         <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow">
           <h3 className="text-xl font-semibold text-slate-100">How to apply</h3>
           <ul className="mt-3 list-disc list-inside text-slate-300 space-y-1">
@@ -437,7 +437,7 @@ export default function CareersPage() {
       </section>
 
       {/* FAQ */}
-      <section className="max-w-6xl mx-auto px-6 pb-16">
+      <section className="max-w-[1800px] mx-auto px-6 pb-16">
         <h3 className="text-xl font-semibold text-slate-100">FAQs</h3>
         <div className="mt-4 divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/5">
           {faqs.map((f, i) => (
@@ -460,7 +460,7 @@ export default function CareersPage() {
       </section>
 
       <footer className="border-t border-white/10">
-        <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-slate-400">
+        <div className="max-w-[1800px] mx-auto px-6 py-8 text-sm text-slate-400">
           © {new Date().getFullYear()} Rotehügels. Building sustainable advantage.
         </div>
       </footer>

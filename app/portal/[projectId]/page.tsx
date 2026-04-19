@@ -95,7 +95,7 @@ export default async function ProjectDashboardPage({ params }: { params: Promise
   const base = `/portal/${projectId}`;
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-6 space-y-6 max-w-[1800px] mx-auto">
 
       {/* Header */}
       <div>

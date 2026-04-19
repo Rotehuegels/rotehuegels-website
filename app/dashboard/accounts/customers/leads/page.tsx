@@ -74,7 +74,7 @@ export default function CustomerLeadsPage() {
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto">
+    <div className="p-4 md:p-6 max-w-[1800px] mx-auto">
       <Link href="/d/customers" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white mb-4">
         <ArrowLeft className="h-4 w-4" /> Customers
       </Link>

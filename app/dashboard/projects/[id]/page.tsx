@@ -104,7 +104,7 @@ export default function AdminProjectDetailPage() {
   const { project, milestones, linkedOrders, changeRequests, clientUsers } = data;
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-6 max-w-[1800px] mx-auto space-y-6">
       <Link href="/d/projects" className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white">
         <ArrowLeft className="h-4 w-4" /> All Projects
       </Link>

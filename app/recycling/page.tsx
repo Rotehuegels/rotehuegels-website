@@ -46,7 +46,7 @@ export default async function EWasteLandingPage() {
       <section className="relative overflow-hidden py-20 md:py-32 px-6">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/30 via-zinc-950 to-zinc-950" />
         <div className="absolute top-20 right-20 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
-        <div className="relative max-w-4xl mx-auto text-center">
+        <div className="relative max-w-[1800px] mx-auto text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 mb-6">
             <Recycle className="h-4 w-4 text-emerald-400" />
             <span className="text-xs font-medium text-emerald-400">Responsible Recycling Platform</span>

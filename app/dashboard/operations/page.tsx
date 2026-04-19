@@ -24,7 +24,7 @@ export default async function OperationsListPage() {
   const list = contracts ?? [];
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto">
+    <div className="p-4 md:p-6 max-w-[1800px] mx-auto">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
           <Factory className="h-5 w-5 text-rose-400" />

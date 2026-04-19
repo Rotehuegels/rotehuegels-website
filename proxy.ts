@@ -42,6 +42,7 @@ const PUBLIC_API = [
   // Diagnostics / feeds
   '/api/health',
   '/api/rss',
+  '/api/market',
   '/api/analytics/pageview',
   // AI security-alert is server-to-server (SECURITY_ALERT_SECRET required)
   '/api/ai/security-alert',

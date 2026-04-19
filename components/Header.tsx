@@ -25,6 +25,7 @@ const NAV = [
       { label: 'Plant Engineering & EPC',     href: '/services/plant-epc' },
       { label: 'Operations Advisory',         href: '/services/operations-advisory' },
       { label: 'Custom Anodes & Cathodes',    href: '/services/custom-electrodes' },
+      { label: 'Severe Service Valves',       href: '/services/severe-service-valves' },
       { label: 'Recycling',                   href: '/recycling' },
       { label: 'Digital Solutions',           href: '/digital-solutions' },
       { label: 'Success Stories',             href: '/success-stories' },

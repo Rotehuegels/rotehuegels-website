@@ -7,6 +7,8 @@ import {
   Factory, ArrowLeft, MapPin, Mail, Phone, Globe, Shield, Award, CheckCircle2,
   Building2, FileText, AlertTriangle, Calendar, Package, Recycle, Battery, Users,
 } from 'lucide-react';
+import OrgChart from '@/components/OrgChart';
+import { buildGroupTree } from '@/lib/recyclerGroupTree';
 
 type ContactRow = { name?: string | null; title?: string | null; department?: string | null; email?: string | null; phone?: string | null; source?: string | null; first_seen?: string | null };
 type WebsiteRow = { url: string; source?: string | null; first_seen?: string | null };
@@ -82,6 +84,9 @@ export default async function RecyclerProfilePage({ params }: { params: Promise<
   const dupRef = r.notes?.match(/under\s+([A-Z]+-[A-Z]+-\d+)/i)?.[1] ?? null;
   const isDup = r.notes && /\[(cross-category )?dup/i.test(r.notes);
 
+  // Group structure — only renders if this row's company has parent, siblings, or >1 facility
+  const groupTree = await buildGroupTree(r.company_id ?? null);
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className={`relative bg-gradient-to-br ${cat.tint} via-zinc-950 to-zinc-950`}>
@@ -150,6 +155,10 @@ export default async function RecyclerProfilePage({ params }: { params: Promise<
             </div>
           )}
         </div>
+
+        {/* Group structure — only renders when the company has a parent,
+            siblings or more than one facility */}
+        {groupTree && <OrgChart tree={groupTree} currentRecyclerId={r.id} />}
 
         {/* Contact + Authorization side by side */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

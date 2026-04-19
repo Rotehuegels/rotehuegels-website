@@ -5,8 +5,11 @@ import type { Metadata } from 'next';
 import MiniMap from '@/components/RecyclerMiniMapClient';
 import {
   Factory, ArrowLeft, MapPin, Mail, Phone, Globe, Shield, Award, CheckCircle2,
-  Building2, FileText, AlertTriangle, Calendar, Package, Recycle, Battery,
+  Building2, FileText, AlertTriangle, Calendar, Package, Recycle, Battery, Users,
 } from 'lucide-react';
+
+type ContactRow = { name?: string | null; title?: string | null; department?: string | null; email?: string | null; phone?: string | null; source?: string | null; first_seen?: string | null };
+type WebsiteRow = { url: string; source?: string | null; first_seen?: string | null };
 
 export const dynamicParams = true;
 export const revalidate = 300;
@@ -246,6 +249,68 @@ export default async function RecyclerProfilePage({ params }: { params: Promise<
             </dl>
           </div>
         </div>
+
+        {/* All sourced contacts — internal view. Every email/phone/person ever
+            collected from MRAI, website scrapes, registries. Deduped by value. */}
+        {Array.isArray(r.contacts_all) && (r.contacts_all as ContactRow[]).length > 0 && (
+          <div className={`${glass} p-5`}>
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+              <Users className="h-4 w-4 text-indigo-400" /> All Sourced Contacts
+              <span className="text-[10px] text-zinc-500 font-normal">({(r.contacts_all as ContactRow[]).length} entries · internal)</span>
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-800/60 text-[10px] text-zinc-500 uppercase tracking-wider">
+                    <th className="text-left font-medium px-3 py-2">Name</th>
+                    <th className="text-left font-medium px-3 py-2">Title / Dept</th>
+                    <th className="text-left font-medium px-3 py-2">Phone</th>
+                    <th className="text-left font-medium px-3 py-2">Email</th>
+                    <th className="text-left font-medium px-3 py-2">Source</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/40">
+                  {(r.contacts_all as ContactRow[]).map((c, i) => (
+                    <tr key={i} className="hover:bg-zinc-800/20">
+                      <td className="px-3 py-2 text-zinc-200">{c.name ?? <span className="text-zinc-600">—</span>}</td>
+                      <td className="px-3 py-2 text-zinc-400">{[c.title, c.department].filter(Boolean).join(' · ') || <span className="text-zinc-600">—</span>}</td>
+                      <td className="px-3 py-2">
+                        {c.phone ? <a href={`tel:${c.phone}`} className="text-emerald-400 hover:text-emerald-300 font-mono text-xs">{c.phone}</a> : <span className="text-zinc-600">—</span>}
+                      </td>
+                      <td className="px-3 py-2">
+                        {c.email ? <a href={`mailto:${c.email}`} className="text-sky-400 hover:text-sky-300 text-xs break-all">{c.email}</a> : <span className="text-zinc-600">—</span>}
+                      </td>
+                      <td className="px-3 py-2 text-[10px] text-zinc-500">
+                        {c.source ?? '—'}
+                        {c.first_seen && <span className="block text-zinc-600">{c.first_seen}</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* All sourced websites — a separate small list */}
+        {Array.isArray(r.websites_all) && (r.websites_all as WebsiteRow[]).length > 0 && (
+          <div className={`${glass} p-5`}>
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+              <Globe className="h-4 w-4 text-violet-400" /> All Sourced Websites
+              <span className="text-[10px] text-zinc-500 font-normal">({(r.websites_all as WebsiteRow[]).length} · internal)</span>
+            </h2>
+            <ul className="space-y-1 text-sm">
+              {(r.websites_all as WebsiteRow[]).map((w, i) => (
+                <li key={i} className="flex items-center justify-between gap-4 py-1">
+                  <a href={w.url} target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 break-all">
+                    {w.url.replace(/^https?:\/\//, '')}
+                  </a>
+                  <span className="text-[10px] text-zinc-500 shrink-0">{w.source ?? '—'}{w.first_seen ? ` · ${w.first_seen}` : ''}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Map */}
         {hasGps && (

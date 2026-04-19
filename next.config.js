@@ -104,6 +104,21 @@ const nextConfig = {
           { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
         ],
       },
+      {
+        source: '/assets/:path*',
+        headers: [
+          { key: 'Cross-Origin-Resource-Policy', value: 'cross-origin' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Cache-Control', value: 'public, max-age=604800, immutable' },
+        ],
+      },
+      {
+        source: '/:file(logo\\.png|logo\\.jpg|favicon\\.ico|apple-touch-icon\\.png|autorex-logo\\.jpg)',
+        headers: [
+          { key: 'Cross-Origin-Resource-Policy', value: 'cross-origin' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+        ],
+      },
     ];
   },
 

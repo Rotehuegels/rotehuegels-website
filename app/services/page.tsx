@@ -172,6 +172,55 @@ export default function ServicesPage() {
         />
       </div>
 
+      {/* Specialty Manufacturing — Custom Anodes & Cathodes */}
+      <div className="rounded-2xl border border-rose-500/20 bg-gradient-to-br from-rose-500/5 to-zinc-900/40 p-6 md:p-8">
+        <div className="grid gap-6 md:grid-cols-[1fr_auto] items-center">
+          <div>
+            <p className="text-xs tracking-widest text-rose-400/90 uppercase">Specialty Manufacturing</p>
+            <h2 className="mt-2 text-xl md:text-2xl font-semibold">
+              Custom Anodes &amp; Cathodes — engineered to your process
+            </h2>
+            <p className="mt-3 text-sm text-zinc-300 leading-relaxed max-w-3xl">
+              Beyond engineering and advisory, we fabricate precision electrodes custom-designed for your
+              electrowinning and electrorefining circuits. Each run is engineered to the specific feed chemistry,
+              current density, cell geometry, and operating envelope of your plant — not an off-the-shelf substitute.
+            </p>
+            <ul className="mt-4 space-y-2 text-sm text-zinc-300">
+              <li className="flex gap-3">
+                <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-rose-400/80 shrink-0" />
+                <span><strong className="text-white">99.99 % purity lead anodes</strong> — rolled or cast, dimensioned and alloyed to your EW specification</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-rose-400/80 shrink-0" />
+                <span><strong className="text-white">Aluminium cathodes</strong> — starter sheets and blanks; custom thickness, surface finish, and edge strips</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-rose-400/80 shrink-0" />
+                <span><strong className="text-white">Stainless-steel cathodes, titanium anodes, copper bus-bars</strong> — on request</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-rose-400/80 shrink-0" />
+                <span>Batch sizes from pilot-plant trials to full commercial replacement cycles</span>
+              </li>
+            </ul>
+          </div>
+          <div className="flex md:flex-col gap-3 md:min-w-[180px]">
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white hover:bg-rose-600 transition-colors whitespace-nowrap"
+            >
+              Request a quote
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-xl border border-zinc-700 hover:border-zinc-500 px-5 py-3 text-sm font-medium text-zinc-300 transition-colors whitespace-nowrap"
+            >
+              Share your spec
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Process */}
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 md:p-8">
         <h2 className="text-xl md:text-2xl font-semibold text-center">How we engage</h2>

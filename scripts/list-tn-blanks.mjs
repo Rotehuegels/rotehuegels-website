@@ -1,0 +1,13 @@
+import { createClient } from '@supabase/supabase-js';
+const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+const isPlaceholder = (e) => !e || /placeholder|^cpcb\.|^mrai\.|^bm\.|@placeholder/i.test(String(e));
+const realStr = (v) => v && String(v).trim() !== '' && !isPlaceholder(v);
+const { data } = await sb.from('recyclers')
+  .select('recycler_code, company_name, city, waste_type, email, phone, contacts_all, website, address')
+  .eq('is_active', true).eq('state', 'Tamil Nadu').order('recycler_code');
+for (const r of data ?? []) {
+  const ca = Array.isArray(r.contacts_all) ? r.contacts_all : [];
+  const hasE = realStr(r.email) || ca.some(c => realStr(c.email));
+  const hasP = realStr(r.phone) || ca.some(c => realStr(c.phone));
+  if (!hasE && !hasP) console.log(`${r.recycler_code}\t${r.company_name}\t${r.city ?? ''}\t${r.address ?? ''}\t${r.website ?? ''}`);
+}

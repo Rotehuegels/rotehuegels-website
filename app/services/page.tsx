@@ -173,7 +173,7 @@ export default function ServicesPage() {
       </div>
 
       {/* Specialty Manufacturing — Custom Anodes & Cathodes */}
-      <div className="rounded-2xl border border-rose-500/20 bg-gradient-to-br from-rose-500/5 to-zinc-900/40 p-6 md:p-8">
+      <div id="custom-electrodes" className="scroll-mt-24 rounded-2xl border border-rose-500/20 bg-gradient-to-br from-rose-500/5 to-zinc-900/40 p-6 md:p-8">
         <div className="grid gap-6 md:grid-cols-[1fr_auto] items-center">
           <div>
             <p className="text-xs tracking-widest text-rose-400/90 uppercase">Specialty Manufacturing</p>

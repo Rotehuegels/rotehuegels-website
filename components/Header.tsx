@@ -24,6 +24,7 @@ const NAV = [
       { label: 'Testwork & Feasibility',      href: '/services/testwork-feasibility' },
       { label: 'Plant Engineering & EPC',     href: '/services/plant-epc' },
       { label: 'Operations Advisory',         href: '/services/operations-advisory' },
+      { label: 'Custom Anodes & Cathodes',    href: '/services#custom-electrodes' },
       { label: 'Recycling',                   href: '/recycling' },
       { label: 'Digital Solutions',           href: '/digital-solutions' },
       { label: 'Success Stories',             href: '/success-stories' },

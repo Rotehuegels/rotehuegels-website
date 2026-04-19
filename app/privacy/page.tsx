@@ -50,8 +50,8 @@ export default function PrivacyPage() {
               <li>
                 <strong>Contact details of named individuals</strong> associated with listed facilities — email addresses, phone
                 numbers, and occasionally names of directors / key contacts. This is personal data under the DPDP Act and is held
-                <strong className="text-white"> only behind authenticated access</strong> (our internal dashboard at <code>/d/</code>). It is not
-                published on the public Directory pages at <Link href="/ecosystem" className="text-emerald-400 underline">/ecosystem</Link>.
+                <strong className="text-white"> only behind authenticated access</strong> within our internal systems. It is not published
+                on the public Directory at <Link href="/ecosystem" className="text-emerald-400 underline">/ecosystem</Link>.
               </li>
               <li>
                 <strong>Registration and form submissions</strong> — when you register as a customer, supplier, recycler, or REX
@@ -59,9 +59,9 @@ export default function PrivacyPage() {
                 phone, address, waste-stream details, etc.).
               </li>
               <li>
-                <strong>Visitor analytics</strong> — IP address (truncated), country / city (via Vercel edge), user-agent,
-                pages visited, referral source, UTM parameters, and a session-scoped visitor ID. Used to understand traffic patterns
-                and detect abuse.
+                <strong>Visitor analytics</strong> — IP address (truncated), approximate country / city, user-agent, pages visited,
+                referral source, UTM parameters, and a session-scoped visitor ID. Used to understand traffic patterns and detect
+                abuse.
               </li>
               <li>
                 <strong>Account data</strong> — for registered dashboard users, your email, hashed password, role, and audit log of key
@@ -114,10 +114,10 @@ export default function PrivacyPage() {
                 <strong>Statutory authorities</strong> — where required by law, court order, or lawful request from a regulator.
               </li>
               <li>
-                <strong>Service providers</strong> — hosting (Vercel, Supabase), email (Microsoft 365, Nodemailer SMTP), analytics,
-                AI inference (Groq, Ollama, Anthropic via approved API access), GSTIN verification (<em>gstincheck.co.in</em>),
-                search providers (Bing Web Search, Claude Web Search). These providers process data only as instructed by us under
-                contractual data-processing terms.
+                <strong>Service providers who process data on our behalf</strong> — including cloud hosting, managed database, email
+                delivery, analytics, AI inference, GSTIN / statutory-registry verification, and web search providers. These providers
+                process personal data only as instructed by us under contractual data-processing terms and equivalent confidentiality
+                obligations.
               </li>
               <li>
                 <strong>Corporate events</strong> — if Rotehügels undergoes a merger, acquisition, or asset sale, personal data may be
@@ -136,16 +136,13 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="7. Security">
-            <p>We use industry-standard safeguards including:</p>
-            <ul className="list-disc pl-6 space-y-1">
-              <li>HTTPS with a 2-year HSTS + preload policy.</li>
-              <li>Encrypted at-rest storage (AES-256-GCM on our Supabase Postgres instance).</li>
-              <li>Row-Level-Security enforcing authenticated-only access to internal tables.</li>
-              <li>Session tokens signed with HMAC-SHA-512 and rotated credentials.</li>
-              <li>Strict separation of anon-key (public aggregates) and service-role (server-side) database access.</li>
-              <li>Security headers including X-Frame-Options, Content-Security-Policy directives, Cross-Origin-Opener-Policy, and Cross-Origin-Resource-Policy.</li>
-              <li>Regular security audits and prompt patching of identified vulnerabilities.</li>
-            </ul>
+            <p>
+              We implement reasonable technical and organisational safeguards to protect personal data against unauthorised access,
+              alteration, disclosure, loss, or destruction — including encryption in transit and at rest, access controls,
+              authentication and session protection, strict privilege separation between public and internal systems, and regular
+              security review. We review these safeguards periodically and update them in line with industry practice and evolving
+              threats.
+            </p>
             <p>
               No system is perfectly secure. In the event of a personal-data breach likely to cause material harm, we will notify the
               Data Protection Board of India and affected data principals as required under the DPDP Act.
@@ -177,10 +174,10 @@ export default function PrivacyPage() {
 
           <Section title="10. Cross-border transfers">
             <p>
-              Our hosting (Vercel), database (Supabase), and some AI-inference providers may process data outside India. Where
-              transfers occur, we rely on our contractual data-processing terms with those providers to ensure protection consistent
-              with this policy. The Government of India may from time to time notify a list of countries to which personal data may
-              not be transferred; we will comply with such notifications.
+              Some of our service providers may process data on servers located outside India. Where such transfers occur, we rely on
+              contractual data-processing terms with those providers to ensure protection consistent with this policy. The Government
+              of India may from time to time notify a list of countries to which personal data may not be transferred; we will comply
+              with such notifications.
             </p>
           </Section>
 

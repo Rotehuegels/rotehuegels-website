@@ -122,6 +122,8 @@ export const config = {
     '/api/:path*',
     '/dashboard/:path*',
     '/admin/:path*',
+    '/marketplace/:path*',
+    '/marketplace',
     '/tickets/:path*',
     '/requests/:path*',
   ],

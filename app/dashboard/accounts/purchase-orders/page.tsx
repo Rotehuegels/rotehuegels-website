@@ -92,7 +92,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
   const totalPaid  = Object.values(paidMap).reduce((s, v) => s + v, 0);
 
   return (
-    <div className="p-6 max-w-6xl">
+    <div className="p-6 max-w-[1800px]">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-white">Purchase Orders</h1>

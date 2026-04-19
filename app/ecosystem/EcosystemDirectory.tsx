@@ -323,7 +323,7 @@ export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
                 </label>
               )}
             </div>
-            <div className="max-w-2xl mx-auto lg:max-w-3xl">
+            <div className="max-w-2xl mx-auto lg:max-w-[1800px]">
               <IndiaMap
                 key={selectedCategory ?? 'all'}
                 stateData={Object.fromEntries(STATES.map(s => [s.name, { recyclers: s.recyclers, capacity: s.capacity }]))}

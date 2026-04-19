@@ -162,7 +162,7 @@ export default function EditEmployeePage() {
   const isRex = form.employment_type === 'rex_network';
 
   return (
-    <div className="p-8 space-y-6 max-w-3xl">
+    <div className="p-8 space-y-6 max-w-[1800px]">
       <div>
         <Link href={`/d/employees/${id}`}
           className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-3">

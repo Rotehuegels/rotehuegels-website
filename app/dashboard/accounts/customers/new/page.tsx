@@ -91,7 +91,7 @@ export default function NewCustomerPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="p-6 max-w-[1800px]">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-white">Add Customer</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Customer ID will be auto-generated (CUST-NNN)</p>

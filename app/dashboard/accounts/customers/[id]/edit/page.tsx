@@ -132,7 +132,7 @@ export default function EditCustomerPage() {
   if (loading) return <div className="p-6 text-zinc-500 text-sm">Loading...</div>;
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="p-6 max-w-[1800px]">
       <Link href={`/d/customers/${id}`} className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-5 transition-colors">
         <ArrowLeft className="h-3 w-3" /> Back to Customer
       </Link>

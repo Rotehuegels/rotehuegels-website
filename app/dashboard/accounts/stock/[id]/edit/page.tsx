@@ -95,7 +95,7 @@ export default function EditStockItemPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="p-6 max-w-[1800px]">
       <div className="mb-6">
         <Link href="/d/stock"
           className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-2 transition-colors">

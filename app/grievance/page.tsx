@@ -25,7 +25,7 @@ export default function GrievancePage() {
           </p>
         </div>
 
-        <section className="max-w-4xl space-y-6 text-sm text-zinc-300 leading-relaxed">
+        <section className="max-w-[1800px] space-y-6 text-sm text-zinc-300 leading-relaxed">
 
           <Section title="1. When to file a grievance">
             <p>You may file a grievance with Rotehügels in any of the following situations:</p>

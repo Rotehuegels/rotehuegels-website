@@ -16,7 +16,7 @@ export default function SuccessStoriesPage() {
         title="Success Stories"
         subtitle="Turning vision into reality — global projects, sustainable impact."
       >
-        <p className="text-lg text-zinc-300 max-w-3xl">
+        <p className="text-lg text-zinc-300 max-w-[1800px]">
           At Rotehügels, we don’t just advise — we execute. Our projects span
           research pilots, feasibility studies, and full-scale plants. Here’s
           one of our flagship success stories.
@@ -89,7 +89,7 @@ export default function SuccessStoriesPage() {
         </div>
 
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 space-y-6">
-          <p className="text-sm text-zinc-300 max-w-3xl">
+          <p className="text-sm text-zinc-300 max-w-[1800px]">
             Rotehügels is currently delivering a complete turnkey Zinc Dross
             Recycling facility for a confidential industrial client in Chennai,
             India — covering full layout design, civil construction, CAPEX
@@ -198,7 +198,7 @@ export default function SuccessStoriesPage() {
 
       {/* Closing */}
       <Section title="Looking Ahead">
-        <p className="text-sm text-zinc-300 max-w-3xl">
+        <p className="text-sm text-zinc-300 max-w-[1800px]">
           From a $30M greenfield copper plant in Zambia to a zero-discharge zinc
           recycling facility in Chennai — Rotehügels delivers across geographies,
           scales, and metals. Every project is built on the same foundation:{" "}

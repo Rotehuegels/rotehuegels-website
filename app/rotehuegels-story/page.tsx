@@ -48,7 +48,7 @@ function P({ children }: { children: React.ReactNode }) {
 
 export default function RotehuegelsStoryPage() {
   return (
-    <main className="mx-auto max-w-7xl px-6 lg:px-10 py-12">
+    <main className="mx-auto max-w-[1800px] px-6 lg:px-10 py-12">
       <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_380px] gap-10 lg:gap-14">
 
         {/* Main content */}

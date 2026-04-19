@@ -48,7 +48,7 @@ export default function RexPage() {
     <main className="relative pb-32">
 
       {/* Hero */}
-      <section className="mx-auto max-w-5xl px-6 pt-24 pb-16 text-center">
+      <section className="mx-auto max-w-[1800px] px-6 pt-24 pb-16 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-400 mb-8">
           <Users className="h-3.5 w-3.5" />
           Rotehügels Expert Network
@@ -80,7 +80,7 @@ export default function RexPage() {
       </section>
 
       {/* Stats */}
-      <section className="mx-auto max-w-5xl px-6 pb-20">
+      <section className="mx-auto max-w-[1800px] px-6 pb-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
           {[
             { value: 'Free', label: 'Lifelong membership' },
@@ -97,7 +97,7 @@ export default function RexPage() {
       </section>
 
       {/* Who can join */}
-      <section className="mx-auto max-w-5xl px-6 pb-20">
+      <section className="mx-auto max-w-[1800px] px-6 pb-20">
         <h2 className="text-3xl font-bold text-white mb-8">Who can join</h2>
         <div className="grid sm:grid-cols-2 gap-6">
           {WHO_CAN_JOIN.map(({ icon: Icon, label, desc }) => (
@@ -115,7 +115,7 @@ export default function RexPage() {
       </section>
 
       {/* Focus areas */}
-      <section className="mx-auto max-w-5xl px-6 pb-20">
+      <section className="mx-auto max-w-[1800px] px-6 pb-20">
         <h2 className="text-3xl font-bold text-white mb-8">Focus areas</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {FOCUS_AREAS.map((area) => (
@@ -128,7 +128,7 @@ export default function RexPage() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="mx-auto max-w-5xl px-6 pb-20">
+      <section id="how-it-works" className="mx-auto max-w-[1800px] px-6 pb-20">
         <h2 className="text-3xl font-bold text-white mb-8">How it works</h2>
         <div className="grid sm:grid-cols-3 gap-6">
           {[
@@ -158,7 +158,7 @@ export default function RexPage() {
       </section>
 
       {/* Disclaimer */}
-      <section className="mx-auto max-w-5xl px-6 pb-20">
+      <section className="mx-auto max-w-[1800px] px-6 pb-20">
         <div className={`${glass} p-8`}>
           <h3 className="text-base font-semibold text-zinc-200 mb-5">Important — Please read</h3>
           <ul className="space-y-3 text-sm text-zinc-500 leading-relaxed">
@@ -173,7 +173,7 @@ export default function RexPage() {
       </section>
 
       {/* CTA */}
-      <section className="mx-auto max-w-5xl px-6 text-center">
+      <section className="mx-auto max-w-[1800px] px-6 text-center">
         <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.06] p-16">
           <h2 className="text-3xl font-bold text-white">Ready to join the network?</h2>
           <p className="mt-3 text-zinc-400 max-w-xl mx-auto text-base">

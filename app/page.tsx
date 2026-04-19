@@ -22,7 +22,7 @@ export default function HomePage() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-400 mb-4">
             Engineering · Technology · Execution
           </p>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white max-w-4xl leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white max-w-[1800px] leading-tight">
             We design plants.{" "}
             <span className="text-rose-400">Build software.</span>{" "}
             Operate facilities.

@@ -245,7 +245,7 @@ export default function EditPOPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl">
+    <div className="p-6 max-w-[1800px]">
       <div className="mb-6">
         <Link href={`/d/purchase-orders/${id}`}
           className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-2 transition-colors">

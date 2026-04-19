@@ -26,7 +26,7 @@ export default function TermsPage() {
           </p>
         </div>
 
-        <section className="max-w-4xl space-y-6 text-sm text-zinc-300 leading-relaxed">
+        <section className="max-w-[1800px] space-y-6 text-sm text-zinc-300 leading-relaxed">
 
           <Section title="1. Acceptance">
             <p>

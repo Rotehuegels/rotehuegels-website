@@ -135,7 +135,7 @@ export default function NewOrderForm() {
   const sectionTitle = 'text-sm font-semibold text-zinc-300 mb-4';
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-[1800px]">
       {/* Basic info */}
       <div className={glass}>
         <h2 className={sectionTitle}>Order Details</h2>

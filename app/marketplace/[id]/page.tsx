@@ -51,7 +51,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-12">
-        <div className="max-w-6xl">
+        <div className="max-w-[1800px]">
         <Link href="/marketplace" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
           <ArrowLeft className="h-3 w-3" /> Back to Marketplace
         </Link>

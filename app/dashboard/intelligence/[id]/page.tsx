@@ -67,7 +67,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     : 'bg-emerald-500/20 text-emerald-400';
 
   return (
-    <div className="p-8 max-w-4xl space-y-6">
+    <div className="p-8 max-w-[1800px] space-y-6">
       {/* Back link */}
       <Link
         href="/dashboard/intelligence"

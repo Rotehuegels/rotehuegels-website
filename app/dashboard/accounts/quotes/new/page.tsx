@@ -172,7 +172,7 @@ export default function NewQuotePage() {
   const intra = isIntra();
 
   return (
-    <div className="p-6 max-w-6xl">
+    <div className="p-6 max-w-[1800px]">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-white">New Quotation</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Quote number will be auto-generated (QT-YYYY-NNN)</p>

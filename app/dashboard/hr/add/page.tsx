@@ -94,7 +94,7 @@ export default function AddEngagementPage() {
   }
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-8 max-w-[1800px]">
       <div className="mb-8">
         <Link href="/d/employees" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           ← Back to Engagements

@@ -66,7 +66,7 @@ export default function AboutPage() {
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1200px_600px_at_20%_-20%,rgba(244,63,94,0.07),transparent_60%)]" />
-        <div className="mx-auto max-w-5xl px-6 pt-12">
+        <div className="mx-auto max-w-[1800px] px-6 pt-12">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
             <span className="bg-gradient-to-r from-zinc-100 to-zinc-300 bg-clip-text text-transparent">
               About Rotehügels
@@ -88,7 +88,7 @@ export default function AboutPage() {
       </section>
 
       {/* KEY NUMBERS */}
-      <section className="mx-auto max-w-5xl px-6">
+      <section className="mx-auto max-w-[1800px] px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { value: 'Since 2024', label: 'Operating globally' },

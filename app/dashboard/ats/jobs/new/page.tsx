@@ -40,7 +40,7 @@ export default function NewJobPage() {
   }
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-8 max-w-[1800px]">
       <div className="mb-8">
         <Link href="/d/jobs" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           ← Back to Jobs

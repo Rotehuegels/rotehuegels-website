@@ -36,7 +36,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
   const isActive = supplier.gst_status === 'Active';
 
   return (
-    <div className="p-8 space-y-6 max-w-4xl">
+    <div className="p-8 space-y-6 max-w-[1800px]">
       {/* Header */}
       <div>
         <Link href="/d/suppliers"

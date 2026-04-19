@@ -110,7 +110,7 @@ export default function ShipmentDetailPage() {
   const currentStepIdx = steps.indexOf(shipment.status);
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl space-y-6">
+    <div className="p-4 md:p-8 max-w-[1800px] space-y-6">
       <Link href="/d/shipments" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
         <ArrowLeft className="h-4 w-4" /> Back to Shipments
       </Link>

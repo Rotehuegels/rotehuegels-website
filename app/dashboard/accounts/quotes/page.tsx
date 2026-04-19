@@ -99,7 +99,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
   const quotes = filtered.slice(sliceFrom, sliceFrom + PAGE_SIZE);
 
   return (
-    <div className="p-6 max-w-6xl">
+    <div className="p-6 max-w-[1800px]">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-white">Quotations</h1>

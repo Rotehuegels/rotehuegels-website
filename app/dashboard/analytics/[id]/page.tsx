@@ -83,7 +83,7 @@ export default async function SessionDetailPage({
   const pagesVisited: string[] = Array.isArray(session.pages_visited) ? session.pages_visited : [];
 
   return (
-    <div className="p-8 space-y-8 max-w-5xl">
+    <div className="p-8 space-y-8 max-w-[1800px]">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link

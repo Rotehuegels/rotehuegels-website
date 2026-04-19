@@ -60,7 +60,7 @@ export default async function PayslipPage({
       </div>
 
       {/* Payslip */}
-      <div className="max-w-3xl mx-auto p-8 print:p-6 font-sans">
+      <div className="max-w-[1800px] mx-auto p-8 print:p-6 font-sans">
 
         {/* Header */}
         <div className="flex items-start justify-between border-b-2 border-zinc-800 pb-4 mb-6">

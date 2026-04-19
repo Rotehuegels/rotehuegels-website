@@ -51,7 +51,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
   const totalSalary = (eng.basic_salary ?? 0) + (eng.allowance ?? 0) + (eng.bonus ?? 0);
 
   return (
-    <div className="p-8 space-y-6 max-w-4xl">
+    <div className="p-8 space-y-6 max-w-[1800px]">
       {/* Header */}
       <div>
         <Link href="/d/employees"

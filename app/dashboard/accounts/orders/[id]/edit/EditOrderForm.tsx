@@ -149,7 +149,7 @@ export default function EditOrderForm({ order }: { order: Order }) {
   const sectionTitle = 'text-sm font-semibold text-zinc-300 mb-4';
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-[1800px]">
 
       {/* Order details */}
       <div className={glass}>

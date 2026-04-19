@@ -55,7 +55,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
   const currentStageIndex = STAGES.indexOf(app.stage as typeof STAGES[number]);
 
   return (
-    <div className="p-8 space-y-8 max-w-5xl">
+    <div className="p-8 space-y-8 max-w-[1800px]">
       {/* Header */}
       <div>
         <Link href="/d/applications" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">

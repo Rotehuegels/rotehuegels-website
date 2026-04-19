@@ -112,7 +112,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 pb-12">
+    <div className="mx-auto max-w-[1800px] space-y-6 pb-12">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

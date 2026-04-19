@@ -12,7 +12,7 @@ export default function CurrentUpdates() {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
           Current Updates
         </h1>
-        <p className="mt-2 text-zinc-300 max-w-3xl">
+        <p className="mt-2 text-zinc-300 max-w-[1800px]">
           Live market intelligence powered by reliable TradingView widgets.
           Metals overview on the left, macro calendar on the right.
         </p>

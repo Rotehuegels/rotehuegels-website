@@ -65,7 +65,7 @@ export default function NewReceiptPage() {
   };
 
   return (
-    <div className="p-8 max-w-3xl space-y-6">
+    <div className="p-8 max-w-[1800px] space-y-6">
       <Link href="/d/receipts" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300">
         <ArrowLeft className="h-4 w-4" /> Back
       </Link>

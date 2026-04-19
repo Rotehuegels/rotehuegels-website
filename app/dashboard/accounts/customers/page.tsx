@@ -50,7 +50,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     .range(from, to);
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl">
+    <div className="p-4 md:p-6 max-w-[1800px]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div>

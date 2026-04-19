@@ -227,7 +227,7 @@ export default function ReinvoicePage() {
   // ── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-8 max-w-6xl space-y-6">
+    <div className="p-8 max-w-[1800px] space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Re-Invoice Supplier Materials</h1>
         <p className="text-sm text-zinc-500 mt-1">

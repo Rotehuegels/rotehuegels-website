@@ -153,7 +153,7 @@ export default function SupplierEditForm({ supplier }: { supplier: Supplier }) {
   }
 
   return (
-    <form onSubmit={handleSave} className="space-y-6 max-w-3xl">
+    <form onSubmit={handleSave} className="space-y-6 max-w-[1800px]">
 
       {/* GSTIN Lookup */}
       <div className={glass}>

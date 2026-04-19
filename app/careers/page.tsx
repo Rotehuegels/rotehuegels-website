@@ -178,7 +178,7 @@ export default function CareersPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.05 }}
-            className="mt-4 text-lg md:text-xl text-slate-300 max-w-3xl"
+            className="mt-4 text-lg md:text-xl text-slate-300 max-w-[1800px]"
           >
             Rotehügels is a research-business consultancy advancing
             sustainability and circular economy across metals, recycling, and

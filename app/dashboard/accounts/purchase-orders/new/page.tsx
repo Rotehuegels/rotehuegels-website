@@ -164,7 +164,7 @@ export default function NewPOPage() {
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
 
   return (
-    <div className="p-6 max-w-6xl">
+    <div className="p-6 max-w-[1800px]">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-white">New Purchase Order</h1>
         <p className="text-xs text-zinc-500 mt-0.5">PO number will be auto-generated (PO-YYYY-NNN)</p>

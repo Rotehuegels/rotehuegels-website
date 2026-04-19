@@ -51,7 +51,7 @@ export default async function MarketplacePage() {
           <ShoppingBag className="h-7 w-7 text-emerald-400" />
           <h1 className="text-2xl font-bold">India Circular Economy Marketplace</h1>
         </div>
-        <p className="text-sm text-zinc-500 mb-4 max-w-3xl">
+        <p className="text-sm text-zinc-500 mb-4 max-w-[1800px]">
           Buy and sell listings across the full circular value chain — virgin metals, secondary metals, battery cells / packs / CAM,
           end-of-life feedstock, byproducts, and process consumables. Every listing is reviewed before it goes public.
         </p>

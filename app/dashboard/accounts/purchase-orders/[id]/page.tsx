@@ -158,7 +158,7 @@ export default function PODetailPage() {
   const order    = po.orders as PO['orders'];
 
   return (
-    <div className="p-6 max-w-5xl space-y-6">
+    <div className="p-6 max-w-[1800px] space-y-6">
       {/* Back + Header */}
       <div className="flex items-start justify-between gap-4">
         <div>

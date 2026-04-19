@@ -25,7 +25,7 @@ export default function BalanceSheetPage() {
   const downloadHref = `${printHref}&download=1`;
 
   return (
-    <div className="p-4 md:p-8 space-y-6 max-w-5xl">
+    <div className="p-4 md:p-8 space-y-6 max-w-[1800px]">
       <div className="flex items-center gap-3">
         <FileText className="h-5 w-5 text-emerald-400" />
         <div>

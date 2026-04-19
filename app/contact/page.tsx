@@ -12,7 +12,7 @@ export default function ContactPage() {
         <span className="block mx-auto mt-2 h-[2px] w-20 rounded-full bg-gradient-to-r from-rose-500 to-rose-300"></span>
       </h1>
 
-      <p className="mx-auto mt-4 max-w-3xl text-center text-sm text-white/80">
+      <p className="mx-auto mt-4 max-w-[1800px] text-center text-sm text-white/80">
         Our regional teams operate across three strategic time zones to ensure seamless
         24-hour global engagement.
       </p>
@@ -29,7 +29,7 @@ export default function ContactPage() {
         <ContactForm />
       </section>
 
-      <div className="mx-auto mt-12 max-w-6xl">
+      <div className="mx-auto mt-12 max-w-[1800px]">
         <p className="mb-6 text-center text-sm text-white/50 uppercase tracking-widest font-medium">
           Or reach us directly
         </p>
@@ -38,7 +38,7 @@ export default function ContactPage() {
       {/* Regions */}
       <section
         aria-label="Regional contacts"
-        className="mx-auto mt-8 grid max-w-6xl auto-rows-fr gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+        className="mx-auto mt-8 grid max-w-[1800px] auto-rows-fr gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
       >
         {/* APAC */}
         <div className="rounded-2xl bg-white/5 p-6 shadow-lg shadow-rose-950/20 hover:border hover:border-rose-400/50 transition-all">
@@ -123,10 +123,10 @@ export default function ContactPage() {
       </section>
 
       {/* Divider */}
-      <hr className="mx-auto my-10 max-w-6xl border-white/10" />
+      <hr className="mx-auto my-10 max-w-[1800px] border-white/10" />
 
       {/* Key Contacts */}
-      <section className="mx-auto max-w-6xl" aria-label="Key contacts">
+      <section className="mx-auto max-w-[1800px]" aria-label="Key contacts">
         <h3 className="text-lg font-semibold">Key Contacts</h3>
 
         <div className="mt-6 grid gap-6 sm:grid-cols-3">
@@ -209,7 +209,7 @@ export default function ContactPage() {
       </section>
 
       {/* Global Emails */}
-      <section className="mx-auto mt-10 max-w-3xl text-center">
+      <section className="mx-auto mt-10 max-w-[1800px] text-center">
         <p className="text-white/80">Prefer email? Choose the right address:</p>
         <div className="mt-3 space-y-1 text-sm">
           <p>

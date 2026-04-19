@@ -162,7 +162,7 @@ export default function NewGRNForm({ poList }: { poList: PO[] }) {
   const totalRejected = items.reduce((s, it) => s + it.rejected_qty, 0);
 
   return (
-    <div className="p-5 md:p-8 space-y-6 max-w-6xl">
+    <div className="p-5 md:p-8 space-y-6 max-w-[1800px]">
       <div>
         <Link href="/d/grn" className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 mb-2">
           <ArrowLeft className="h-3 w-3" /> All GRNs

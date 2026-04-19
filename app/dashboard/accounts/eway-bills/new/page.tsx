@@ -160,7 +160,7 @@ export default function NewEwayBillPage() {
   };
 
   return (
-    <div className="p-8 max-w-4xl space-y-6">
+    <div className="p-8 max-w-[1800px] space-y-6">
       <Link href="/d/eway-bills" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300">
         <ArrowLeft className="h-4 w-4" /> Back to E-Way Bills
       </Link>

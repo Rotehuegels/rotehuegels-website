@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         </div>
         <p className="text-sm text-zinc-500 mb-10">Last updated: {LAST_UPDATED}</p>
 
-        <section className="max-w-4xl space-y-6 text-sm text-zinc-300 leading-relaxed">
+        <section className="max-w-[1800px] space-y-6 text-sm text-zinc-300 leading-relaxed">
 
           <Section title="1. Who we are">
             <p>

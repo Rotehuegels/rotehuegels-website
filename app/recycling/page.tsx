@@ -84,7 +84,7 @@ export default async function EWasteLandingPage() {
 
       {/* Ecosystem coverage band — links to /ecosystem for the full tier breakdown */}
       <section className="py-10 px-6 border-t border-zinc-800 bg-zinc-900/20">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-[1800px] mx-auto">
           <p className="text-center text-xs text-zinc-500 uppercase tracking-wider mb-4">
             Part of the <Link href="/ecosystem" className="text-emerald-400 hover:text-emerald-300 underline">India Circular Economy Ecosystem</Link> · {facilityCount.toLocaleString('en-IN')} facilities across the value chain
           </p>
@@ -102,7 +102,7 @@ export default async function EWasteLandingPage() {
 
       {/* Our Model */}
       <section className="py-12 px-6 border-t border-zinc-800 bg-zinc-900/30">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-[1800px] mx-auto">
           <h2 className="text-xl font-bold text-center mb-3">Our Model</h2>
           <p className="text-zinc-500 text-center mb-8 max-w-xl mx-auto">We are a digital facilitator — not an aggregator. We don&apos;t touch the waste.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -132,7 +132,7 @@ export default async function EWasteLandingPage() {
 
       {/* How it works */}
       <section id="how-it-works" className="py-16 px-6 border-t border-zinc-800">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-[1800px] mx-auto">
           <h2 className="text-2xl font-bold text-center mb-4">How It Works</h2>
           <p className="text-zinc-500 text-center mb-12 max-w-xl mx-auto">Simple, traceable, and compliant.</p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -157,7 +157,7 @@ export default async function EWasteLandingPage() {
 
       {/* What we will collect */}
       <section className="py-16 px-6 bg-zinc-900/50 border-t border-zinc-800">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-[1800px] mx-auto">
           <h2 className="text-2xl font-bold text-center mb-4">What We Cover</h2>
           <p className="text-zinc-500 text-center mb-10 max-w-xl mx-auto">From household electronics to industrial metal scrap — all major recyclable waste streams.</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -177,7 +177,7 @@ export default async function EWasteLandingPage() {
 
       {/* Why us */}
       <section className="py-16 px-6 border-t border-zinc-800">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-[1800px] mx-auto">
           <h2 className="text-2xl font-bold text-center mb-10">Why Roteh&uuml;gels</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -212,7 +212,7 @@ export default async function EWasteLandingPage() {
 
       {/* Legal disclaimer */}
       <section className="py-8 px-6 border-t border-zinc-800 bg-zinc-900/30">
-        <div className="max-w-5xl mx-auto text-xs text-zinc-600 space-y-2">
+        <div className="max-w-[1800px] mx-auto text-xs text-zinc-600 space-y-2">
           <p><strong className="text-zinc-500">Disclaimer:</strong></p>
           <p>
             Rotehuegel Research Business Consultancy Private Limited (&ldquo;Roteh&uuml;gels&rdquo;) operates solely as a digital platform facilitating
@@ -241,7 +241,7 @@ export default async function EWasteLandingPage() {
 
       {/* References & Sources */}
       <section className="py-6 px-6 border-t border-zinc-800">
-        <div className="max-w-5xl mx-auto text-xs text-zinc-600 space-y-3">
+        <div className="max-w-[1800px] mx-auto text-xs text-zinc-600 space-y-3">
           <p className="font-semibold text-zinc-500">References &amp; Data Sources</p>
           <ol className="list-decimal list-inside space-y-1">
             <li>Central Pollution Control Board (CPCB) — <em>List of Dismantlers/Recyclers as per authorisation issued by SPCBs/PCCs under E-Waste (Management) Rules, 2022</em> — <a href="https://www.cpcb.nic.in/e-waste-recyclers-dismantler/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">cpcb.nic.in</a></li>

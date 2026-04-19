@@ -30,7 +30,8 @@ export default async function NewListingPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-3xl mx-auto px-6 py-12">
+      <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-12">
+        <div className="max-w-5xl">
         <Link href="/marketplace" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
           <ArrowLeft className="h-3 w-3" /> Back to Marketplace
         </Link>
@@ -51,6 +52,7 @@ export default async function NewListingPage() {
           <Link href="/privacy" className="text-emerald-400 underline">Privacy Policy</Link>. Your contact information is stored with
           your listing and is visible to users viewing it. Rotehügels is a facilitator and is not party to any transaction.
         </p>
+        </div>
       </div>
     </div>
   );

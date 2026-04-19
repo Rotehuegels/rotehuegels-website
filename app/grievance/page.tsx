@@ -11,7 +11,7 @@ const LAST_UPDATED = '19 April 2026';
 export default function GrievancePage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-3xl mx-auto px-6 py-16">
+      <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16">
         <div className="flex items-center gap-3 mb-2">
           <LifeBuoy className="h-7 w-7 text-emerald-400" />
           <h1 className="text-3xl font-bold">Grievance Redressal</h1>
@@ -25,7 +25,7 @@ export default function GrievancePage() {
           </p>
         </div>
 
-        <section className="space-y-6 text-sm text-zinc-300 leading-relaxed">
+        <section className="max-w-4xl space-y-6 text-sm text-zinc-300 leading-relaxed">
 
           <Section title="1. When to file a grievance">
             <p>You may file a grievance with Rotehügels in any of the following situations:</p>

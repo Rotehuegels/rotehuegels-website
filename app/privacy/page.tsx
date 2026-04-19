@@ -11,14 +11,14 @@ const LAST_UPDATED = '19 April 2026';
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-3xl mx-auto px-6 py-16">
+      <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16">
         <div className="flex items-center gap-3 mb-2">
           <Shield className="h-7 w-7 text-emerald-400" />
           <h1 className="text-3xl font-bold">Privacy Policy</h1>
         </div>
         <p className="text-sm text-zinc-500 mb-10">Last updated: {LAST_UPDATED}</p>
 
-        <section className="space-y-6 text-sm text-zinc-300 leading-relaxed">
+        <section className="max-w-4xl space-y-6 text-sm text-zinc-300 leading-relaxed">
 
           <Section title="1. Who we are">
             <p>

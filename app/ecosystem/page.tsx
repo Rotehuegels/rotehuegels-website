@@ -1,14 +1,14 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import RecyclerDirectory from './RecyclerDirectory';
+import EcosystemDirectory from './EcosystemDirectory';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// Public page: aggregate counts + pins showing company name on hover
-// (same info the govt CPCB/SPCB registries publish). What stays internal
-// is contact info (email/phone), GSTIN/CIN, recycler_code, and the full
-// profile page — those live under /d/recycling/recyclers.
-export default async function RecyclersPage() {
+// Public ecosystem page: aggregate counts + pins showing company name on hover
+// (same info the govt CPCB/SPCB registries publish). What stays internal is
+// contact info (email/phone), GSTIN/CIN, recycler_code, and the full profile
+// page — those live under /d/ecosystem.
+export default async function EcosystemPage() {
   let allRecyclers: {
     company_name: string | null;
     state: string | null;
@@ -62,5 +62,5 @@ export default async function RecyclersPage() {
       black_mass_mta: r.black_mass_mta ? Number(r.black_mass_mta) : undefined,
     }));
 
-  return <RecyclerDirectory rawList={rawList} pins={pins} />;
+  return <EcosystemDirectory rawList={rawList} pins={pins} />;
 }

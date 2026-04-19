@@ -237,8 +237,8 @@ export default function RecyclerList({ recyclers }: { recyclers: Recycler[] }) {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Link href={`/d/recycling/recyclers/${r.recycler_code}`} className="text-xs font-mono text-amber-400 hover:text-amber-300 font-bold shrink-0">{r.recycler_code}</Link>
-                        <Link href={`/d/recycling/recyclers/${r.recycler_code}`} className="text-sm font-medium text-white hover:text-indigo-300 truncate inline-flex items-center gap-1 group">
+                        <Link href={`/d/ecosystem/${r.recycler_code}`} className="text-xs font-mono text-amber-400 hover:text-amber-300 font-bold shrink-0">{r.recycler_code}</Link>
+                        <Link href={`/d/ecosystem/${r.recycler_code}`} className="text-sm font-medium text-white hover:text-indigo-300 truncate inline-flex items-center gap-1 group">
                           {r.company_name}
                           <ExternalLink className="h-3 w-3 text-zinc-600 group-hover:text-indigo-300 shrink-0" />
                         </Link>

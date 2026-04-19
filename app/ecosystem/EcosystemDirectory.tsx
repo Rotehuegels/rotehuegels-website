@@ -54,12 +54,32 @@ function matchCategory(
   return record.waste_type === category;
 }
 
+// Tier supergroups — aggregates the 10 waste_type categories into 3 circular
+// economy tiers (upstream forward → downstream forward → reverse loop).
+const TIER_ORDER = ['upstream', 'forward', 'reverse'] as const;
+const TIER_META: Record<typeof TIER_ORDER[number], { label: string; description: string; members: string[] }> = {
+  upstream: {
+    label: 'Upstream',
+    description: 'Primary metal producers + cell / CAM makers',
+    members: ['primary-metal', 'cell-maker'],
+  },
+  forward: {
+    label: 'Forward chain',
+    description: 'EV OEMs + battery pack makers',
+    members: ['ev-oem', 'battery-pack'],
+  },
+  reverse: {
+    label: 'Reverse loop',
+    description: 'Recyclers, reprocessors + material recovery',
+    members: ['e-waste', 'battery', 'black-mass', 'hazardous', 'zinc-dross', 'both'],
+  },
+};
 interface Props {
   rawList: RawEntry[];
   pins?: PublicPin[];
 }
 
-export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
+export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [view, setView] = useState<'map' | 'table'>('map');
   const [showPins, setShowPins] = useState(true);
@@ -113,6 +133,13 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
   const presentStates = new Set(rawList.map(r => r.state).filter(Boolean));
   const missingStates = ALL_STATES_UTS.filter(s => !presentStates.has(s)).sort();
 
+  // Group categories into the 3 tiers for the tier breakdown band.
+  const tiers = TIER_ORDER.map(t => {
+    const cats = categories.filter(c => TIER_META[t].members.includes(c.name));
+    const total = cats.reduce((s, c) => s + c.count, 0);
+    return { key: t, meta: TIER_META[t], categories: cats, total };
+  });
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-12">
@@ -123,13 +150,16 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
           <Factory className="h-7 w-7 text-emerald-400" />
-          <h1 className="text-2xl font-bold">India Metals & Recycling Directory</h1>
+          <h1 className="text-2xl font-bold">India Circular Economy Ecosystem</h1>
         </div>
         <p className="text-sm text-zinc-500 mb-8">
-          Directory of {fmtNum(TOTAL_RECYCLERS)} facilities across {statesCount} states — covering the full non-ferrous value chain:
-          authorised <strong className="text-zinc-400">recyclers</strong> (e-waste, battery, black mass, non-ferrous, zinc dross) and the
-          upstream <strong className="text-zinc-400">primary metal producers</strong> (smelters, refineries) whose material eventually
-          feeds the recycling loop. Data sourced from CPCB, SPCB, MPCB, MoEF registries plus publicly disclosed facility information.
+          From primary metal producers to EV OEMs, battery / cell makers, and authorised recyclers —{' '}
+          <strong className="text-zinc-400">{fmtNum(TOTAL_RECYCLERS)}</strong> facilities across {statesCount} states. The full forward +
+          reverse value chain of metals and batteries. Data sourced from CPCB, SPCB, MPCB, MoEF registries plus publicly disclosed
+          facility information.
+          <span className="block mt-2 text-xs text-zinc-600">
+            Metals and batteries today · plastics, paper, and tyres next.
+          </span>
         </p>
 
         {/* Summary stats */}
@@ -152,51 +182,54 @@ export default function RecyclerDirectory({ rawList, pins = [] }: Props) {
           </div>
         </div>
 
-        {/* Industry Classification — clickable filter */}
+        {/* Ecosystem tiers — primary → forward → reverse loop */}
         {categories.length > 0 && (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-300">Industry Classification</h2>
-              {selectedCategory && (
-                <button
-                  onClick={() => setSelectedCategory(null)}
-                  className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
-                >
-                  <X className="h-3 w-3" /> Clear filter
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              {/* All categories button */}
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8 space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-300">Ecosystem Tiers</h2>
+                <p className="text-[11px] text-zinc-500 mt-0.5">Click any category to filter. Counts sum to the full directory.</p>
+              </div>
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`rounded-xl border p-3 text-center transition-colors cursor-pointer ${
-                  !selectedCategory
-                    ? 'border-emerald-500/50 bg-emerald-500/10'
-                    : 'border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600'
-                }`}
+                className={`text-xs flex items-center gap-1 ${selectedCategory ? 'text-red-400 hover:text-red-300' : 'text-emerald-400'}`}
               >
-                <p className={`text-lg font-black ${!selectedCategory ? 'text-emerald-400' : 'text-white'}`}>{fmtNum(rawList.length)}</p>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">All</p>
+                {selectedCategory ? <><X className="h-3 w-3" /> Clear filter — show all {fmtNum(rawList.length)}</>
+                                  : <>Showing all {fmtNum(rawList.length)}</>}
               </button>
-              {categories.map(cat => (
-                <button
-                  key={cat.name}
-                  onClick={() => setSelectedCategory(prev => prev === cat.name ? null : cat.name)}
-                  className={`rounded-xl border p-3 text-center transition-colors cursor-pointer ${
-                    selectedCategory === cat.name
-                      ? 'border-emerald-500/50 bg-emerald-500/10'
-                      : 'border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600'
-                  }`}
-                >
-                  <p className={`text-lg font-black ${selectedCategory === cat.name ? 'text-emerald-400' : 'text-white'}`}>{fmtNum(cat.count)}</p>
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">{CATEGORY_LABELS[cat.name] ?? cat.name}</p>
-                </button>
-              ))}
             </div>
+
+            {tiers.map(t => (
+              <div key={t.key} className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">{t.meta.label}</span>
+                    <span className="text-[11px] text-zinc-600 ml-2">{t.meta.description}</span>
+                  </div>
+                  <span className="text-[11px] text-zinc-500 font-mono">{fmtNum(t.total)} rows</span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {t.categories.map(cat => (
+                    <button
+                      key={cat.name}
+                      onClick={() => setSelectedCategory(prev => prev === cat.name ? null : cat.name)}
+                      className={`rounded-xl border p-3 text-center transition-colors cursor-pointer ${
+                        selectedCategory === cat.name
+                          ? 'border-emerald-500/50 bg-emerald-500/10'
+                          : 'border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600'
+                      }`}
+                    >
+                      <p className={`text-lg font-black ${selectedCategory === cat.name ? 'text-emerald-400' : 'text-white'}`}>{fmtNum(cat.count)}</p>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">{CATEGORY_LABELS[cat.name] ?? cat.name}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+
             {blackMassExtras > 0 && (
-              <p className="text-[10px] text-zinc-600 mt-3">
-                Counts sum to the full {fmtNum(rawList.length)}-row directory. Clicking <strong className="text-zinc-500">Black Mass / Mechanical</strong> also
+              <p className="text-[10px] text-zinc-600 pt-2 border-t border-zinc-800">
+                Clicking <strong className="text-zinc-500">Black Mass / Mechanical</strong> also
                 includes {blackMassExtras} integrated recyclers that produce black mass but are classified under their primary category.
               </p>
             )}

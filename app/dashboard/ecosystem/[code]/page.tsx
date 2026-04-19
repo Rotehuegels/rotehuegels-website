@@ -95,7 +95,7 @@ export default async function RecyclerProfilePage({ params }: { params: Promise<
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className={`relative bg-gradient-to-br ${cat.tint} via-zinc-950 to-zinc-950`}>
         <div className="max-w-[1800px] mx-auto px-6 pt-10 pb-8">
-          <Link href="/d/recycling/recyclers" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
+          <Link href="/d/ecosystem" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
             <ArrowLeft className="h-3 w-3" /> Back to directory
           </Link>
 
@@ -367,7 +367,7 @@ export default async function RecyclerProfilePage({ params }: { params: Promise<
                 const m = CATEGORY_META[o.waste_type ?? ''] ?? CATEGORY_META['e-waste'];
                 const Icon = m.icon;
                 return (
-                  <Link key={o.recycler_code} href={`/d/recycling/recyclers/${o.recycler_code}`}
+                  <Link key={o.recycler_code} href={`/d/ecosystem/${o.recycler_code}`}
                     className="flex items-center justify-between px-5 py-3 hover:bg-zinc-800/30 transition-colors group">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0 ${m.colorCls}`}>

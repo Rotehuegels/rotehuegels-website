@@ -92,10 +92,20 @@ export function buildHeader(opts: {
         {
           alignment: 'right',
           stack: [
-            // Document title in bordered box
+            // Document title in bordered box — wrapped in `columns` with a
+            // flexible left spacer so the bordered table right-aligns with
+            // the identifier lines below it. pdfmake's `alignment: 'right'`
+            // on a parent stack does NOT cascade to nested tables; you have
+            // to push them with a spacer.
             {
-              table: { body: [[{ text: opts.documentTitle, fontSize: FONT.title, bold: true, alignment: 'center' }]] },
-              layout: { hLineWidth: () => 1, vLineWidth: () => 1, hLineColor: () => COLORS.darkGray, vLineColor: () => COLORS.darkGray, paddingLeft: () => 10, paddingRight: () => 10, paddingTop: () => 3, paddingBottom: () => 3 },
+              columns: [
+                { text: '', width: '*' },
+                {
+                  width: 'auto',
+                  table: { body: [[{ text: opts.documentTitle, fontSize: FONT.title, bold: true, alignment: 'center' }]] },
+                  layout: { hLineWidth: () => 1, vLineWidth: () => 1, hLineColor: () => COLORS.darkGray, vLineColor: () => COLORS.darkGray, paddingLeft: () => 10, paddingRight: () => 10, paddingTop: () => 3, paddingBottom: () => 3 },
+                },
+              ],
               margin: [0, 0, 0, 4],
             },
             { text: `GSTIN: ${opts.gstin}`, fontSize: FONT.body, color: COLORS.gray, alignment: 'right' },
@@ -177,7 +187,30 @@ export function buildBankDeclarationBox(opts: {
   signatureDataUrl: string | null;
   signatoryName: string;
   signatoryTitle: string;
+  /** Optional declaration paragraph. Default is the invoice phrasing; pass
+   *  null to omit (used on quotes where no formal declaration is needed),
+   *  or pass a custom string (e.g. payment terms) to replace it. */
+  declarationText?: string | null;
+  /** Label shown above the declaration paragraph. Default "Declaration". */
+  declarationLabel?: string;
 }): any {
+  const declLabel = opts.declarationLabel ?? 'Declaration';
+  const declText = opts.declarationText === undefined
+    ? 'We declare that this invoice shows the actual price of the goods / services described and that all particulars are true and correct to the best of our knowledge.'
+    : opts.declarationText;
+
+  // Signature underline — rendered as a 110pt right-aligned row using a
+  // `columns` layout with a flexible left spacer. Using a canvas line with
+  // hard-coded x coords puts the rule in the wrong place because the cell
+  // width varies with the preset margins.
+  const sigRule: any = {
+    columns: [
+      { text: '', width: '*' },
+      { width: 110, canvas: [{ type: 'line', x1: 0, y1: 0, x2: 110, y2: 0, lineWidth: 0.5, lineColor: COLORS.lightGray }] },
+    ],
+    margin: [0, 1, 0, 1],
+  };
+
   return {
     table: {
       widths: ['*', '*'],
@@ -216,14 +249,19 @@ export function buildBankDeclarationBox(opts: {
             },
           ],
         },
-        // Right: Declaration + Signature
+        // Right: (optional) Declaration + Signature block
         {
           stack: [
-            sectionLabel('Declaration'),
-            { text: 'We declare that this invoice shows the actual price of the goods / services described and that all particulars are true and correct to the best of our knowledge.', fontSize: FONT.small, color: COLORS.gray, lineHeight: 1.3 },
-            { text: '', margin: [0, 4, 0, 0] },
+            ...(declText
+              ? [
+                  sectionLabel(declLabel),
+                  { text: declText, fontSize: FONT.small, color: COLORS.gray, lineHeight: 1.3 },
+                  { text: '', margin: [0, 4, 0, 0] as any },
+                ]
+              : []),
             { text: `FOR ${opts.companyName.toUpperCase()}`, fontSize: FONT.body, bold: true, alignment: 'right' },
             ...(opts.signatureDataUrl ? [{ image: opts.signatureDataUrl, width: 50, alignment: 'right' as const, margin: [0, 3, 0, 1] as any }] : [{ text: '', margin: [0, 14, 0, 0] }]),
+            sigRule,
             { text: opts.signatoryName, fontSize: FONT.table, bold: true, alignment: 'right' },
             { text: opts.signatoryTitle, fontSize: FONT.small, color: COLORS.gray, alignment: 'right' },
             { text: 'Authorised Signatory', fontSize: FONT.small, color: COLORS.medGray, alignment: 'right' },

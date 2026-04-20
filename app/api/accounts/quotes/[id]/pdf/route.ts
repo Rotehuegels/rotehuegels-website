@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getLogoDataUrl, getSignatureDataUrl, fmtINR, fmtDate, generateSmartPdf, sanitizePdfText } from '@/lib/pdfConfig';
-import { COLORS, FONT, buildHeader, buildFooter, tableHeaderCell, TABLE_LAYOUT, sectionLabel } from '@/lib/pdfTemplate';
+import { COLORS, FONT, buildHeader, buildFooter, tableHeaderCell, TABLE_LAYOUT, sectionLabel, buildBankDeclarationBox } from '@/lib/pdfTemplate';
+import QRCode from 'qrcode';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
 
@@ -188,68 +189,37 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       });
     }
 
-    // Bank Details + Signature — two-column bordered box.
-    // Left: bank details for immediate payment (customer can transfer at
-    //   quote approval without a separate ask).
-    // Right: "For {company}" + signature image + (tight rule under it) +
-    //   Authorised Signatory. The rule is rendered as a 110-wide right-
-    //   aligned row so it sits under the signature instead of mid-column.
-    const signatureBlock: any[] = [
-      { text: `For ${sanitizePdfText(CO.name)}`, fontSize: 7, bold: true, color: '#444', alignment: 'right' },
-      ...(sigUrl
-        ? [{ image: sigUrl, width: 55, alignment: 'right' as const, margin: [0, 4, 0, 2] as any }]
-        : [{ text: '', margin: [0, 16, 0, 0] as any }]),
-      {
-        // Right-aligned 110pt rule under the signature (not a canvas with
-        // hard-coded x coords — a right-aligned table with a bottom border).
-        table: { widths: [110], body: [[{ text: '', border: [false, false, false, true], borderColor: ['#bbb','#bbb','#bbb','#bbb'] as any }]] },
-        layout: { hLineColor: () => '#bbb', hLineWidth: () => 0.5, vLineWidth: () => 0, paddingTop: () => 0, paddingBottom: () => 0, paddingLeft: () => 0, paddingRight: () => 0 } as any,
-        alignment: 'right' as const,
-        margin: [0, 0, 0, 2] as any,
-      },
-      { text: 'Authorised Signatory', fontSize: 7, bold: true, alignment: 'right' },
-    ];
+    // Bank Details + QR + Payment Terms + Signature — reuse the shared
+    // invoice block so quote and invoice look identical at the bottom.
+    // The declaration paragraph carries payment instructions for the quote
+    // (quote has no formal legal declaration, so we use the slot for the
+    // payment-terms note).
+    const upiString = `upi://pay?pa=${CO.upi}&pn=${encodeURIComponent(CO.name)}&cu=INR&tn=${encodeURIComponent('Quote ' + quote.quote_no)}`;
+    const upiQr = await QRCode.toDataURL(upiString, { width: 90, margin: 1, color: { dark: '#111111', light: '#ffffff' } });
 
-    const bankBlock: any = {
-      stack: [
-        sectionLabel('Bank Details for Immediate Payment'),
-        {
-          table: {
-            widths: [42, '*'],
-            body: [
-              [{ text: 'A/c Name', fontSize: FONT.body, color: COLORS.medGray }, { text: sanitizePdfText(CO.name), fontSize: FONT.body }],
-              [{ text: 'Bank', fontSize: FONT.body, color: COLORS.medGray }, { text: (CO as any).bankName ?? '-', fontSize: FONT.body }],
-              [{ text: 'A/c No.', fontSize: FONT.body, color: COLORS.medGray }, { text: (CO as any).bankAccount ?? '-', fontSize: FONT.body, bold: true }],
-              [{ text: 'IFSC', fontSize: FONT.body, color: COLORS.medGray }, { text: (CO as any).bankIfsc ?? '-', fontSize: FONT.body, bold: true }],
-              [{ text: 'Branch', fontSize: FONT.body, color: COLORS.medGray }, { text: (CO as any).bankBranch ?? '-', fontSize: FONT.body }],
-              [{ text: 'UPI', fontSize: FONT.body, color: COLORS.medGray }, { text: (CO as any).upi ?? '-', fontSize: FONT.body, bold: true }],
-            ],
-          },
-          layout: 'noBorders',
-        },
-        { text: 'Payment: 100% advance before dispatch. Please reference the Quote No. in the transaction remarks.', fontSize: 6.5, color: COLORS.medGray, italics: true, margin: [0, 4, 0, 0] },
-      ],
-    };
+    content.push(buildBankDeclarationBox({
+      companyName: CO.name,
+      bankName: (CO as any).bankName ?? '',
+      accountNo: (CO as any).bankAccount ?? '',
+      ifsc: (CO as any).bankIfsc ?? '',
+      branch: (CO as any).bankBranch ?? '',
+      upi: (CO as any).upi ?? '',
+      qrDataUrl: upiQr,
+      signatureDataUrl: sigUrl,
+      signatoryName: 'Sivakumar Shanmugam',
+      signatoryTitle: 'CEO, Rotehügels',
+      declarationLabel: 'Payment Terms',
+      declarationText: `100% advance before dispatch. Kindly reference Quote No. ${quote.quote_no} in the transaction remarks. Scan the UPI QR or transfer via NEFT/RTGS/IMPS using the account details on the left.`,
+    }));
 
+    // UPI / NEFT / RTGS disclaimer — same copy as the invoice template.
     content.push({
-      table: {
-        widths: ['*', '*'],
-        body: [[bankBlock, { stack: signatureBlock }]],
-      },
-      layout: {
-        hLineWidth: () => 0.5,
-        vLineWidth: () => 0.5,
-        hLineColor: () => COLORS.border,
-        vLineColor: () => COLORS.border,
-        paddingLeft: () => 8,
-        paddingRight: () => 8,
-        paddingTop: () => 6,
-        paddingBottom: () => 6,
-      },
+      text: '* UPI payments are subject to per-transaction limits (typically \u20B91 lakh). For amounts exceeding the limit, you may split into multiple UPI transfers or use NEFT / RTGS for the full amount in a single transfer.',
+      fontSize: 5, color: COLORS.medGray, italics: true, lineHeight: 1.3,
       margin: [0, 0, 0, 4],
     });
 
-    // Disclaimer strip below the box
+    // Footer disclaimer strip
     content.push({
       text: 'This is a quotation and not a tax invoice. Prices subject to change after validity date. Subject to Chennai jurisdiction.',
       fontSize: 6, color: '#888', italics: true, alignment: 'center', margin: [0, 2, 0, 0],

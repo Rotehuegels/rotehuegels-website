@@ -110,13 +110,16 @@ function formatCc(cc: CcEntry[] | undefined): string[] | undefined {
     .map(x => (x.name ? `${x.name} <${x.email}>` : x.email));
 }
 
+type MailAttachment = { filename: string; content: Buffer; contentType?: string };
+
 async function send(
   to: string,
   subject: string,
   html: string,
   text: string,
   from?: string,
-  cc?: CcEntry[]
+  cc?: CcEntry[],
+  attachments?: MailAttachment[]
 ) {
   const t = getTransporter();
   await t.sendMail({
@@ -126,6 +129,7 @@ async function send(
     subject,
     html,
     text,
+    ...(attachments && attachments.length ? { attachments } : {}),
   });
 }
 
@@ -465,6 +469,8 @@ export async function sendPaymentReminder(orderId: string) {
 
 /* ── 4. Quote Email ──────────────────────────────────────────────────────── */
 
+import { generateQuotePdfBuffer } from "@/lib/quotePdf";
+
 export async function sendQuoteEmail(quoteId: string) {
   const CO = await getCompanyCO();
   const { data: quote, error } = await supabaseAdmin
@@ -478,6 +484,10 @@ export async function sendQuoteEmail(quoteId: string) {
   const customer = quote.customers as any;
   const recipientEmail = customer?.email;
   if (!recipientEmail) throw new Error("Customer has no email address.");
+
+  // Generate the quote PDF FIRST — fail-hard so we never send a half-
+  // baked quote email if the PDF can't be rendered.
+  const pdf = await generateQuotePdfBuffer(quoteId);
 
   const items = (quote.items ?? []) as Array<{
     name: string; quantity: number; unit: string; unit_price: number;
@@ -531,7 +541,9 @@ export async function sendQuoteEmail(quoteId: string) {
     ${quote.notes ? `<p style="font-size:11px;color:#444;"><strong>Notes:</strong> ${esc(quote.notes)}</p>` : ""}
     ${quote.terms ? `<p style="font-size:11px;color:#444;"><strong>Terms:</strong> ${esc(quote.terms)}</p>` : ""}
 
-    <p style="font-size:12px;color:#444;margin-top:16px;">Please feel free to reach out if you have any questions or would like to discuss this quotation further. You can reply to this email or call us at ${CO.phone}.</p>
+    <p style="font-size:12px;color:#444;margin-top:16px;">The full quotation (with line-item breakdown, HSN codes, bank details and UPI QR for immediate payment) is attached as a PDF: <strong>${esc(pdf.filename)}</strong>. Please refer to it for the complete picture.</p>
+
+    <p style="font-size:12px;color:#444;margin-top:8px;">Feel free to reach out with any questions — reply to this email or call us at ${CO.phone}.</p>
   ${footer(CO)}`;
 
   const itemsText = items
@@ -553,6 +565,8 @@ export async function sendQuoteEmail(quoteId: string) {
     ``,
     `Grand Total: ${fmt(quote.total_amount ?? 0)}`,
     ``,
+    `Full quotation attached as PDF: ${pdf.filename}`,
+    ``,
     `For questions, contact ${CO.email} or ${CO.phone}.`,
     `— ${CO.name}`,
   ].join("\n");
@@ -563,7 +577,8 @@ export async function sendQuoteEmail(quoteId: string) {
     html,
     text,
     SALES_FROM,
-    (customer?.cc_emails ?? []) as CcEntry[]
+    (customer?.cc_emails ?? []) as CcEntry[],
+    [{ filename: pdf.filename, content: pdf.buffer, contentType: 'application/pdf' }]
   );
 }
 

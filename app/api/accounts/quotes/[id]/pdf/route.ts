@@ -163,21 +163,47 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       margin: [0, 0, 0, 10],
     });
 
-    // Notes & Terms — professional two-column table
+    // Notes & Terms — two-column layout. Each section is split into
+    // paragraphs (double-newline separated). A paragraph whose lines all
+    // start with `- ` is rendered as a bullet list; otherwise it's
+    // justified prose. This lets the stored text stay as plain text while
+    // the render adapts to its shape.
+    const renderNotesOrTerms = (raw: string): any[] => {
+      const out: any[] = [];
+      const paragraphs = raw.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+      for (const para of paragraphs) {
+        const lines = para.split(/\n/).map(l => l.trim()).filter(Boolean);
+        const bulletLines = lines.filter(l => /^[-•]\s+/.test(l));
+        if (bulletLines.length >= 2 && bulletLines.length === lines.length) {
+          // Entire paragraph is a bullet list
+          out.push({
+            ul: lines.map(l => ({ text: sanitizePdfText(l.replace(/^[-•]\s+/, '')), fontSize: 7, color: '#444', lineHeight: 1.4 })),
+            margin: [0, 0, 0, 4],
+          });
+        } else {
+          out.push({
+            text: sanitizePdfText(para),
+            fontSize: 7, color: '#444', lineHeight: 1.5,
+            alignment: 'justify',
+            margin: [0, 0, 0, 4],
+          });
+        }
+      }
+      return out;
+    };
+
     if (quote.notes || quote.terms) {
       const ntBody: any[][] = [[
         ...(quote.notes ? [{
-
           stack: [
             sectionLabel('Notes'),
-            { text: sanitizePdfText(quote.notes), fontSize: 7, color: '#444', lineHeight: 1.5 },
+            ...renderNotesOrTerms(quote.notes),
           ],
         }] : []),
         ...(quote.terms ? [{
-
           stack: [
             sectionLabel('Terms & Conditions'),
-            { text: sanitizePdfText(quote.terms), fontSize: 7, color: '#444', lineHeight: 1.5 },
+            ...renderNotesOrTerms(quote.terms),
           ],
         }] : []),
       ]];

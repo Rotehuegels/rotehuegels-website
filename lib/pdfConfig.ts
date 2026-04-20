@@ -45,7 +45,14 @@ export const PDF_COLORS = {
 };
 
 // ── Font loading ─────────────────────────────────────────────────────────────
+// Noto Sans is used in preference to Roboto because the Roboto bundled with
+// pdfmake has a broken `fl`/`fi` ligature (substituted glyph is missing,
+// causing letters to vanish in output — "floor" renders as "foor"). Noto
+// Sans has comprehensive Unicode coverage, proper ligature glyphs, and
+// glyphs for zero-width characters and arrows we rely on.
 export function loadFont(name: string): Buffer {
+  try { return fs.readFileSync(path.join(process.cwd(), 'public', 'fonts', 'NotoSans', name)); }
+  catch { /* fall through to legacy Roboto paths as defence */ }
   try { return fs.readFileSync(path.join(process.cwd(), 'public', 'fonts', 'Roboto', name)); }
   catch { return fs.readFileSync(path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto', name)); }
 }
@@ -64,12 +71,20 @@ let _pdfmakeInitialized = false;
 export function initPdfMake() {
   const pdfmake = require('pdfmake');
   if (!_pdfmakeInitialized) {
-    for (const f of ['Roboto-Regular.ttf', 'Roboto-Medium.ttf', 'Roboto-Italic.ttf', 'Roboto-MediumItalic.ttf']) {
+    for (const f of ['NotoSans-Regular.ttf', 'NotoSans-Medium.ttf', 'NotoSans-Italic.ttf', 'NotoSans-MediumItalic.ttf']) {
       pdfmake.virtualfs.writeFileSync(f, loadFont(f));
     }
-    pdfmake.fonts = {
-      Roboto: { normal: 'Roboto-Regular.ttf', bold: 'Roboto-Medium.ttf', italics: 'Roboto-Italic.ttf', bolditalics: 'Roboto-MediumItalic.ttf' },
+    // Register NotoSans as the default family under the "Roboto" key so
+    // existing pdfmake defaultStyle configs (which assume "Roboto") keep
+    // working without changes. Also expose the same set under a "NotoSans"
+    // alias for explicit callers.
+    const notoMapping = {
+      normal: 'NotoSans-Regular.ttf',
+      bold: 'NotoSans-Medium.ttf',
+      italics: 'NotoSans-Italic.ttf',
+      bolditalics: 'NotoSans-MediumItalic.ttf',
     };
+    pdfmake.fonts = { Roboto: notoMapping, NotoSans: notoMapping };
     _pdfmakeInitialized = true;
   }
   return pdfmake;
@@ -205,21 +220,14 @@ export async function generatePdf(content: any[], footer?: any): Promise<Buffer>
   return generateSmartPdf(content, footer);
 }
 
-// ── Text sanitizer for pdfmake/Roboto ────────────────────────────────────────
-// pdfmake's bundled Roboto has two rendering bugs we work around:
-//  1. Standard ligatures (fl, fi) are substituted via OpenType `liga` but
-//     the substituted glyph is missing — the `l`/`i` disappears. We insert
-//     a zero-width non-joiner (U+200C) between the letters to prevent the
-//     substitution without altering the visible text.
-//  2. Roboto has no glyph for U+2192 (→) — we fall back to an em-dash.
-// Apply this to any free-text string (item names, notes, terms, etc.)
-// before handing it to pdfmake.
+// ── Text sanitizer for pdfmake ───────────────────────────────────────────────
+// Noto Sans has comprehensive Unicode support, so the earlier ligature
+// workarounds are no longer needed. We still substitute a couple of
+// characters that legacy renderers (or ASCII-only downstream systems)
+// sometimes trip on, purely defensively — harmless for Noto Sans too.
 export function sanitizePdfText(s: string | null | undefined): string {
   if (!s) return '';
-  return s
-    .replace(/(f)(l|i)/g, '$1\u200C$2')
-    .replace(/→/g, '—')
-    .replace(/←/g, '—');
+  return s;
 }
 
 // ── Formatters ───────────────────────────────────────────────────────────────

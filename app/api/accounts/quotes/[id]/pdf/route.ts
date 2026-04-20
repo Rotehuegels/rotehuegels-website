@@ -171,23 +171,39 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const renderNotesOrTerms = (raw: string): any[] => {
       const out: any[] = [];
       const paragraphs = raw.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
-      for (const para of paragraphs) {
-        const lines = para.split(/\n/).map(l => l.trim()).filter(Boolean);
-        const bulletLines = lines.filter(l => /^[-•]\s+/.test(l));
-        if (bulletLines.length >= 2 && bulletLines.length === lines.length) {
-          // Entire paragraph is a bullet list
+      const flushRuns = (textRun: string[], bulletRun: string[]) => {
+        if (textRun.length) {
           out.push({
-            ul: lines.map(l => ({ text: sanitizePdfText(l.replace(/^[-•]\s+/, '')), fontSize: 7, color: '#444', lineHeight: 1.4 })),
-            margin: [0, 0, 0, 4],
-          });
-        } else {
-          out.push({
-            text: sanitizePdfText(para),
+            text: sanitizePdfText(textRun.join(' ')),
             fontSize: 7, color: '#444', lineHeight: 1.5,
             alignment: 'justify',
             margin: [0, 0, 0, 4],
           });
         }
+        if (bulletRun.length) {
+          out.push({
+            ul: bulletRun.map(l => ({ text: sanitizePdfText(l.replace(/^[-•]\s+/, '')), fontSize: 7, color: '#444', lineHeight: 1.4 })),
+            margin: [0, 0, 0, 4],
+          });
+        }
+      };
+      for (const para of paragraphs) {
+        const lines = para.split(/\n/).map(l => l.trim()).filter(Boolean);
+        // Walk lines and group consecutive bullet vs non-bullet runs, so a
+        // header line followed by bullets renders as text-then-list instead
+        // of disqualifying the whole paragraph from being a bullet list.
+        let textRun: string[] = [];
+        let bulletRun: string[] = [];
+        for (const line of lines) {
+          if (/^[-•]\s+/.test(line)) {
+            if (textRun.length) { flushRuns(textRun, []); textRun = []; }
+            bulletRun.push(line);
+          } else {
+            if (bulletRun.length) { flushRuns([], bulletRun); bulletRun = []; }
+            textRun.push(line);
+          }
+        }
+        flushRuns(textRun, bulletRun);
       }
       return out;
     };

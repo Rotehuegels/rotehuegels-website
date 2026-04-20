@@ -221,13 +221,18 @@ export async function generatePdf(content: any[], footer?: any): Promise<Buffer>
 }
 
 // ── Text sanitizer for pdfmake ───────────────────────────────────────────────
-// Noto Sans has comprehensive Unicode support, so the earlier ligature
-// workarounds are no longer needed. We still substitute a couple of
-// characters that legacy renderers (or ASCII-only downstream systems)
-// sometimes trip on, purely defensively — harmless for Noto Sans too.
+// Noto Sans (latin-greek-cyrillic set) covers Basic Latin, General
+// Punctuation, Currency Symbols etc. — but NOT the Arrows block
+// (U+2190-21FF; those glyphs live in Noto Sans Symbols). We substitute
+// the handful of arrows callers sometimes use with an em-dash so they
+// don't render as blanks. `fl`/`fi` ligature workarounds are no longer
+// needed now that we've dropped pdfmake's broken Roboto.
 export function sanitizePdfText(s: string | null | undefined): string {
   if (!s) return '';
-  return s;
+  return s
+    .replace(/[→⟶➜➔➝➞▶►]/g, '—')
+    .replace(/[←⟵◀◁]/g, '—')
+    .replace(/[↔⟷]/g, '—');
 }
 
 // ── Formatters ───────────────────────────────────────────────────────────────

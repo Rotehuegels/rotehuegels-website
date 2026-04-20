@@ -5,6 +5,8 @@
 import nodemailer from "nodemailer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getCompanyCO } from "@/lib/company";
+import { generateInvoicePdfBuffer } from "@/lib/invoicePdf";
+import { generatePurchaseOrderPdfBuffer } from "@/lib/purchaseOrderPdf";
 
 /* ── SMTP setup (mirrors lib/mailer.ts) ──────────────────────────────────── */
 
@@ -155,6 +157,10 @@ export async function sendOrderConfirmation(orderId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ccList = ((order as any).customers?.cc_emails ?? []) as CcEntry[];
 
+  // Generate the invoice PDF FIRST — fail-hard so we never send a half-
+  // baked order-confirmation email if the PDF can't be rendered.
+  const pdf = await generateInvoicePdfBuffer(orderId);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawItems = (order.items ?? []) as Array<Record<string, any>>;
   const orderGstRate = Number(order.gst_rate ?? 18);
@@ -266,7 +272,9 @@ export async function sendOrderConfirmation(orderId: string) {
 
     ${bankDetailsHtml(CO)}
 
-    <p style="font-size:11px;color:#666;margin-top:16px;">If you have any questions regarding this order, please reply to this email or contact us at ${CO.email}.</p>
+    <p style="font-size:12px;color:#444;margin-top:16px;">The full tax invoice (with HSN/SAC codes, per-line GST breakdown, bank details and UPI QR for immediate payment) is attached as a PDF: <strong>${esc(pdf.filename)}</strong>. Please refer to it for the complete picture.</p>
+
+    <p style="font-size:11px;color:#666;margin-top:8px;">If you have any questions regarding this order, please reply to this email or contact us at ${CO.email}.</p>
   ${footer(CO)}`;
 
   const itemsText = items
@@ -289,6 +297,8 @@ export async function sendOrderConfirmation(orderId: string) {
     `Grand Total: ${fmt(order.total_value_incl_gst ?? 0)}`,
     order.payment_terms ? `Payment Terms: ${order.payment_terms}` : "",
     ``,
+    `Full invoice attached as PDF: ${pdf.filename}`,
+    ``,
     `For queries contact ${CO.email} or ${CO.phone}.`,
     `— ${CO.name}`,
   ].join("\n");
@@ -299,7 +309,8 @@ export async function sendOrderConfirmation(orderId: string) {
     html,
     text,
     SALES_FROM,
-    ccList
+    ccList,
+    [{ filename: pdf.filename, content: pdf.buffer, contentType: 'application/pdf' }]
   );
 
   // Stamp last_emailed_at so next send knows it's a resend
@@ -333,6 +344,10 @@ export async function sendPaymentReceipt(paymentId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ccList = ((order as any).customers?.cc_emails ?? []) as CcEntry[];
 
+  // Generate the invoice PDF FIRST — fail-hard so we never send a
+  // payment-receipt email without the corresponding invoice attached.
+  const pdf = await generateInvoicePdfBuffer(order.id);
+
   // Compute balance
   const { data: allPayments } = await supabaseAdmin
     .from("order_payments")
@@ -361,7 +376,9 @@ export async function sendPaymentReceipt(paymentId: string) {
       <tr style="border-top:1px solid #ddd;"><td style="color:#666;padding-right:14px;font-weight:700;">Balance Outstanding</td><td style="font-weight:900;color:${balance > 0 ? "#dc2626" : "#16a34a"};">${fmt(balance)}</td></tr>
     </table>
 
-    <p style="font-size:11px;color:#666;">For queries, contact ${CO.email} or ${CO.phone}.</p>
+    <p style="font-size:12px;color:#444;margin-top:16px;">For your records, the updated tax invoice (showing this payment applied and any remaining balance) is attached as a PDF: <strong>${esc(pdf.filename)}</strong>.</p>
+
+    <p style="font-size:11px;color:#666;margin-top:8px;">For queries, contact ${CO.email} or ${CO.phone}.</p>
   ${footer(CO)}`;
 
   const text = [
@@ -376,6 +393,8 @@ export async function sendPaymentReceipt(paymentId: string) {
     `Total Received: ${fmt(totalReceived)}`,
     `Balance: ${fmt(balance)}`,
     ``,
+    `Full invoice attached as PDF: ${pdf.filename}`,
+    ``,
     `— ${CO.name}`,
   ].join("\n");
 
@@ -385,7 +404,8 @@ export async function sendPaymentReceipt(paymentId: string) {
     html,
     text,
     SALES_FROM,
-    ccList
+    ccList,
+    [{ filename: pdf.filename, content: pdf.buffer, contentType: 'application/pdf' }]
   );
 }
 
@@ -418,6 +438,10 @@ export async function sendPaymentReminder(orderId: string) {
 
   if (pending <= 0) throw new Error("No outstanding balance for this order.");
 
+  // Generate the invoice PDF FIRST — fail-hard so we never send a
+  // payment-reminder email without the original invoice attached.
+  const pdf = await generateInvoicePdfBuffer(orderId);
+
   const html = `${letterhead(CO, "Payment Reminder")}
     <p style="font-size:13px;">Dear <strong>${esc(order.client_name)}</strong>,</p>
     <p style="font-size:12px;color:#444;">This is a friendly reminder regarding the outstanding payment for the following order:</p>
@@ -437,7 +461,9 @@ export async function sendPaymentReminder(orderId: string) {
 
     ${bankDetailsHtml(CO)}
 
-    <p style="font-size:11px;color:#666;margin-top:16px;">If you have already made the payment, please disregard this reminder. For any questions, contact us at ${CO.email} or ${CO.phone}.</p>
+    <p style="font-size:12px;color:#444;margin-top:16px;">For your reference, the original tax invoice is attached as a PDF: <strong>${esc(pdf.filename)}</strong>.</p>
+
+    <p style="font-size:11px;color:#666;margin-top:8px;">If you have already made the payment, please disregard this reminder. For any questions, contact us at ${CO.email} or ${CO.phone}.</p>
   ${footer(CO)}`;
 
   const text = [
@@ -453,6 +479,8 @@ export async function sendPaymentReminder(orderId: string) {
     ``,
     `Bank: ${CO.bankName} | A/C: ${CO.bankAccount} | IFSC: ${CO.bankIfsc}`,
     ``,
+    `Full invoice attached as PDF: ${pdf.filename}`,
+    ``,
     `If already paid, please disregard this reminder.`,
     `— ${CO.name}`,
   ].join("\n");
@@ -463,7 +491,8 @@ export async function sendPaymentReminder(orderId: string) {
     html,
     text,
     SALES_FROM,
-    ccList
+    ccList,
+    [{ filename: pdf.filename, content: pdf.buffer, contentType: 'application/pdf' }]
   );
 }
 
@@ -605,6 +634,10 @@ export async function sendPOConfirmation(poId: string) {
   const supplierEmail = supplier?.email;
   if (!supplierEmail) throw new Error("Supplier has no email address.");
 
+  // Generate the PO PDF FIRST — fail-hard so we never send a PO email
+  // without the formal PDF attached.
+  const pdf = await generatePurchaseOrderPdfBuffer(poId);
+
   const items = (poItems ?? []) as Array<{
     sl_no: number; description: string; hsn_code?: string;
     unit: string; quantity: number; unit_price: number;
@@ -659,7 +692,9 @@ export async function sendPOConfirmation(poId: string) {
     ${po.notes ? `<p style="font-size:11px;color:#444;"><strong>Notes:</strong> ${esc(po.notes)}</p>` : ""}
     ${po.terms ? `<p style="font-size:11px;color:#444;"><strong>Terms:</strong> ${esc(po.terms)}</p>` : ""}
 
-    <p style="font-size:12px;color:#444;margin-top:16px;">Please confirm receipt and expected delivery schedule. For queries, contact ${CO.procurementEmail} or call ${CO.phone}.</p>
+    <p style="font-size:12px;color:#444;margin-top:16px;">The full purchase order (with HSN codes, per-line GST breakdown, ship-to address and signed authorisation) is attached as a PDF: <strong>${esc(pdf.filename)}</strong>. Please treat the PDF as the formal PO document.</p>
+
+    <p style="font-size:12px;color:#444;margin-top:8px;">Please confirm receipt and expected delivery schedule. For queries, contact ${CO.procurementEmail} or call ${CO.phone}.</p>
   ${footer(CO)}`;
 
   const itemsText = items
@@ -680,6 +715,8 @@ export async function sendPOConfirmation(poId: string) {
     ``,
     `Total (incl. GST): ${fmt(po.total_amount ?? 0)}`,
     ``,
+    `Full PO attached as PDF: ${pdf.filename}`,
+    ``,
     `Please confirm receipt.`,
     `— ${CO.name}`,
   ].join("\n");
@@ -689,7 +726,9 @@ export async function sendPOConfirmation(poId: string) {
     `Purchase Order ${po.po_no} | ${CO.name}`,
     html,
     text,
-    PROCUREMENT_FROM
+    PROCUREMENT_FROM,
+    undefined,
+    [{ filename: pdf.filename, content: pdf.buffer, contentType: 'application/pdf' }]
   );
 }
 

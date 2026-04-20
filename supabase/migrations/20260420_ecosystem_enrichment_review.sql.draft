@@ -1,0 +1,72 @@
+-- =====================================================================
+-- Ecosystem enrichment (REVIEW tier — do NOT apply as-is) — 2026-04-20T17:12:23.404Z
+-- Contains lower-confidence candidates (fuzzy LinkedIn matches 60-79,
+-- personal-domain emails, cross-domain scrape hits, etc.)
+-- File is .sql.draft to prevent accidental apply. Vet each row before using.
+-- =====================================================================
+
+-- BEGIN;
+
+-- recyclers CPCB-UP-071: Eco Green India
+--   current: email=cpcb.up071@recycler.in phone=NULL
+--   reason : email: linkedin-best:score=80:Zeco Green Limited
+-- UPDATE recyclers SET email = 'maheshspatil1997@gmail.com' WHERE recycler_code = 'CPCB-UP-071';
+
+-- recyclers NFMR-MH-052: Johnson Matthey Chemicals India Pvt.Ltd
+--   current: email=nfmr.mh052@placeholder.in phone=NULL
+--   reason : email: linkedin-cand:score=60:Johnson & Johnson MedTech | UK & Ireland
+-- UPDATE recyclers SET email = 'nithyareddykr@gmail.com' WHERE recycler_code = 'NFMR-MH-052';
+
+-- recyclers NFMR-HR-004: Metal and Alloys
+--   current: email=nfmr.hr004@placeholder.in phone=NULL
+--   reason : email: linkedin-best:score=80:Matrix Metal & Alloys
+-- UPDATE recyclers SET email = 'matrixmetalloys@gmail.com' WHERE recycler_code = 'NFMR-HR-004';
+
+-- recyclers NFMR-MH-032: Rohini Metal Alloys
+--   current: email=nfmr.mh032@placeholder.in phone=NULL
+--   reason : email: linkedin-cand:score=60:Matrix Metal & Alloys
+-- UPDATE recyclers SET email = 'matrixmetalloys@gmail.com' WHERE recycler_code = 'NFMR-MH-032';
+
+-- recyclers NFMR-MH-030: Aditya Industries
+--   current: email=nfmr.mh030@placeholder.in phone=NULL
+--   reason : email: linkedin-best:score=80:Aditya Birla Group
+-- UPDATE recyclers SET email = 'm.anbu18@gmail.com' WHERE recycler_code = 'NFMR-MH-030';
+
+-- recyclers NFMR-UP-021: United Chemical Industrial
+--   current: email=nfmr.up021@placeholder.in phone=NULL
+--   reason : email: linkedin-cand:score=60:United Gulf Industrial Consortia
+-- UPDATE recyclers SET email = 'marcelo@ugicon.com' WHERE recycler_code = 'NFMR-UP-021';
+
+-- recyclers BPACK-WB-001: Exide Industries Limited
+--   current: email=bpack-wb-001@placeholder.in phone=+917044000000
+--   reason : email: scrape-nondom:https://www.exideindustries.com
+-- UPDATE recyclers SET email = 'investor.agm2020@exide.co.in' WHERE recycler_code = 'BPACK-WB-001';
+
+-- recyclers EVOEM-DL-004: Okaya EV Private Limited
+--   current: email=evoem-dl-004@placeholder.in phone=+918377909090
+--   reason : email: scrape-nondom:https://www.okayaev.com
+-- UPDATE recyclers SET email = 'info@opgmobility.com' WHERE recycler_code = 'EVOEM-DL-004';
+
+-- recyclers EVOEM-AP-001: Kia India Private Limited
+--   current: email=evoem-ap-001@placeholder.in phone=NULL
+--   reason : email: scrape-nondom:https://www.kia.com/in
+-- UPDATE recyclers SET email = 'kiacare@kiaindia.net' WHERE recycler_code = 'EVOEM-AP-001';
+
+-- recyclers EVOEM-MH-002: Mahindra & Mahindra Limited
+--   current: email=evoem-mh-002@placeholder.in phone=NULL
+--   reason : email: linkedin-best:score=80:Tech Mahindra
+-- UPDATE recyclers SET email = 'akhankhyajena@gmail.com' WHERE recycler_code = 'EVOEM-MH-002';
+
+-- suppliers VND-016: SHREE PADMAVATI METAL & ALLOYS
+--   current: email=NULL phone=NULL
+--   reason : email: linkedin-cand:score=60:Matrix Metal & Alloys
+-- UPDATE suppliers SET email = 'matrixmetalloys@gmail.com' WHERE vendor_code = 'VND-016';
+
+-- supplier_leads a5c7442e-1404-4a86-9ad2-8520f196d581: Hindalco
+--   current: email=NULL phone=NULL
+--   reason : email: scrape-nondom:https://www.hindalco.com/businesses/copper
+-- UPDATE supplier_leads SET email = 'hilinvestors@adityabirla.com' WHERE id = 'a5c7442e-1404-4a86-9ad2-8520f196d581';
+
+-- COMMIT;
+
+-- Review count: 12

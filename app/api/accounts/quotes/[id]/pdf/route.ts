@@ -208,28 +208,33 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return out;
     };
 
-    if (quote.notes || quote.terms) {
-      const ntBody: any[][] = [[
-        ...(quote.notes ? [{
-          stack: [
-            sectionLabel('Notes'),
-            ...renderNotesOrTerms(quote.notes),
-          ],
-        }] : []),
-        ...(quote.terms ? [{
-          stack: [
-            sectionLabel('Terms & Conditions'),
-            ...renderNotesOrTerms(quote.terms),
-          ],
-        }] : []),
-      ]];
-      const ntWidths = quote.notes && quote.terms ? ['*', '*'] : ['*'];
-      content.push({
-        table: { widths: ntWidths, body: ntBody },
-        layout: 'noBorders',
-        margin: [0, 0, 0, 8],
-      });
-    }
+    // Notes & Terms rendering is prepared here but pushed AFTER the bank
+    // and signature block — see below. Payment instructions are the first
+    // thing the customer should see once they've approved the totals.
+    const notesTermsBlock: any | null = (quote.notes || quote.terms)
+      ? (() => {
+          const ntBody: any[][] = [[
+            ...(quote.notes ? [{
+              stack: [
+                sectionLabel('Notes'),
+                ...renderNotesOrTerms(quote.notes),
+              ],
+            }] : []),
+            ...(quote.terms ? [{
+              stack: [
+                sectionLabel('Terms & Conditions'),
+                ...renderNotesOrTerms(quote.terms),
+              ],
+            }] : []),
+          ]];
+          const ntWidths = quote.notes && quote.terms ? ['*', '*'] : ['*'];
+          return {
+            table: { widths: ntWidths, body: ntBody },
+            layout: 'noBorders',
+            margin: [0, 8, 0, 8],
+          };
+        })()
+      : null;
 
     // Bank Details + QR + Payment Terms + Signature — reuse the shared
     // invoice block so quote and invoice look identical at the bottom.
@@ -260,6 +265,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       fontSize: 5, color: COLORS.medGray, italics: true, lineHeight: 1.3,
       margin: [0, 0, 0, 4],
     });
+
+    // Notes & Terms pushed AFTER the bank + signature block so the PDF
+    // order is: header → customer info → items → totals → bank & signature
+    // → notes & terms → disclaimer. Customer sees payment info first on
+    // approval; the detail bullets follow for reference.
+    if (notesTermsBlock) content.push(notesTermsBlock);
 
     // Footer disclaimer strip
     content.push({

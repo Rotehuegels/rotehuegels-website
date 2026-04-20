@@ -174,7 +174,13 @@ export async function generateSmartPdf(
     return pdfmake.createPdf({
       pageSize: 'A4' as const,
       pageMargins: preset.margins,
-      defaultStyle: { fontSize: preset.fontSize, lineHeight: preset.lineHeight },
+      // fontFeatures: [] tells pdfkit to enable NO OpenType features,
+      // which turns off the `liga` (standard ligature) substitution. Our
+      // embedded font's ligature glyphs for ff/fi/fl are missing, so when
+      // `liga` runs the substituted glyph renders as nothing (letters
+      // disappear — "floor" → "foor", "differential" → "diferential").
+      // Disabling `liga` makes each letter render as a discrete glyph.
+      defaultStyle: { fontSize: preset.fontSize, lineHeight: preset.lineHeight, fontFeatures: [] },
       content: deepClone(content),
       ...(footer ? { footer } : {}),
     }).getBuffer();

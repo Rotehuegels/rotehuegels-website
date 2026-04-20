@@ -205,6 +205,23 @@ export async function generatePdf(content: any[], footer?: any): Promise<Buffer>
   return generateSmartPdf(content, footer);
 }
 
+// ── Text sanitizer for pdfmake/Roboto ────────────────────────────────────────
+// pdfmake's bundled Roboto has two rendering bugs we work around:
+//  1. Standard ligatures (fl, fi) are substituted via OpenType `liga` but
+//     the substituted glyph is missing — the `l`/`i` disappears. We insert
+//     a zero-width non-joiner (U+200C) between the letters to prevent the
+//     substitution without altering the visible text.
+//  2. Roboto has no glyph for U+2192 (→) — we fall back to an em-dash.
+// Apply this to any free-text string (item names, notes, terms, etc.)
+// before handing it to pdfmake.
+export function sanitizePdfText(s: string | null | undefined): string {
+  if (!s) return '';
+  return s
+    .replace(/(f)(l|i)/g, '$1\u200C$2')
+    .replace(/→/g, '—')
+    .replace(/←/g, '—');
+}
+
 // ── Formatters ───────────────────────────────────────────────────────────────
 export const fmtINR = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);

@@ -80,7 +80,7 @@ function footer(CO: CO) {
   return `
       <!-- footer -->
       <div style="border-top:1px solid #ddd;padding-top:12px;margin-top:24px;font-size:9px;color:#999;line-height:1.6;">
-        <div>This is an auto-generated email from ${esc(CO.name)}.</div>
+        <div>This is an auto-generated email from ${esc(CO.name)}, sent via <strong>Operon</strong> — an AI-enabled ERP.</div>
         <div>For queries, contact ${CO.email} or call ${CO.phone}.</div>
         <div>Subject to Chennai jurisdiction.</div>
       </div>
@@ -101,13 +101,38 @@ function bankDetailsHtml(CO: CO) {
     </div>`;
 }
 
-async function send(to: string, subject: string, html: string, text: string, from?: string) {
-  const t = getTransporter();
-  await t.sendMail({ from: from ?? EMAIL_FROM, to, subject, html, text });
+type CcEntry = { name?: string; email: string; role?: string };
+
+function formatCc(cc: CcEntry[] | undefined): string[] | undefined {
+  if (!cc || cc.length === 0) return undefined;
+  return cc
+    .filter(x => x?.email)
+    .map(x => (x.name ? `${x.name} <${x.email}>` : x.email));
 }
 
-const PROCUREMENT_FROM = "Rotehügels Procurements <procurements@rotehuegels.com>";
-const SALES_FROM = "Rotehügels Sales <sales@rotehuegels.com>";
+async function send(
+  to: string,
+  subject: string,
+  html: string,
+  text: string,
+  from?: string,
+  cc?: CcEntry[]
+) {
+  const t = getTransporter();
+  await t.sendMail({
+    from: from ?? EMAIL_FROM,
+    to,
+    cc: formatCc(cc),
+    subject,
+    html,
+    text,
+  });
+}
+
+// All auto-generated ERP emails go from the no-reply mailbox.
+// Display name still reflects the department so recipients can tell them apart.
+const PROCUREMENT_FROM = "Rotehügels Procurements <noreply@rotehuegels.com>";
+const SALES_FROM = "Rotehügels Sales <noreply@rotehuegels.com>";
 
 /* ── 1. Order Confirmation / Invoice Email ───────────────────────────────── */
 
@@ -115,7 +140,7 @@ export async function sendOrderConfirmation(orderId: string) {
   const CO = await getCompanyCO();
   const { data: order, error } = await supabaseAdmin
     .from("orders")
-    .select("*, customers(email)")
+    .select("*, customers(email, cc_emails)")
     .eq("id", orderId)
     .single();
   if (error || !order) throw new Error(`Order not found: ${orderId}`);
@@ -123,6 +148,8 @@ export async function sendOrderConfirmation(orderId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clientEmail = (order as any).customers?.email;
   if (!clientEmail) throw new Error("Order has no linked customer email address.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ccList = ((order as any).customers?.cc_emails ?? []) as CcEntry[];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawItems = (order.items ?? []) as Array<Record<string, any>>;
@@ -267,7 +294,8 @@ export async function sendOrderConfirmation(orderId: string) {
     `${isResend ? 'Revised: ' : ''}Order Confirmation — ${order.order_no} | ${CO.name}`,
     html,
     text,
-    SALES_FROM
+    SALES_FROM,
+    ccList
   );
 
   // Stamp last_emailed_at so next send knows it's a resend
@@ -290,7 +318,7 @@ export async function sendPaymentReceipt(paymentId: string) {
 
   const { data: order, error: oErr } = await supabaseAdmin
     .from("orders")
-    .select("*, customers(email)")
+    .select("*, customers(email, cc_emails)")
     .eq("id", payment.order_id)
     .single();
   if (oErr || !order) throw new Error(`Order not found for payment ${paymentId}`);
@@ -298,6 +326,8 @@ export async function sendPaymentReceipt(paymentId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clientEmail = (order as any).customers?.email;
   if (!clientEmail) throw new Error("Order has no linked customer email address.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ccList = ((order as any).customers?.cc_emails ?? []) as CcEntry[];
 
   // Compute balance
   const { data: allPayments } = await supabaseAdmin
@@ -350,7 +380,8 @@ export async function sendPaymentReceipt(paymentId: string) {
     `Payment Received — ${order.order_no} | ${CO.name}`,
     html,
     text,
-    SALES_FROM
+    SALES_FROM,
+    ccList
   );
 }
 
@@ -360,7 +391,7 @@ export async function sendPaymentReminder(orderId: string) {
   const CO = await getCompanyCO();
   const { data: order, error } = await supabaseAdmin
     .from("orders")
-    .select("*, customers(email)")
+    .select("*, customers(email, cc_emails)")
     .eq("id", orderId)
     .single();
   if (error || !order) throw new Error(`Order not found: ${orderId}`);
@@ -368,6 +399,8 @@ export async function sendPaymentReminder(orderId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clientEmail = (order as any).customers?.email;
   if (!clientEmail) throw new Error("Order has no linked customer email address.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ccList = ((order as any).customers?.cc_emails ?? []) as CcEntry[];
 
   const { data: payments } = await supabaseAdmin
     .from("order_payments")
@@ -425,7 +458,8 @@ export async function sendPaymentReminder(orderId: string) {
     `Payment Reminder — ${order.order_no} | ${fmt(pending)} due | ${CO.name}`,
     html,
     text,
-    SALES_FROM
+    SALES_FROM,
+    ccList
   );
 }
 
@@ -528,7 +562,8 @@ export async function sendQuoteEmail(quoteId: string) {
     `Quotation ${quote.quote_no} | ${CO.name}`,
     html,
     text,
-    SALES_FROM
+    SALES_FROM,
+    (customer?.cc_emails ?? []) as CcEntry[]
   );
 }
 

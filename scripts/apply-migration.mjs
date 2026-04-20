@@ -73,7 +73,6 @@ if (!client) {
 if (!client) { console.error('✗ no route to DB'); process.exit(1); }
 
 try {
-  await client.connect();
   console.log(`→ applying ${file}`);
   await client.query('BEGIN');
   await client.query(sql);

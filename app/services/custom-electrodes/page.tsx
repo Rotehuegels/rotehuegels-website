@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Zap, Beaker, Settings, Factory, Award, ClipboardList, ArrowRight, CheckCircle2, Shield, Ruler } from 'lucide-react';
 
 export const metadata = {
@@ -82,6 +83,38 @@ export default function CustomElectrodesPage() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-0 items-stretch">
+            <div className="bg-zinc-950/60 flex items-center justify-center p-8 md:p-10">
+              <Image
+                src="/first-anode-zinc-chennai.png"
+                alt="First lead anode fabricated in-house for the Rotehügels Zinc Dross R&D Pilot Plant, Chennai"
+                width={1170}
+                height={1303}
+                className="w-full max-w-md h-auto object-contain"
+                priority={false}
+              />
+            </div>
+            <div className="p-8 md:p-10 flex flex-col justify-center">
+              <p className="text-xs tracking-widest text-rose-400/90 uppercase mb-3">From our R&amp;D floor</p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">First anode — Zinc Dross R&amp;D Pilot Plant, Chennai</h2>
+              <p className="text-sm text-zinc-300 leading-relaxed mb-4">
+                This is the first lead anode we fabricated in-house for our Zinc Dross R&amp;D Pilot Plant in Chennai —
+                cast, rolled, and fitted with an integrated copper-insert hanger bar to the cell geometry of our own
+                zinc electrowinning circuit.
+              </p>
+              <p className="text-sm text-zinc-300 leading-relaxed mb-4">
+                Every electrode we supply to customers passes through the same build discipline we apply to our own pilot
+                plant — alloy selection to match the electrolyte, hanger-bar geometry matched to the tank, dimensional
+                control for long cycle life, and full traceability from raw lead through to the finished anode.
+              </p>
+              <p className="text-xs text-zinc-500 italic">
+                We do not sell what we have not built for ourselves.
+              </p>
+            </div>
           </div>
         </section>
 

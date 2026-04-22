@@ -125,8 +125,8 @@ export default function CustomElectrodesPage() {
               <h2 className="text-2xl md:text-3xl font-bold mb-4">First aluminium cathode — matched to the anode, matched to the cell</h2>
               <p className="text-sm text-zinc-300 leading-relaxed mb-4">
                 The companion to our first lead anode — a high-purity aluminium cathode fabricated in-house for the same
-                Chennai pilot cell. Stainless-steel hanger bar with engraved branding, copper-insert contact, PVC edge
-                strips, and a deposition face dimensioned to pair exactly with the anode pitch.
+                Chennai pilot cell. Aluminium hanger bar with a copper tip for low-resistance contact, a 5&nbsp;mm
+                aluminium deposition sheet, PP edge strips, and active-face dimensions matched exactly to the anode pitch.
               </p>
               <p className="text-sm text-zinc-300 leading-relaxed mb-4">
                 Anode and cathode are designed together, not separately. Hanger-bar heights, edge-strip geometry, and

@@ -118,6 +118,39 @@ export default function CustomElectrodesPage() {
           </div>
         </section>
 
+        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-0 items-stretch">
+            <div className="p-8 md:p-10 flex flex-col justify-center order-2 md:order-1">
+              <p className="text-xs tracking-widest text-rose-400/90 uppercase mb-3">From our R&amp;D floor</p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">First aluminium cathode — matched to the anode, matched to the cell</h2>
+              <p className="text-sm text-zinc-300 leading-relaxed mb-4">
+                The companion to our first lead anode — a high-purity aluminium cathode fabricated in-house for the same
+                Chennai pilot cell. Stainless-steel hanger bar with engraved branding, copper-insert contact, PVC edge
+                strips, and a deposition face dimensioned to pair exactly with the anode pitch.
+              </p>
+              <p className="text-sm text-zinc-300 leading-relaxed mb-4">
+                Anode and cathode are designed together, not separately. Hanger-bar heights, edge-strip geometry, and
+                active-face dimensions are matched so the pair drops into the cell as a single engineered assembly —
+                the same discipline we apply to customer orders where electrode pairs must harvest together on an
+                automated stripping line.
+              </p>
+              <p className="text-xs text-zinc-500 italic">
+                Built, tested, and run in our own tank-house before a single unit ships to a customer.
+              </p>
+            </div>
+            <div className="bg-zinc-950/60 flex items-center justify-center p-8 md:p-10 order-1 md:order-2">
+              <Image
+                src="/first-aluminium-cathode-chennai.jpg"
+                alt="First aluminium cathode fabricated in-house for the Rotehügels Zinc Dross R&D Pilot Plant, Chennai — paired with the first lead anode"
+                width={716}
+                height={1076}
+                className="w-full max-w-md h-auto object-contain"
+                priority={false}
+              />
+            </div>
+          </div>
+        </section>
+
         <section>
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold">How we engineer your electrodes</h2>

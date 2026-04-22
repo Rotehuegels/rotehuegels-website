@@ -444,18 +444,10 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
   // pdfmake finishes, so `missingList`, `suggestions`, and `marketplace`
   // are carried forward below — no pdfmake rendering of the form on page 1.
 
-  // ── Footer ────────────────────────────────────────────────────────────────
-  const footer = (currentPage: number, pageCount: number) => ({
-    columns: [
-      T(`${r.company_name}  ·  ${r.recycler_code}`,
-        { fontSize: 6, color: COLORS.medGray, margin: [36, 0, 0, 0] }),
-      T(`${CO.web}  |  ${CO.email}`,
-        { fontSize: 6, color: COLORS.medGray, alignment: 'center' }),
-      T(`Page ${currentPage} of ${pageCount}`,
-        { fontSize: 6, color: COLORS.medGray, alignment: 'right', margin: [0, 0, 36, 0] }),
-    ],
-    margin: [0, 12, 0, 0],
-  });
+  // Page-level footers are stamped by pdf-lib AFTER both the pdfmake
+  // snapshot and the form pages are assembled — that way the "Page X of Y"
+  // count reflects the total document, not just the pdfmake portion. See
+  // appendEditableFormPages().
 
   // ── Disclaimer ───────────────────────────────────────────────────────────
   const disclaimer = {
@@ -485,10 +477,12 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
     disclaimer,
   ];
 
-  const snapshotBuffer = await generateSmartPdf(content, footer);
+  const snapshotBuffer = await generateSmartPdf(content);
   const buffer = await appendEditableFormPages(snapshotBuffer, {
     companyName: r.company_name,
     recyclerCode: r.recycler_code,
+    footerLeft: `${r.company_name}  ·  ${r.recycler_code}`,
+    footerCenter: `${CO.web}  |  ${CO.email}`,
     missingList,
     suggestions,
     marketplace,
@@ -509,6 +503,8 @@ async function appendEditableFormPages(
   opts: {
     companyName: string;
     recyclerCode: string;
+    footerLeft: string;
+    footerCenter: string;
     missingList: string[];
     suggestions: string[];
     marketplace: Array<{ label: string; height: number; multiline?: boolean }>;
@@ -710,6 +706,36 @@ async function appendEditableFormPages(
   // viewers that do not regenerate appearances on demand (notably some
   // macOS Preview versions) still show the fields as clickable + typable.
   form.updateFieldAppearances(helv);
+
+  // Stamp a consistent "Page X of Y" footer across every page of the
+  // assembled document — both the pdfmake snapshot page(s) and the
+  // pdf-lib form pages — so the count reflects the true total.
+  const allPages = pdfDoc.getPages();
+  const pageTotal = allPages.length;
+  const footerFontSize = 6;
+  const footerColor = medGray;
+  const footerBottom = 22;
+  const footerLeft = enc(opts.footerLeft);
+  const footerCenter = enc(opts.footerCenter);
+  for (let i = 0; i < pageTotal; i++) {
+    const p = allPages[i];
+    const { width } = p.getSize();
+    const rightText = `Page ${i + 1} of ${pageTotal}`;
+    p.drawText(footerLeft, {
+      x: margin, y: footerBottom,
+      size: footerFontSize, font: helv, color: footerColor,
+    });
+    const centerWidth = helv.widthOfTextAtSize(footerCenter, footerFontSize);
+    p.drawText(footerCenter, {
+      x: (width - centerWidth) / 2, y: footerBottom,
+      size: footerFontSize, font: helv, color: footerColor,
+    });
+    const rightWidth = helv.widthOfTextAtSize(rightText, footerFontSize);
+    p.drawText(rightText, {
+      x: width - margin - rightWidth, y: footerBottom,
+      size: footerFontSize, font: helv, color: footerColor,
+    });
+  }
 
   const bytes = await pdfDoc.save();
   return Buffer.from(bytes);

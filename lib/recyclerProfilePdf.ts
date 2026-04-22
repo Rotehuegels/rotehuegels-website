@@ -8,13 +8,15 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
 import {
   generateSmartPdf,
   getLogoDataUrl,
   sanitizePdfText,
+  loadFont,
   fmtDate as fmtDateLong,
 } from '@/lib/pdfConfig';
 import {
@@ -511,10 +513,15 @@ async function appendEditableFormPages(
   },
 ): Promise<Buffer> {
   const pdfDoc = await PDFDocument.load(baseBuffer);
+  pdfDoc.registerFontkit(fontkit);
   const form = pdfDoc.getForm();
-  const helv = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const helvBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const helvItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+  // Embed Noto Sans so pages 2+ match page 1's letterhead and can render ü /
+  // ö / – without the enc() fallback. Also needed for properly editable form
+  // fields — pdf-lib wires the font into the AcroForm default-resources
+  // dictionary, which some viewers require before they will allow typing.
+  const helv = await pdfDoc.embedFont(loadFont('NotoSans-Regular.ttf'));
+  const helvBold = await pdfDoc.embedFont(loadFont('NotoSans-Medium.ttf'));
+  const helvItalic = await pdfDoc.embedFont(loadFont('NotoSans-Italic.ttf'));
 
   const gray = rgb(0.35, 0.35, 0.35);
   const medGray = rgb(0.55, 0.55, 0.55);
@@ -547,17 +554,12 @@ async function appendEditableFormPages(
     if (y - needed < margin + 30) newPage();
   };
 
-  // Sanitise text for StandardFonts (Helvetica WinAnsi encoding — cannot
-  // render ü, ö, etc.) So we replace common non-ASCII characters.
+  // With Noto Sans embedded we can pass Unicode through verbatim. Keep a
+  // light pass to drop characters outside Noto Sans Latin coverage (arrows
+  // block — those glyphs live in Noto Sans Symbols, not our embedded file).
   const enc = (s: string) => s
-    .replace(/ü/g, 'u').replace(/Ü/g, 'U')
-    .replace(/ö/g, 'o').replace(/Ö/g, 'O')
-    .replace(/ä/g, 'a').replace(/Ä/g, 'A')
-    .replace(/[–—]/g, '-')
-    .replace(/[""]/g, '"')
-    .replace(/['']/g, "'")
-    .replace(/…/g, '...')
-    .replace(/·/g, '-');
+    .replace(/[→⟶➜➔]/g, '-')
+    .replace(/[←⟵]/g, '-');
 
   // Unique field-name slugifier (names must be unique per PDF)
   const usedNames = new Set<string>();

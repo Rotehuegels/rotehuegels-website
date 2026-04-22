@@ -124,9 +124,10 @@ export default function CustomElectrodesPage() {
               <p className="text-xs tracking-widest text-rose-400/90 uppercase mb-3">From our R&amp;D floor</p>
               <h2 className="text-2xl md:text-3xl font-bold mb-4">First aluminium cathode — matched to the anode, matched to the cell</h2>
               <p className="text-sm text-zinc-300 leading-relaxed mb-4">
-                The companion to our first lead anode — a high-purity aluminium cathode fabricated in-house for the same
-                Chennai pilot cell. Aluminium hanger bar with a copper tip for low-resistance contact, a 5&nbsp;mm
-                aluminium deposition sheet, PP edge strips, and active-face dimensions matched exactly to the anode pitch.
+                The companion to our first lead anode — a high-purity aluminium cathode designed and manufactured to
+                custom specification for our Chennai Zinc Dross R&amp;D Pilot Plant. Aluminium hanger bar with a copper
+                tip for low-resistance contact, a 5&nbsp;mm aluminium deposition sheet, PP edge strips, and active-face
+                dimensions matched exactly to the anode pitch.
               </p>
               <p className="text-sm text-zinc-300 leading-relaxed mb-4">
                 Anode and cathode are designed together, not separately. Hanger-bar heights, edge-strip geometry, and
@@ -135,13 +136,13 @@ export default function CustomElectrodesPage() {
                 automated stripping line.
               </p>
               <p className="text-xs text-zinc-500 italic">
-                Built, tested, and run in our own tank-house before a single unit ships to a customer.
+                Specified, tested, and validated on our own R&amp;D tank-house before the design is offered to customers.
               </p>
             </div>
             <div className="bg-zinc-950/60 flex items-center justify-center p-8 md:p-10 order-1 md:order-2">
               <Image
                 src="/first-aluminium-cathode-chennai.jpg"
-                alt="First aluminium cathode fabricated in-house for the Rotehügels Zinc Dross R&D Pilot Plant, Chennai — paired with the first lead anode"
+                alt="First aluminium cathode designed and manufactured to custom specification for the Rotehügels Zinc Dross R&D Pilot Plant, Chennai — paired with the first lead anode"
                 width={716}
                 height={1076}
                 className="w-full max-w-md h-auto object-contain"

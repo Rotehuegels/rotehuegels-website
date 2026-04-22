@@ -427,9 +427,22 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
     'Any public narrative you would like highlighted (awards, partnerships, recent milestones)',
   ];
 
+  type MarketField = { label: string; height: number; multiline?: boolean };
+  const marketplace: MarketField[] = [
+    { label: 'Interest in joining the Rotehügels marketplace — yes / would like to learn more / not at this stage', height: 24 },
+    { label: 'Contact person for marketplace procurement of e-waste and industry byproducts — name, role, direct email and phone. Please flag separately if different contacts handle e-waste vs. industry byproduct.', height: 48, multiline: true },
+    { label: 'Material streams and sub-categories you would be willing to accept via the platform (e-waste sub-streams, Li-ion chemistries, non-ferrous scrap, industry byproducts, etc.)', height: 44, multiline: true },
+    { label: 'Preferred service geography — pin-code radius around the plant, state-wise, pan-India, or export-inclusive', height: 30 },
+    { label: 'Minimum and maximum pickup lot sizes you would accept (specify unit — kg or MT)', height: 28 },
+    { label: 'Response-time commitment you can offer from post to confirmation (hours or days)', height: 28 },
+    { label: 'Logistics handling preference — own fleet, platform-arranged transporter, or third-party tie-up', height: 28 },
+    { label: 'EPR-fulfilment certificate handling — how you would like credits and traceability documents generated, routed, and reconciled on the platform', height: 44, multiline: true },
+    { label: 'What would make this marketplace most useful for your operation — design preferences, dealbreakers, or features you would want built in before go-live', height: 56, multiline: true },
+  ];
+
   // The editable Information Request form is appended by pdf-lib after
-  // pdfmake finishes, so `missingList` and `suggestions` are carried
-  // forward below — no pdfmake rendering of the form on page 1.
+  // pdfmake finishes, so `missingList`, `suggestions`, and `marketplace`
+  // are carried forward below — no pdfmake rendering of the form on page 1.
 
   // ── Footer ────────────────────────────────────────────────────────────────
   const footer = (currentPage: number, pageCount: number) => ({
@@ -478,6 +491,7 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
     recyclerCode: r.recycler_code,
     missingList,
     suggestions,
+    marketplace,
   });
 
   const safeName = (r.company_name ?? 'profile').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -497,6 +511,7 @@ async function appendEditableFormPages(
     recyclerCode: string;
     missingList: string[];
     suggestions: string[];
+    marketplace: Array<{ label: string; height: number; multiline?: boolean }>;
   },
 ): Promise<Buffer> {
   const pdfDoc = await PDFDocument.load(baseBuffer);
@@ -642,6 +657,27 @@ async function appendEditableFormPages(
   }
   y -= 4;
 
+  // ── Marketplace participation ──────────────────────────────────────────
+  ensureSpace(80);
+  page.drawText(enc('MARKETPLACE PARTICIPATION — YOUR INTEREST & INPUT'), {
+    x: margin, y: y - 9, size: 8, font: helvBold, color: gray,
+  });
+  y -= 16;
+  drawWrapped(
+    'Rotehügels is preparing to launch a digital marketplace layered on top of this directory. In outline: bulk generators of e-waste and spent Li-ion batteries — factories, OEMs, licensed collection agencies, institutional producers — post available stock with material stream, quantity, location, and condition details. The platform matches each lot against recyclers whose licence class, headroom, material capability, and operational geography fit the requirement. Matched recyclers confirm availability and terms; the platform handles pickup scheduling and transporter coordination; chain-of-custody data is captured at every handover; and an EPR-fulfilment certificate is generated on closure.',
+    { size: 8.5, font: helv, color: gray, maxWidth: contentWidth, lineHeight: 11 },
+  );
+  y -= 4;
+  drawWrapped(
+    'Before go-live, we would value your input on whether participation is of interest and on the design choices that would make the platform useful for your operation.',
+    { size: 8.5, font: helvItalic, color: gray, maxWidth: contentWidth, lineHeight: 11 },
+  );
+  y -= 8;
+  for (const m of opts.marketplace) {
+    addField(m.label, { height: m.height, multiline: m.multiline });
+  }
+  y -= 4;
+
   // ── Response submitted by ─────────────────────────────────────────────
   ensureSpace(60);
   page.drawText(enc('RESPONSE SUBMITTED BY'), {
@@ -669,6 +705,11 @@ async function appendEditableFormPages(
     'Reply by email to sivakumar@rotehuegels.com, or let us know a convenient time for a short call.',
     { size: 8.5, font: helvItalic, color: gray, maxWidth: contentWidth, lineHeight: 11 },
   );
+
+  // Render a default appearance stream for every field using Helvetica so
+  // viewers that do not regenerate appearances on demand (notably some
+  // macOS Preview versions) still show the fields as clickable + typable.
+  form.updateFieldAppearances(helv);
 
   const bytes = await pdfDoc.save();
   return Buffer.from(bytes);

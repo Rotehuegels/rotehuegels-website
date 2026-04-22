@@ -8,6 +8,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { getCompanyCO } from '@/lib/company';
 import {
@@ -396,6 +397,40 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
     }
   }
 
+  // ── Information request ──────────────────────────────────────────────────
+  const missingList: string[] = [];
+  if (!r.cpcb_registration) missingList.push('CPCB authorisation / registration number');
+  if (!r.spcb_registration) missingList.push('SPCB authorisation / registration number');
+  if (!r.license_valid_until) missingList.push('Licence validity (current expiry date)');
+  if (!r.gstin && !r.cin) missingList.push('GSTIN and CIN');
+  else if (!r.gstin) missingList.push('GSTIN');
+  else if (!r.cin) missingList.push('CIN (if applicable)');
+  if (!r.address || !r.pincode) missingList.push('Full postal address with pincode');
+  if (!r.phone && !realContactPerson) missingList.push('Direct phone and a named primary contact with role');
+  else if (!r.phone) missingList.push('Direct phone for the facility');
+  else if (!realContactPerson) missingList.push('Name and role of the primary contact');
+  if (!r.capabilities || (Array.isArray(r.capabilities) && r.capabilities.length === 0)) {
+    missingList.push('Specific waste streams and processing capabilities handled');
+  }
+  if ((r.waste_type === 'battery' || r.waste_type === 'both' || r.waste_type === 'black-mass') && !r.black_mass_mta) {
+    missingList.push('Black-mass / Li-ion material output capacity (MTA)');
+  }
+
+  const suggestions = [
+    'Licensed vs. operational capacity — FY24 and FY25 actual throughput by material stream',
+    'Material recovery yields and product purities achieved for each stream',
+    'Quality and environmental certifications held (ISO 9001 / 14001 / 45001, IATF, BIS, R2, and sector-specific)',
+    'EPR registration numbers for battery and e-waste streams',
+    'Recent and planned capacity expansion, including capex commitments',
+    'Additional facilities, depots, or collection points not already captured above',
+    'Preferred single point of contact for commercial and for technical enquiries',
+    'Any public narrative you would like highlighted (awards, partnerships, recent milestones)',
+  ];
+
+  // The editable Information Request form is appended by pdf-lib after
+  // pdfmake finishes, so `missingList` and `suggestions` are carried
+  // forward below — no pdfmake rendering of the form on page 1.
+
   // ── Footer ────────────────────────────────────────────────────────────────
   const footer = (currentPage: number, pageCount: number) => ({
     columns: [
@@ -437,10 +472,221 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
     disclaimer,
   ];
 
-  const buffer = await generateSmartPdf(content, footer);
+  const snapshotBuffer = await generateSmartPdf(content, footer);
+  const buffer = await appendEditableFormPages(snapshotBuffer, {
+    companyName: r.company_name,
+    recyclerCode: r.recycler_code,
+    missingList,
+    suggestions,
+  });
 
   const safeName = (r.company_name ?? 'profile').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const filename = `${safeName}-${r.recycler_code}-Profile.pdf`;
 
   return { buffer, filename };
+}
+
+// ── pdf-lib: append editable "Information Request" page(s) ──────────────────
+// pdfmake cannot produce AcroForm fields, so we open the pdfmake output with
+// pdf-lib, add one or more new pages, and place real editable text fields on
+// them. The recipient can type directly in any PDF viewer.
+async function appendEditableFormPages(
+  baseBuffer: Buffer,
+  opts: {
+    companyName: string;
+    recyclerCode: string;
+    missingList: string[];
+    suggestions: string[];
+  },
+): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.load(baseBuffer);
+  const form = pdfDoc.getForm();
+  const helv = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const helvBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const helvItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+
+  const gray = rgb(0.35, 0.35, 0.35);
+  const medGray = rgb(0.55, 0.55, 0.55);
+  const labelGray = rgb(0.4, 0.4, 0.4);
+  const dark = rgb(0.1, 0.1, 0.1);
+  const borderColor = rgb(0.83, 0.83, 0.85);
+  const fillColor = rgb(0.98, 0.98, 0.98);
+
+  const pageWidth = 595;
+  const pageHeight = 842;
+  const margin = 36;
+  const contentWidth = pageWidth - 2 * margin;
+
+  let page = pdfDoc.addPage([pageWidth, pageHeight]);
+  let y = pageHeight - margin;
+  let pageIndex = 1;
+
+  const newPage = () => {
+    page = pdfDoc.addPage([pageWidth, pageHeight]);
+    y = pageHeight - margin;
+    pageIndex++;
+    // continuation header
+    page.drawText(`Information Request (cont.) — ${opts.companyName} · ${opts.recyclerCode}`, {
+      x: margin, y: y - 10, size: 9, font: helv, color: medGray,
+    });
+    y -= 22;
+  };
+
+  const ensureSpace = (needed: number) => {
+    if (y - needed < margin + 30) newPage();
+  };
+
+  // Sanitise text for StandardFonts (Helvetica WinAnsi encoding — cannot
+  // render ü, ö, etc.) So we replace common non-ASCII characters.
+  const enc = (s: string) => s
+    .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+    .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+    .replace(/ä/g, 'a').replace(/Ä/g, 'A')
+    .replace(/[–—]/g, '-')
+    .replace(/[""]/g, '"')
+    .replace(/['']/g, "'")
+    .replace(/…/g, '...')
+    .replace(/·/g, '-');
+
+  // Unique field-name slugifier (names must be unique per PDF)
+  const usedNames = new Set<string>();
+  const slug = (s: string) => {
+    const base = s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40);
+    let name = base;
+    let i = 1;
+    while (usedNames.has(name)) name = `${base}_${i++}`;
+    usedNames.add(name);
+    return name;
+  };
+
+  // Draw wrapped text, returns the y-position after drawing.
+  const drawWrapped = (text: string, opts2: {
+    size: number; font: any; color: any; maxWidth: number; lineHeight?: number;
+  }): void => {
+    const lh = opts2.lineHeight ?? opts2.size * 1.25;
+    const words = enc(text).split(/\s+/);
+    let line = '';
+    for (const w of words) {
+      const test = line ? `${line} ${w}` : w;
+      const width = opts2.font.widthOfTextAtSize(test, opts2.size);
+      if (width > opts2.maxWidth && line) {
+        page.drawText(line, { x: margin, y: y - opts2.size, size: opts2.size, font: opts2.font, color: opts2.color });
+        y -= lh;
+        line = w;
+      } else {
+        line = test;
+      }
+    }
+    if (line) {
+      page.drawText(line, { x: margin, y: y - opts2.size, size: opts2.size, font: opts2.font, color: opts2.color });
+      y -= lh;
+    }
+  };
+
+  // ── Page header ─────────────────────────────────────────────────────────
+  page.drawText(enc('Information Request — Please Review & Complete'), {
+    x: margin, y: y - 14, size: 13, font: helvBold, color: dark,
+  });
+  y -= 24;
+  page.drawText(enc(`For ${opts.companyName} · ${opts.recyclerCode}`), {
+    x: margin, y: y - 10, size: 9, font: helv, color: gray,
+  });
+  y -= 18;
+  drawWrapped(
+    'If any details on page 1 need correction, please let us know. You can type directly into the fields below using any PDF viewer (or print and annotate).',
+    { size: 9, font: helvItalic, color: gray, maxWidth: contentWidth, lineHeight: 12 },
+  );
+  y -= 8;
+
+  // ── Helper: add a field with a label above it ──────────────────────────
+  const addField = (label: string, opts3: { height: number; multiline?: boolean }) => {
+    const labelLines = wrapIntoLines(enc(label), helv, 8.5, contentWidth);
+    const labelHeight = labelLines.length * 11 + 2;
+    ensureSpace(labelHeight + opts3.height + 8);
+    for (const line of labelLines) {
+      page.drawText(line, { x: margin, y: y - 8.5, size: 8.5, font: helv, color: labelGray });
+      y -= 11;
+    }
+    y -= 2;
+    const field = form.createTextField(slug(label));
+    field.setText('');
+    if (opts3.multiline) field.enableMultiline();
+    field.addToPage(page, {
+      x: margin, y: y - opts3.height, width: contentWidth, height: opts3.height,
+      borderColor, backgroundColor: fillColor, borderWidth: 0.5,
+    });
+    y -= opts3.height + 8;
+  };
+
+  // ── Currently missing ─────────────────────────────────────────────────
+  if (opts.missingList.length > 0) {
+    ensureSpace(18);
+    page.drawText(enc('CURRENTLY MISSING — PLEASE PROVIDE'), {
+      x: margin, y: y - 9, size: 8, font: helvBold, color: gray,
+    });
+    y -= 16;
+    for (const label of opts.missingList) {
+      addField(label, { height: 18 });
+    }
+    y -= 4;
+  }
+
+  // ── Additional context ─────────────────────────────────────────────────
+  ensureSpace(18);
+  page.drawText(enc('ADDITIONAL CONTEXT THAT WOULD STRENGTHEN YOUR LISTING'), {
+    x: margin, y: y - 9, size: 8, font: helvBold, color: gray,
+  });
+  y -= 16;
+  for (const label of opts.suggestions) {
+    addField(label, { height: 42, multiline: true });
+  }
+  y -= 4;
+
+  // ── Response submitted by ─────────────────────────────────────────────
+  ensureSpace(60);
+  page.drawText(enc('RESPONSE SUBMITTED BY'), {
+    x: margin, y: y - 9, size: 8, font: helvBold, color: gray,
+  });
+  y -= 16;
+  page.drawText('Name & role', { x: margin, y: y - 8, size: 8.5, font: helv, color: labelGray });
+  page.drawText('Date', { x: margin + contentWidth - 150, y: y - 8, size: 8.5, font: helv, color: labelGray });
+  y -= 12;
+  const nameField = form.createTextField(slug('response_name_role'));
+  nameField.setText('');
+  nameField.addToPage(page, {
+    x: margin, y: y - 20, width: contentWidth - 160, height: 20,
+    borderColor, backgroundColor: fillColor, borderWidth: 0.5,
+  });
+  const dateField = form.createTextField(slug('response_date'));
+  dateField.setText('');
+  dateField.addToPage(page, {
+    x: margin + contentWidth - 150, y: y - 20, width: 150, height: 20,
+    borderColor, backgroundColor: fillColor, borderWidth: 0.5,
+  });
+  y -= 30;
+
+  drawWrapped(
+    'Reply by email to sivakumar@rotehuegels.com, or let us know a convenient time for a short call.',
+    { size: 8.5, font: helvItalic, color: gray, maxWidth: contentWidth, lineHeight: 11 },
+  );
+
+  const bytes = await pdfDoc.save();
+  return Buffer.from(bytes);
+}
+
+// Wrap text into lines that fit within maxWidth at the given font/size.
+function wrapIntoLines(text: string, font: any, size: number, maxWidth: number): string[] {
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let line = '';
+  for (const w of words) {
+    const test = line ? `${line} ${w}` : w;
+    if (font.widthOfTextAtSize(test, size) > maxWidth && line) {
+      lines.push(line); line = w;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
 }

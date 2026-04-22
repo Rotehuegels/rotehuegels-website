@@ -1,9 +1,9 @@
 // lib/recyclerProfilePdf.ts
 // ═══════════════════════════════════════════════════════════════════════════════
-// Recycler / Company profile factsheet PDF — used to share a listing snapshot
-// from the India Circular Economy Directory with the listed company for
-// verification and feedback. Non-commercial document; does not run through the
-// Reports module (no items, no GST, no bank block).
+// Recycler / Company profile factsheet PDF — an internal document that is also
+// shareable with the listed recycler for verification and correction. Scrubs
+// internal-only metadata (dup tags, scraping sources, MCA-derived director
+// rosters) before rendering.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -21,6 +21,23 @@ import {
   buildHeader, sectionLabel, sectionBox, twoColumnBox,
 } from '@/lib/pdfTemplate';
 
+// ── Ligature-safe text helper ───────────────────────────────────────────────
+// pdfkit runs the `liga` OpenType feature on text even when pdfmake's
+// defaultStyle.fontFeatures:[] is set — so our embedded Noto Sans still
+// substitutes f+i / f+l / f+f with composed glyphs that render blank
+// ("identifiers" → "identifers"). Inserting a zero-width non-joiner (U+200C)
+// between the problem pairs prevents the shaper from forming the ligature
+// regardless of pdfkit's fontFeatures behaviour.
+function breakLigatures(s: string): string {
+  return s
+    .replace(/f([ifl])/g, 'f‌$1')
+    .replace(/ffi/g, 'f‌f‌i')
+    .replace(/ffl/g, 'f‌f‌l');
+}
+
+const T = (text: string, style: Record<string, any> = {}) =>
+  ({ text: breakLigatures(text), fontFeatures: [], ...style });
+
 const CATEGORY_LABELS: Record<string, string> = {
   'e-waste':       'E-Waste',
   'battery':       'Battery (Hydromet)',
@@ -34,9 +51,30 @@ const CATEGORY_LABELS: Record<string, string> = {
   'cell-maker':    'Li-ion Cell / CAM Maker',
 };
 
+type ContactRow = {
+  name?: string | null; title?: string | null; department?: string | null;
+  email?: string | null; phone?: string | null;
+};
+type WebsiteRow = { url: string };
+
 export interface RecyclerProfilePdfResult {
   buffer: Buffer;
   filename: string;
+}
+
+function stripInternalTags(notes: string): string {
+  return notes
+    .replace(/\[cross-category dup\]/gi, '')
+    .replace(/\[capacity[^\]]*\]/gi, '')
+    .replace(/\[dup[^\]]*\]/gi, '')
+    .replace(/\[merged[^\]]*\]/gi, '')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function notesAreDupTracking(notes: string): boolean {
+  return /\[(cross-category )?dup/i.test(notes);
 }
 
 export async function generateRecyclerProfilePdfBuffer(code: string): Promise<RecyclerProfilePdfResult> {
@@ -48,11 +86,25 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
     .maybeSingle();
   if (error || !r) throw new Error(`Recycler not found: ${code}`);
 
+  // Related units under the same parent company (public context only —
+  // helps the recipient see how their multi-registration is linked).
+  let related: Array<{ recycler_code: string; unit_name: string | null; city: string | null;
+    state: string | null; waste_type: string | null; capacity_per_month: string | null }> = [];
+  if (r.company_id) {
+    const { data: rel } = await supabaseAdmin
+      .from('recyclers')
+      .select('recycler_code, unit_name, city, state, waste_type, capacity_per_month')
+      .eq('company_id', r.company_id)
+      .eq('is_active', true)
+      .neq('recycler_code', code)
+      .limit(12);
+    related = rel ?? [];
+  }
+
   const CO = await getCompanyCO();
   const logoUrl = getLogoDataUrl();
 
   const category = CATEGORY_LABELS[r.waste_type ?? ''] ?? 'Recycler';
-  const verified = r.is_verified ? 'Verified' : 'Unverified';
   const generatedOn = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
   // ── Header (shared letterhead + document title) ────────────────────────────
@@ -68,11 +120,10 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
     documentTitle: 'COMPANY PROFILE',
   });
 
-  const subtitle = {
-    text: 'India Circular Economy Directory — Listing Snapshot',
+  const subtitle = T('India Circular Economy Directory — Listing Snapshot', {
     fontSize: FONT.body, italics: true, color: COLORS.medGray, alignment: 'right',
     margin: [0, -4, 0, 8],
-  };
+  });
 
   // ── Meta strip (code + generated date) ─────────────────────────────────────
   const metaStrip = {
@@ -84,12 +135,12 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
           widths: ['auto', 'auto'],
           body: [
             [
-              { text: 'Facility Code', fontSize: FONT.small, color: COLORS.labelText },
-              { text: r.recycler_code, fontSize: FONT.body, bold: true, color: '#b45309' },
+              T('Facility Code', { fontSize: FONT.small, color: COLORS.labelText }),
+              T(r.recycler_code, { fontSize: FONT.body, bold: true, color: '#b45309' }),
             ],
             [
-              { text: 'Snapshot Date', fontSize: FONT.small, color: COLORS.labelText },
-              { text: generatedOn, fontSize: FONT.body },
+              T('Snapshot Date', { fontSize: FONT.small, color: COLORS.labelText }),
+              T(generatedOn, { fontSize: FONT.body }),
             ],
           ],
         },
@@ -102,8 +153,10 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
   // ── Company identity block ────────────────────────────────────────────────
   const badgeRow = {
     columns: [
-      { text: category, fontSize: FONT.small, bold: true, color: '#b45309', width: 'auto' },
-      { text: `  ·  ${verified}`, fontSize: FONT.small, color: r.is_verified ? '#16a34a' : COLORS.medGray, width: 'auto' },
+      T(category, { fontSize: FONT.small, bold: true, color: '#b45309', width: 'auto' }),
+      ...(r.is_verified
+        ? [T('  ·  Verified', { fontSize: FONT.small, color: '#16a34a', width: 'auto' })]
+        : []),
     ],
     margin: [0, 0, 0, 2],
   };
@@ -111,24 +164,30 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
   const locationLine = [r.city, r.state].filter(Boolean).join(', ')
     + (r.pincode ? ` · ${r.pincode}` : '');
 
-  const identityBlock = sectionBox({
-    stack: [
-      badgeRow,
-      { text: sanitizePdfText(r.company_name), fontSize: 14, bold: true, color: COLORS.black, margin: [0, 2, 0, 2] },
-      { text: locationLine, fontSize: FONT.body, color: COLORS.gray },
-      ...(r.address ? [{ text: sanitizePdfText(r.address), fontSize: FONT.body, color: COLORS.gray, margin: [0, 2, 0, 0] }] : []),
-      ...(r.latitude != null && r.longitude != null ? [{
-        text: `GPS: ${Number(r.latitude).toFixed(4)}°N, ${Number(r.longitude).toFixed(4)}°E`,
-        fontSize: FONT.small, color: COLORS.medGray, margin: [0, 3, 0, 0],
-      }] : []),
-    ],
-  });
+  const identityStack: any[] = [
+    badgeRow,
+    T(sanitizePdfText(r.company_name), { fontSize: 14, bold: true, color: COLORS.black, margin: [0, 2, 0, 2] }),
+  ];
+  if (r.unit_name && r.unit_name !== locationLine) {
+    identityStack.push(T(sanitizePdfText(r.unit_name), { fontSize: FONT.body, color: COLORS.gray }));
+  }
+  identityStack.push(T(locationLine, { fontSize: FONT.body, color: COLORS.gray }));
+  if (r.address) {
+    identityStack.push(T(sanitizePdfText(r.address), { fontSize: FONT.body, color: COLORS.gray, margin: [0, 2, 0, 0] }));
+  }
+  if (r.latitude != null && r.longitude != null) {
+    identityStack.push(T(
+      `GPS: ${Number(r.latitude).toFixed(4)}°N, ${Number(r.longitude).toFixed(4)}°E`,
+      { fontSize: FONT.small, color: COLORS.medGray, margin: [0, 3, 0, 0] },
+    ));
+  }
+  const identityBlock = sectionBox({ stack: identityStack });
 
   // ── Operations metrics row (4 cells) ──────────────────────────────────────
   const metricCell = (label: string, value: string | null | undefined, color = COLORS.black): any => ({
     stack: [
-      { text: label.toUpperCase(), fontSize: FONT.sectionLabel, color: COLORS.labelText, characterSpacing: 0.5 },
-      { text: value ?? '—', fontSize: 9, bold: true, color: value ? color : COLORS.medGray, margin: [0, 2, 0, 0] },
+      T(label.toUpperCase(), { fontSize: FONT.sectionLabel, color: COLORS.labelText, characterSpacing: 0.5 }),
+      T(value ?? '—', { fontSize: 9, bold: true, color: value ? color : COLORS.medGray, margin: [0, 2, 0, 0] }),
     ],
   });
 
@@ -150,105 +209,214 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
     margin: [0, 0, 0, 6],
   };
 
-  // ── Contact / Authorisation two-column block ──────────────────────────────
-  const fieldRow = (label: string, value: string | null | undefined, mono = false): any => {
+  // ── Field row helper (label above value) ──────────────────────────────────
+  const fieldRow = (label: string, value: string | null | undefined): any => {
     if (!value) return null;
     return {
       stack: [
-        { text: label.toUpperCase(), fontSize: FONT.sectionLabel, color: COLORS.labelText, characterSpacing: 0.5 },
-        {
-          text: sanitizePdfText(value),
-          fontSize: mono ? 7 : FONT.body,
-          color: COLORS.black,
-          font: mono ? undefined : undefined, // NotoSans handles both
-          margin: [0, 1, 0, 0],
-        },
+        T(label.toUpperCase(), { fontSize: FONT.sectionLabel, color: COLORS.labelText, characterSpacing: 0.5 }),
+        T(sanitizePdfText(value), { fontSize: FONT.body, color: COLORS.black, margin: [0, 1, 0, 0] }),
       ],
       margin: [0, 0, 0, 4],
     };
   };
 
+  // ── Primary contact block ─────────────────────────────────────────────────
   const isPlaceholderEmail = (e: string | null | undefined) =>
     !e || /placeholder|^cpcb\.|^mrai\./i.test(e);
+  const realContactPerson = r.contact_person && r.contact_person !== 'Registered Facility'
+    ? r.contact_person : null;
+
+  const contactItems: any[] = [
+    realContactPerson ? fieldRow('Contact Person', realContactPerson) : null,
+    !isPlaceholderEmail(r.email) ? fieldRow('Email', r.email) : null,
+    r.phone ? fieldRow('Phone', r.phone) : null,
+    r.website ? fieldRow('Website', r.website.replace(/^https?:\/\//, '')) : null,
+  ].filter(Boolean);
 
   const contactStack = {
     stack: [
       sectionLabel('Primary Contact'),
-      ...([
-        r.contact_person && r.contact_person !== 'Registered Facility' ? fieldRow('Contact Person', r.contact_person) : null,
-        !isPlaceholderEmail(r.email) ? fieldRow('Email', r.email) : null,
-        r.phone ? fieldRow('Phone', r.phone) : null,
-        r.website ? fieldRow('Website', r.website.replace(/^https?:\/\//, '')) : null,
-      ].filter(Boolean) as any[]),
-      ...(
-        !r.contact_person && isPlaceholderEmail(r.email) && !r.phone && !r.website
-          ? [{ text: 'No primary contact publicly listed.', fontSize: FONT.small, italics: true, color: COLORS.medGray }]
-          : []
-      ),
+      ...(contactItems.length > 0
+        ? contactItems
+        : [T('No primary contact publicly listed.', {
+            fontSize: FONT.small, italics: true, color: COLORS.medGray,
+          })]),
     ],
   };
+
+  // ── Authorisation & identifiers block ─────────────────────────────────────
+  const authItems: any[] = [
+    fieldRow('CPCB Registration', r.cpcb_registration),
+    fieldRow('SPCB Registration', r.spcb_registration),
+    fieldRow('Licence Valid Until', r.license_valid_until ? fmtDateLong(r.license_valid_until) : null),
+    fieldRow('GSTIN', r.gstin),
+    fieldRow('CIN', r.cin),
+  ].filter(Boolean);
 
   const authStack = {
     stack: [
       sectionLabel('Authorisation & Identifiers'),
-      ...([
-        fieldRow('CPCB Registration', r.cpcb_registration, true),
-        fieldRow('SPCB Registration', r.spcb_registration, true),
-        fieldRow('Licence Valid Until', r.license_valid_until ? fmtDateLong(r.license_valid_until) : null),
-        fieldRow('GSTIN', r.gstin, true),
-        fieldRow('CIN', r.cin, true),
-      ].filter(Boolean) as any[]),
-      ...(
-        !r.cpcb_registration && !r.spcb_registration && !r.gstin && !r.cin && !r.license_valid_until
-          ? [{ text: 'No statutory identifiers on record yet.', fontSize: FONT.small, italics: true, color: COLORS.medGray }]
-          : []
-      ),
+      ...(authItems.length > 0
+        ? authItems
+        : [T('No statutory identifiers on record yet.', {
+            fontSize: FONT.small, italics: true, color: COLORS.medGray,
+          })]),
     ],
   };
 
   const contactAuthRow = twoColumnBox(contactStack, authStack);
 
-  // ── Capabilities ──────────────────────────────────────────────────────────
+  // ── Additional public emails from contacts_all (non-director rows only)
+  //    with a real email address. Director-only rows from MCA scraping are
+  //    intentionally NOT shared — the recipient knows their own board.
+  const contactsAll = (Array.isArray(r.contacts_all) ? r.contacts_all : []) as ContactRow[];
+  const extraContacts = contactsAll
+    .filter(c => c.email && c.email !== r.email)
+    .map(c => ({
+      name: c.name && c.name !== 'Registered Facility' ? c.name : null,
+      title: c.title ?? null,
+      email: c.email!,
+      phone: c.phone ?? null,
+    }));
+
+  let extraContactsBlock: any = null;
+  if (extraContacts.length > 0) {
+    extraContactsBlock = sectionBox({
+      stack: [
+        sectionLabel('Additional Contact Points on Record'),
+        {
+          table: {
+            widths: ['*', '*', '*', '*'],
+            body: [
+              [
+                T('NAME', { fontSize: FONT.sectionLabel, color: COLORS.labelText }),
+                T('TITLE', { fontSize: FONT.sectionLabel, color: COLORS.labelText }),
+                T('EMAIL', { fontSize: FONT.sectionLabel, color: COLORS.labelText }),
+                T('PHONE', { fontSize: FONT.sectionLabel, color: COLORS.labelText }),
+              ],
+              ...extraContacts.slice(0, 8).map(c => [
+                T(c.name ?? '—', { fontSize: FONT.body }),
+                T(c.title ?? '—', { fontSize: FONT.body }),
+                T(c.email, { fontSize: FONT.body, color: '#0369a1' }),
+                T(c.phone ?? '—', { fontSize: FONT.body }),
+              ]),
+            ],
+          },
+          layout: {
+            hLineWidth: (i: number) => i === 1 ? 0.5 : 0,
+            vLineWidth: () => 0,
+            hLineColor: () => COLORS.border,
+            paddingTop: () => 2, paddingBottom: () => 2,
+            paddingLeft: () => 0, paddingRight: () => 4,
+          },
+          margin: [0, 2, 0, 0],
+        },
+      ],
+    });
+  }
+
+  // ── Additional websites on record ─────────────────────────────────────────
+  const websitesAll = (Array.isArray(r.websites_all) ? r.websites_all : []) as WebsiteRow[];
+  const extraWebsites = websitesAll
+    .map(w => w.url)
+    .filter(url => url && url !== r.website);
+  let extraWebsitesBlock: any = null;
+  if (extraWebsites.length > 0) {
+    extraWebsitesBlock = sectionBox({
+      stack: [
+        sectionLabel('Additional Websites on Record'),
+        T(extraWebsites.map(u => u.replace(/^https?:\/\//, '')).join('  ·  '),
+          { fontSize: FONT.body, color: COLORS.black, margin: [0, 2, 0, 0] }),
+      ],
+    });
+  }
+
+  // ── Related units under the same parent company ──────────────────────────
+  let relatedBlock: any = null;
+  if (related.length > 0) {
+    relatedBlock = sectionBox({
+      stack: [
+        sectionLabel('Other Listed Units Under the Same Group'),
+        {
+          table: {
+            widths: ['auto', '*', '*', 'auto'],
+            body: [
+              [
+                T('CODE', { fontSize: FONT.sectionLabel, color: COLORS.labelText }),
+                T('UNIT / LOCATION', { fontSize: FONT.sectionLabel, color: COLORS.labelText }),
+                T('CATEGORY', { fontSize: FONT.sectionLabel, color: COLORS.labelText }),
+                T('CAPACITY', { fontSize: FONT.sectionLabel, color: COLORS.labelText, alignment: 'right' }),
+              ],
+              ...related.map(o => [
+                T(o.recycler_code, { fontSize: FONT.body, bold: true, color: '#b45309' }),
+                T(sanitizePdfText(o.unit_name ?? [o.city, o.state].filter(Boolean).join(', ')), { fontSize: FONT.body }),
+                T(CATEGORY_LABELS[o.waste_type ?? ''] ?? '—', { fontSize: FONT.body }),
+                T(o.capacity_per_month ?? '—', { fontSize: FONT.body, alignment: 'right' }),
+              ]),
+            ],
+          },
+          layout: {
+            hLineWidth: (i: number) => i === 1 ? 0.5 : 0,
+            vLineWidth: () => 0,
+            hLineColor: () => COLORS.border,
+            paddingTop: () => 2, paddingBottom: () => 2,
+            paddingLeft: () => 0, paddingRight: () => 4,
+          },
+          margin: [0, 2, 0, 0],
+        },
+      ],
+    });
+  }
+
+  // ── Capabilities ─────────────────────────────────────────────────────────
   let capabilitiesBlock: any = null;
   if (Array.isArray(r.capabilities) && r.capabilities.length > 0) {
     capabilitiesBlock = sectionBox({
       stack: [
         sectionLabel('Capabilities'),
-        { text: (r.capabilities as string[]).map(sanitizePdfText).join('  ·  '), fontSize: FONT.body, color: COLORS.black, margin: [0, 2, 0, 0] },
+        T((r.capabilities as string[]).map(sanitizePdfText).join('  ·  '),
+          { fontSize: FONT.body, color: COLORS.black, margin: [0, 2, 0, 0] }),
       ],
     });
   }
 
-  // ── Description / notes ──────────────────────────────────────────────────
+  // ── Description (scrubbed — internal dup/bookkeeping tags removed) ───────
   let notesBlock: any = null;
-  const isDupNote = r.notes && /\[(cross-category )?dup/i.test(r.notes);
-  if (r.notes && !isDupNote) {
-    notesBlock = sectionBox({
-      stack: [
-        sectionLabel('Description'),
-        { text: sanitizePdfText(r.notes), fontSize: FONT.body, color: COLORS.gray, lineHeight: 1.3, margin: [0, 2, 0, 0] },
-      ],
-    });
+  if (r.notes && !notesAreDupTracking(r.notes)) {
+    const cleaned = stripInternalTags(r.notes);
+    if (cleaned.length > 0) {
+      notesBlock = sectionBox({
+        stack: [
+          sectionLabel('Description'),
+          T(sanitizePdfText(cleaned),
+            { fontSize: FONT.body, color: COLORS.gray, lineHeight: 1.3, margin: [0, 2, 0, 0] }),
+        ],
+      });
+    }
   }
 
   // ── Footer ────────────────────────────────────────────────────────────────
   const footer = (currentPage: number, pageCount: number) => ({
     columns: [
-      { text: `${r.company_name}  ·  ${r.recycler_code}`, fontSize: 6, color: COLORS.medGray, margin: [36, 0, 0, 0] },
-      { text: `${CO.web}  |  ${CO.email}`, fontSize: 6, color: COLORS.medGray, alignment: 'center' },
-      { text: `Page ${currentPage} of ${pageCount}`, fontSize: 6, color: COLORS.medGray, alignment: 'right', margin: [0, 0, 36, 0] },
+      T(`${r.company_name}  ·  ${r.recycler_code}`,
+        { fontSize: 6, color: COLORS.medGray, margin: [36, 0, 0, 0] }),
+      T(`${CO.web}  |  ${CO.email}`,
+        { fontSize: 6, color: COLORS.medGray, alignment: 'center' }),
+      T(`Page ${currentPage} of ${pageCount}`,
+        { fontSize: 6, color: COLORS.medGray, alignment: 'right', margin: [0, 0, 36, 0] }),
     ],
     margin: [0, 12, 0, 0],
   });
 
-  // ── Disclaimer (body, not page footer) ───────────────────────────────────
+  // ── Disclaimer ───────────────────────────────────────────────────────────
   const disclaimer = {
     text: [
-      { text: 'Disclaimer: ', fontSize: FONT.small, bold: true, color: COLORS.medGray },
-      {
-        text: 'Rotehügels operates as a digital facilitator only. Listing information is sourced from CPCB, SPCB, MPCB, and MoEF registries, MCA filings, and publicly available disclosures. Rotehügels does not physically collect, store, handle, or transport any waste. Listing on this directory does not constitute endorsement. This snapshot is shared for verification and feedback; corrections are welcomed at sivakumar@rotehuegels.com.',
-        fontSize: FONT.small, color: COLORS.medGray,
-      },
+      T('Disclaimer: ', { fontSize: FONT.small, bold: true, color: COLORS.medGray }),
+      T(
+        'Rotehügels operates as a digital facilitator only. Listing information is sourced from CPCB, SPCB, MPCB, and MoEF registries, MCA filings, and publicly available disclosures. Rotehügels does not physically collect, store, handle, or transport any waste. Listing on this directory does not constitute endorsement. This snapshot is shared with the listed facility for verification and feedback; corrections are welcomed at sivakumar@rotehuegels.com.',
+        { fontSize: FONT.small, color: COLORS.medGray },
+      ),
     ],
     margin: [0, 8, 0, 0],
   };
@@ -261,6 +429,9 @@ export async function generateRecyclerProfilePdfBuffer(code: string): Promise<Re
     identityBlock,
     opsRow,
     contactAuthRow,
+    ...(extraContactsBlock ? [extraContactsBlock] : []),
+    ...(extraWebsitesBlock ? [extraWebsitesBlock] : []),
+    ...(relatedBlock ? [relatedBlock] : []),
     ...(capabilitiesBlock ? [capabilitiesBlock] : []),
     ...(notesBlock ? [notesBlock] : []),
     disclaimer,

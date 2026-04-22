@@ -6,7 +6,7 @@ import MiniMap from '@/components/RecyclerMiniMapClient';
 import {
   Factory, ArrowLeft, MapPin, Mail, Phone, Globe, Shield, Award, CheckCircle2,
   Building2, FileText, AlertTriangle, Calendar, Package, Recycle, Battery, Users,
-  Car, BatteryCharging, Zap,
+  Car, BatteryCharging, Zap, Download,
 } from 'lucide-react';
 import OrgChart from '@/components/OrgChart';
 import { buildGroupTree } from '@/lib/recyclerGroupTree';
@@ -123,9 +123,18 @@ export default async function RecyclerProfilePage({ params }: { params: Promise<
                 {r.pincode ? ` · ${r.pincode}` : ''}
               </p>
             </div>
-            <div className="shrink-0">
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 text-right">Facility Code</p>
-              <p className="text-xs font-mono text-amber-400 font-bold text-right">{r.recycler_code}</p>
+            <div className="shrink-0 flex flex-col items-end gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-zinc-500 text-right">Facility Code</p>
+                <p className="text-xs font-mono text-amber-400 font-bold text-right">{r.recycler_code}</p>
+              </div>
+              <a
+                href={`/api/ecosystem/${r.recycler_code}/pdf?download=1`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 hover:border-amber-500/40 bg-zinc-900/60 hover:bg-amber-500/10 text-zinc-300 hover:text-amber-300 px-3 py-1.5 text-xs font-medium transition-colors"
+                title="Download profile PDF"
+              >
+                <Download className="h-3.5 w-3.5" /> Download profile PDF
+              </a>
             </div>
           </div>
         </div>

@@ -8,27 +8,42 @@ import { Menu, X, ChevronDown } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 const NAV = [
-  { label: 'Home', href: '/' },
   {
     label: 'About',
     children: [
       { label: 'About Us',              href: '/about' },
       { label: 'The Rotehügels Story',  href: '/rotehuegels-story' },
       { label: 'Current Updates',       href: '/current-updates' },
+      { label: 'Success Stories',       href: '/success-stories' },
     ],
   },
   {
-    label: 'Services',
+    label: 'Engineering',
     children: [
       { label: 'Overview',                    href: '/services' },
-      { label: 'Testwork & Feasibility',      href: '/services/testwork-feasibility' },
-      { label: 'Plant Engineering & EPC',     href: '/services/plant-epc' },
-      { label: 'Operations Advisory',         href: '/services/operations-advisory' },
+      { label: 'Plant EPC',                   href: '/services/plant-epc' },
       { label: 'Custom Anodes & Cathodes',    href: '/services/custom-electrodes' },
-      { label: 'Severe Service Valves',       href: '/services/severe-service-valves' },
-      { label: 'Recycling',                   href: '/recycling' },
-      { label: 'Digital Solutions',           href: '/digital-solutions' },
-      { label: 'Success Stories',             href: '/success-stories' },
+      { label: 'Testwork & Feasibility',      href: '/services/testwork-feasibility' },
+      { label: 'Operations Advisory',         href: '/services/operations-advisory' },
+      { label: 'Severe-Service Valves',       href: '/services/severe-service-valves' },
+    ],
+  },
+  {
+    label: 'AutoREX',
+    children: [
+      { label: 'Platform Overview',  href: '/digital-solutions' },
+      { label: 'AutoREX™ — automation & digital twin', href: '/digital-solutions#autorex' },
+      { label: 'Operon — ERP',       href: '/digital-solutions#operon' },
+      { label: 'LabREX — LIMS',      href: '/digital-solutions#labrex' },
+    ],
+  },
+  {
+    label: 'Circular',
+    children: [
+      { label: 'Overview',                    href: '/circular' },
+      { label: 'Ecosystem Directory',         href: '/ecosystem' },
+      { label: 'Marketplace',                 href: '/marketplace' },
+      { label: 'EPR & Pickups',               href: '/recycling' },
     ],
   },
   {

@@ -2,16 +2,36 @@ import Link from 'next/link';
 import {
   Recycle, Network, ShoppingBag, FileCheck2, MapPin, ArrowRight, CheckCircle2,
 } from 'lucide-react';
+import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
+
+const DESCRIPTION = 'Rotehügels Circular — the India Circular Economy Directory, generator-to-recycler marketplace, and EPR traceability services. Connecting bulk generators of e-waste, spent Li-ion, and non-ferrous scrap with licensed recyclers.';
 
 export const metadata = {
-  title: 'Circular Economy — Rotehügels',
-  description:
-    'Rotehügels Circular — the India Circular Economy Directory, recycler marketplace, and EPR traceability services. Connecting bulk generators of e-waste, spent Li-ion, and non-ferrous scrap with licensed recyclers.',
+  title: 'Circular — Directory · Marketplace · EPR · Rotehügels',
+  description: DESCRIPTION,
+  alternates: { canonical: '/circular' },
+  openGraph: {
+    title: 'Circular — Rotehügels',
+    description: DESCRIPTION,
+    url: 'https://www.rotehuegels.com/circular',
+    type: 'website',
+  },
 };
 
 export default function CircularHubPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd data={serviceSchema({
+        name: 'Rotehügels Circular',
+        description: DESCRIPTION,
+        path: '/circular',
+        serviceType: 'Circular Economy Platform, EPR Fulfilment, Recycler Directory, Marketplace',
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Circular', path: '/circular' },
+      ])} />
+
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-20">
 
         <section className="text-center">

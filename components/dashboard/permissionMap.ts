@@ -63,6 +63,23 @@ const HREF_TO_PERMISSION: Array<[prefix: string, permission: string]> = [
   // Bookings
   ['/d/bookings',         'bookings.view'],
 
+  // Operations (plant contracts + lab parameters)
+  ['/d/operations',       'operations.view'],
+
+  // IMS (SOPs + controlled documents)
+  ['/d/ims',              'ims.view'],
+  ['/d/documents',        'ims.view'],
+
+  // Network & registrations
+  ['/d/rex',                          'network.view'],
+  ['/d/supplier-reg',                 'network.moderate'],
+  ['/d/supplier-reg/registrations',   'network.moderate'],
+  ['/d/customers/registrations',      'network.moderate'],
+
+  // IT / Mail / Analytics
+  ['/d/mail',             'it.mail'],
+  ['/d/analytics',        'it.analytics'],
+
   // Administration
   ['/d/admin',            'admin.users'],
   ['/d/settings',         'admin.settings'],

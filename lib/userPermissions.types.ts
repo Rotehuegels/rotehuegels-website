@@ -114,6 +114,43 @@ export const PERMISSION_CATALOGUE: PermissionModule[] = [
     ],
   },
   {
+    key: 'operations',
+    label: 'Operations',
+    description: 'Operating contracts and live lab parameters from running plants.',
+    permissions: [
+      { key: 'operations.view', label: 'View operating contracts and lab parameters' },
+      { key: 'operations.edit', label: 'Edit operating contracts' },
+    ],
+  },
+  {
+    key: 'ims',
+    label: 'IMS (SOPs & Documents)',
+    description: 'Internal management system — SOPs and controlled documents.',
+    permissions: [
+      { key: 'ims.view', label: 'Read SOPs and controlled documents' },
+      { key: 'ims.edit', label: 'Create / edit SOPs and documents' },
+    ],
+  },
+  {
+    key: 'network',
+    label: 'Network & Registrations',
+    description: 'REX community, supplier / customer registration moderation.',
+    permissions: [
+      { key: 'network.view',    label: 'View REX members and registrations' },
+      { key: 'network.moderate', label: 'Approve / reject registrations' },
+    ],
+  },
+  {
+    key: 'it',
+    label: 'IT, Mail & Analytics',
+    description: 'Mail inbox, chat analytics, visitor insights, security log, page views.',
+    permissions: [
+      { key: 'it.mail',      label: 'Access the internal mail inbox' },
+      { key: 'it.analytics', label: 'View analytics, visitor insights, page views' },
+      { key: 'it.security',  label: 'View security log' },
+    ],
+  },
+  {
     key: 'admin',
     label: 'Administration',
     description: 'User management, settings, audit.',

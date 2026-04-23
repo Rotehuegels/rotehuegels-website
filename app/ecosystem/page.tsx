@@ -1,8 +1,23 @@
+import type { Metadata } from 'next';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import EcosystemDirectory from './EcosystemDirectory';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+export const metadata: Metadata = {
+  title: 'India Circular Economy Directory — Rotehügels',
+  description:
+    '1,300+ verified facilities mapped across India\'s circular economy — primary metal producers, EV OEMs, battery pack makers, and licensed recyclers. Filter by material stream, geography, and licence class. Sourced from CPCB, SPCB, MPCB, and MoEF registries.',
+  alternates: { canonical: '/ecosystem' },
+  openGraph: {
+    title: 'India Circular Economy Directory — Rotehügels',
+    description:
+      '1,300+ verified facilities across India — primary producers, battery & e-waste recyclers, EV OEMs, and forward-chain players. A single searchable map for the circular value chain.',
+    url: 'https://www.rotehuegels.com/ecosystem',
+    type: 'website',
+  },
+};
 
 // Public ecosystem page: aggregate counts + pins showing company name on hover
 // (same info the govt CPCB/SPCB registries publish). What stays internal is

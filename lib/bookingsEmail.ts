@@ -8,9 +8,14 @@ import type { Booking, EventType } from '@/lib/bookings';
 
 const {
   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS,
-  EMAIL_FROM = 'Rotehügels <noreply@rotehuegels.com>',
   NEXT_PUBLIC_SITE_URL = 'https://www.rotehuegels.com',
 } = process.env;
+
+// Booking notifications always come from noreply@ — they're transactional,
+// not personal. Keep this hardcoded so it is unaffected by any EMAIL_FROM
+// env var set for other notification streams (quotes / invoices / POs /
+// registrations, which may want a different sender).
+const BOOKING_FROM = 'Rotehügels <noreply@rotehuegels.com>';
 
 let transporter: nodemailer.Transporter | null = null;
 function getTransporter() {
@@ -186,8 +191,9 @@ export async function sendBookingConfirmation(booking: Booking, eventType: Event
     </div>`;
 
   await getTransporter().sendMail({
-    from: EMAIL_FROM,
+    from: BOOKING_FROM,
     to: booking.visitor_email,
+    replyTo: eventType.host_email,
     subject: visitorSubject,
     html: visitorHtml,
     icalEvent,
@@ -213,7 +219,7 @@ export async function sendBookingConfirmation(booking: Booking, eventType: Event
     </div>`;
 
   await getTransporter().sendMail({
-    from: EMAIL_FROM,
+    from: BOOKING_FROM,
     to: eventType.host_email,
     replyTo: booking.visitor_email,
     subject: hostSubject,
@@ -250,12 +256,13 @@ export async function sendBookingCancellation(booking: Booking, eventType: Event
 
   const tasks: Promise<unknown>[] = [];
   tasks.push(getTransporter().sendMail({
-    from: EMAIL_FROM,
+    from: BOOKING_FROM,
     to: booking.visitor_email,
+    replyTo: eventType.host_email,
     subject, html, icalEvent, attachments,
   }));
   tasks.push(getTransporter().sendMail({
-    from: EMAIL_FROM,
+    from: BOOKING_FROM,
     to: eventType.host_email,
     subject, html, icalEvent, attachments,
   }));

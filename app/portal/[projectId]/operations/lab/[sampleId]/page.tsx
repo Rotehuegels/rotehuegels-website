@@ -31,10 +31,9 @@ export default async function SampleDetailPage({
 }: {
   params: Promise<{ projectId: string; sampleId: string }>;
 }) {
-  const portalUser = await getPortalUser();
+    const { projectId, sampleId } = await params;
+  const portalUser = await getPortalUser({ projectId });
   if (!portalUser) redirect('/login?next=/portal');
-
-  const { projectId, sampleId } = await params;
 
   // Verify project ownership
   const { data: project } = await supabaseAdmin

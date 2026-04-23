@@ -16,22 +16,39 @@ export default async function PortalHomePage() {
   const portalUser = await getPortalUser();
   if (!portalUser) redirect('/login?next=/portal');
 
-  const { data: projects } = await supabaseAdmin
+  // Client: scoped to their customer. Admin: every project (master-login
+  // preview — treat every project as browsable).
+  let projectQuery = supabaseAdmin
     .from('projects')
-    .select('id, project_code, name, status, completion_pct, start_date, target_end_date, site_location, project_manager')
-    .eq('customer_id', portalUser.customerId)
+    .select('id, project_code, name, status, completion_pct, start_date, target_end_date, site_location, project_manager, customer_id, customers(name)')
     .order('created_at', { ascending: false });
+  if (!portalUser.isAdmin && portalUser.customerId) {
+    projectQuery = projectQuery.eq('customer_id', portalUser.customerId);
+  }
+  const { data: projects } = await projectQuery;
 
-  const list = projects ?? [];
+  const list = (projects ?? []) as unknown as Array<{
+    id: string; project_code: string; name: string; status: string; completion_pct: number;
+    start_date: string | null; target_end_date: string | null;
+    site_location: string | null; project_manager: string | null;
+    customer_id: string; customers?: { name: string } | null;
+  }>;
 
-  // If only one project, go straight to it
-  if (list.length === 1) redirect(`/portal/${list[0].id}`);
+  // If only one project and this is a real client, go straight to it.
+  // Admins see the list even with one project so they know the bypass worked.
+  if (list.length === 1 && !portalUser.isAdmin) redirect(`/portal/${list[0].id}`);
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-white">Your Projects</h1>
-        <p className="text-sm text-zinc-500 mt-1">Select a project to view details</p>
+        <h1 className="text-xl font-bold text-white">
+          {portalUser.isAdmin ? 'All Client Projects' : 'Your Projects'}
+        </h1>
+        <p className="text-sm text-zinc-500 mt-1">
+          {portalUser.isAdmin
+            ? 'Admin preview — pick any customer’s project to see the portal view.'
+            : 'Select a project to view details'}
+        </p>
       </div>
 
       {list.length === 0 ? (
@@ -51,6 +68,9 @@ export default async function PortalHomePage() {
                 <div>
                   <span className="text-xs font-mono text-zinc-500">{p.project_code}</span>
                   <h2 className="text-base font-semibold text-white">{p.name}</h2>
+                  {portalUser.isAdmin && p.customers?.name && (
+                    <p className="text-[11px] text-amber-300/80 mt-0.5">{p.customers.name}</p>
+                  )}
                 </div>
                 <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-rose-400 transition-colors" />
               </div>

@@ -18,10 +18,9 @@ const stageStatusIcon: Record<string, { icon: React.ElementType; color: string }
 };
 
 export default async function PaymentsPage({ params }: { params: Promise<{ projectId: string }> }) {
-  const portalUser = await getPortalUser();
+    const { projectId } = await params;
+  const portalUser = await getPortalUser({ projectId });
   if (!portalUser) redirect('/login?next=/portal');
-
-  const { projectId } = await params;
 
   const { data: project } = await supabaseAdmin
     .from('projects')

@@ -32,10 +32,9 @@ const typeLabel: Record<string, string> = {
 };
 
 export default async function DocumentsPage({ params }: { params: Promise<{ projectId: string }> }) {
-  const portalUser = await getPortalUser();
+    const { projectId } = await params;
+  const portalUser = await getPortalUser({ projectId });
   if (!portalUser) redirect('/login?next=/portal');
-
-  const { projectId } = await params;
 
   const { data: project } = await supabaseAdmin
     .from('projects')

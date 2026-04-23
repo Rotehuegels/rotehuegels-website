@@ -17,10 +17,9 @@ const fmtKg = (n: number) =>
   new Intl.NumberFormat('en-IN', { maximumFractionDigits: 1 }).format(n);
 
 export default async function ProductionLogPage({ params }: { params: Promise<{ projectId: string }> }) {
-  const portalUser = await getPortalUser();
+    const { projectId } = await params;
+  const portalUser = await getPortalUser({ projectId });
   if (!portalUser) redirect('/login?next=/portal');
-
-  const { projectId } = await params;
 
   const { data: project } = await supabaseAdmin
     .from('projects').select('id, name').eq('id', projectId).eq('customer_id', portalUser.customerId).single();

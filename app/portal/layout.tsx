@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getPortalUser } from '@/lib/portalAuth';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import PortalNav from '@/components/portal/PortalNav';
+import AdminPreviewBanner from '@/components/AdminPreviewBanner';
 
 export const metadata: Metadata = {
   title: 'Client Portal — Rotehügels',
@@ -17,13 +18,17 @@ export default async function PortalLayout({
   const portalUser = await getPortalUser();
   if (!portalUser) redirect('/login?next=/portal');
 
-  // Check if any project for this customer has an operations contract
-  const { data: opsCheck } = await supabaseAdmin
+  // Check if any project has an operations contract. For clients, restrict
+  // to their customer. For admins, probe globally so the nav shows
+  // "Operations" when any client has it.
+  let opsQuery = supabaseAdmin
     .from('operations_contracts')
     .select('id, projects!inner(customer_id)')
-    .eq('projects.customer_id', portalUser.customerId)
     .limit(1);
-
+  if (!portalUser.isAdmin && portalUser.customerId) {
+    opsQuery = opsQuery.eq('projects.customer_id', portalUser.customerId);
+  }
+  const { data: opsCheck } = await opsQuery;
   const hasOperations = (opsCheck ?? []).length > 0;
 
   return (
@@ -35,6 +40,9 @@ export default async function PortalLayout({
 
       {/* Main content */}
       <div className="flex-1 min-w-0 flex flex-col">
+        {portalUser.isAdmin && (
+          <AdminPreviewBanner email={portalUser.email} />
+        )}
         <PortalNav userEmail={portalUser.email} displayName={portalUser.displayName} mode="mobile" hasOperations={hasOperations} />
         <div className="flex-1">{children}</div>
       </div>

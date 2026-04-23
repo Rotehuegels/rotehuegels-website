@@ -32,10 +32,9 @@ const milestoneIcon: Record<string, React.ElementType> = {
 };
 
 export default async function ProjectDashboardPage({ params }: { params: Promise<{ projectId: string }> }) {
-  const portalUser = await getPortalUser();
+    const { projectId } = await params;
+  const portalUser = await getPortalUser({ projectId });
   if (!portalUser) redirect('/login?next=/portal');
-
-  const { projectId } = await params;
 
   // Fetch project
   const { data: project } = await supabaseAdmin

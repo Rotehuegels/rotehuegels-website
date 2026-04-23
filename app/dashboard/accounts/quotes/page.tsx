@@ -3,6 +3,7 @@ import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, FileText } from 'lucide-react';
+import IfCan from '@/components/IfCan';
 import { Suspense } from 'react';
 import QuotesFilterBar from './QuotesFilterBar';
 import Pagination from '../Pagination';
@@ -105,12 +106,14 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
           <h1 className="text-xl font-bold text-white">Quotations</h1>
           <p className="text-xs text-zinc-500 mt-0.5">{filteredTotal} total</p>
         </div>
-        <Link
-          href="/d/quotes/new"
-          className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
-        >
-          <Plus className="h-4 w-4" /> New Quote
-        </Link>
+        <IfCan permission="sales.create">
+          <Link
+            href="/d/quotes/new"
+            className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
+          >
+            <Plus className="h-4 w-4" /> New Quote
+          </Link>
+        </IfCan>
       </div>
 
       {/* Filter bar */}

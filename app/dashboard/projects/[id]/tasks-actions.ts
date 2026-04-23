@@ -1,6 +1,6 @@
 'use server';
 
-import { supabaseServer } from '@/lib/supabaseServer';
+import { requireActorWithPermission } from '@/lib/serverActionAuthz';
 import {
   createTask as libCreateTask,
   updateTask as libUpdateTask,
@@ -19,11 +19,13 @@ import {
 } from '@/lib/projectTasks';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-async function requireActor(): Promise<string> {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not signed in');
-  return user.email ?? user.id;
+async function requireViewActor(): Promise<string> {
+  const actor = await requireActorWithPermission('projects.view');
+  return actor.email || actor.userId;
+}
+async function requireEditActor(): Promise<string> {
+  const actor = await requireActorWithPermission('projects.edit');
+  return actor.email || actor.userId;
 }
 
 export interface KanbanBoardData {
@@ -34,6 +36,7 @@ export interface KanbanBoardData {
 }
 
 export async function loadKanbanBoard(projectId: string): Promise<KanbanBoardData> {
+  await requireViewActor();
   const [tasks, labels, emps] = await Promise.all([
     fetchProjectTasks(projectId),
     fetchProjectLabels(projectId),
@@ -55,7 +58,7 @@ export async function createTaskAction(input: {
   assigneeId?: string | null;
   dueDate?: string | null;
 }): Promise<ProjectTask> {
-  const actor = await requireActor();
+  const actor = await requireEditActor();
   return libCreateTask({
     projectId: input.projectId,
     title: input.title,
@@ -76,7 +79,7 @@ export async function updateTaskAction(input: {
   assigneeId?: string | null;
   dueDate?: string | null;
 }): Promise<ProjectTask> {
-  const actor = await requireActor();
+  const actor = await requireEditActor();
   return libUpdateTask({ ...input, actor });
 }
 
@@ -85,23 +88,25 @@ export async function moveTaskAction(input: {
   toStatus: TaskStatus;
   toIndex: number;
 }): Promise<void> {
-  const actor = await requireActor();
+  const actor = await requireEditActor();
   await libMoveTask({ ...input, actor });
 }
 
 export async function deleteTaskAction(taskId: string): Promise<void> {
-  const actor = await requireActor();
-  await libDeleteTask({ taskId, actor });
+  const actor = await requireActorWithPermission('projects.delete');
+  await libDeleteTask({ taskId, actor: actor.email || actor.userId });
 }
 
 export async function addTaskCommentAction(input: {
   taskId: string;
   body: string;
 }): Promise<TaskComment> {
-  const actor = await requireActor();
+  // Commenting is tied to edit access — if you can edit, you can discuss.
+  const actor = await requireEditActor();
   return libAddTaskComment({ taskId: input.taskId, author: actor, body: input.body });
 }
 
 export async function loadTaskComments(taskId: string): Promise<TaskComment[]> {
+  await requireViewActor();
   return fetchTaskComments(taskId);
 }

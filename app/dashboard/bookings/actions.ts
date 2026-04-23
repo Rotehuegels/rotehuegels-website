@@ -1,13 +1,15 @@
 'use server';
 
-import { supabaseServer } from '@/lib/supabaseServer';
+import { requireActorWithPermission } from '@/lib/serverActionAuthz';
 import { cancelBookingByToken } from '@/lib/bookings';
 import { sendBookingCancellation } from '@/lib/bookingsEmail';
 
 export async function cancelBookingAsHostAction(token: string): Promise<{ ok: boolean; error?: string }> {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: 'Not signed in' };
+  try {
+    await requireActorWithPermission('bookings.manage');
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unauthorised' };
+  }
 
   const res = await cancelBookingByToken(token, 'host');
   if (!res.ok) return { ok: false, error: res.error };

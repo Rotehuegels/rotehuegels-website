@@ -3,6 +3,7 @@ import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, User, Mail, Phone, Building2, Download } from 'lucide-react';
+import IfCan from '@/components/IfCan';
 import { Suspense } from 'react';
 import CustomersFilterBar from './CustomersFilterBar';
 import Pagination from '../Pagination';
@@ -64,12 +65,14 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           >
             <Download className="h-4 w-4" /> <span className="hidden sm:inline">Export</span> CSV
           </a>
-          <Link
-            href="/d/customers/new"
-            className="flex items-center gap-2 rounded-xl bg-amber-600 px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
-          >
-            <Plus className="h-4 w-4" /> Add Customer
-          </Link>
+          <IfCan permission="sales.create">
+            <Link
+              href="/d/customers/new"
+              className="flex items-center gap-2 rounded-xl bg-amber-600 px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
+            >
+              <Plus className="h-4 w-4" /> Add Customer
+            </Link>
+          </IfCan>
         </div>
       </div>
 

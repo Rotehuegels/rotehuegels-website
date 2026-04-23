@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Plus, Building2, MapPin, Hash, BadgeCheck, BadgeX, Download } from 'lucide-react';
 import { Suspense } from 'react';
 import SuppliersFilterBar from './SuppliersFilterBar';
+import IfCan from '@/components/IfCan';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
@@ -44,10 +45,12 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
           >
             <Download className="h-4 w-4" /> Export CSV
           </a>
-          <Link href="/d/suppliers/new"
-            className="flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
-            <Plus className="h-4 w-4" /> Add Supplier
-          </Link>
+          <IfCan permission="procurement.create">
+            <Link href="/d/suppliers/new"
+              className="flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
+              <Plus className="h-4 w-4" /> Add Supplier
+            </Link>
+          </IfCan>
         </div>
       </div>
 

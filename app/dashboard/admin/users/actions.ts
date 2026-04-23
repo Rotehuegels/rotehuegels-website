@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { supabaseServer } from '@/lib/supabaseServer';
+import { requireActorWithPermission } from '@/lib/serverActionAuthz';
 import {
   createStaffUser,
   updateUser,
@@ -13,12 +13,8 @@ import {
 } from '@/lib/userPermissions';
 
 async function requireAdmin(): Promise<string> {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not signed in');
-  // Any logged-in admin can manage users for now. Tighten later with an
-  // explicit 'admin.users' permission.
-  return user.email ?? user.id;
+  const actor = await requireActorWithPermission('admin.users');
+  return actor.email || actor.userId;
 }
 
 export async function createUserAction(input: {

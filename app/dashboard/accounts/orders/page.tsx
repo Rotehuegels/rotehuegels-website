@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Plus, ShoppingBag, Wrench } from 'lucide-react';
 import { Suspense } from 'react';
 import OrdersFilterBar from './OrdersFilterBar';
+import IfCan from '@/components/IfCan';
 import Pagination from '../Pagination';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
@@ -137,10 +138,12 @@ export default async function OrdersListPage({ searchParams }: { searchParams: P
           <h1 className="text-xl md:text-2xl font-bold text-white">Orders</h1>
           <p className="mt-1 text-sm text-zinc-400">{total} total orders</p>
         </div>
-        <Link href="/d/orders/new"
-          className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
-          <Plus className="h-4 w-4" /> New Order
-        </Link>
+        <IfCan permission="sales.create">
+          <Link href="/d/orders/new"
+            className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors">
+            <Plus className="h-4 w-4" /> New Order
+          </Link>
+        </IfCan>
       </div>
 
       {/* Summary strip */}

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { listUsers } from '@/lib/userPermissions';
+import IfCan from '@/components/IfCan';
 import { UserPlus, User, Mail, Shield, Clock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -27,12 +28,14 @@ export default async function UsersListPage() {
               user to another when spawning additional people for the same role.
             </p>
           </div>
-          <Link
-            href="/d/admin/users/new"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white no-underline transition-colors shrink-0"
-          >
-            <UserPlus className="h-4 w-4" /> Add User
-          </Link>
+          <IfCan permission="admin.users">
+            <Link
+              href="/d/admin/users/new"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white no-underline transition-colors shrink-0"
+            >
+              <UserPlus className="h-4 w-4" /> Add User
+            </Link>
+          </IfCan>
         </div>
 
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">

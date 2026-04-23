@@ -6,6 +6,7 @@ import { Plus, ShoppingCart } from 'lucide-react';
 import { Suspense } from 'react';
 import POFilterBar from './POFilterBar';
 import Pagination from '../Pagination';
+import IfCan from '@/components/IfCan';
 
 export const dynamic = 'force-dynamic';
 
@@ -100,12 +101,14 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
             {total} PO{total !== 1 ? 's' : ''} · Total {fmt(totalValue)} · Paid {fmt(totalPaid)}
           </p>
         </div>
-        <Link
-          href="/d/purchase-orders/new"
-          className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
-        >
-          <Plus className="h-4 w-4" /> New PO
-        </Link>
+        <IfCan permission="procurement.create">
+          <Link
+            href="/d/purchase-orders/new"
+            className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 transition-colors"
+          >
+            <Plus className="h-4 w-4" /> New PO
+          </Link>
+        </IfCan>
       </div>
 
       {/* Filter bar */}

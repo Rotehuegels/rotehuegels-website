@@ -4,6 +4,9 @@
 -- in UTC with a cancel_token the visitor can use to cancel.
 
 create extension if not exists "pgcrypto";
+-- btree_gist lets the exclusion constraint below use a uuid equality
+-- operator alongside the tstzrange overlap operator in one index.
+create extension if not exists "btree_gist";
 
 -- ── Event types ──────────────────────────────────────────────────────────
 create table if not exists booking_event_types (
@@ -71,8 +74,6 @@ alter table bookings add constraint bookings_no_overlap
     tstzrange(starts_at, ends_at) with &&
   )
   where (status = 'confirmed');
-
-create extension if not exists btree_gist;
 
 -- ── Row-level security ──────────────────────────────────────────────────
 -- Server-side writes via supabaseAdmin (service role). Booking rows are not

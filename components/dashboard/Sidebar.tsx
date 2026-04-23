@@ -88,6 +88,7 @@ const NAV: NavItem[] = [
       { type: 'section', label: 'Intelligence' },
       { label: 'Market Intelligence', href: '/d/intelligence', icon: Radar },
       { label: 'Commodity Prices',    href: '/d/markets',      icon: BarChart2 },
+      { label: 'Bookings',            href: '/d/bookings',     icon: CalendarDays },
     ],
   },
 

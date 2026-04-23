@@ -64,10 +64,10 @@ export default function DigitalSolutionsPage() {
           className="flex justify-center gap-4 relative"
         >
           <button
-            onClick={() => router.push('/contact')}
+            onClick={() => router.push('/book/autorex-suite-demo')}
             className="bg-red-500 hover:bg-red-600 px-6 py-3 rounded-lg transition hover:scale-105"
           >
-            Request Demo
+            Book a demo
           </button>
 
           <button
@@ -125,10 +125,10 @@ export default function DigitalSolutionsPage() {
           </div>
 
           <button
-            onClick={() => router.push('/contact')}
+            onClick={() => router.push('/book/autorex-suite-demo')}
             className="bg-red-500 hover:bg-red-600 px-10 py-3 rounded-lg hover:scale-105 transition"
           >
-            Get Demo
+            Book a demo
           </button>
 
         </motion.div>

@@ -48,6 +48,9 @@ const PUBLIC_API = [
   '/api/ai/security-alert',
   // /me is a lightweight helper that returns null when no session
   '/api/me',
+  // Host calendar feed — authenticates with CALENDAR_SUBSCRIBE_SECRET query
+  // token, used by external calendar apps (Google / MS / Apple / Zoho).
+  '/api/cal',
 ];
 
 // Customer portal uses its own session check inside each handler.

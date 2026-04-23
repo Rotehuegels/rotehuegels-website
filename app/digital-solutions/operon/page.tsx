@@ -55,8 +55,8 @@ export default function OperonPage() {
             consumption data flow in live, so your ledger reflects the plant, not a spreadsheet.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/contact" className="rounded-xl bg-sky-500 hover:bg-sky-600 px-6 py-3 text-sm font-semibold text-white transition-colors inline-flex items-center gap-2">
-              Request a demo <ArrowRight className="h-4 w-4" />
+            <Link href="/book/autorex-suite-demo" className="rounded-xl bg-sky-500 hover:bg-sky-600 px-6 py-3 text-sm font-semibold text-white transition-colors inline-flex items-center gap-2">
+              Book a demo <ArrowRight className="h-4 w-4" />
             </Link>
             <Link href="/digital-solutions" className="rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
               Back to the suite overview
@@ -180,8 +180,8 @@ export default function OperonPage() {
             We will return a deployment scope and timeline inside a week.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl bg-sky-500 hover:bg-sky-600 px-6 py-3 text-sm font-semibold text-white transition-colors">
-              Request a demo <ArrowRight className="h-4 w-4" />
+            <Link href="/book/autorex-suite-demo" className="inline-flex items-center gap-2 rounded-xl bg-sky-500 hover:bg-sky-600 px-6 py-3 text-sm font-semibold text-white transition-colors">
+              Book a demo <ArrowRight className="h-4 w-4" />
             </Link>
             <Link href="/digital-solutions" className="inline-flex items-center rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
               See the full AutoREX suite

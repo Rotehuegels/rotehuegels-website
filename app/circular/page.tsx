@@ -69,8 +69,8 @@ export default async function CircularHubPage() {
             <Link href="/ecosystem" className="rounded-xl bg-rose-500 hover:bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition-colors inline-flex items-center gap-2">
               Explore the directory <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/contact" className="rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
-              Talk to our team
+            <Link href="/book/circular-platform-intro" className="rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
+              Book a 30-min intro
             </Link>
           </div>
         </section>

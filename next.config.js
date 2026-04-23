@@ -281,6 +281,7 @@ const nextConfig = {
       { source: '/d/admin/users', destination: '/dashboard/admin/users' },
       { source: '/d/admin/users/new', destination: '/dashboard/admin/users/new' },
       { source: '/d/admin/users/:id', destination: '/dashboard/admin/users/:id' },
+      { source: '/d/forbidden', destination: '/dashboard/forbidden' },
       { source: '/d/rex', destination: '/dashboard/rex' },
       { source: '/d/supplier-reg', destination: '/dashboard/suppliers' },
       { source: '/d/supplier-reg/registrations', destination: '/dashboard/suppliers/registrations' },

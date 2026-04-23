@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import GlobalSearch from './GlobalSearch';
+import { canSeeHref } from './permissionMap';
 import {
   LayoutDashboard,
   Users, UserPlus, UserCheck,
@@ -242,8 +243,49 @@ function GroupItem({ item, pathname }: { item: NavGroup; pathname: string }) {
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 const ROLE_LABEL: Record<string, string> = { admin: 'Super Admin', client: 'Client' };
 
-export default function Sidebar({ userEmail, userRole = 'admin' }: { userEmail: string; userRole?: string }) {
+export default function Sidebar({
+  userEmail,
+  userRole = 'admin',
+  permissions,
+}: {
+  userEmail: string;
+  userRole?: string;
+  /** Permission keys the user holds. `null` means admin → see everything. */
+  permissions?: string[] | null;
+}) {
   const pathname = usePathname();
+
+  // Admin → permissions === null → canSeeHref returns true for everything.
+  // Staff → permissions is a list → filter.
+  const permSet = useMemo(() => (permissions == null ? null : new Set(permissions)), [permissions]);
+
+  const visibleNav = useMemo(() => {
+    const out: NavItem[] = [];
+    for (const item of NAV) {
+      if (!isGroup(item)) {
+        if (canSeeHref(item.href, permSet)) out.push(item);
+        continue;
+      }
+      // Keep the group only if at least one link inside is visible.
+      const children = item.children.filter(c =>
+        c.type === 'section' || canSeeHref((c as NavLink).href, permSet),
+      );
+      // Drop orphan section headers (no subsequent link under them).
+      const cleaned: NavChild[] = [];
+      for (let i = 0; i < children.length; i++) {
+        const c = children[i];
+        if (c.type === 'section') {
+          const hasLinkAfter = children.slice(i + 1).some(n => n.type !== 'section');
+          if (hasLinkAfter) cleaned.push(c);
+        } else {
+          cleaned.push(c);
+        }
+      }
+      const linkCount = cleaned.filter(c => c.type !== 'section').length;
+      if (linkCount > 0) out.push({ ...item, children: cleaned });
+    }
+    return out;
+  }, [permSet]);
 
   return (
     <aside className="flex h-full flex-col justify-between py-6 px-4">
@@ -261,7 +303,7 @@ export default function Sidebar({ userEmail, userRole = 'admin' }: { userEmail: 
         </div>
 
         <nav className="space-y-1">
-          {NAV.map(item => {
+          {visibleNav.map(item => {
             if (isGroup(item)) {
               return <GroupItem key={item.label} item={item} pathname={pathname} />;
             }

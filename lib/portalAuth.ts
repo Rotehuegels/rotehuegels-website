@@ -21,7 +21,7 @@
 import { supabaseServer } from '@/lib/supabaseServer';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-export type PortalRole = 'client' | 'admin';
+export type PortalRole = 'client' | 'admin' | 'staff';
 
 export interface PortalUser {
   userId: string;

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import InstallAppButton from './InstallAppButton';
+import { canSeeHref } from './permissionMap';
 import {
   Menu, X, ChevronDown, LogOut,
   LayoutDashboard,
@@ -228,9 +229,44 @@ function MobileGroup({ item, pathname, onNavigate }: {
 // ── MobileNav ─────────────────────────────────────────────────────────────────
 const ROLE_LABEL: Record<string, string> = { admin: 'Super Admin', client: 'Client' };
 
-export default function MobileNav({ userEmail, userRole = 'admin' }: { userEmail: string; userRole?: string }) {
+export default function MobileNav({
+  userEmail,
+  userRole = 'admin',
+  permissions,
+}: {
+  userEmail: string;
+  userRole?: string;
+  permissions?: string[] | null;
+}) {
   const [open, setOpen] = useState(false);
   const pathname        = usePathname();
+  const permSet = permissions == null ? null : new Set(permissions);
+
+  const visibleNav = (() => {
+    const out: NavItem[] = [];
+    for (const item of NAV) {
+      if (!isGroup(item)) {
+        if (canSeeHref(item.href, permSet)) out.push(item);
+        continue;
+      }
+      const children = item.children.filter(c =>
+        c.type === 'section' || canSeeHref((c as NavLink).href, permSet),
+      );
+      const cleaned: NavChild[] = [];
+      for (let i = 0; i < children.length; i++) {
+        const c = children[i];
+        if (c.type === 'section') {
+          const hasLinkAfter = children.slice(i + 1).some(n => n.type !== 'section');
+          if (hasLinkAfter) cleaned.push(c);
+        } else {
+          cleaned.push(c);
+        }
+      }
+      const linkCount = cleaned.filter(c => c.type !== 'section').length;
+      if (linkCount > 0) out.push({ ...item, children: cleaned });
+    }
+    return out;
+  })();
 
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
@@ -266,7 +302,7 @@ export default function MobileNav({ userEmail, userRole = 'admin' }: { userEmail
             </div>
 
             <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-              {NAV.map(item => {
+              {visibleNav.map(item => {
                 if (isGroup(item)) {
                   return (
                     <MobileGroup

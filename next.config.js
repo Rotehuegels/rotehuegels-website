@@ -276,6 +276,7 @@ const nextConfig = {
       { source: '/d/documents', destination: '/dashboard/documents' },
       { source: '/d/documents/:id', destination: '/dashboard/documents/:id' },
       { source: '/d/intelligence', destination: '/dashboard/intelligence' },
+      { source: '/d/markets', destination: '/dashboard/markets' },
       { source: '/d/rex', destination: '/dashboard/rex' },
       { source: '/d/supplier-reg', destination: '/dashboard/suppliers' },
       { source: '/d/supplier-reg/registrations', destination: '/dashboard/suppliers/registrations' },

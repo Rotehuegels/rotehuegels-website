@@ -45,7 +45,6 @@ const NAV: NavItem[] = [
     children: [
       { label: 'Overview',                    href: '/circular' },
       { label: 'Ecosystem Directory',         href: '/ecosystem' },
-      { label: 'Marketplace',                 href: '/marketplace' },
       { label: 'EPR & Pickups',               href: '/recycling' },
     ],
   },

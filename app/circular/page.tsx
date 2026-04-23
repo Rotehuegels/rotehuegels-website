@@ -57,19 +57,22 @@ export default function CircularHubPage() {
               </span>
             </Link>
 
-            <Link href="/marketplace" className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 hover:border-rose-500/40 transition-colors group no-underline">
-              <ShoppingBag className="h-7 w-7 text-rose-400 mb-3" />
-              <p className="text-[10px] uppercase tracking-widest text-rose-400/80 mb-1">Marketplace</p>
-              <h3 className="text-lg font-semibold mb-2">Generator ↔ Recycler Marketplace</h3>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 relative">
+              <ShoppingBag className="h-7 w-7 text-zinc-500 mb-3" />
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-[10px] uppercase tracking-widest text-zinc-500">Marketplace</p>
+                <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 font-semibold">Coming soon</span>
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-zinc-300">Generator ↔ Recycler Marketplace</h3>
               <p className="text-sm text-zinc-400 leading-relaxed mb-4">
                 Bulk generators post e-waste, spent Li-ion, and non-ferrous scrap. The platform matches
                 each lot against recyclers whose licence class, capacity headroom, material capability,
                 and geography fit the requirement.
               </p>
-              <span className="inline-flex items-center gap-1 text-xs text-rose-400 group-hover:text-rose-300">
-                See the marketplace <ArrowRight className="h-3 w-3" />
-              </span>
-            </Link>
+              <Link href="/contact" className="inline-flex items-center gap-1 text-xs text-amber-300 hover:text-amber-200 no-underline">
+                Request early access <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
 
             <Link href="/recycling" className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 hover:border-rose-500/40 transition-colors group no-underline">
               <FileCheck2 className="h-7 w-7 text-rose-400 mb-3" />
@@ -165,6 +168,9 @@ export default function CircularHubPage() {
             </Link>
             <Link href="/ecosystem" className="inline-flex items-center rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
               <MapPin className="h-4 w-4 mr-1.5" /> Browse the directory
+            </Link>
+            <Link href="/contact" className="inline-flex items-center rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 px-6 py-3 text-sm font-medium text-amber-200 transition-colors">
+              Request marketplace early access
             </Link>
           </div>
         </section>

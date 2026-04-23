@@ -19,13 +19,14 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* 2. Quick Links */}
+        {/* 2. Product lines */}
         <div>
-          <p className="font-semibold text-white text-xs uppercase tracking-wider mb-2">Company</p>
+          <p className="font-semibold text-white text-xs uppercase tracking-wider mb-2">Product Lines</p>
           <ul className="space-y-0.5">
+            <li><a href="/services" className="hover:underline hover:text-white">Engineering</a></li>
+            <li><a href="/digital-solutions" className="hover:underline hover:text-white">AutoREX</a></li>
+            <li><a href="/circular" className="hover:underline hover:text-white">Circular</a></li>
             <li><a href="/about" className="hover:underline hover:text-white">About Us</a></li>
-            <li><a href="/services" className="hover:underline hover:text-white">Services</a></li>
-            <li><a href="/ecosystem" className="hover:underline hover:text-white">Ecosystem Directory</a></li>
             <li><a href="/contact" className="hover:underline hover:text-white">Contact</a></li>
           </ul>
         </div>

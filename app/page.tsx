@@ -2,14 +2,14 @@
 import React from "react";
 import Link from "next/link";
 import {
-  Cpu, Monitor, Beaker, ArrowRight,
-  Factory, Droplets, Zap, Wrench,
+  Cpu, ArrowRight,
+  Factory, Droplets, Zap, Wrench, Wrench as HardHat, Network, CheckCircle2,
 } from "lucide-react";
 
 export const metadata = {
-  title: "Rotehügels — Engineering. Technology. Execution.",
+  title: "Rotehügels — Engineering · AutoREX · Circular",
   description:
-    "Rotehügels designs process plants, builds industrial software (AutoREX™, Operon, LabREX), and operates facilities across metals, mining, recycling, and process industries worldwide.",
+    "Three product lines under one roof: Engineering (plant EPC, electrodes, testwork, advisory), AutoREX (automation + Operon ERP + LabREX LIMS), and Circular (directory, marketplace, EPR). Research-led delivery for metals, batteries, and process industries.",
 };
 
 export default function HomePage() {
@@ -20,28 +20,26 @@ export default function HomePage() {
       <section className="relative py-20 md:py-28">
         <div className="container mx-auto px-6 lg:px-12 relative z-10">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-400 mb-4">
-            Engineering · Technology · Execution
+            Engineering · AutoREX · Circular
           </p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white max-w-[1800px] leading-tight">
             We design plants.{" "}
-            <span className="text-rose-400">Build software.</span>{" "}
-            Operate facilities.
+            <span className="text-rose-400">Digitise operations.</span>{" "}
+            Close the loop on waste.
           </h1>
 
           <p className="mt-6 text-base md:text-lg text-zinc-400 max-w-2xl">
-            From laboratory research to turnkey production — across metals, mining,
-            battery recycling, and process industries worldwide.
+            Three product lines under one roof — engineering, an industrial software platform, and
+            a circular-economy platform. From laboratory research to turnkey plants, and from plant
+            data to EPR-certified material recovery.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/services" className="btn-primary no-underline">
-              Explore Services
-            </Link>
-            <Link href="/customers/register" className="btn-ghost no-underline">
-              Register as Customer
+            <Link href="#product-lines" className="btn-primary no-underline">
+              See our product lines
             </Link>
             <Link href="/contact" className="btn-ghost no-underline">
-              Get in Touch
+              Start a conversation
             </Link>
           </div>
         </div>
@@ -51,7 +49,7 @@ export default function HomePage() {
       <section className="border-y border-white/10 bg-white/[0.02]">
         <div className="container mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {[
-            { value: '3 Products', sub: 'AutoREX™ · Operon · LabREX' },
+            { value: '3 Product Lines', sub: 'Engineering · AutoREX · Circular' },
             { value: '12+ Industries', sub: 'Metals to food processing' },
             { value: 'India · Africa', sub: 'Active project regions' },
             { value: 'Since 2024', sub: 'Delivering from day one' },
@@ -64,58 +62,87 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── TECHNOLOGY PRODUCTS ───────────────────────────────────────── */}
-      <section className="py-16 md:py-20">
+      {/* ── PRODUCT LINES ─────────────────────────────────────────────── */}
+      <section id="product-lines" className="py-16 md:py-20">
         <div className="container mx-auto px-6 lg:px-12">
           <div className="text-center mb-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-400 mb-2">Our Technology</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-400 mb-2">Our product lines</p>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
-              Three products. One integrated ecosystem.
+              Three ways Rotehügels works with you.
             </h2>
-            <p className="text-sm text-zinc-400 mt-2 max-w-xl mx-auto">
-              Each module works independently. Together, they give you complete control over your plant.
+            <p className="text-sm text-zinc-400 mt-2 max-w-2xl mx-auto">
+              Identify which line fits your need — then click through to the offerings within it.
+              Each product line stands on its own; together they cover research through operations
+              through circularity.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-6">
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] p-6 hover:border-amber-500/40 transition-colors group">
-              <Cpu className="h-8 w-8 text-amber-400 mb-4" />
-              <h3 className="text-lg font-bold text-white">AutoREX™</h3>
-              <p className="text-xs text-amber-300/70 font-medium uppercase tracking-wider mt-1 mb-3">Plant Automation</p>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                AI-powered plant monitoring, PLC/SCADA integration, real-time production tracking,
-                and predictive analytics. Your entire plant on one screen.
+          <div className="grid md:grid-cols-3 gap-5">
+            {/* Engineering */}
+            <Link href="/services" className="rounded-2xl border border-rose-500/25 bg-rose-500/[0.04] p-6 md:p-7 hover:border-rose-400/50 transition-colors group no-underline flex flex-col">
+              <HardHat className="h-9 w-9 text-rose-400 mb-4" />
+              <p className="text-[10px] uppercase tracking-widest text-rose-400/80 font-semibold mb-1">Product Line 01</p>
+              <h3 className="text-xl font-bold text-white mb-2">Engineering</h3>
+              <p className="text-sm text-zinc-300 leading-relaxed mb-4">
+                Plant EPC, testwork &amp; feasibility, operations advisory, custom anodes &amp; cathodes,
+                and severe-service valves — delivered by a single accountable partner from flowsheet to
+                first pour.
               </p>
-              <Link href="/about#technology" className="mt-4 inline-flex items-center gap-1 text-xs text-amber-400 group-hover:text-amber-300">
-                Learn more <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
+              <ul className="text-xs text-zinc-400 space-y-1.5 mb-4">
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-rose-400/80 shrink-0 mt-0.5" /> Plant EPC &amp; commissioning</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-rose-400/80 shrink-0 mt-0.5" /> Testwork &amp; feasibility</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-rose-400/80 shrink-0 mt-0.5" /> Custom electrodes (Pb, Al, Ti, SS)</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-rose-400/80 shrink-0 mt-0.5" /> Operations advisory</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-rose-400/80 shrink-0 mt-0.5" /> Severe-service valves</li>
+              </ul>
+              <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-rose-400 group-hover:text-rose-300">
+                Explore Engineering <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
 
-            <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.03] p-6 hover:border-blue-500/40 transition-colors group">
-              <Monitor className="h-8 w-8 text-blue-400 mb-4" />
-              <h3 className="text-lg font-bold text-white">Operon</h3>
-              <p className="text-xs text-blue-300/70 font-medium uppercase tracking-wider mt-1 mb-3">Cloud ERP</p>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                Enterprise operations — accounting, HR, procurement, project management,
-                client portal, and investor reporting. All in one platform.
+            {/* AutoREX */}
+            <Link href="/digital-solutions" className="rounded-2xl border border-amber-500/25 bg-amber-500/[0.04] p-6 md:p-7 hover:border-amber-400/50 transition-colors group no-underline flex flex-col">
+              <Cpu className="h-9 w-9 text-amber-400 mb-4" />
+              <p className="text-[10px] uppercase tracking-widest text-amber-400/80 font-semibold mb-1">Product Line 02</p>
+              <h3 className="text-xl font-bold text-white mb-2">AutoREX</h3>
+              <p className="text-sm text-zinc-300 leading-relaxed mb-4">
+                Our industrial software platform. AutoREX is the automation and digital-twin core, with
+                Operon (ERP) and LabREX (LIMS) as first-class modules sharing a single identity layer
+                and audit trail.
               </p>
-              <Link href="/about#technology" className="mt-4 inline-flex items-center gap-1 text-xs text-blue-400 group-hover:text-blue-300">
-                Learn more <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
+              <ul className="text-xs text-zinc-400 space-y-1.5 mb-4">
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-amber-400/80 shrink-0 mt-0.5" /> AutoREX™ — automation + AI + digital twin</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-amber-400/80 shrink-0 mt-0.5" /> Operon — full SaaS ERP</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-amber-400/80 shrink-0 mt-0.5" /> LabREX — multi-industry LIMS</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-amber-400/80 shrink-0 mt-0.5" /> SCADA / DCS / PLC integration</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-amber-400/80 shrink-0 mt-0.5" /> One audit trail across production, lab, accounts</li>
+              </ul>
+              <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-amber-400 group-hover:text-amber-300">
+                Explore AutoREX <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
 
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.03] p-6 hover:border-emerald-500/40 transition-colors group">
-              <Beaker className="h-8 w-8 text-emerald-400 mb-4" />
-              <h3 className="text-lg font-bold text-white">LabREX</h3>
-              <p className="text-xs text-emerald-300/70 font-medium uppercase tracking-wider mt-1 mb-3">LIMS</p>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                Laboratory Information Management — ICP-OES, AAS, XRF, wet chemistry,
-                fire assay. Sample tracking and spec compliance across all industries.
+            {/* Circular */}
+            <Link href="/circular" className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.04] p-6 md:p-7 hover:border-emerald-400/50 transition-colors group no-underline flex flex-col">
+              <Network className="h-9 w-9 text-emerald-400 mb-4" />
+              <p className="text-[10px] uppercase tracking-widest text-emerald-400/80 font-semibold mb-1">Product Line 03</p>
+              <h3 className="text-xl font-bold text-white mb-2">Circular</h3>
+              <p className="text-sm text-zinc-300 leading-relaxed mb-4">
+                Our circular-economy platform. An India-wide directory of licensed recyclers, a
+                marketplace matching bulk generators to recyclers by fit, and EPR / traceability
+                services — built for both sides of the chain.
               </p>
-              <Link href="/about#technology" className="mt-4 inline-flex items-center gap-1 text-xs text-emerald-400 group-hover:text-emerald-300">
-                Learn more <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
+              <ul className="text-xs text-zinc-400 space-y-1.5 mb-4">
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> India Circular Economy Directory (1,300+ facilities)</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> Generator ↔ recycler marketplace</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> EPR-fulfilment + traceability certificates</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> Pickup scheduling + chain-of-custody</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> e-waste, Li-ion, non-ferrous streams</li>
+              </ul>
+              <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-emerald-400 group-hover:text-emerald-300">
+                Explore Circular <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
           </div>
         </div>
       </section>
@@ -154,50 +181,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── THREE PILLARS ────────────────────────────────────────────── */}
-      <section className="py-16 border-t border-white/5">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="text-center mb-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-400 mb-2">Our Approach</p>
-            <h2 className="text-2xl md:text-3xl font-bold text-white">
-              Research. Business. Consultancy.
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                h: "Testwork & Feasibility",
-                p: "Bench-to-pilot R&D, process modelling, techno-economic analysis, and bankable feasibility studies — turning lab innovation into investor-ready flowsheets.",
-                href: "/services/testwork-feasibility",
-              },
-              {
-                h: "Plant Engineering & EPC",
-                p: "Detailed engineering, procurement, construction, and commissioning — turnkey greenfield plant delivery from paper to production.",
-                href: "/services/plant-epc",
-              },
-              {
-                h: "Operations Advisory",
-                p: "Process audits, debottlenecking, SOPs & training, remote monitoring, and compliance watch for running plants.",
-                href: "/services/operations-advisory",
-              },
-            ].map((c, i) => (
-              <Link
-                key={i}
-                href={c.href}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 hover:border-rose-500/30 hover:bg-rose-500/[0.03] transition-colors group no-underline"
-              >
-                <h3 className="font-bold text-white text-lg mb-2">{c.h}</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">{c.p}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-xs text-rose-400 group-hover:text-rose-300">
-                  Explore <ArrowRight className="h-3 w-3" />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── CTA ──────────────────────────────────────────────────────── */}
       <section className="py-16 border-t border-white/5">
         <div className="container mx-auto px-6 lg:px-12 text-center">
@@ -205,12 +188,12 @@ export default function HomePage() {
             Ready to work with us?
           </h2>
           <p className="text-sm text-zinc-400 max-w-lg mx-auto mb-8">
-            Whether you need a process plant, industrial automation, laboratory management,
-            or a complete operations partner — we're here.
+            Whether you need a plant built, a platform deployed, or a recycler matched —
+            we engage at the level that fits the problem.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="mailto:sales@rotehuegels.com" className="btn-primary no-underline">
-              Start an Engagement
+            <Link href="/contact" className="btn-primary no-underline">
+              Start a conversation
             </Link>
             <Link href="/customers/register" className="btn-ghost no-underline">
               Register as Customer

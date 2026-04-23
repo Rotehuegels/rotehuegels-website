@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { ArrowRight, ShoppingBag } from 'lucide-react';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseServer } from '@/lib/supabaseServer';
 import MarketplaceBrowser from './MarketplaceBrowser';
 
 export const dynamic = 'force-dynamic';
@@ -9,9 +11,16 @@ export const revalidate = 0;
 export const metadata = {
   title: 'Marketplace — Rotehügels',
   description: 'Buy / sell listings across India\'s circular economy — virgin metals, secondary metals, battery chain intermediates, EOL feedstock, byproducts, plastics + paper + tyres, consumables.',
+  robots: { index: false, follow: false },
 };
 
 export default async function MarketplacePage() {
+  // Defence-in-depth: even if proxy.ts does not intercept, the page itself
+  // gates the preview behind a session. Marketplace is not yet public.
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login?next=/marketplace');
+
   const today = new Date().toISOString().slice(0, 10);
 
   const [listingsRes, catsRes, statesRes] = await Promise.all([

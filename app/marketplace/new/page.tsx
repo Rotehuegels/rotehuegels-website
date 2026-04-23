@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { ArrowLeft, PencilLine } from 'lucide-react';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseServer } from '@/lib/supabaseServer';
 import ListingForm from './ListingForm';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +10,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Post a Listing — Marketplace · Rotehügels',
   description: 'Submit a buy or sell listing in the India Circular Economy Marketplace.',
+  robots: { index: false, follow: false },
 };
 
 const ALL_STATES = [
@@ -21,6 +24,10 @@ const ALL_STATES = [
 ];
 
 export default async function NewListingPage() {
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login?next=/marketplace/new');
+
   const { data: cats } = await supabaseAdmin.from('item_categories')
     .select('id, parent_id, group_code, label, typical_unit, sort_order')
     .eq('is_active', true)

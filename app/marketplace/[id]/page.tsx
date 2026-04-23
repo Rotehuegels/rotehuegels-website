@@ -1,21 +1,28 @@
 import Link from 'next/link';
 import { ArrowLeft, MapPin, Clock, Package, Mail, Phone, Building2, Tag } from 'lucide-react';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { notFound } from 'next/navigation';
+import { supabaseServer } from '@/lib/supabaseServer';
+import { notFound, redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { data } = await supabaseAdmin.from('listings').select('title, listing_type').eq('id', id).maybeSingle();
-  if (!data) return { title: 'Listing — Rotehügels Marketplace' };
+  if (!data) return { title: 'Listing — Rotehügels Marketplace', robots: { index: false, follow: false } };
   return {
     title: `${data.listing_type === 'sell' ? 'Selling' : 'Wanting'}: ${data.title} — Rotehügels`,
+    robots: { index: false, follow: false },
   };
 }
 
 export default async function ListingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect(`/login?next=/marketplace/${id}`);
+
   const today = new Date().toISOString().slice(0, 10);
 
   const { data: l } = await supabaseAdmin.from('listings')

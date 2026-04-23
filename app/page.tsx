@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   Cpu, ArrowRight,
   Factory, Droplets, Zap, Wrench, Wrench as HardHat, Network, CheckCircle2,
+  ShieldCheck, Landmark, BadgeCheck,
 } from "lucide-react";
 
 export const metadata = {
@@ -59,6 +60,45 @@ export default function HomePage() {
               <div className="text-xs text-zinc-500 mt-1">{s.sub}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── TRUST BAR ─────────────────────────────────────────────────── */}
+      <section className="border-b border-white/5 bg-white/[0.01]">
+        <div className="container mx-auto px-6 py-8 lg:px-12">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 text-center mb-5">
+            Verified · Registered · Operating
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="h-6 w-6 text-rose-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-white leading-snug">DPIIT Recognized Startup</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5 leading-snug">Govt. of India · Dept. for Promotion of Industry &amp; Internal Trade</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Landmark className="h-6 w-6 text-rose-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-white leading-snug">Incorporated in India</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5 leading-snug font-mono">CIN U70200TN2025PTC184573</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <BadgeCheck className="h-6 w-6 text-rose-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-white leading-snug">GSTIN verified</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5 leading-snug font-mono">33AAPCR0554G1ZE</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Network className="h-6 w-6 text-rose-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-white leading-snug">1,369 facilities mapped</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5 leading-snug">India Circular Economy Directory</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

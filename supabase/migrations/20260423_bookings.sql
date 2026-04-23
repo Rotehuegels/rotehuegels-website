@@ -108,7 +108,7 @@ insert into booking_event_types (
   (
     'autorex-suite-demo',
     'AutoREX Suite demo',
-    '30-minute live demo of AutoREX (process automation + digital twin), Operon (industrial ERP), and LabREX (LIMS) — focused on your plant\'s control stack and ERP footprint.',
+    '30-minute live demo of AutoREX (process automation + digital twin), Operon (industrial ERP), and LabREX (LIMS) — focused on your plant''s control stack and ERP footprint.',
     30, 15, 15,
     '{
       "mon": [{"start": "10:00", "end": "18:00"}],

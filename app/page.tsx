@@ -6,6 +6,7 @@ import {
   Factory, Droplets, Zap, Wrench, Wrench as HardHat, Network, CheckCircle2,
   ShieldCheck, Landmark, BadgeCheck,
 } from "lucide-react";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const metadata = {
   title: "Rotehügels — Engineering · AutoREX · Circular",
@@ -13,7 +14,27 @@ export const metadata = {
     "Three product lines under one roof: Engineering (plant EPC, electrodes, testwork, advisory), AutoREX (automation + Operon ERP + LabREX LIMS), and Circular (directory, marketplace, EPR). Research-led delivery for metals, batteries, and process industries.",
 };
 
-export default function HomePage() {
+// Re-fetch the directory count hourly — keeps the homepage trust bar in
+// step with the recyclers table without hammering Supabase on every request.
+export const revalidate = 3600;
+
+async function getDirectoryCount(): Promise<number | null> {
+  try {
+    const { count } = await supabaseAdmin
+      .from('recyclers')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true);
+    return count ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function HomePage() {
+  const facilityCount = await getDirectoryCount();
+  const facilityCountLabel = facilityCount != null
+    ? `${facilityCount.toLocaleString('en-IN')} facilities mapped`
+    : 'Thousands of facilities mapped';
   return (
     <div className="space-y-0">
 
@@ -94,7 +115,7 @@ export default function HomePage() {
             <div className="flex items-start gap-3">
               <Network className="h-6 w-6 text-rose-400 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-white leading-snug">1,369 facilities mapped</p>
+                <p className="text-sm font-semibold text-white leading-snug">{facilityCountLabel}</p>
                 <p className="text-[11px] text-zinc-500 mt-0.5 leading-snug">India Circular Economy Directory</p>
               </div>
             </div>
@@ -173,7 +194,7 @@ export default function HomePage() {
                 services — built for both sides of the chain.
               </p>
               <ul className="text-xs text-zinc-400 space-y-1.5 mb-4">
-                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> India Circular Economy Directory (1,300+ facilities)</li>
+                <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> India Circular Economy Directory {facilityCount != null ? `(${facilityCount.toLocaleString('en-IN')} facilities)` : ''}</li>
                 <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> Generator ↔ recycler marketplace</li>
                 <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> EPR-fulfilment + traceability certificates</li>
                 <li className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/80 shrink-0 mt-0.5" /> Pickup scheduling + chain-of-custody</li>

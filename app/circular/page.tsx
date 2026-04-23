@@ -3,6 +3,7 @@ import {
   Recycle, Network, ShoppingBag, FileCheck2, MapPin, ArrowRight, CheckCircle2,
 } from 'lucide-react';
 import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 const DESCRIPTION = 'Rotehügels Circular — the India Circular Economy Directory, generator-to-recycler marketplace, and EPR traceability services. Connecting bulk generators of e-waste, spent Li-ion, and non-ferrous scrap with licensed recyclers.';
 
@@ -18,7 +19,27 @@ export const metadata = {
   },
 };
 
-export default function CircularHubPage() {
+// Refresh the directory count hourly; keeps the hub in step with the DB.
+export const revalidate = 3600;
+
+async function getDirectoryCount(): Promise<number | null> {
+  try {
+    const { count } = await supabaseAdmin
+      .from('recyclers')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true);
+    return count ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function CircularHubPage() {
+  const facilityCount = await getDirectoryCount();
+  const facilityCountLabel = facilityCount != null
+    ? `${facilityCount.toLocaleString('en-IN')}+`
+    : '1,300+';
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <JsonLd data={serviceSchema({
@@ -68,7 +89,7 @@ export default function CircularHubPage() {
               <p className="text-[10px] uppercase tracking-widest text-rose-400/80 mb-1">Directory</p>
               <h3 className="text-lg font-semibold mb-2">India Circular Economy Directory</h3>
               <p className="text-sm text-zinc-400 leading-relaxed mb-4">
-                1,300+ verified facilities mapped across primary producers, EV OEMs, battery pack makers,
+                {facilityCountLabel} verified facilities mapped across primary producers, EV OEMs, battery pack makers,
                 and licensed recyclers. Filter by material stream, geography, licence class, and capacity —
                 then verify credentials in one click.
               </p>

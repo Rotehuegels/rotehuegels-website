@@ -10,6 +10,7 @@ import {
   deactivateUserAction,
 } from '../actions';
 import type { PermissionModule, UserRow } from '@/lib/userPermissions.types';
+import PermissionGrid from '@/components/dashboard/PermissionGrid';
 
 const fieldCls = 'w-full rounded-lg border border-zinc-700 bg-zinc-900/60 px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/30';
 
@@ -37,20 +38,6 @@ export default function EditUserForm({
   const [pendingCopy, startCopy] = useTransition();
   const [pendingReset, startReset] = useTransition();
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
-
-  const toggle = (key: string) => {
-    const next = new Set(permissions);
-    if (next.has(key)) next.delete(key); else next.add(key);
-    setPermissions(next);
-  };
-
-  const toggleModule = (keys: string[]) => {
-    const allOn = keys.every(k => permissions.has(k));
-    const next = new Set(permissions);
-    if (allOn) keys.forEach(k => next.delete(k));
-    else keys.forEach(k => next.add(k));
-    setPermissions(next);
-  };
 
   const saveAll = () => {
     startSave(async () => {
@@ -173,51 +160,15 @@ export default function EditUserForm({
           </p>
         </div>
 
-        {/* Permission grid */}
-        <div className="space-y-5">
-          {catalogue.map(m => {
-            const moduleKeys = m.permissions.map(p => p.key);
-            const allOn = moduleKeys.every(k => permissions.has(k));
-            const someOn = moduleKeys.some(k => permissions.has(k));
-            return (
-              <div key={m.key} className="rounded-xl border border-zinc-800 p-4 bg-black/20">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">{m.label}</h3>
-                    {m.description && <p className="text-xs text-zinc-500 mt-0.5">{m.description}</p>}
-                  </div>
-                  <label className="flex items-center gap-1.5 text-[11px] text-zinc-400 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      disabled={readOnly}
-                      checked={allOn}
-                      ref={el => { if (el) el.indeterminate = someOn && !allOn; }}
-                      onChange={() => toggleModule(moduleKeys)}
-                    />
-                    All
-                  </label>
-                </div>
-                <div className="grid md:grid-cols-2 gap-x-6 gap-y-2">
-                  {m.permissions.map(p => (
-                    <label key={p.key} className="flex items-start gap-2 text-sm text-zinc-300 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        disabled={readOnly}
-                        checked={permissions.has(p.key)}
-                        onChange={() => toggle(p.key)}
-                        className="mt-0.5"
-                      />
-                      <span>
-                        <span className="block">{p.label}</span>
-                        <span className="block text-[10px] font-mono text-zinc-600">{p.key}</span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <PermissionGrid
+          catalogue={catalogue}
+          selected={permissions}
+          onChange={setPermissions}
+          disabled={readOnly}
+          hint={readOnly
+            ? 'Admin users bypass the permission system — these checkboxes are for reference only.'
+            : 'Check a whole module to grant everything, or pick individual permissions.'}
+        />
       </section>
 
       {/* Password + Deactivate */}

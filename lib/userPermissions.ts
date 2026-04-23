@@ -145,8 +145,10 @@ export async function createStaffUser(opts: {
   customerId?: string | null;        // only for role='client'
   notes?: string | null;
   copyRightsFromUserId?: string | null;
+  /** Extra permission keys to grant directly (merged with copied rights). */
+  grantPermissionKeys?: string[];
   createdBy: string;
-}): Promise<{ userId: string; copied: number }> {
+}): Promise<{ userId: string; copied: number; granted: number }> {
   // Admin API creates the auth row with email/password already confirmed.
   const { data: authRes, error: authErr } = await supabaseAdmin.auth.admin.createUser({
     email: opts.email.trim().toLowerCase(),
@@ -182,7 +184,18 @@ export async function createStaffUser(opts: {
     });
     copied = res.copied;
   }
-  return { userId, copied };
+
+  // Grant any additional permissions checked on the create form.
+  let granted = 0;
+  if (opts.role === 'staff' && opts.grantPermissionKeys && opts.grantPermissionKeys.length > 0) {
+    await grantPermissions({
+      userId,
+      keys: opts.grantPermissionKeys,
+      grantedBy: opts.createdBy,
+    });
+    granted = opts.grantPermissionKeys.length;
+  }
+  return { userId, copied, granted };
 }
 
 export async function updateUser(opts: {

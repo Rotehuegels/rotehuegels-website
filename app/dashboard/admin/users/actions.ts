@@ -26,7 +26,8 @@ export async function createUserAction(input: {
   customerId?: string;
   notes?: string;
   copyRightsFromUserId?: string | null;
-}): Promise<{ ok: true; userId: string; copied: number } | { ok: false; error: string }> {
+  grantPermissionKeys?: string[];
+}): Promise<{ ok: true; userId: string; copied: number; granted: number } | { ok: false; error: string }> {
   const actor = await requireAdmin();
   try {
     const res = await createStaffUser({
@@ -38,10 +39,11 @@ export async function createUserAction(input: {
       customerId: input.customerId ?? null,
       notes: input.notes ?? null,
       copyRightsFromUserId: input.copyRightsFromUserId ?? null,
+      grantPermissionKeys: input.grantPermissionKeys ?? [],
       createdBy: actor,
     });
     revalidatePath('/dashboard/admin/users');
-    return { ok: true, userId: res.userId, copied: res.copied };
+    return { ok: true, userId: res.userId, copied: res.copied, granted: res.granted };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' };
   }

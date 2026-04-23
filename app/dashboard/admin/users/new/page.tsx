@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { listUsers } from '@/lib/userPermissions';
+import { PERMISSION_CATALOGUE } from '@/lib/userPermissions.types';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import NewUserForm from './NewUserForm';
 
@@ -35,6 +36,7 @@ export default async function NewUserPage() {
         <NewUserForm
           copyCandidates={copyCandidates.map(u => ({ id: u.id, label: `${u.display_name ?? 'Unnamed'} · ${u.email} · ${u.permission_count} rights` }))}
           customers={(customers.data ?? []).map(c => ({ id: c.id, name: c.name }))}
+          catalogue={PERMISSION_CATALOGUE}
         />
 
       </div>

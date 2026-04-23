@@ -152,6 +152,16 @@ export async function sendBookingConfirmation(booking: Booking, eventType: Event
   const visitorSlot = fmtSlot(startsAt, booking.visitor_timezone || eventType.timezone);
   const cancelUrl = `${NEXT_PUBLIC_SITE_URL}/book/cancel/${booking.cancel_token}`;
 
+  // Use nodemailer's icalEvent field (not raw attachments) so the invite
+  // renders as an inline "Add to calendar" card in Gmail / Outlook / Apple
+  // Mail — and still lands as a proper .ics file for any client that
+  // prefers to save it. Also attach a copy under attachments so clients
+  // that only read attachments still see the file.
+  const icalEvent = {
+    method: 'REQUEST' as const,
+    filename: 'rotehuegels-booking.ics',
+    content: ics,
+  };
   const attachments = [{
     filename: 'rotehuegels-booking.ics',
     content: ics,
@@ -180,6 +190,7 @@ export async function sendBookingConfirmation(booking: Booking, eventType: Event
     to: booking.visitor_email,
     subject: visitorSubject,
     html: visitorHtml,
+    icalEvent,
     attachments,
   });
 
@@ -207,6 +218,7 @@ export async function sendBookingConfirmation(booking: Booking, eventType: Event
     replyTo: booking.visitor_email,
     subject: hostSubject,
     html: hostHtml,
+    icalEvent,
     attachments,
   });
 }
@@ -215,6 +227,11 @@ export async function sendBookingCancellation(booking: Booking, eventType: Event
   const ics = buildBookingIcs(booking, eventType, 'CANCELLED');
   const slot = fmtSlot(new Date(booking.starts_at), eventType.timezone);
 
+  const icalEvent = {
+    method: 'CANCEL' as const,
+    filename: 'rotehuegels-booking-cancelled.ics',
+    content: ics,
+  };
   const attachments = [{
     filename: 'rotehuegels-booking-cancelled.ics',
     content: ics,
@@ -235,12 +252,12 @@ export async function sendBookingCancellation(booking: Booking, eventType: Event
   tasks.push(getTransporter().sendMail({
     from: EMAIL_FROM,
     to: booking.visitor_email,
-    subject, html, attachments,
+    subject, html, icalEvent, attachments,
   }));
   tasks.push(getTransporter().sendMail({
     from: EMAIL_FROM,
     to: eventType.host_email,
-    subject, html, attachments,
+    subject, html, icalEvent, attachments,
   }));
   await Promise.all(tasks);
 }

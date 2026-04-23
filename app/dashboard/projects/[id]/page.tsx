@@ -7,6 +7,7 @@ import {
   ArrowLeft, Loader2, Save, Plus, ExternalLink,
   CheckCircle2, Clock, AlertCircle, UserPlus,
 } from 'lucide-react';
+import TasksBoard from './TasksBoard';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const inputCls = 'w-full rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-colors';
@@ -32,7 +33,7 @@ export default function AdminProjectDetailPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [tab, setTab] = useState<'overview' | 'milestones' | 'changes' | 'clients'>('overview');
+  const [tab, setTab] = useState<'overview' | 'tasks' | 'milestones' | 'changes' | 'clients'>('tasks');
 
   // Client creation form
   const [clientEmail, setClientEmail] = useState('');
@@ -156,7 +157,7 @@ export default function AdminProjectDetailPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-zinc-800">
-        {(['overview', 'milestones', 'changes', 'clients'] as const).map(t => (
+        {(['tasks', 'overview', 'milestones', 'changes', 'clients'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -173,6 +174,11 @@ export default function AdminProjectDetailPage() {
           </button>
         ))}
       </div>
+
+      {/* Tasks tab */}
+      {tab === 'tasks' && project?.id && (
+        <TasksBoard projectId={project.id} />
+      )}
 
       {/* Overview tab */}
       {tab === 'overview' && (

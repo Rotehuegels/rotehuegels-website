@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -16,6 +17,7 @@ import {
   Building2,
   LayoutDashboard,
   FlaskConical,
+  ArrowRight,
 } from 'lucide-react'
 
 const fadeUp = {
@@ -68,7 +70,10 @@ export default function DigitalSolutionsPage() {
             Request Demo
           </button>
 
-          <button className="border border-white/20 px-6 py-3 rounded-lg hover:bg-white/10 transition">
+          <button
+            onClick={() => router.push('/digital-solutions/autorex')}
+            className="border border-white/20 px-6 py-3 rounded-lg hover:bg-white/10 transition"
+          >
             Explore Platform
           </button>
         </motion.div>
@@ -144,82 +149,97 @@ export default function DigitalSolutionsPage() {
           <div className="grid md:grid-cols-3 gap-6">
 
             {/* AutoREX — core */}
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={fadeUp}
-              className="border border-red-500/30 p-8 rounded-2xl bg-gradient-to-br from-red-500/10 to-transparent shadow-lg shadow-red-500/10"
-            >
-              <div className="flex items-center justify-between mb-5">
-                <Cpu className="text-red-500" size={40} />
-                <span className="text-[10px] uppercase tracking-widest text-red-400/80 border border-red-400/30 rounded-full px-2 py-0.5">Core platform</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-3">AutoREX™</h3>
-              <p className="text-gray-400 text-sm leading-relaxed mb-4">
-                Process-automation core — data ingestion from SCADA / DCS / PLC layers, AI anomaly detection,
-                predictive maintenance, energy optimisation, and autonomous control loops.
-              </p>
-              <ul className="text-sm text-gray-300 space-y-1">
-                <li>• Real-time process-data ingestion</li>
-                <li>• AI + rule-based control logic</li>
-                <li>• Plant-wide digital twin</li>
-                <li>• OT / IT bridge layer</li>
-              </ul>
-            </motion.div>
+            <Link href="/digital-solutions/autorex" className="no-underline">
+              <motion.div
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                className="border border-red-500/30 p-8 rounded-2xl bg-gradient-to-br from-red-500/10 to-transparent shadow-lg shadow-red-500/10 hover:border-red-500/60 hover:shadow-red-500/20 transition cursor-pointer h-full flex flex-col"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <Cpu className="text-red-500" size={40} />
+                  <span className="text-[10px] uppercase tracking-widest text-red-400/80 border border-red-400/30 rounded-full px-2 py-0.5">Core platform</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-3">AutoREX™</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                  Process-automation core — data ingestion from SCADA / DCS / PLC layers, AI anomaly detection,
+                  predictive maintenance, energy optimisation, and autonomous control loops.
+                </p>
+                <ul className="text-sm text-gray-300 space-y-1 mb-4">
+                  <li>• Real-time process-data ingestion</li>
+                  <li>• AI + rule-based control logic</li>
+                  <li>• Plant-wide digital twin</li>
+                  <li>• OT / IT bridge layer</li>
+                </ul>
+                <span className="mt-auto inline-flex items-center gap-1 text-xs text-red-400">
+                  Explore AutoREX <ArrowRight className="h-3 w-3" />
+                </span>
+              </motion.div>
+            </Link>
 
             {/* Operon — ERP add-on */}
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={fadeUp}
-              transition={{ delay: 0.1 }}
-              className="border border-white/10 p-8 rounded-2xl bg-white/5 hover:bg-white/10 transition"
-            >
-              <div className="flex items-center justify-between mb-5">
-                <LayoutDashboard className="text-sky-400" size={40} />
-                <span className="text-[10px] uppercase tracking-widest text-sky-400/80 border border-sky-400/30 rounded-full px-2 py-0.5">Business layer</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-3">Operon</h3>
-              <p className="text-gray-400 text-sm leading-relaxed mb-4">
-                Full SaaS ERP covering accounts, HR, payroll, procurement, inventory, sales, and statutory compliance.
-                Production and consumption data flow in directly from AutoREX — no duplicate entry, no reconciliation gap.
-              </p>
-              <ul className="text-sm text-gray-300 space-y-1">
-                <li>• Accounts + GST + e-way bills</li>
-                <li>• HR, payroll, attendance, ATS</li>
-                <li>• Procurement + inventory + shipments</li>
-                <li>• Live production-cost dashboards</li>
-              </ul>
-            </motion.div>
+            <Link href="/digital-solutions/operon" className="no-underline">
+              <motion.div
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                transition={{ delay: 0.1 }}
+                className="border border-white/10 p-8 rounded-2xl bg-white/5 hover:bg-white/10 hover:border-sky-500/40 transition cursor-pointer h-full flex flex-col"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <LayoutDashboard className="text-sky-400" size={40} />
+                  <span className="text-[10px] uppercase tracking-widest text-sky-400/80 border border-sky-400/30 rounded-full px-2 py-0.5">Business layer</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-3">Operon</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                  Full SaaS ERP covering accounts, HR, payroll, procurement, inventory, sales, and statutory compliance.
+                  Production and consumption data flow in directly from AutoREX — no duplicate entry, no reconciliation gap.
+                </p>
+                <ul className="text-sm text-gray-300 space-y-1 mb-4">
+                  <li>• Accounts + GST + e-way bills</li>
+                  <li>• HR, payroll, attendance, ATS</li>
+                  <li>• Procurement + inventory + shipments</li>
+                  <li>• Live production-cost dashboards</li>
+                </ul>
+                <span className="mt-auto inline-flex items-center gap-1 text-xs text-sky-400">
+                  Explore Operon <ArrowRight className="h-3 w-3" />
+                </span>
+              </motion.div>
+            </Link>
 
             {/* LabREX — LIMS add-on */}
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={fadeUp}
-              transition={{ delay: 0.2 }}
-              className="border border-white/10 p-8 rounded-2xl bg-white/5 hover:bg-white/10 transition"
-            >
-              <div className="flex items-center justify-between mb-5">
-                <FlaskConical className="text-emerald-400" size={40} />
-                <span className="text-[10px] uppercase tracking-widest text-emerald-400/80 border border-emerald-400/30 rounded-full px-2 py-0.5">Lab &amp; QA</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-3">LabREX</h3>
-              <p className="text-gray-400 text-sm leading-relaxed mb-4">
-                Multi-industry LIMS — sample intake, instrument integration (ICP-OES, AAS, wet-chem, furnace),
-                certificate-of-analysis generation, assay trend analytics. Results auto-sync to AutoREX to drive
-                process-correction decisions in real time.
-              </p>
-              <ul className="text-sm text-gray-300 space-y-1">
-                <li>• Sample + instrument lifecycle</li>
-                <li>• Cu / Au / Ag / Zn / black mass / Al methods</li>
-                <li>• Auto-generated CoAs &amp; compliance reports</li>
-                <li>• Closed-loop to AutoREX process control</li>
-              </ul>
-            </motion.div>
+            <Link href="/digital-solutions/labrex" className="no-underline">
+              <motion.div
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                transition={{ delay: 0.2 }}
+                className="border border-white/10 p-8 rounded-2xl bg-white/5 hover:bg-white/10 hover:border-emerald-500/40 transition cursor-pointer h-full flex flex-col"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <FlaskConical className="text-emerald-400" size={40} />
+                  <span className="text-[10px] uppercase tracking-widest text-emerald-400/80 border border-emerald-400/30 rounded-full px-2 py-0.5">Lab &amp; QA</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-3">LabREX</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                  Multi-industry LIMS — sample intake, instrument integration (ICP-OES, AAS, wet-chem, furnace),
+                  certificate-of-analysis generation, assay trend analytics. Results auto-sync to AutoREX to drive
+                  process-correction decisions in real time.
+                </p>
+                <ul className="text-sm text-gray-300 space-y-1 mb-4">
+                  <li>• Sample + instrument lifecycle</li>
+                  <li>• Cu / Au / Ag / Zn / black mass / Al methods</li>
+                  <li>• Auto-generated CoAs &amp; compliance reports</li>
+                  <li>• Closed-loop to AutoREX process control</li>
+                </ul>
+                <span className="mt-auto inline-flex items-center gap-1 text-xs text-emerald-400">
+                  Explore LabREX <ArrowRight className="h-3 w-3" />
+                </span>
+              </motion.div>
+            </Link>
 
           </div>
         </div>

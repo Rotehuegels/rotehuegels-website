@@ -34,9 +34,9 @@ const NAV: NavItem[] = [
     label: 'AutoREX',
     children: [
       { label: 'Platform Overview',  href: '/digital-solutions' },
-      { label: 'AutoREX™ — automation & digital twin', href: '/digital-solutions#autorex' },
-      { label: 'Operon — ERP',       href: '/digital-solutions#operon' },
-      { label: 'LabREX — LIMS',      href: '/digital-solutions#labrex' },
+      { label: 'AutoREX™ Core — automation & digital twin', href: '/digital-solutions/autorex' },
+      { label: 'Operon — industrial ERP',                   href: '/digital-solutions/operon' },
+      { label: 'LabREX — multi-industry LIMS',              href: '/digital-solutions/labrex' },
     ],
   },
   {

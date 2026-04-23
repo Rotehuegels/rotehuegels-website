@@ -16,7 +16,6 @@ const NAV: NavItem[] = [
     children: [
       { label: 'About Us',              href: '/about' },
       { label: 'The Rotehügels Story',  href: '/rotehuegels-story' },
-      { label: 'Current Updates',       href: '/current-updates' },
       { label: 'Success Stories',       href: '/success-stories' },
     ],
   },

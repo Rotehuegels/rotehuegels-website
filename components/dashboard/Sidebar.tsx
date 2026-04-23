@@ -87,6 +87,7 @@ const NAV: NavItem[] = [
       { label: 'Recurring Orders', href: '/d/recurring-orders', icon: ReceiptText },
       { type: 'section', label: 'Intelligence' },
       { label: 'Market Intelligence', href: '/d/intelligence', icon: Radar },
+      { label: 'Commodity Prices',    href: '/d/markets',      icon: BarChart2 },
     ],
   },
 

@@ -4,16 +4,39 @@ import {
   Cpu, Activity, Brain, Cog, Factory, Radio, Zap, ShieldCheck, GitBranch,
   ArrowRight, CheckCircle2,
 } from 'lucide-react';
+import JsonLd, { softwareSchema, breadcrumbSchema } from '@/components/JsonLd';
+
+const DESCRIPTION =
+  'AutoREX™ is the Rotehügels intelligent process-automation core — real-time SCADA/DCS/PLC ingestion, AI anomaly detection, predictive maintenance, energy optimisation, and a plant-wide digital twin that bridges OT and IT.';
 
 export const metadata = {
   title: 'AutoREX™ — Process automation & digital twin · Rotehügels',
-  description:
-    'AutoREX™ is the Rotehügels intelligent process-automation core — real-time SCADA/DCS/PLC ingestion, AI anomaly detection, predictive maintenance, energy optimisation, and a plant-wide digital twin that bridges OT and IT.',
+  description: DESCRIPTION,
+  alternates: { canonical: '/digital-solutions/autorex' },
+  openGraph: {
+    title: 'AutoREX™ — Process automation & digital twin',
+    description: DESCRIPTION,
+    url: 'https://www.rotehuegels.com/digital-solutions/autorex',
+    type: 'website',
+  },
 };
 
 export default function AutoRexPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd data={softwareSchema({
+        name: 'AutoREX',
+        description: DESCRIPTION,
+        path: '/digital-solutions/autorex',
+        category: 'BusinessApplication',
+        subCategory: 'Industrial Process Automation',
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'AutoREX', path: '/digital-solutions' },
+        { name: 'AutoREX Core', path: '/digital-solutions/autorex' },
+      ])} />
+
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-20">
 
         {/* Hero */}

@@ -1,14 +1,36 @@
 import Link from 'next/link';
 import { HardHat, Cog, Package, Hammer, ClipboardList, Award, ArrowRight, CheckCircle2 } from 'lucide-react';
+import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
+
+const DESCRIPTION = 'Detailed engineering, procurement, construction, and commissioning. One accountable delivery partner from DFS to running plant.';
 
 export const metadata = {
   title: 'Plant Engineering & EPC — Rotehügels',
-  description: 'Detailed engineering, procurement, construction, and commissioning. One accountable delivery partner from DFS to running plant.',
+  description: DESCRIPTION,
+  alternates: { canonical: '/services/plant-epc' },
+  openGraph: {
+    title: 'Plant Engineering & EPC — Rotehügels',
+    description: DESCRIPTION,
+    url: 'https://www.rotehuegels.com/services/plant-epc',
+    type: 'website',
+  },
 };
 
 export default function PlantEpcPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd data={serviceSchema({
+        name: 'Plant Engineering & EPC',
+        description: DESCRIPTION,
+        path: '/services/plant-epc',
+        serviceType: 'Engineering, Procurement, Construction, Commissioning',
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Engineering', path: '/services' },
+        { name: 'Plant EPC', path: '/services/plant-epc' },
+      ])} />
+
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-24">
 
         <section className="text-center">

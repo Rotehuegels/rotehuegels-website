@@ -1,14 +1,36 @@
 import Link from 'next/link';
 import { Gauge, Factory, Settings, Shield, Award, ArrowRight, CheckCircle2, Activity, Zap, Flame } from 'lucide-react';
+import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
+
+const DESCRIPTION = 'Engineered severe-service control valve packages for process plants across oil & gas, petrochemicals, power, chemicals, fertilisers, metals & mining, pulp & paper, and more — anti-cavitation, anti-surge, high-dP, sour-service, cryogenic, and erosive applications. Fully integrated with actuator, positioner, and instrumentation.';
 
 export const metadata = {
   title: 'Severe Service Control Valve Packages — Rotehügels',
-  description: 'Engineered severe-service control valve packages for process plants across oil & gas, petrochemicals, power, chemicals, fertilisers, metals & mining, pulp & paper, and more — anti-cavitation, anti-surge, high-dP, sour-service, cryogenic, and erosive applications. Fully integrated with actuator, positioner, and instrumentation.',
+  description: DESCRIPTION,
+  alternates: { canonical: '/services/severe-service-valves' },
+  openGraph: {
+    title: 'Severe Service Control Valve Packages — Rotehügels',
+    description: DESCRIPTION,
+    url: 'https://www.rotehuegels.com/services/severe-service-valves',
+    type: 'website',
+  },
 };
 
 export default function SevereServiceValvesPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd data={serviceSchema({
+        name: 'Severe Service Control Valve Packages',
+        description: DESCRIPTION,
+        path: '/services/severe-service-valves',
+        serviceType: 'Severe-Service Valve Engineering and Supply',
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Engineering', path: '/services' },
+        { name: 'Severe-Service Valves', path: '/services/severe-service-valves' },
+      ])} />
+
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-24">
 
         <section className="text-center">

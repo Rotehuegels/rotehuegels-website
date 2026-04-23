@@ -3,16 +3,39 @@ import {
   FlaskConical, Microscope, ClipboardCheck, BarChart3, QrCode, GitBranch,
   ShieldCheck, ArrowRight, CheckCircle2,
 } from 'lucide-react';
+import JsonLd, { softwareSchema, breadcrumbSchema } from '@/components/JsonLd';
+
+const DESCRIPTION =
+  "LabREX is Rotehügels' multi-industry LIMS — sample intake, instrument integration (ICP-OES, AAS, wet-chem, furnace), certificate-of-analysis generation, and assay trend analytics. Results auto-sync to AutoREX to drive process-correction decisions in real time.";
 
 export const metadata = {
   title: 'LabREX — LIMS for process industries · Rotehügels',
-  description:
-    'LabREX is Rotehügels\' multi-industry LIMS — sample intake, instrument integration (ICP-OES, AAS, wet-chem, furnace), certificate-of-analysis generation, and assay trend analytics. Results auto-sync to AutoREX to drive process-correction decisions in real time.',
+  description: DESCRIPTION,
+  alternates: { canonical: '/digital-solutions/labrex' },
+  openGraph: {
+    title: 'LabREX — LIMS for process industries',
+    description: DESCRIPTION,
+    url: 'https://www.rotehuegels.com/digital-solutions/labrex',
+    type: 'website',
+  },
 };
 
 export default function LabRexPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd data={softwareSchema({
+        name: 'LabREX',
+        description: DESCRIPTION,
+        path: '/digital-solutions/labrex',
+        category: 'BusinessApplication',
+        subCategory: 'Laboratory Information Management System',
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'AutoREX', path: '/digital-solutions' },
+        { name: 'LabREX', path: '/digital-solutions/labrex' },
+      ])} />
+
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-20">
 
         {/* Hero */}

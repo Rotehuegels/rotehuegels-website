@@ -1,15 +1,36 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Zap, Beaker, Settings, Factory, Award, ClipboardList, ArrowRight, CheckCircle2, Shield, Ruler } from 'lucide-react';
+import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
+
+const DESCRIPTION = 'Precision lead anodes, aluminium cathodes, stainless-steel cathodes, titanium anodes, and copper bus-bars — custom-engineered for your electrowinning and electrorefining circuits.';
 
 export const metadata = {
   title: 'Custom Anodes & Cathodes — Rotehügels',
-  description: 'Precision lead anodes, aluminium cathodes, stainless-steel cathodes, titanium anodes, and copper bus-bars — custom-engineered for your electrowinning and electrorefining circuits.',
+  description: DESCRIPTION,
+  alternates: { canonical: '/services/custom-electrodes' },
+  openGraph: {
+    title: 'Custom Anodes & Cathodes — Rotehügels',
+    description: DESCRIPTION,
+    url: 'https://www.rotehuegels.com/services/custom-electrodes',
+    type: 'website',
+  },
 };
 
 export default function CustomElectrodesPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd data={serviceSchema({
+        name: 'Custom Anodes & Cathodes',
+        description: DESCRIPTION,
+        path: '/services/custom-electrodes',
+        serviceType: 'Electrode Design and Fabrication',
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Engineering', path: '/services' },
+        { name: 'Custom Anodes & Cathodes', path: '/services/custom-electrodes' },
+      ])} />
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-24">
 
         <section className="text-center">

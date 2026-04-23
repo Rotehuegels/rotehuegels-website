@@ -1,14 +1,36 @@
 import Link from 'next/link';
 import { FlaskConical, Activity, LineChart, ClipboardCheck, Beaker, Layers, ArrowRight, CheckCircle2 } from 'lucide-react';
+import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
+
+const DESCRIPTION = 'Bench and pilot metallurgical testwork, process modelling, techno-economic analysis, and bankable feasibility studies. Prove your process works before you commit capital.';
 
 export const metadata = {
   title: 'Testwork & Feasibility — Rotehügels',
-  description: 'Bench and pilot metallurgical testwork, process modelling, techno-economic analysis, and bankable feasibility studies. Prove your process works before you commit capital.',
+  description: DESCRIPTION,
+  alternates: { canonical: '/services/testwork-feasibility' },
+  openGraph: {
+    title: 'Testwork & Feasibility — Rotehügels',
+    description: DESCRIPTION,
+    url: 'https://www.rotehuegels.com/services/testwork-feasibility',
+    type: 'website',
+  },
 };
 
 export default function TestworkFeasibilityPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd data={serviceSchema({
+        name: 'Testwork & Feasibility',
+        description: DESCRIPTION,
+        path: '/services/testwork-feasibility',
+        serviceType: 'Metallurgical Testwork, Process Modelling, Feasibility Studies',
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Engineering', path: '/services' },
+        { name: 'Testwork & Feasibility', path: '/services/testwork-feasibility' },
+      ])} />
+
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-24">
 
         {/* HERO */}

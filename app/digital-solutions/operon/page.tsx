@@ -3,16 +3,39 @@ import {
   LayoutDashboard, Wallet, Users, ShoppingCart, Package, FileCheck, BarChart3,
   Receipt, Briefcase, ArrowRight, CheckCircle2,
 } from 'lucide-react';
+import JsonLd, { softwareSchema, breadcrumbSchema } from '@/components/JsonLd';
+
+const DESCRIPTION =
+  'Operon is a full SaaS ERP — accounts, HR, payroll, procurement, inventory, sales, and statutory compliance — with production and consumption data flowing in directly from AutoREX. No duplicate entry, no reconciliation gap.';
 
 export const metadata = {
   title: 'Operon — Industrial ERP · Rotehügels',
-  description:
-    'Operon is a full SaaS ERP — accounts, HR, payroll, procurement, inventory, sales, and statutory compliance — with production and consumption data flowing in directly from AutoREX. No duplicate entry, no reconciliation gap.',
+  description: DESCRIPTION,
+  alternates: { canonical: '/digital-solutions/operon' },
+  openGraph: {
+    title: 'Operon — Industrial ERP',
+    description: DESCRIPTION,
+    url: 'https://www.rotehuegels.com/digital-solutions/operon',
+    type: 'website',
+  },
 };
 
 export default function OperonPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd data={softwareSchema({
+        name: 'Operon',
+        description: DESCRIPTION,
+        path: '/digital-solutions/operon',
+        category: 'BusinessApplication',
+        subCategory: 'Enterprise Resource Planning',
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'AutoREX', path: '/digital-solutions' },
+        { name: 'Operon', path: '/digital-solutions/operon' },
+      ])} />
+
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-20">
 
         {/* Hero */}

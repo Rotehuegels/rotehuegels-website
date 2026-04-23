@@ -1,14 +1,36 @@
 import Link from 'next/link';
 import { Gauge, Wrench, TrendingUp, GraduationCap, BookOpen, Radio, ArrowRight, CheckCircle2 } from 'lucide-react';
+import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
+
+const DESCRIPTION = 'Process audits, debottlenecking, SOPs, remote monitoring, and compliance watch for running plants. Ramp up faster, recover more, spend less.';
 
 export const metadata = {
   title: 'Operations Advisory — Rotehügels',
-  description: 'Process audits, debottlenecking, SOPs, remote monitoring, and compliance watch for running plants. Ramp up faster, recover more, spend less.',
+  description: DESCRIPTION,
+  alternates: { canonical: '/services/operations-advisory' },
+  openGraph: {
+    title: 'Operations Advisory — Rotehügels',
+    description: DESCRIPTION,
+    url: 'https://www.rotehuegels.com/services/operations-advisory',
+    type: 'website',
+  },
 };
 
 export default function OperationsAdvisoryPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd data={serviceSchema({
+        name: 'Operations Advisory',
+        description: DESCRIPTION,
+        path: '/services/operations-advisory',
+        serviceType: 'Plant Operations Advisory, Audits, Debottlenecking',
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Engineering', path: '/services' },
+        { name: 'Operations Advisory', path: '/services/operations-advisory' },
+      ])} />
+
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-24">
 
         <section className="text-center">

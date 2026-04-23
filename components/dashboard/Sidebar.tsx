@@ -171,7 +171,13 @@ const NAV: NavItem[] = [
     ],
   },
 
-  { label: 'Settings', href: '/d/settings', icon: Settings2 },
+  {
+    label: 'Administration', icon: Shield,
+    children: [
+      { label: 'User Management', href: '/d/admin/users', icon: Users },
+      { label: 'Settings',        href: '/d/settings',     icon: Settings2 },
+    ],
+  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

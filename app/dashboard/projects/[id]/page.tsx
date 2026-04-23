@@ -119,14 +119,12 @@ export default function AdminProjectDetailPage() {
             {project.customers?.name} • {project.site_location || 'No location'} • {project.completion_pct}%
           </p>
         </div>
-        <a
+        <Link
           href={`/portal/${project.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300"
         >
           <ExternalLink className="h-3.5 w-3.5" /> View Portal
-        </a>
+        </Link>
       </div>
 
       {/* Quick update */}

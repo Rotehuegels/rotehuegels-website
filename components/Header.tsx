@@ -7,7 +7,10 @@ import { createPortal } from 'react-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
-const NAV = [
+type Child = { label: string; href: string; highlight?: boolean };
+type NavItem = { label: string; href?: string; children?: Child[] };
+
+const NAV: NavItem[] = [
   {
     label: 'About',
     children: [
@@ -58,9 +61,6 @@ const NAV = [
     ],
   },
 ];
-
-type Child = { label: string; href: string; highlight?: boolean };
-type NavItem = { label: string; href?: string; children?: Child[] };
 
 export default function Header() {
   const pathname  = usePathname();

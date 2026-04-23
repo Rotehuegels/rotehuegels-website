@@ -14,8 +14,8 @@ import {
   loadTaskComments,
   type KanbanBoardData,
 } from './tasks-actions';
-import { TASK_STATUSES, TASK_STATUS_LABELS, TASK_PRIORITIES } from '@/lib/projectTasks';
-import type { ProjectTask, TaskComment, TaskStatus, TaskPriority } from '@/lib/projectTasks';
+import { TASK_STATUSES, TASK_STATUS_LABELS, TASK_PRIORITIES } from '@/lib/projectTasks.types';
+import type { ProjectTask, TaskComment, TaskStatus, TaskPriority } from '@/lib/projectTasks.types';
 
 const PRIORITY_COLOR: Record<TaskPriority, string> = {
   low: 'text-zinc-500',

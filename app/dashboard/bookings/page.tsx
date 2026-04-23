@@ -150,7 +150,9 @@ function BookingsTable({
 }
 
 function SubscribeHelp() {
-  const tokenSet = Boolean(process.env.CALENDAR_SUBSCRIBE_SECRET);
+  const token = process.env.CALENDAR_SUBSCRIBE_SECRET;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.rotehuegels.com';
+  const fullUrl = token ? `${siteUrl}/api/cal/bookings.ics?token=${token}` : null;
   return (
     <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
       <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">Calendar subscribe URL</h2>
@@ -158,14 +160,14 @@ function SubscribeHelp() {
         Subscribe once in Google Calendar, Microsoft Outlook, Apple Calendar, or Zoho Calendar —
         every future booking appears automatically; cancellations are removed on next refresh.
       </p>
-      {tokenSet ? (
+      {fullUrl ? (
         <>
-          <div className="rounded-lg bg-black/40 border border-zinc-800 px-3 py-2 font-mono text-xs text-zinc-300 break-all select-all">
-            https://www.rotehuegels.com/api/cal/bookings.ics?token=<span className="text-rose-400">&lt;CALENDAR_SUBSCRIBE_SECRET&gt;</span>
+          <div className="rounded-lg bg-black/40 border border-zinc-800 px-3 py-2 font-mono text-[11px] text-zinc-300 break-all select-all">
+            {fullUrl}
           </div>
           <p className="text-[11px] text-zinc-500 mt-2">
-            The actual token is in the CALENDAR_SUBSCRIBE_SECRET env var. Paste the complete URL
-            (with the real token substituted) into your calendar app&apos;s <em>&quot;Add calendar from URL&quot;</em> option.
+            Triple-click to select, copy, then paste into your calendar app&apos;s <em>&quot;Add calendar from URL&quot;</em> option.
+            Keep this URL private — anyone with it can read all upcoming bookings.
           </p>
         </>
       ) : (

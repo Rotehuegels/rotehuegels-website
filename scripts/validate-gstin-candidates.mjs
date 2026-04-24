@@ -19,6 +19,7 @@
  * Run: node --env-file=.env.local scripts/validate-gstin-candidates.mjs
  */
 import { createClient } from '@supabase/supabase-js';
+import { getGstinData } from '../lib/gstin/gateway.mjs';
 
 const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -47,12 +48,9 @@ const STATE_CODE_FROM_STATE = {
   'Telangana':'36','Andhra Pradesh':'37','Ladakh':'38',
 };
 
-async function callGstincheck(gstin) {
-  const url = `https://sheet.gstincheck.co.in/check/${API_KEY}/${gstin}`;
-  const res = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15_000) });
-  const json = await res.json();
-  return { httpStatus: res.status, json };
-}
+// All vendor traffic goes through lib/gstin/gateway.mjs, which enforces
+// cache-first reads and atomic persist+credit-increment on misses. We never
+// call gstincheck.co.in directly from this script.
 
 function nameMatches(legalName, companyName) {
   const norm = (s) => String(s ?? '').toLowerCase()
@@ -77,10 +75,8 @@ async function getCredits() {
     expiry: m.gstin_credits_expiry ?? null,
   };
 }
-async function bumpCreditsUsed(by = 1) {
-  const c = await getCredits();
-  await sb.from('app_settings').update({ value: String(c.used + by) }).eq('key', 'gstin_credits_used');
-}
+// Credit counter is owned by persist_gstin_lookup RPC (called inside the
+// gateway). No manual bumping here.
 
 async function main() {
   const c0 = await getCredits();
@@ -114,34 +110,32 @@ async function main() {
       continue;
     }
 
-    if (DRY) { console.log(`${prefix} · would-call-api`); continue; }
+    if (DRY) { console.log(`${prefix} · would-call-gateway`); continue; }
 
-    let apiResult;
-    try { apiResult = await callGstincheck(c.candidate_gstin); }
-    catch (e) { console.log(`${prefix} · ✗ network: ${e.message}`); failed++; continue; }
-
-    // Every API call, credit or not, is recorded. The service only charges
-    // for valid lookups but we log the call either way.
-    await bumpCreditsUsed(1);
-
-    const { json, httpStatus } = apiResult;
-    const flagOk = json?.flag === true || json?.flag === 'Y' || json?.status_code === 1 || json?.status_code === '1';
-
-    // Persist FULL raw response per policy
-    const nowIso = new Date().toISOString();
-
-    if (!flagOk || !json?.data) {
-      console.log(`${prefix} · ✗ invalid (${httpStatus}): ${json?.message ?? 'no data'}`);
-      invalid++;
-      await sb.from('recyclers').update({
-        raw_gst_data: json, gstin_fetched_at: nowIso,
-        gstin_validation_status: 'invalid',
-      }).eq('id', r.id);
-      await sb.from('recycler_gstin_candidates').update({
-        validated: true, validation_result: 'invalid', validated_at: nowIso,
-      }).eq('id', c.id);
+    let gateResult;
+    try { gateResult = await getGstinData(sb, c.candidate_gstin); }
+    catch (e) {
+      // Vendor said flag=false (GSTIN invalid) OR network/persist error. The
+      // gateway throws with err.vendorInvalid=true when the vendor rejected
+      // the GSTIN itself — record that outcome on both the recycler and the
+      // candidate. Network/persist errors are transient; skip without marking.
+      if (e.vendorInvalid) {
+        console.log(`${prefix} · ✗ invalid: ${e.message}`);
+        invalid++;
+        const nowIso = new Date().toISOString();
+        await sb.from('recycler_gstin_candidates').update({
+          validated: true, validation_result: 'invalid', validated_at: nowIso,
+        }).eq('id', c.id);
+      } else {
+        console.log(`${prefix} · ✗ gateway error (will retry later): ${e.message}`);
+        failed++;
+      }
       continue;
     }
+
+    const { source, raw: json, fetched_at } = gateResult;
+    const nowIso = fetched_at || new Date().toISOString();
+    const cacheTag = source === 'cache' ? ' [cache]' : '';
 
     const d = json.data;
     const legal_name = String(d.lgnm ?? d.legal_name ?? '').trim();
@@ -154,23 +148,22 @@ async function main() {
     const stateMatch = !expectedPrefix || c.candidate_gstin.startsWith(expectedPrefix);
     const nameMatch = nameMatches(legal_name, r.company_name) || nameMatches(trade_name, r.company_name);
 
+    // Raw response lives in gstin_lookup_cache (written by the gateway).
+    // On the recyclers row we only record the pointer + validation outcome.
     let result = 'name_mismatch';
-    const updRecycler = {
-      raw_gst_data: json, gstin_fetched_at: nowIso,
-    };
+    const updRecycler = { gstin_fetched_at: nowIso };
 
     if (nameMatch && stateMatch) {
       result = 'verified';
       updRecycler.gstin = c.candidate_gstin;
       updRecycler.gstin_validation_status = 'verified';
-      // Opportunistically fill CIN / state if missing
       promoted++;
-      console.log(`${prefix} · ✓ verified → ${r.company_name.slice(0, 40)} (${legal_name})`);
+      console.log(`${prefix} · ✓ verified${cacheTag} → ${r.company_name.slice(0, 40)} (${legal_name})`);
     } else {
       updRecycler.gstin_validation_status = nameMatch ? 'state_mismatch' : 'name_mismatch';
       result = nameMatch ? 'state_mismatch' : 'name_mismatch';
       mismatched++;
-      console.log(`${prefix} · ⚠ ${result}: got "${legal_name}" vs "${r.company_name.slice(0, 40)}"`);
+      console.log(`${prefix} · ⚠ ${result}${cacheTag}: got "${legal_name}" vs "${r.company_name.slice(0, 40)}"`);
     }
 
     await sb.from('recyclers').update(updRecycler).eq('id', r.id);

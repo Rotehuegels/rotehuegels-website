@@ -14,6 +14,7 @@
  * Run: node --env-file=.env.local scripts/seed-psu-gstins.mjs
  */
 import { createClient } from '@supabase/supabase-js';
+import { getGstinData } from '../lib/gstin/gateway.mjs';
 
 const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -61,15 +62,12 @@ const CANDIDATES = [
 ];
 
 async function validateGstin(gstin) {
-  const url = `https://sheet.gstincheck.co.in/check/${API_KEY}/${gstin}`;
   try {
-    const res = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15_000) });
-    const json = await res.json();
-    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
-    if (json.flag === false || json.flag === 'N') return { ok: false, error: json.message ?? 'not found' };
-    const d = json.data ?? json;
+    const { source, raw } = await getGstinData(sb, gstin);
+    const d = raw?.data ?? raw ?? {};
     return {
       ok: true,
+      source, // 'cache' | 'vendor'
       legal_name: String(d.lgnm ?? d.legal_name ?? '').trim(),
       trade_name: String(d.tradeNam ?? d.trade_name ?? '').trim(),
       status: String(d.sts ?? d.status ?? '').trim(),
@@ -110,8 +108,8 @@ async function main() {
       continue;
     }
 
-    // Update credits
-    await sb.from('app_settings').update({ value: String(used + ok + fail + 1) }).eq('key', 'gstin_credits_used');
+    // Credit counter is incremented by the gateway RPC only on vendor calls;
+    // cache hits are free. No manual bump needed here.
 
     // Save GSTIN to all codes under this entity
     const { error: upErr } = await sb.from('recyclers').update({ gstin: c.gstin }).in('recycler_code', c.codes);
@@ -120,7 +118,8 @@ async function main() {
       continue;
     }
     ok++;
-    console.log(`   ✓ verified (${r.legal_name}) → saved on ${c.codes.length} row${c.codes.length > 1 ? 's' : ''} [${c.codes.join(', ')}]`);
+    const tag = r.source === 'cache' ? ' [cache]' : '';
+    console.log(`   ✓ verified${tag} (${r.legal_name}) → saved on ${c.codes.length} row${c.codes.length > 1 ? 's' : ''} [${c.codes.join(', ')}]`);
   }
 
   console.log(`\nDone. Verified & saved: ${ok} entities · failed validation: ${fail} · skipped: ${skipped}`);

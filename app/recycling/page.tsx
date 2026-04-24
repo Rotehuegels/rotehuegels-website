@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Recycle, ArrowRight, Shield, Truck, Award, Leaf, AlertTriangle, Clock, Building2 } from 'lucide-react';
+import { Recycle, ArrowRight, Shield, Truck, Award, Leaf, CheckCircle2 } from 'lucide-react';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const dynamic = 'force-dynamic';
@@ -16,28 +16,6 @@ export default async function EWasteLandingPage() {
     .select('*', { count: 'exact', head: true })
     .eq('is_active', true);
   const facilityCount = count ?? 0;
-
-  // Category breakdown — all 11 tiers, no double-counting.
-  const waste_types = ['e-waste', 'battery', 'black-mass', 'hazardous', 'zinc-dross', 'primary-metal', 'critical-minerals', 'ev-oem', 'battery-pack', 'cell-maker', 'both'];
-  const counts = await Promise.all(
-    waste_types.map(t =>
-      supabaseAdmin.from('recyclers').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('waste_type', t),
-    ),
-  );
-  const byType = Object.fromEntries(waste_types.map((t, i) => [t, counts[i].count ?? 0]));
-  const stats = [
-    { label: 'E-Waste', value: byType['e-waste'], color: 'text-indigo-400' },
-    { label: 'Battery / Li-Ion', value: byType['battery'], color: 'text-amber-400' },
-    { label: 'Black Mass / Mechanical', value: byType['black-mass'], color: 'text-cyan-400' },
-    { label: 'Non-Ferrous Metals', value: byType['hazardous'], color: 'text-purple-400' },
-    { label: 'Zinc Dross', value: byType['zinc-dross'], color: 'text-orange-400' },
-    { label: 'Primary Metal Producers', value: byType['primary-metal'], color: 'text-rose-400' },
-    { label: 'Critical Minerals', value: byType['critical-minerals'], color: 'text-fuchsia-400' },
-    { label: 'EV OEMs', value: byType['ev-oem'], color: 'text-lime-400' },
-    { label: 'Battery Pack Makers', value: byType['battery-pack'], color: 'text-yellow-400' },
-    { label: 'Cell / CAM Makers', value: byType['cell-maker'], color: 'text-sky-400' },
-    { label: 'E-Waste + Battery', value: byType['both'], color: 'text-pink-400' },
-  ];
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       {/* intentionally empty — disclaimer at bottom */}
@@ -82,21 +60,14 @@ export default async function EWasteLandingPage() {
         </div>
       </section>
 
-      {/* Ecosystem coverage band — links to /ecosystem for the full tier breakdown */}
-      <section className="py-10 px-6 border-t border-zinc-800 bg-zinc-900/20">
-        <div className="max-w-[1800px] mx-auto">
-          <p className="text-center text-xs text-zinc-500 uppercase tracking-wider mb-4">
-            Part of the <Link href="/ecosystem" className="text-emerald-400 hover:text-emerald-300 underline">India Circular Economy Ecosystem</Link> · {facilityCount.toLocaleString('en-IN')} facilities across the value chain
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {stats.filter(s => s.value > 0).map(s => (
-              <Link key={s.label} href="/ecosystem"
-                className="group rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 text-center hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors">
-                <p className={`text-2xl font-black ${s.color}`}>{s.value.toLocaleString('en-IN')}</p>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1 group-hover:text-zinc-400 transition-colors">{s.label}</p>
-              </Link>
-            ))}
-          </div>
+      {/* Credibility ribbon — routes to /ecosystem for the full tier breakdown */}
+      <section className="py-6 px-6 border-t border-zinc-800 bg-zinc-900/20">
+        <div className="max-w-[1800px] mx-auto text-center text-sm text-zinc-400">
+          Part of the <Link href="/ecosystem" className="text-emerald-400 hover:text-emerald-300 underline">India Circular Economy Ecosystem</Link> — {facilityCount.toLocaleString('en-IN')} verified facilities across the value chain.
+          {' '}
+          <Link href="/ecosystem" className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1">
+            Browse the directory <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </section>
 
@@ -179,7 +150,7 @@ export default async function EWasteLandingPage() {
       <section className="py-16 px-6 border-t border-zinc-800">
         <div className="max-w-[1800px] mx-auto">
           <h2 className="text-2xl font-bold text-center mb-10">Why Roteh&uuml;gels</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {[
               { icon: Shield, title: 'CPCB / MoEF Registered Partners', desc: 'We only partner with recyclers and reprocessors holding valid CPCB, SPCB, or MoEF authorisation.' },
               { icon: Leaf, title: 'Zero Landfill Goal', desc: 'Every material is responsibly recovered, reprocessed or refurbished — nothing to landfill.' },
@@ -192,21 +163,21 @@ export default async function EWasteLandingPage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* CTA — Register as Recycler */}
-      <section className="py-16 px-6 border-t border-zinc-800">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Are you a registered recycler or reprocessor?</h2>
-          <p className="text-zinc-400 mb-4">Join our network now. We&apos;re onboarding CPCB, SPCB, and MoEF-authorised facilities ahead of launch.</p>
-          <p className="text-sm text-zinc-500 mb-8">Once we obtain authorisation, we&apos;ll match you with waste generators across e-waste, batteries, non-ferrous metals, and zinc dross in your region.</p>
-          <Link
-            href="/recycling/recycler-register"
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-4 text-base font-semibold text-white transition-colors"
-          >
-            Register as Recycler <ArrowRight className="h-5 w-5" />
-          </Link>
+          <ul className="max-w-3xl mx-auto grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm text-zinc-300">
+            {[
+              'Licence-class verification against CPCB / SPCB registries',
+              'Capacity headroom, material capability, and geographic fit built into the match',
+              'Transporter and weighbridge integration at every handover',
+              'Chain-of-custody data captured end to end',
+              'EPR-fulfilment certificate issued on closure',
+              'Generator, recycler, and brand-owner views in one workspace',
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -239,27 +210,13 @@ export default async function EWasteLandingPage() {
         </div>
       </section>
 
-      {/* References & Sources */}
+      {/* Data sources — single link, full list lives on /ecosystem */}
       <section className="py-6 px-6 border-t border-zinc-800">
-        <div className="max-w-[1800px] mx-auto text-xs text-zinc-600 space-y-3">
-          <p className="font-semibold text-zinc-500">References &amp; Data Sources</p>
-          <ol className="list-decimal list-inside space-y-1">
-            <li>Central Pollution Control Board (CPCB) — <em>List of Dismantlers/Recyclers as per authorisation issued by SPCBs/PCCs under E-Waste (Management) Rules, 2022</em> — <a href="https://www.cpcb.nic.in/e-waste-recyclers-dismantler/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">cpcb.nic.in</a></li>
-            <li>Maharashtra Pollution Control Board (MPCB) — <em>Authorised E-Waste Recyclers, May 2024</em></li>
-            <li>Tamil Nadu Pollution Control Board (TNPCB) — <em>List of E-Waste Dismantlers/Recyclers</em></li>
-            <li>Telangana State Pollution Control Board (TSPCB) — <em>E-Waste Authorised Recyclers</em></li>
-            <li>Rajasthan State Pollution Control Board (RSPCB) — <em>E-Waste Recyclers/Dismantlers</em></li>
-            <li>Karnataka State Pollution Control Board (KSPCB) — <em>E-Waste Authorised Recyclers/Dismantlers</em></li>
-            <li>MoEF&amp;CC / CPCB — <em>List of Registered Non-Ferrous Metal Reprocessors (NFMR)</em> under the Hazardous and Other Wastes (Management and Transboundary Movement) Rules, 2016</li>
-            <li>CPCB Battery Waste Management Portal and published list of registered battery recyclers under the Battery Waste Management Rules, 2022</li>
-            <li>Listed-company disclosures (BSE, NSE, SEBI) and credit-rating agency public releases (ICRA, CARE, Infomerics, Acuité)</li>
-            <li>E-Waste (Management) Rules, 2022 &amp; Battery Waste Management Rules, 2022 — Ministry of Environment, Forest and Climate Change, Government of India</li>
-          </ol>
-          <p className="italic text-zinc-700">
-            Any omissions or errors in the data presented on this platform are not intentional. Information is sourced from publicly
-            available government records and may not reflect the most current status. Users are advised to verify details independently
-            with the respective SPCB/PCC or directly with the recycler.
-          </p>
+        <div className="max-w-[1800px] mx-auto text-xs text-zinc-600 text-center">
+          Data sourced from CPCB, SPCB, MPCB, MoEF registries and public disclosures.{' '}
+          <Link href="/ecosystem#references" className="text-zinc-500 hover:text-zinc-300 underline">
+            See full references & data sources →
+          </Link>
         </div>
       </section>
     </div>

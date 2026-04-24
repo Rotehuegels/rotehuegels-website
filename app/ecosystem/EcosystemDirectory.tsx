@@ -161,8 +161,8 @@ export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-12">
-        <Link href="/recycling" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
-          <ArrowLeft className="h-3 w-3" /> Back to Recycling
+        <Link href="/circular" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
+          <ArrowLeft className="h-3 w-3" /> Back to Circular
         </Link>
 
         {/* Header */}
@@ -432,18 +432,19 @@ export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
         </div>
 
         {/* References */}
-        <div className="text-xs text-zinc-600 space-y-2">
+        <div id="references" className="text-xs text-zinc-600 space-y-2 scroll-mt-24">
           <p className="font-semibold text-zinc-500">References &amp; Data Sources</p>
           <ol className="list-decimal list-inside space-y-1">
             <li>CPCB — List of E-Waste Dismantlers/Recyclers under E-Waste (Management) Rules, 2022 — <a href="https://www.cpcb.nic.in/e-waste-recyclers-dismantler/" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">cpcb.nic.in</a></li>
-            <li>MoEF/CPCB — List of Non-Ferrous Metal Waste Reprocessors (376 units) — <a href="http://ciiwasteexchange.org/Data/Non-ferrous%20metal%20waste%20reprocessors.pdf" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">CII Waste Exchange</a></li>
+            <li>MoEF/CPCB — List of Registered Non-Ferrous Metal Reprocessors (NFMR, 376 units) under the Hazardous and Other Wastes (Management and Transboundary Movement) Rules, 2016 — <a href="http://ciiwasteexchange.org/Data/Non-ferrous%20metal%20waste%20reprocessors.pdf" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">CII Waste Exchange</a></li>
             <li>MPCB — Authorized E-Waste Recyclers, Refurbishers &amp; Dismantlers in Maharashtra (May 2024) — <a href="https://mpcb.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">mpcb.gov.in</a></li>
             <li>TNPCB — List of Authorized E-Waste Dismantling Units in Tamil Nadu — <a href="https://tnpcb.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">tnpcb.gov.in</a></li>
             <li>TSPCB — Details of Authorised E-Waste Dismantlers, Recyclers and Producers — <a href="https://tspcb.cgg.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">tspcb.cgg.gov.in</a></li>
             <li>RSPCB — List of Dismantlers/Refurbishers/Recyclers Authorized by RSPCB — <a href="https://environment.rajasthan.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">environment.rajasthan.gov.in</a></li>
             <li>KSPCB — List of E-Waste Dismantlers &amp; Recyclers in Karnataka — <a href="https://kspcb.karnataka.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">kspcb.karnataka.gov.in</a></li>
             <li>CPCB — Battery Waste Management Rules, 2022 &amp; EPR Portal — <a href="https://eprbattery.cpcb.gov.in" className="text-zinc-500 hover:text-zinc-300 underline" target="_blank" rel="noopener noreferrer">eprbattery.cpcb.gov.in</a></li>
-            <li>E-Waste (Management) Rules, 2022 &amp; Hazardous Waste Management Rules — MoEFCC, Government of India</li>
+            <li>Listed-company disclosures (BSE, NSE, SEBI) and credit-rating agency public releases (ICRA, CARE, Infomerics, Acuité)</li>
+            <li>E-Waste (Management) Rules, 2022; Battery Waste Management Rules, 2022; and Hazardous &amp; Other Wastes (Management and Transboundary Movement) Rules, 2016 — Ministry of Environment, Forest and Climate Change, Government of India</li>
           </ol>
           <p className="italic text-zinc-700 mt-2">
             Data compiled from multiple government registries and official SPCB publications. Information may not reflect the most

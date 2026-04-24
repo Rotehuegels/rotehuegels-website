@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {
-  Recycle, Network, ShoppingBag, FileCheck2, MapPin, ArrowRight, CheckCircle2,
+  Network, ShoppingBag, FileCheck2, MapPin, ArrowRight,
 } from 'lucide-react';
 import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
@@ -77,13 +77,13 @@ export default async function CircularHubPage() {
 
         <section>
           <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold">Three parts, one circular platform</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">Two live pillars — one more in the works</h2>
             <p className="mt-3 max-w-2xl mx-auto text-sm text-zinc-400">
-              Each component stands on its own — together they cover the full lifecycle from discovery through to EPR-certified closure.
+              Together they cover the full lifecycle from discovery through to EPR-certified closure.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             <Link href="/ecosystem" className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 hover:border-rose-500/40 transition-colors group no-underline">
               <Network className="h-7 w-7 text-rose-400 mb-3" />
               <p className="text-[10px] uppercase tracking-widest text-rose-400/80 mb-1">Directory</p>
@@ -98,27 +98,10 @@ export default async function CircularHubPage() {
               </span>
             </Link>
 
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 relative">
-              <ShoppingBag className="h-7 w-7 text-zinc-500 mb-3" />
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-[10px] uppercase tracking-widest text-zinc-500">Marketplace</p>
-                <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 font-semibold">Coming soon</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-zinc-300">Generator ↔ Recycler Marketplace</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-4">
-                Bulk generators post e-waste, spent Li-ion, and non-ferrous scrap. The platform matches
-                each lot against recyclers whose licence class, capacity headroom, material capability,
-                and geography fit the requirement.
-              </p>
-              <Link href="/contact" className="inline-flex items-center gap-1 text-xs text-amber-300 hover:text-amber-200 no-underline">
-                Request early access <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-
             <Link href="/recycling" className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 hover:border-rose-500/40 transition-colors group no-underline">
               <FileCheck2 className="h-7 w-7 text-rose-400 mb-3" />
               <p className="text-[10px] uppercase tracking-widest text-rose-400/80 mb-1">Compliance</p>
-              <h3 className="text-lg font-semibold mb-2">EPR, Traceability &amp; Pickups</h3>
+              <h3 className="text-lg font-semibold mb-2">EPR, Traceability & Pickups</h3>
               <p className="text-sm text-zinc-400 leading-relaxed mb-4">
                 Pickup scheduling, transporter coordination, weighbridge and chain-of-custody capture at
                 every handover — with an EPR-fulfilment certificate issued on closure. Designed for
@@ -129,39 +112,24 @@ export default async function CircularHubPage() {
               </span>
             </Link>
           </div>
-        </section>
 
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 md:p-10">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <p className="text-xs tracking-widest text-rose-400/90 uppercase mb-3">How it works</p>
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">From discovery to EPR closure — one continuous flow.</h2>
-              <p className="text-sm text-zinc-300 leading-relaxed mb-4">
-                Bulk generators post available stock — material stream, quantity, location, and condition.
-                The platform matches the lot against licensed recyclers whose licence class, capacity
-                headroom, material capability, and operational geography fit the requirement.
-              </p>
-              <p className="text-sm text-zinc-300 leading-relaxed">
-                Matched recyclers confirm availability and terms. Pickup scheduling, transporter
-                coordination, and chain-of-custody capture happen inside the platform — with a
-                traceable EPR-fulfilment certificate generated at closure.
-              </p>
+          {/* Marketplace teaser — not yet live */}
+          <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5 flex flex-wrap items-center gap-4 justify-between">
+            <div className="flex items-center gap-3">
+              <ShoppingBag className="h-5 w-5 text-amber-300 shrink-0" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-[10px] uppercase tracking-widest text-amber-300 font-semibold">Marketplace</p>
+                  <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 font-semibold">Coming 2026</span>
+                </div>
+                <p className="text-sm text-zinc-300 mt-0.5">
+                  Generator ↔ recycler lot matching by licence class, capacity headroom, material capability, and geography.
+                </p>
+              </div>
             </div>
-            <ul className="space-y-3 text-sm text-zinc-300">
-              {[
-                'Licence-class verification against CPCB / SPCB registries',
-                'Capacity headroom, material capability, and geographic fit built into the match',
-                'Transporter and weighbridge integration at every handover',
-                'Chain-of-custody data captured end to end',
-                'EPR-fulfilment certificate issued on closure',
-                'Generator, recycler, and brand-owner views in one workspace',
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+            <Link href="/contact" className="inline-flex items-center gap-1 text-xs text-amber-300 hover:text-amber-200 no-underline shrink-0">
+              Request early access <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
         </section>
 
@@ -181,37 +149,30 @@ export default async function CircularHubPage() {
                 body: 'CPCB- and SPCB-authorised recyclers and processors looking for a steady, verified, compliance-clean feedstock pipeline outside broker networks.',
               },
               {
-                t: 'Brand owners &amp; obligation holders',
+                t: 'Brand owners & obligation holders',
                 body: 'Producers with EPR targets who need a transparent, auditable chain from generator through to certificate — across multiple recyclers if needed.',
               },
             ].map((it, i) => (
               <div key={i} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
                 <p className="text-[11px] uppercase tracking-widest text-rose-400/80 mb-2">Audience</p>
                 <h3 className="text-base font-semibold mb-2">{it.t}</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed" dangerouslySetInnerHTML={{ __html: it.body }} />
+                <p className="text-sm text-zinc-400 leading-relaxed">{it.body}</p>
               </div>
             ))}
           </div>
         </section>
 
         <section className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-10 md:p-12 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">Ready to join — or to post your first lot?</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">Pick a starting point</h2>
           <p className="max-w-2xl mx-auto text-sm text-zinc-300 mb-6">
-            Recyclers can register, add their facility, and opt in to marketplace participation.
-            Generators can post a lot and receive matched offers from licensed recyclers in their geography.
+            Browse the directory to find licensed recyclers, or post a pickup request and we&apos;ll match you with the right facility.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/recycling/recycler-register" className="inline-flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition-colors">
-              Register as a recycler <ArrowRight className="h-4 w-4" />
+            <Link href="/ecosystem" className="inline-flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition-colors">
+              <MapPin className="h-4 w-4" /> Browse the directory
             </Link>
             <Link href="/recycling/request" className="inline-flex items-center rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
-              Post a pickup request
-            </Link>
-            <Link href="/ecosystem" className="inline-flex items-center rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
-              <MapPin className="h-4 w-4 mr-1.5" /> Browse the directory
-            </Link>
-            <Link href="/contact" className="inline-flex items-center rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 px-6 py-3 text-sm font-medium text-amber-200 transition-colors">
-              Request marketplace early access
+              Post a pickup request <ArrowRight className="h-4 w-4 ml-2" />
             </Link>
           </div>
         </section>

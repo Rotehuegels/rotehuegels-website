@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Recycle, MapPin, Factory, ArrowLeft, List, Map as MapIcon, X } from 'lucide-react';
+import { Recycle, MapPin, Factory, ArrowLeft, ArrowRight, List, Map as MapIcon, X } from 'lucide-react';
 import IndiaMap from '@/components/IndiaMap';
 
 // States/UTs with no facilities in our directory at all.
@@ -160,26 +160,50 @@ export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-12">
-        <Link href="/circular" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
-          <ArrowLeft className="h-3 w-3" /> Back to Circular
-        </Link>
-
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-2">
-          <Factory className="h-7 w-7 text-emerald-400" />
-          <h1 className="text-2xl font-bold">India Circular Economy Ecosystem</h1>
-        </div>
-        <p className="text-sm text-zinc-500 mb-8">
-          From primary metal producers to EV OEMs, battery / cell makers, and authorised recyclers —{' '}
-          <strong className="text-zinc-400">{fmtNum(TOTAL_RECYCLERS)}</strong> facilities across {statesCount} states. The full forward +
-          reverse value chain of metals and batteries. Data sourced from CPCB, SPCB, MPCB, MoEF registries plus publicly disclosed
-          facility information.
-          <span className="block mt-2 text-xs text-zinc-600">
+      {/* Hero */}
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/30 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <Link href="/circular" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
+            <ArrowLeft className="h-3 w-3" /> Back to Circular
+          </Link>
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 mb-6">
+              <Factory className="h-4 w-4 text-emerald-400" />
+              <span className="text-xs font-medium text-emerald-400">India Circular Economy Directory</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            {fmtNum(TOTAL_RECYCLERS)} facilities. {statesCount} states.<br />
+            <span className="text-emerald-400">One directory.</span>
+          </h1>
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
+            The full forward + reverse value chain of metals and batteries —
+            primary metal producers, EV OEMs, battery pack makers, and authorised recyclers.
+            Sourced from CPCB, SPCB, MPCB, and MoEF registries plus publicly disclosed facility information.
+          </p>
+          <p className="mt-3 text-sm text-zinc-500">
             Metals and batteries today · plastics, paper, and tyres next.
-          </span>
-        </p>
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <a
+              href="#explore"
+              className="flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-4 text-base font-semibold text-white transition-colors"
+            >
+              Explore the directory <ArrowRight className="h-5 w-5" />
+            </a>
+            <Link
+              href="/recycling"
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
+            >
+              Request a pickup
+            </Link>
+          </div>
+        </div>
+      </section>
 
+      <div className="max-w-[1800px] mx-auto px-6 md:px-10 pb-12">
         {/* Summary stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 text-center">
@@ -225,7 +249,7 @@ export default function EcosystemDirectory({ rawList, pins = [] }: Props) {
 
         {/* Ecosystem tiers — primary → forward → reverse loop */}
         {categories.length > 0 && (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8 space-y-5">
+          <div id="explore" className="scroll-mt-24 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 mb-8 space-y-5">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-semibold text-zinc-300">Ecosystem Tiers</h2>

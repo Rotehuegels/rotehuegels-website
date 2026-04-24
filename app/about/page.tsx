@@ -121,7 +121,33 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* STICKY SECTION NAV */}
+      <nav className="sticky top-16 z-40 border-y border-zinc-800/70 bg-zinc-950/85 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <ul className="flex gap-1 overflow-x-auto py-2 text-sm whitespace-nowrap scrollbar-none">
+            {[
+              { href: '#who-we-are', label: 'Who We Are' },
+              { href: '#technology', label: 'Technology' },
+              { href: '#industries', label: 'Industries' },
+              { href: '#leadership', label: 'Leadership' },
+              { href: '#delivery', label: 'What We Deliver' },
+              { href: '#vision', label: 'Vision' },
+            ].map((l) => (
+              <li key={l.href}>
+                <a
+                  href={l.href}
+                  className="inline-block rounded-lg px-3 py-1.5 text-zinc-400 hover:bg-white/5 hover:text-white transition-colors"
+                >
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
+
       {/* WHO WE ARE */}
+      <div id="who-we-are" className="scroll-mt-28">
       <Section title="Who We Are">
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
@@ -164,8 +190,10 @@ export default function AboutPage() {
           </aside>
         </div>
       </Section>
+      </div>
 
       {/* OUR TECHNOLOGY */}
+      <div id="technology" className="scroll-mt-28">
       <Section title="Our Technology">
         <p className="text-sm text-zinc-400 mb-6">
           Three proprietary platforms — each independently powerful, seamlessly integrated when combined.
@@ -231,8 +259,10 @@ export default function AboutPage() {
           </div>
         </div>
       </Section>
+      </div>
 
       {/* INDUSTRIES WE SERVE */}
+      <div id="industries" className="scroll-mt-28">
       <Section title="Industries We Serve">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {[
@@ -257,6 +287,7 @@ export default function AboutPage() {
           ))}
         </div>
       </Section>
+      </div>
 
       {/* INSTRUMENTATION & AUTOMATION */}
       <Section title="Instrumentation & Automation">
@@ -282,6 +313,7 @@ export default function AboutPage() {
       </Section>
 
       {/* FOUNDER */}
+      <div id="leadership" className="scroll-mt-28">
       <Section title="Leadership">
         <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/40 overflow-hidden">
           <div className="flex flex-col sm:flex-row gap-0">
@@ -344,31 +376,34 @@ export default function AboutPage() {
           </div>
         </div>
       </Section>
+      </div>
 
       {/* WHAT WE DELIVER */}
+      <div id="delivery" className="scroll-mt-28">
       <Section title="What We Deliver">
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Bullet icon={FlaskConical} title="Innovation & Development" text="Next-gen processes for sustainable metal extraction, recycling, and circular economy." />
           <Bullet icon={Cog} title="Technology-Driven EPC" text="Turnkey plants for greenfield and brownfield deployments — design to commissioning." />
           <Bullet icon={ShieldCheck} title="Safety & Risk Management" text="Safety engineered into design and execution to meet global standards." />
           <Bullet icon={LineChart} title="Investor Confidence" text="Plant operations management with daily ROI tracking, production monitoring, and quality control." />
-          <Bullet icon={Monitor} title="Digital Operations" text="Proprietary software stack — AutoREX™, Operon, LabREX — for complete plant digitisation." />
           <Bullet icon={Users2} title="Employment & Wealth Creation" text="Skilled jobs in engineering, operations, and R&D; waste-to-value outcomes." />
         </ul>
       </Section>
+      </div>
 
       {/* VISION */}
+      <div id="vision" className="scroll-mt-28">
       <Section title="Vision">
         <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/40 p-6">
           <p className="text-zinc-300">
             By combining technology innovation, EPC capability, proprietary software, and safety-driven execution,
             Rotehügels is a catalyst for industrial transformation — contributing to India's National Critical Minerals
             Mission and advancing global sustainability goals. Our vision is to be the technology partner of choice for
-            process industries worldwide, delivering measurable outcomes through our integrated
-            AutoREX™ + Operon + LabREX ecosystem.
+            process industries worldwide.
           </p>
         </div>
       </Section>
+      </div>
 
       {/* THREE PILLARS */}
       <Section title="Our Three Pillars">
@@ -421,8 +456,6 @@ export default function AboutPage() {
             { h: "Business Development", p: "JV structuring, partnerships, new geography entry." },
             { h: "Research & Patents", p: "Prior-art search, claim drafting, patent strategy." },
             { h: "Laboratory Chemistry", p: "ICP-OES, AAS, XRF, titrations, fire assay, solvent extraction, QA/QC." },
-            { h: "Instrumentation & Automation", p: "Complete process instrumentation, control panels, PLC/SCADA, safety systems." },
-            { h: "Digital & AI Innovation", p: "AutoREX™ platform, digital twins, AI-driven decision support." },
             { h: "Global Policy & ESG", p: "Compliance frameworks, sustainability roadmaps, and circularity by design." },
           ].map((c, i) => (
             <div key={i} className="rounded-xl bg-zinc-900/40 border border-zinc-800/70 p-6 hover:border-zinc-700 transition-colors">

@@ -1,5 +1,7 @@
 // app/rotehuegels-story/page.tsx
 import type { Metadata } from "next";
+import Link from "next/link";
+import { MapPin, ArrowRight } from "lucide-react";
 import StoryTOC from "@/components/StoryTOC";
 import ShareBlock from "@/components/ShareBlock";
 import Breadcrumb from "@/components/Breadcrumb";
@@ -48,23 +50,49 @@ function P({ children }: { children: React.ReactNode }) {
 
 export default function RotehuegelsStoryPage() {
   return (
-    <main className="mx-auto max-w-[1800px] px-6 lg:px-10 py-12">
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_380px] gap-10 lg:gap-14">
-
-        {/* Main content */}
-        <div>
-          <div className="mb-4"><Breadcrumb /></div>
-
-          {/* Hero */}
-          <div className="mb-16">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight mb-6">
-              The Rotehügels Story
-            </h1>
-            <p className="text-xl md:text-2xl text-zinc-400 leading-relaxed max-w-2xl">
-              Before the Bombay–Thane railway. Before independence. Before the tech boom.
-              There were red hills, iron tracks, and granite.
-            </p>
+    <>
+      {/* Cinematic hero — full-bleed, outside the TOC grid */}
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <MapPin className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">Redhills, Chennai · Est. 2024</span>
+            </div>
           </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            Before the railway.<br />
+            <span className="text-rose-400">Before the name.</span>
+          </h1>
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
+            Before the Bombay–Thane railway. Before independence. Before the tech boom.
+            There were red hills, iron tracks, and granite.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <a
+              href="#tracks"
+              className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors"
+            >
+              Read the story <ArrowRight className="h-5 w-5" />
+            </a>
+            <Link
+              href="/success-stories"
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
+            >
+              See our projects
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <main className="mx-auto max-w-[1800px] px-6 lg:px-10 pb-12">
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_380px] gap-10 lg:gap-14">
+
+          {/* Main content */}
+          <div>
+            <div className="mb-8"><Breadcrumb /></div>
 
           {/* ── THE TRACKS ────────────────────────────────────── */}
           <section className="mb-0">
@@ -236,8 +264,17 @@ export default function RotehuegelsStoryPage() {
             </P>
 
             <P>
-              The first project was in <strong className="text-white">Zambia</strong>: a zinc dross
-              recovery plant. Design, procurement, installation, commissioning — the full cycle,
+              The first project was in <strong className="text-white">Zambia</strong>:{' '}
+              <a
+                href="https://www.swarnametals.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-rose-400 hover:text-rose-300 underline"
+              >
+                Swarna Metals Zambia
+              </a>{' '}
+              — a greenfield hydrometallurgical copper plant in Kitwe, on the Copperbelt.
+              Process engineering, commissioning support, and operational hand-off —
               delivered from a small office in Redhills to a plant site 8,000 kilometres away.
             </P>
 
@@ -313,12 +350,13 @@ export default function RotehuegelsStoryPage() {
             </ul>
           </section>
 
-          <div className="mt-12"><ShareBlock /></div>
-        </div>
+            <div className="mt-12"><ShareBlock /></div>
+          </div>
 
-        {/* TOC sidebar */}
-        <StoryTOC items={toc} />
-      </div>
-    </main>
+          {/* TOC sidebar */}
+          <StoryTOC items={toc} />
+        </div>
+      </main>
+    </>
   );
 }

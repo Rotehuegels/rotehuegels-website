@@ -2,6 +2,7 @@
 import type { ReactElement } from "react";
 import Image from "next/image";
 import Section from "@/components/Section";
+import Link from "next/link";
 import {
   ShieldCheck,
   FlaskConical,
@@ -20,6 +21,8 @@ import {
   Zap,
   Globe,
   Wrench,
+  ArrowRight,
+  Building2,
 } from "lucide-react";
 
 export const metadata = {
@@ -64,25 +67,39 @@ export default function AboutPage() {
   return (
     <main className="space-y-20">
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1200px_600px_at_20%_-20%,rgba(244,63,94,0.07),transparent_60%)]" />
-        <div className="mx-auto max-w-[1800px] px-6 pt-12">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-zinc-100 to-zinc-300 bg-clip-text text-transparent">
-              About Rotehügels
-            </span>
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <Building2 className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">About Rotehügels</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            Engineering. Technology.<br />
+            <span className="text-rose-400">Execution.</span>
           </h1>
-          <p className="mt-2 text-zinc-400">
-            Engineering. Technology. Execution. One purpose — sustainable industrial advantage.
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
+            Rotehügels integrates scientific innovation with strategic advisory, technology
+            development, and operational execution. We design process plants, build proprietary
+            software for industrial operations, supply and commission instrumentation, and
+            deliver investor-ready outcomes — from laboratory benches to turnkey plants.
           </p>
-
-          <div className="mt-6 rounded-2xl border border-zinc-800/70 bg-zinc-900/40 p-6">
-            <p className="text-lg text-zinc-200">
-              <span className="font-semibold">Rotehügels</span>{" "}
-              integrates scientific innovation with strategic advisory, technology development, and operational execution.
-              We design process plants, build proprietary software for industrial operations, supply and commission
-              instrumentation, and deliver investor-ready outcomes — from laboratory benches to turnkey plants.
-            </p>
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <Link
+              href="/rotehuegels-story"
+              className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors"
+            >
+              Read our story <ArrowRight className="h-5 w-5" />
+            </Link>
+            <Link
+              href="/success-stories"
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
+            >
+              See our projects
+            </Link>
           </div>
         </div>
       </section>

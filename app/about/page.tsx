@@ -2,6 +2,7 @@
 import type { ReactElement } from "react";
 import Image from "next/image";
 import Section from "@/components/Section";
+import SectionNav from "./SectionNav";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -121,30 +122,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* STICKY SECTION NAV */}
-      <nav className="sticky top-16 z-40 border-y border-zinc-800/70 bg-zinc-950/85 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <ul className="flex gap-1 overflow-x-auto py-2 text-sm whitespace-nowrap scrollbar-none">
-            {[
-              { href: '#who-we-are', label: 'Who We Are' },
-              { href: '#technology', label: 'Technology' },
-              { href: '#industries', label: 'Industries' },
-              { href: '#leadership', label: 'Leadership' },
-              { href: '#delivery', label: 'What We Deliver' },
-              { href: '#vision', label: 'Vision' },
-            ].map((l) => (
-              <li key={l.href}>
-                <a
-                  href={l.href}
-                  className="inline-block rounded-lg px-3 py-1.5 text-zinc-400 hover:bg-white/5 hover:text-white transition-colors"
-                >
-                  {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
+      <SectionNav />
 
       {/* WHO WE ARE */}
       <div id="who-we-are" className="scroll-mt-28">
@@ -391,20 +369,6 @@ export default function AboutPage() {
       </Section>
       </div>
 
-      {/* VISION */}
-      <div id="vision" className="scroll-mt-28">
-      <Section title="Vision">
-        <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/40 p-6">
-          <p className="text-zinc-300">
-            By combining technology innovation, EPC capability, proprietary software, and safety-driven execution,
-            Rotehügels is a catalyst for industrial transformation — contributing to India's National Critical Minerals
-            Mission and advancing global sustainability goals. Our vision is to be the technology partner of choice for
-            process industries worldwide.
-          </p>
-        </div>
-      </Section>
-      </div>
-
       {/* THREE PILLARS */}
       <Section title="Our Three Pillars">
         <div className="grid sm:grid-cols-3 gap-6">
@@ -465,6 +429,20 @@ export default function AboutPage() {
           ))}
         </div>
       </Section>
+
+      {/* VISION */}
+      <div id="vision" className="scroll-mt-28">
+      <Section title="Vision">
+        <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/40 p-6">
+          <p className="text-zinc-300">
+            By combining technology innovation, EPC capability, proprietary software, and safety-driven execution,
+            Rotehügels is a catalyst for industrial transformation — contributing to India's National Critical Minerals
+            Mission and advancing global sustainability goals. Our vision is to be the technology partner of choice for
+            process industries worldwide.
+          </p>
+        </div>
+      </Section>
+      </div>
 
       {/* CONNECT */}
       <Section title="Connect With Us">

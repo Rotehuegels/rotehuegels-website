@@ -25,7 +25,7 @@ export default async function RunDetailPage({
   const [{ data: run }, { data: entriesRaw }, { data: empsRaw }] = await Promise.all([
     supabaseAdmin.from('payroll_runs').select('*').eq('id', runId).single(),
     supabaseAdmin.from('payroll_entries').select('*').eq('run_id', runId).order('created_at'),
-    supabaseAdmin.from('employees').select('id, role, department, rex_members(full_name, bank_account, bank_ifsc)').eq('status', 'active'),
+    supabaseAdmin.from('employees').select('id, role, department, rex_members(full_name, bank_account, bank_ifsc)').ilike('status', 'active'),
   ]);
 
   if (!run) notFound();

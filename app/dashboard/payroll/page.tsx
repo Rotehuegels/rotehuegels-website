@@ -18,7 +18,7 @@ const STATUS_STYLE = {
 export default async function PayrollPage() {
   const [{ data: runsRaw }, { data: employees }] = await Promise.all([
     supabaseAdmin.from('payroll_runs').select('*').order('year', { ascending: false }).order('month', { ascending: false }),
-    supabaseAdmin.from('employees').select('id').eq('status', 'active'),
+    supabaseAdmin.from('employees').select('id').ilike('status', 'active'),
   ]);
 
   const runs = runsRaw ?? [];

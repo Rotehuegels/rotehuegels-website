@@ -12,7 +12,8 @@
 
 import { ALL_SOPS, deriveChangeHistory } from '@/lib/sops';
 import { DOCUMENTS, RECORDS, FORMATS } from '@/lib/imsRegister';
-import { ShieldCheck, Printer } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+import PrintButton from './PrintButton';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'IMS Manual — Rotehügels' };
@@ -60,12 +61,7 @@ export default function IMSManualPage() {
           <ShieldCheck className="h-5 w-5 text-rose-400" />
           <span className="text-sm font-semibold text-white">IMS Manual ({REVISION})</span>
         </div>
-        <button
-          onClick={() => typeof window !== 'undefined' && window.print()}
-          className="inline-flex items-center gap-1.5 rounded-md border border-zinc-700 hover:border-zinc-500 px-3 py-1.5 text-xs text-zinc-300"
-        >
-          <Printer className="h-3.5 w-3.5" /> Print / Save PDF
-        </button>
+        <PrintButton />
       </div>
 
       <article className="max-w-[900px] mx-auto px-6 md:px-10 py-10 print:py-0 space-y-8 leading-relaxed">

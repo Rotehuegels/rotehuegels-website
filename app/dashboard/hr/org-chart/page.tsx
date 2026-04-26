@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { Users, Building2, Crown, ShieldCheck } from 'lucide-react';
 import AssignButton from './AssignButton';
+import AddRegionalRepButton from './AddRegionalRepButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,15 @@ type Position = {
   level: number;
   sort_order: number;
   filled_by_employee_id: string | null;
+  country_code?: string | null;
+  is_external?: boolean | null;
 };
+
+// ISO-2 → flag emoji (each letter maps to a regional indicator unicode codepoint)
+const flag = (cc?: string | null) =>
+  cc && cc.length === 2
+    ? String.fromCodePoint(...[...cc.toUpperCase()].map((c) => 0x1f1a5 + c.charCodeAt(0)))
+    : '';
 
 type Employee = {
   id: string;
@@ -104,9 +113,12 @@ export default async function OrgChartPage() {
             </p>
           </div>
         </div>
-        <p className="text-xs text-zinc-500 max-w-md text-right">
-          Vacant positions cascade approvals to the next filled position up the reporting chain.
-        </p>
+        <div className="flex flex-col items-end gap-2">
+          <AddRegionalRepButton />
+          <p className="text-xs text-zinc-500 max-w-md text-right">
+            Vacant positions cascade approvals to the next filled position up the reporting chain.
+          </p>
+        </div>
       </div>
 
       {/* CEO */}
@@ -212,6 +224,11 @@ function PositionCard({
       {position.id === 'ceo' && (
         <Crown className="h-4 w-4 text-amber-400 absolute top-2 right-2" />
       )}
+      {position.country_code && (
+        <span className="absolute top-2 left-2 text-base" title={position.country_code}>
+          {flag(position.country_code)}
+        </span>
+      )}
       <div className={`${compact ? 'h-9 w-9' : 'h-12 w-12'} rounded-full ${isVacant ? 'bg-zinc-900 border-2 border-dashed border-zinc-700' : 'bg-zinc-800 border-2 border-zinc-600'} flex items-center justify-center mx-auto ${compact ? 'mb-2' : 'mb-3'}`}>
         <span className={`${compact ? 'text-xs' : 'text-base'} font-bold ${isVacant ? 'text-zinc-600' : 'text-white'}`}>
           {isVacant ? '—' : initials(employee?.full_name)}
@@ -226,6 +243,12 @@ function PositionCard({
         <p className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-white truncate`}>{employee.full_name}</p>
       ) : (
         <p className={`${compact ? 'text-[11px]' : 'text-xs'} text-zinc-600 italic`}>Vacant</p>
+      )}
+
+      {position.is_external && (
+        <span className="inline-block mt-1.5 text-[9px] font-medium uppercase tracking-wider text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
+          Consultant · Commission
+        </span>
       )}
 
       {isVacant && cascade?.employee && (

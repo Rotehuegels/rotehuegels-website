@@ -11,7 +11,9 @@ const RexSchema = z.object({
   full_name: z.string().min(2, 'Full name is required'),
   date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
   email: z.string().email('Valid email required'),
-  linkedin_url: z.string().url('Must be a valid LinkedIn URL').optional().or(z.literal('')),
+  linkedin_url: z.string()
+    .url('Must be a valid LinkedIn URL')
+    .refine((u) => /(^|\.)linkedin\.com\//i.test(u), 'Must be a linkedin.com URL'),
   cv_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   member_type: z.enum(['student', 'professional', 'academic', 'enthusiast']),
   interests: z.string().max(500).optional(),

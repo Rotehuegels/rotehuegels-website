@@ -32,7 +32,7 @@ export default function RexRegisterPage() {
       full_name: fd.get('full_name'),
       date_of_birth: fd.get('date_of_birth'),
       email: fd.get('email'),
-      linkedin_url: fd.get('linkedin_url') || undefined,
+      linkedin_url: fd.get('linkedin_url'),
       cv_url: fd.get('cv_url') || undefined,
       member_type: fd.get('member_type'),
       interests: fd.get('interests') || undefined,

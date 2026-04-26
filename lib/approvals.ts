@@ -37,16 +37,53 @@ export type RequestArgs = {
 
 /**
  * Create an approval request. Idempotent on (entity_type, entity_id):
- * if one already exists, returns its id without changing anything.
+ * if one already exists, returns its id without changing it. When the
+ * caller asked for a different chain or amount than what's on the
+ * existing row, we log a clear warning and return drift info on the
+ * response so callers can decide whether to cancel + re-request.
+ *
+ * We deliberately do NOT auto-mutate the existing approval — once a
+ * chain is in flight, an approver may already have acted, and silently
+ * rewriting the chain underneath them would be unsafe.
  */
-export async function requestApproval(args: RequestArgs): Promise<{ id: string; created: boolean }> {
+export type RequestApprovalResult = {
+  id: string;
+  created: boolean;
+  drift?: { chain: boolean; amount: boolean; status: string };
+};
+
+export async function requestApproval(args: RequestArgs): Promise<RequestApprovalResult> {
   const { data: existing } = await supabaseAdmin
     .from('approvals')
-    .select('id')
+    .select('id, status, amount, approval_chain')
     .eq('entity_type', args.entity_type)
     .eq('entity_id',   args.entity_id)
     .maybeSingle();
-  if (existing) return { id: existing.id as string, created: false };
+
+  if (existing) {
+    const oldChain = ((existing.approval_chain ?? []) as ChainStep[]).map((s) => s.approver_email.toLowerCase());
+    const newChain = args.approver_emails.map((e) => e.toLowerCase());
+    const chainDrift =
+      oldChain.length !== newChain.length || oldChain.some((e, i) => e !== newChain[i]);
+    const amountDrift =
+      args.amount != null &&
+      existing.amount != null &&
+      Math.abs(Number(existing.amount) - Number(args.amount)) > 0.01;
+
+    if (chainDrift || amountDrift) {
+      console.warn(
+        `[approvals] re-request for ${args.entity_type}/${args.entity_id} differs from in-flight approval ${existing.id} (status=${existing.status}). chain_drift=${chainDrift} amount_drift=${amountDrift}. Returning existing — caller can cancel + re-request if intended.`
+      );
+    }
+
+    return {
+      id: existing.id as string,
+      created: false,
+      ...(chainDrift || amountDrift
+        ? { drift: { chain: chainDrift, amount: amountDrift, status: existing.status as string } }
+        : {}),
+    };
+  }
 
   const chain: ChainStep[] = args.approver_emails.map((email, i) => ({
     level:          i + 1,

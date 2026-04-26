@@ -57,8 +57,8 @@ export default async function ItemsPage() {
               <h2 className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-3">
                 <Icon className="h-3.5 w-3.5" /> {label}
               </h2>
-              <div className="rounded-2xl border border-zinc-800 overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="rounded-2xl border border-zinc-800 overflow-x-auto">
+                <table className="w-full min-w-[640px] text-sm">
                   <thead>
                     <tr className="border-b border-zinc-800 bg-zinc-900/60">
                       <th className="px-5 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">SKU</th>

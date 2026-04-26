@@ -382,9 +382,9 @@ export default function ReinvoicePage() {
             {extraCharges.length === 0 ? (
               <p className="text-sm text-zinc-600">No extra charges. Add delivery, labour, or other charges above.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 overflow-x-auto">
                 {extraCharges.map((c, idx) => (
-                  <div key={idx} className="grid grid-cols-7 gap-3 items-end">
+                  <div key={idx} className="grid grid-cols-7 gap-3 items-end min-w-[720px]">
                     <div className="col-span-2">
                       <label className="text-xs text-zinc-500 mb-1 block">Description</label>
                       <input className={input} value={c.description} onChange={e => updateExtra(idx, 'description', e.target.value)}

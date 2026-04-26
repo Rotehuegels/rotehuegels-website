@@ -108,7 +108,7 @@ export default async function IntelligenceDashboard() {
       </div>
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {[
           { label: 'Holdings', value: holdings.length, sub: `${stockSignalMap.size} analyzed`, color: 'text-white', bg: 'bg-zinc-800/60' },
           { label: 'Signals', value: signals.length, sub: `${typeDist.size} types`, color: 'text-amber-400', bg: 'bg-amber-500/5' },

@@ -370,7 +370,7 @@ export default async function InvestmentsPage() {
       </div>
 
       {/* Summary Strip — 5 cols compact */}
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
         <div className={`${glass} px-4 py-2.5`}>
           <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Invested</p>
           <p className="text-lg font-black text-indigo-400">{fmtCompact(totalInvested)}</p>

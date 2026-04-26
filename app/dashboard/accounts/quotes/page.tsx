@@ -134,8 +134,8 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
           )}
         </div>
       ) : (
-        <div className="rounded-2xl border border-zinc-800 overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="rounded-2xl border border-zinc-800 overflow-x-auto">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-zinc-800 bg-zinc-900/60">
                 <th className="px-5 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Quote No</th>

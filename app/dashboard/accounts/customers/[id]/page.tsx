@@ -170,7 +170,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         {!orders?.length ? (
           <p className="text-sm text-zinc-600">No orders for this customer yet.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-2 sm:mx-0">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-zinc-800">
                 <th className="pb-2 text-left text-xs text-zinc-500">Order No</th>
@@ -207,6 +208,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
@@ -223,7 +225,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         {!quotes?.length ? (
           <p className="text-sm text-zinc-600">No quotes for this customer yet.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-2 sm:mx-0">
+          <table className="w-full min-w-[560px] text-sm">
             <thead>
               <tr className="border-b border-zinc-800">
                 <th className="pb-2 text-left text-xs text-zinc-500">Quote No</th>
@@ -255,6 +258,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

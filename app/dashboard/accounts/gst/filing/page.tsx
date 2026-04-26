@@ -122,7 +122,8 @@ export default function GSTFilingPage() {
               {/* 3.1 Outward Supplies */}
               <div className={`${glass} p-5`}>
                 <h2 className="text-sm font-semibold text-white mb-3">3.1 — Outward Supplies</h2>
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <table className="w-full min-w-[480px] text-sm">
                   <thead>
                     <tr className="text-xs text-zinc-500 uppercase tracking-wide">
                       <th className="text-left py-2">Description</th>
@@ -150,12 +151,14 @@ export default function GSTFilingPage() {
                     )}
                   </tbody>
                 </table>
+                </div>
               </div>
 
               {/* 4. ITC */}
               <div className={`${glass} p-5`}>
                 <h2 className="text-sm font-semibold text-white mb-3">4 — Input Tax Credit (ITC)</h2>
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <table className="w-full min-w-[520px] text-sm">
                   <thead>
                     <tr className="text-xs text-zinc-500 uppercase tracking-wide">
                       <th className="text-left py-2">Description</th>
@@ -169,12 +172,14 @@ export default function GSTFilingPage() {
                     <TaxRow label="ITC Available" cgst={gstr3b.section_4.cgst} sgst={gstr3b.section_4.sgst} igst={gstr3b.section_4.igst} />
                   </tbody>
                 </table>
+                </div>
               </div>
 
               {/* 6. Payment */}
               <div className={`${glass} p-5`}>
                 <h2 className="text-sm font-semibold text-white mb-3">6 — Payment of Tax</h2>
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <table className="w-full min-w-[520px] text-sm">
                   <thead>
                     <tr className="text-xs text-zinc-500 uppercase tracking-wide">
                       <th className="text-left py-2">Description</th>
@@ -190,6 +195,7 @@ export default function GSTFilingPage() {
                     <TaxRow label="Net Tax Payable" cgst={gstr3b.section_6.cgst} sgst={gstr3b.section_6.sgst} igst={gstr3b.section_6.igst} bold />
                   </tbody>
                 </table>
+                </div>
 
                 {gstr3b.section_6.total > 0 ? (
                   <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">

@@ -30,20 +30,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const parsed = Schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
-  // If filling: clear any other position currently held by the same employee
-  // (one person → one position is the cleaner default; relaxed if the use
-  // case ever needs cross-functional assignments).
-  if (parsed.data.employee_id) {
-    await supabaseAdmin
-      .from('positions')
-      .update({ filled_by_employee_id: null })
-      .eq('filled_by_employee_id', parsed.data.employee_id);
-  }
-
-  const { error } = await supabaseAdmin
-    .from('positions')
-    .update({ filled_by_employee_id: parsed.data.employee_id, updated_at: new Date().toISOString() })
-    .eq('id', id);
+  // Single atomic RPC. Vacates any prior position held by this employee
+  // and sets the target position in one transaction — so a failure can't
+  // leave the employee orphaned with no position.
+  const { error } = await supabaseAdmin.rpc('assign_employee_to_position', {
+    p_position_id: id,
+    p_employee_id: parsed.data.employee_id,
+  });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });

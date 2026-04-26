@@ -28,7 +28,15 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
   const { data: items } = await query;
 
   const list = items ?? [];
-  const totalValue = list.reduce((s, i) => s + (i.quantity ?? 0) * (i.unit_cost ?? 0), 0);
+
+  // FIFO-correct total stock value comes from the cost-layers view.
+  const { data: valuationRows } = await supabaseAdmin
+    .from('stock_item_valuation')
+    .select('stock_item_id, fifo_value');
+  const fifoValueByItem = new Map<string, number>(
+    (valuationRows ?? []).map((r) => [r.stock_item_id as string, Number(r.fifo_value ?? 0)]),
+  );
+  const totalValue = list.reduce((s, i) => s + (fifoValueByItem.get(i.id) ?? 0), 0);
   const lowStockItems = list.filter(i => (i.quantity ?? 0) <= LOW_STOCK_THRESHOLD && (i.quantity ?? 0) > 0);
   const outOfStock = list.filter(i => (i.quantity ?? 0) === 0);
   const categories = [...new Set(list.map(i => i.category).filter(Boolean))];
@@ -117,7 +125,7 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
             </div>
             <div className="divide-y divide-zinc-800/60">
               {list.map(item => {
-                const totalItemValue = (item.quantity ?? 0) * (item.unit_cost ?? 0);
+                const totalItemValue = fifoValueByItem.get(item.id) ?? 0;
                 const order = item.orders as { order_no: string; client_name: string } | null;
                 return (
                   <div key={item.id}

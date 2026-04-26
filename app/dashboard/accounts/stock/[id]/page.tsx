@@ -26,14 +26,25 @@ export default async function StockDetailPage({ params }: { params: Promise<{ id
 
   const { id } = await params;
 
-  const [{ data: item }, { data: movements }] = await Promise.all([
+  const [{ data: item }, { data: movements }, { data: layers }, { data: valuationRow }] = await Promise.all([
     supabaseAdmin.from('stock_items').select('*').eq('id', id).single(),
     supabaseAdmin
       .from('stock_movements')
-      .select('id, movement_type, quantity, unit_cost, source_type, source_id, warehouse_location, created_by_email, notes, created_at')
+      .select('id, movement_type, quantity, unit_cost, cogs_value, source_type, source_id, warehouse_location, created_by_email, notes, created_at')
       .eq('stock_item_id', id)
       .order('created_at', { ascending: false })
       .limit(200),
+    supabaseAdmin
+      .from('stock_cost_layers')
+      .select('id, original_qty, remaining_qty, unit_cost, created_at, source_movement_id')
+      .eq('stock_item_id', id)
+      .gt('remaining_qty', 0)
+      .order('created_at', { ascending: true }),
+    supabaseAdmin
+      .from('stock_item_valuation')
+      .select('layered_qty, fifo_value, weighted_avg_cost')
+      .eq('stock_item_id', id)
+      .single(),
   ]);
 
   if (!item) notFound();
@@ -71,10 +82,10 @@ export default async function StockDetailPage({ params }: { params: Promise<{ id
 
       {/* Stat strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Stat label="On hand"        value={`${fmt(Number(item.quantity ?? 0))} ${item.unit ?? ''}`}/>
-        <Stat label="Reorder level"  value={item.reorder_level != null ? `${fmt(Number(item.reorder_level))} ${item.unit ?? ''}` : '—'} />
-        <Stat label="Last unit cost" value={item.unit_cost != null ? fmtINR(Number(item.unit_cost)) : '—'} />
-        <Stat label="Stock value"    value={item.unit_cost != null ? fmtINR(Number(item.quantity ?? 0) * Number(item.unit_cost)) : '—'} muted />
+        <Stat label="On hand"            value={`${fmt(Number(item.quantity ?? 0))} ${item.unit ?? ''}`}/>
+        <Stat label="Reorder level"      value={item.reorder_level != null ? `${fmt(Number(item.reorder_level))} ${item.unit ?? ''}` : '—'} />
+        <Stat label="Wgt-avg cost (FIFO)" value={valuationRow?.weighted_avg_cost != null ? fmtINR(Number(valuationRow.weighted_avg_cost)) : '—'} />
+        <Stat label="FIFO value"         value={valuationRow?.fifo_value != null ? fmtINR(Number(valuationRow.fifo_value)) : '—'} muted />
       </div>
 
       {/* Adjustment form */}
@@ -83,6 +94,43 @@ export default async function StockDetailPage({ params }: { params: Promise<{ id
         itemUnit={item.unit ?? ''}
         currentQty={Number(item.quantity ?? 0)}
       />
+
+      {/* FIFO cost layers — only meaningful when there are >= 2 active layers */}
+      {(layers?.length ?? 0) > 0 && (
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-x-auto">
+          <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-zinc-300">FIFO cost layers</h2>
+            <span className="text-[11px] text-zinc-500">
+              {layers!.length} active {layers!.length === 1 ? 'layer' : 'layers'} · oldest issued first
+            </span>
+          </div>
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b border-zinc-800 bg-zinc-900/60">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Acquired</th>
+                <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Original qty</th>
+                <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Remaining</th>
+                <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Unit cost</th>
+                <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Layer value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {layers!.map((l) => {
+                const layerValue = Number(l.remaining_qty) * Number(l.unit_cost);
+                return (
+                  <tr key={l.id} className="border-b border-zinc-800/60">
+                    <td className="px-5 py-3 text-xs text-zinc-400">{fmtDateTime(l.created_at)}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-zinc-500">{fmt(Number(l.original_qty))}</td>
+                    <td className="px-5 py-3 text-right tabular-nums">{fmt(Number(l.remaining_qty))}</td>
+                    <td className="px-5 py-3 text-right tabular-nums">{fmtINR(Number(l.unit_cost))}</td>
+                    <td className="px-5 py-3 text-right tabular-nums font-semibold">{fmtINR(layerValue)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Movement history */}
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-x-auto">
@@ -98,6 +146,7 @@ export default async function StockDetailPage({ params }: { params: Promise<{ id
               <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Qty</th>
               <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Running</th>
               <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Unit cost</th>
+              <th className="px-5 py-3 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">COGS (FIFO)</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Source</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">By / Note</th>
             </tr>
@@ -118,6 +167,9 @@ export default async function StockDetailPage({ params }: { params: Promise<{ id
                   </td>
                   <td className="px-5 py-3 text-right tabular-nums text-zinc-300">{fmt(runningById.get(m.id) ?? 0)}</td>
                   <td className="px-5 py-3 text-right tabular-nums text-zinc-400">{m.unit_cost != null ? fmtINR(Number(m.unit_cost)) : '—'}</td>
+                  <td className="px-5 py-3 text-right tabular-nums text-rose-300">
+                    {m.cogs_value != null ? fmtINR(Number(m.cogs_value)) : '—'}
+                  </td>
                   <td className="px-5 py-3 text-xs text-zinc-500">
                     {m.source_type ?? 'manual'}
                     {m.source_id && <span className="font-mono text-[10px] block text-zinc-600">{String(m.source_id).slice(0, 8)}…</span>}
@@ -130,7 +182,7 @@ export default async function StockDetailPage({ params }: { params: Promise<{ id
               );
             })}
             {!movements?.length && (
-              <tr><td colSpan={7} className="px-5 py-10 text-center text-sm text-zinc-500">No movements yet — odd, the backfill should have created an opening balance.</td></tr>
+              <tr><td colSpan={8} className="px-5 py-10 text-center text-sm text-zinc-500">No movements yet — odd, the backfill should have created an opening balance.</td></tr>
             )}
           </tbody>
         </table>

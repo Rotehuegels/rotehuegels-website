@@ -10,6 +10,7 @@ import { DOCUMENTS, RECORDS, FORMATS } from '@/lib/imsRegister';
 import { getCompanyCO } from '@/lib/company';
 import { getLogoDataUrl, generateSmartPdf } from '@/lib/pdfConfig';
 import { COLORS, FONT, TABLE_LAYOUT, buildHeader } from '@/lib/pdfTemplate';
+import { buildSopBody } from '@/lib/sopContent';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -170,7 +171,8 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
     tocRow('10', 'Improvement'),
     tocRow('A',  'Appendix A — SOP Register (with change history)'),
     tocRow('B',  'Appendix B — Clause × SOP Cross-reference Matrix'),
-    tocRow('C',  'Appendix C — Documents, Records & Formats Registers'),
+    tocRow('C',  'Appendix C — Documents & Records Registers'),
+    tocRow('D',  'Appendix D — Formats Training Pack (forms used day-to-day)'),
   ];
   content.push({
     table: { widths: [30, '*'], body: tocRows },
@@ -303,31 +305,60 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
   content.push(subHeading('7.4', 'Communication'));
   content.push(para('Internal communication channels: dashboard announcements, mail, Approvals inbox at /d/approvals, monthly all-hands. External communication channels: customer email, supplier email, statutory portal submissions. Spokesperson authority for media and regulator communication rests with the CEO.'));
   content.push(subHeading('7.5', 'Documented information'));
-  content.push(para('The IMS uses three categories of documented information, maintained as registers in Appendix C:'));
+  content.push(para('The IMS uses three categories of documented information, each maintained in its own register:'));
   content.push(bullets([
-    'Documents (controlled): SOPs, this manual, policies, registers',
-    'Records (evidence): GRN, invoice, payslip, audit log, etc.',
-    'Formats / forms / templates: blanks used to capture records',
+    'Documents (controlled): SOPs, this manual, policies, registers — listed in Appendix C.1',
+    'Records (evidence): GRN, invoice, payslip, audit log, etc. — listed in Appendix C.2',
+    'Formats / forms / templates: blanks used to capture records — full training pack in Appendix D',
   ]));
   content.push(para('Each is uniquely identified, version-controlled, retention-stated, and stored at a defined location. Distribution of controlled copies is recorded; printed copies of any controlled document carry the watermark "uncontrolled when printed".'));
 
   // ── §8 Operation ──────────────────────────────────────────────────────────
+  // The bulk of the manual lives here: every operational SOP is inlined in
+  // full so a new hire can read the manual end-to-end and learn each
+  // procedure without chasing external documents.
   content.push(clauseHeading('8', 'Operation'));
-  content.push(para('Operational planning and control of all IMS processes is documented through SOPs. The list below shows every operational SOP grouped by department; full content of each SOP is in Appendix A.'));
+  content.push(para('Operational planning and control of all IMS processes is documented through Standard Operating Procedures. The full body of every SOP — purpose, scope, responsibilities, step-by-step procedure, KPIs, related documents — follows below, organised by department. Each SOP starts on its own page and is uniquely numbered §8.x for navigation.'));
 
+  // Department ordering: Accounts first (most numerous), then alphabetical.
+  // We renumber within §8 as §8.1, §8.2, ... in the order SOPs are emitted.
   const departmentOrder = Array.from(new Set(ALL_SOPS.map((s) => s.department))).sort();
+  let sopCounter = 0;
+
   for (const dept of departmentOrder) {
     const sopsInDept = ALL_SOPS.filter((s) => s.department === dept);
-    content.push({ text: dept, fontSize: FONT.body, bold: true, color: COLORS.black, margin: [0, 6, 0, 2] });
+    if (sopsInDept.length === 0) continue;
+
+    // Department divider — dark band rendered as a 1-row table so the fill
+    // colour spans the full content width. Page break before so each
+    // department starts cleanly.
     content.push({
-      ul: sopsInDept.map((s) => ({
-        text: [
-          { text: s.id, font: 'NotoSans', bold: true, color: COLORS.black },
-          { text: '   ' + s.title, color: COLORS.darkGray },
-        ],
-        fontSize: FONT.small,
-      })),
-      margin: [4, 0, 0, 4],
+      table: {
+        widths: ['*'],
+        body: [[{
+          text: dept.toUpperCase(),
+          fontSize: FONT.heading,
+          bold: true,
+          color: COLORS.white,
+          fillColor: COLORS.darkGray,
+          characterSpacing: 0.6,
+          alignment: 'center',
+          margin: [0, 4, 0, 4],
+        }]],
+      },
+      layout: 'noBorders',
+      pageBreak: 'before',
+      margin: [0, 0, 0, 6],
+    });
+
+    sopsInDept.forEach((sop, idx) => {
+      sopCounter += 1;
+      content.push(...buildSopBody(sop, {
+        // First SOP in a department sits directly under the department
+        // band (same page); subsequent SOPs each get their own fresh page.
+        pageBreak: idx > 0,
+        sectionLabel: `§8.${sopCounter}`,
+      }));
     });
   }
 
@@ -345,7 +376,7 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
   content.push(subHeading('10.1', 'General'));
   content.push(para('Rotehügels seeks opportunities for improvement at every operational interaction — through customer feedback, audit findings, and worker suggestions.'));
   content.push(subHeading('10.2', 'Non-conformity and corrective action'));
-  content.push(para('Every NCR is logged on Format F-QMS-01 (see Appendix C). Each NCR triggers root-cause analysis and a CAPA with verification of effectiveness. Repeat NCRs against the same SOP trigger a SOP revision (logged in the SOP\'s change history).'));
+  content.push(para('Every NCR is logged on Format F-QMS-01 (see Appendix D). Each NCR triggers root-cause analysis and a CAPA with verification of effectiveness. Repeat NCRs against the same SOP trigger a SOP revision (logged in the SOP\'s change history).'));
   content.push(subHeading('10.3', 'Continual improvement'));
   content.push(para('The CEO and Management Representative evaluate IMS effectiveness in every Management Review and target the most impactful improvement initiatives for the coming year, with accountability and budget assigned.'));
 
@@ -440,8 +471,10 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
     margin: [0, 0, 0, 6],
   });
 
-  // ── Appendix C — Three registers ─────────────────────────────────────────
-  content.push(clauseHeading('C', 'Appendix C — Documents, Records & Formats Registers'));
+  // ── Appendix C — Documents & Records registers ──────────────────────────
+  // Formats moved to Appendix D as a full training pack; this appendix keeps
+  // the compact controlled-document and records registers used by auditors.
+  content.push(clauseHeading('C', 'Appendix C — Documents & Records Registers'));
 
   // C.1 Documents
   content.push({ text: 'C.1 — Documents (controlled)', fontSize: FONT.heading - 1, bold: true, color: COLORS.black, margin: [0, 6, 0, 4] });
@@ -488,27 +521,132 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
     margin: [0, 0, 0, 6],
   });
 
-  // C.3 Formats
-  content.push({ text: 'C.3 — Formats / Forms / Templates', fontSize: FONT.heading - 1, bold: true, color: COLORS.black, margin: [0, 6, 0, 4] });
-  const fmtHeader = [
-    { text: 'Format No.', bold: true, fillColor: COLORS.headerBg, fontSize: FONT.small },
-    { text: 'Title',      bold: true, fillColor: COLORS.headerBg, fontSize: FONT.small },
-    { text: 'Rev',        bold: true, fillColor: COLORS.headerBg, fontSize: FONT.small },
-    { text: 'Parent SOP', bold: true, fillColor: COLORS.headerBg, fontSize: FONT.small },
-    { text: 'Status',     bold: true, fillColor: COLORS.headerBg, fontSize: FONT.small },
-  ];
-  const fmtRows = FORMATS.map((f) => [
-    { text: f.formatNo,  fontSize: FONT.small, color: COLORS.black, bold: true },
-    { text: f.title,     fontSize: FONT.small, color: COLORS.darkGray },
-    { text: f.revision,  fontSize: FONT.small, color: COLORS.darkGray },
-    { text: f.parentSop, fontSize: FONT.small, color: COLORS.medGray },
-    { text: f.status,    fontSize: FONT.small, color: f.status === 'active' ? COLORS.positive : COLORS.medGray, bold: f.status === 'active' },
-  ]);
-  content.push({
-    table: { headerRows: 1, widths: [120, '*', 35, 70, 45], body: [fmtHeader, ...fmtRows] },
-    layout: TABLE_LAYOUT,
-    margin: [0, 0, 0, 6],
-  });
+  // (Formats are no longer summarised here — see the full training pack in
+  // Appendix D, which is the document new hires read before their first day.)
+
+  // ── Appendix D — Formats Training Pack ──────────────────────────────────
+  // Full per-format spec page: purpose, audience, when used, key fields,
+  // workflow after submission, and a pointer to the live form or blank
+  // template. Organised by department so a new hire reads only what's
+  // relevant to them, but the full set lives here for cross-team awareness.
+  content.push(clauseHeading('D', 'Appendix D — Formats Training Pack'));
+  content.push(para(`This appendix is the on-boarding pack for every form (format) used across Rotehügels. ${FORMATS.length} formats are documented; each entry describes what the form captures, who fills it, when, what fields it has, and what happens after submission. Read end-to-end before your first day; refer back when you encounter a form for the first time.`));
+  content.push(para('Forms marked TO BE BUILT have no live blank template yet — the spec on this page authorises their construction (Pass 2 of the IMS rollout).'));
+
+  // Group by parent-SOP department label inferred from the format number prefix.
+  const formatGroupLabel: Record<string, string> = {
+    'F-ACC': 'Accounts & Finance',
+    'F-PRO': 'Procurement',
+    'F-WH':  'Warehouse & Stock',
+    'F-HR':  'Human Resources',
+    'F-ATS': 'Applicant Tracking',
+    'F-OPS': 'Operations & Lab',
+    'F-RND': 'Research & Development',
+    'F-ECO': 'Recycling Ecosystem',
+    'F-ENG': 'Engineering & Design',
+    'F-LEG': 'Legal & Compliance',
+    'F-SW':  'Software & Platform',
+    'F-QMS': 'Quality Management',
+    'F-IT':  'IT & Security',
+  };
+  const groupOrder = ['F-ACC', 'F-PRO', 'F-WH', 'F-HR', 'F-ATS', 'F-OPS', 'F-RND', 'F-ECO', 'F-ENG', 'F-LEG', 'F-SW', 'F-QMS', 'F-IT'];
+
+  let formatCounter = 0;
+  for (const prefix of groupOrder) {
+    const group = FORMATS.filter((f) => f.formatNo.startsWith(prefix + '-'));
+    if (group.length === 0) continue;
+
+    // Department band — same style as §8 dividers, smaller.
+    content.push({
+      table: {
+        widths: ['*'],
+        body: [[{
+          text: formatGroupLabel[prefix] ?? prefix,
+          fontSize: FONT.heading - 1,
+          bold: true,
+          color: COLORS.white,
+          fillColor: COLORS.darkGray,
+          characterSpacing: 0.5,
+          alignment: 'center',
+          margin: [0, 3, 0, 3],
+        }]],
+      },
+      layout: 'noBorders',
+      pageBreak: 'before',
+      margin: [0, 0, 0, 6],
+    });
+
+    group.forEach((f, idx) => {
+      formatCounter += 1;
+      // Header row for the format
+      const statusLabel = f.blankPending
+        ? 'TO BE BUILT (blank template pending)'
+        : (f.source.startsWith('/') || f.source.startsWith('http')
+            ? `Live form: ${f.source}`
+            : `Source: ${f.source}`);
+      const statusColor = f.blankPending ? '#dc2626' : COLORS.positive;
+
+      content.push({
+        text: [
+          { text: `§D.${formatCounter}  `,                                     fontSize: FONT.small, color: COLORS.medGray },
+          { text: f.formatNo,                                                  fontSize: FONT.heading, bold: true, color: COLORS.black },
+          { text: '   '   + (f.revision ? `(${f.revision})` : ''),             fontSize: FONT.small, color: COLORS.medGray },
+        ],
+        ...(idx > 0 ? { pageBreak: 'before' as const } : {}),
+        margin: [0, 0, 0, 1],
+      });
+      content.push({ text: f.title, fontSize: FONT.heading - 1, bold: true, color: COLORS.darkGray, margin: [0, 0, 0, 3] });
+      content.push({ text: statusLabel, fontSize: FONT.small, color: statusColor, bold: true, margin: [0, 0, 0, 4] });
+
+      // Spec block
+      const specRows: any[][] = [];
+      if (f.purpose)   specRows.push(['Purpose',      f.purpose]);
+      if (f.whoUses)   specRows.push(['Who fills',    f.whoUses]);
+      if (f.whenUsed)  specRows.push(['When',         f.whenUsed]);
+      specRows.push(['Parent SOP',                    f.parentSop]);
+
+      content.push({
+        table: {
+          widths: [70, '*'],
+          body: specRows.map(([k, v]) => [
+            { text: k as string, bold: true, fillColor: COLORS.headerBg, fontSize: FONT.small },
+            { text: v as string,                                          fontSize: FONT.small, color: COLORS.darkGray },
+          ]),
+        },
+        layout: TABLE_LAYOUT,
+        margin: [0, 0, 0, 4],
+      });
+
+      // Key fields
+      if (f.keyFields && f.keyFields.length > 0) {
+        content.push({ text: 'Key fields captured', fontSize: FONT.small, bold: true, color: COLORS.sectionHeader, characterSpacing: 0.4, margin: [0, 2, 0, 2] });
+        const kfHeader: any[] = [
+          { text: '#',       bold: true, fillColor: COLORS.headerBg, alignment: 'center', fontSize: FONT.small },
+          { text: 'Field',   bold: true, fillColor: COLORS.headerBg,                       fontSize: FONT.small },
+          { text: 'Note',    bold: true, fillColor: COLORS.headerBg,                       fontSize: FONT.small },
+        ];
+        const kfRows: any[][] = f.keyFields.map((kf, i) => [
+          { text: String(i + 1),  alignment: 'center', color: COLORS.medGray,  fontSize: FONT.small },
+          { text: kf.label,        bold: true,           color: COLORS.black,    fontSize: FONT.small },
+          { text: kf.note ?? '—', color: COLORS.darkGray,                       fontSize: FONT.small },
+        ]);
+        content.push({
+          table: { headerRows: 1, widths: [22, 140, '*'], body: [kfHeader, ...kfRows] },
+          layout: TABLE_LAYOUT,
+          margin: [0, 0, 0, 4],
+        });
+      }
+
+      // Workflow
+      if (f.workflow) {
+        content.push({ text: 'After submission', fontSize: FONT.small, bold: true, color: COLORS.sectionHeader, characterSpacing: 0.4, margin: [0, 2, 0, 2] });
+        content.push({ text: f.workflow, fontSize: FONT.small, color: COLORS.darkGray, lineHeight: 1.35, margin: [0, 0, 0, 4] });
+      }
+
+      // Spacer to next format on same page
+      content.push({ text: '', margin: [0, 0, 0, 2] });
+    });
+  }
 
   // End-of-document
   content.push({ text: '\n\n', pageBreak: 'before' });

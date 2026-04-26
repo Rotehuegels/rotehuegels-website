@@ -59,35 +59,60 @@ export async function POST(req: Request) {
 
   const data = parsed.data;
 
-  // Check for duplicate email
+  // Check for an existing row at this email. Three possible states:
+  //   1. None — fresh registration; INSERT a new row.
+  //   2. Pre-seed (rex_id begins 'REX-PRE-') — HR pre-populated the row from
+  //      the contact page or similar. UPGRADE: re-generate the proper rex_id
+  //      from the submitted DOB and UPDATE the row with everything they typed.
+  //      The FK on employees.rex_id has ON UPDATE CASCADE so the linked
+  //      employee record follows the new rex_id automatically.
+  //   3. Real prior registration — reject with 409 as before.
   const { data: existing } = await supabaseAdmin
     .from('rex_members')
     .select('rex_id')
     .eq('email', data.email)
     .maybeSingle();
 
-  if (existing) {
+  const isPreSeed = existing && existing.rex_id.startsWith('REX-PRE-');
+  if (existing && !isPreSeed) {
     return NextResponse.json(
       { error: 'This email address is already registered. Each person may register only once.' },
       { status: 409 }
     );
   }
 
-  // Generate REX ID
+  // Generate the real REX ID from DOB
   const rex_id = await generateRexId(data.date_of_birth);
 
-  // Insert member
-  const { error: dbError } = await supabaseAdmin.from('rex_members').insert([{
-    rex_id,
-    title: data.title,
-    full_name: data.full_name,
-    date_of_birth: data.date_of_birth,
-    email: data.email,
-    linkedin_url: data.linkedin_url || null,
-    cv_url: data.cv_url || null,
-    member_type: data.member_type,
-    interests: data.interests || null,
-  }]);
+  let dbError;
+  if (isPreSeed) {
+    // UPGRADE: keep the row's primary key migration via FK CASCADE
+    const upd = await supabaseAdmin.from('rex_members').update({
+      rex_id,
+      title:         data.title,
+      full_name:     data.full_name,
+      date_of_birth: data.date_of_birth,
+      // email unchanged (it's the lookup key)
+      linkedin_url:  data.linkedin_url || null,
+      cv_url:        data.cv_url || null,
+      member_type:   data.member_type,
+      interests:     data.interests || null,
+    }).eq('rex_id', existing.rex_id);
+    dbError = upd.error;
+  } else {
+    const ins = await supabaseAdmin.from('rex_members').insert([{
+      rex_id,
+      title:         data.title,
+      full_name:     data.full_name,
+      date_of_birth: data.date_of_birth,
+      email:         data.email,
+      linkedin_url:  data.linkedin_url || null,
+      cv_url:        data.cv_url || null,
+      member_type:   data.member_type,
+      interests:     data.interests || null,
+    }]);
+    dbError = ins.error;
+  }
 
   if (dbError) {
     // Handle race condition on duplicate rex_id (extremely rare)

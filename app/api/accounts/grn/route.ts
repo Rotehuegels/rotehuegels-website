@@ -55,10 +55,11 @@ export async function POST(req: Request) {
 
   const { items, ...grnData } = parsed.data;
 
-  // Generate GRN number
-  const { count } = await supabaseAdmin.from('goods_receipt_notes').select('*', { count: 'exact', head: true });
-  const seq = String((count ?? 0) + 1).padStart(4, '0');
-  const grnNo = `GRN-${seq}`;
+  // Generate GRN number atomically. Same race fix as PO numbering.
+  const { data: grnNo, error: grnNoErr } = await supabaseAdmin.rpc('next_grn_no');
+  if (grnNoErr || !grnNo) {
+    return NextResponse.json({ error: 'Could not generate GRN number.' }, { status: 500 });
+  }
 
   const { data: grn, error } = await supabaseAdmin
     .from('goods_receipt_notes')

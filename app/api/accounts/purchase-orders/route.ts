@@ -99,13 +99,13 @@ export async function POST(req: Request) {
   const parsed = POSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
-  // Generate PO number: PO-YYYY-NNN
-  const year = new Date(parsed.data.po_date).getFullYear();
-  const { count } = await supabaseAdmin
-    .from('purchase_orders')
-    .select('*', { count: 'exact', head: true });
-  const seq = String((count ?? 0) + 1).padStart(3, '0');
-  const po_no = `PO-${year}-${seq}`;
+  // Generate PO number atomically via next_po_no() RPC. The previous
+  // count()-based pattern was racy under concurrent POSTs (two requests
+  // could read the same count and produce duplicate PO-YYYY-NNN).
+  const { data: po_no, error: noErr } = await supabaseAdmin.rpc('next_po_no', { p_date: parsed.data.po_date });
+  if (noErr || !po_no) {
+    return NextResponse.json({ error: 'Could not generate PO number.' }, { status: 500 });
+  }
 
   const { items, ...poData } = parsed.data;
 

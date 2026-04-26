@@ -91,12 +91,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     };
   });
 
-  // Generate PO number
-  const year = new Date(poDate).getFullYear();
-  const { count } = await supabaseAdmin
-    .from('purchase_orders')
-    .select('*', { count: 'exact', head: true });
-  const po_no = `PO-${year}-${String((count ?? 0) + 1).padStart(3, '0')}`;
+  // Generate PO number atomically (same pattern as the bare PO POST)
+  const { data: po_no, error: noErr } = await supabaseAdmin.rpc('next_po_no', { p_date: poDate });
+  if (noErr || !po_no) {
+    return NextResponse.json({ error: 'Could not generate PO number.' }, { status: 500 });
+  }
 
   const { data: po, error: poErr } = await supabaseAdmin
     .from('purchase_orders')

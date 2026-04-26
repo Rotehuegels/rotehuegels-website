@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { sendPOConfirmation } from '@/lib/notifications';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -105,14 +106,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const { items, ...poFields } = parsed.data;
 
-  // Approval gate — block "draft → sent" while there's an open approval on this PO.
+  // Track whether we're transitioning into 'sent' so we can email the supplier
+  // afterwards. We need to know the PRIOR status to avoid re-mailing on every PATCH.
+  let willSendToSupplier = false;
   if (poFields.status === 'sent') {
-    const { data: approval } = await supabaseAdmin
-      .from('approvals')
-      .select('status')
-      .eq('entity_type', 'purchase_order')
-      .eq('entity_id',   id)
-      .maybeSingle();
+    const [{ data: approval }, { data: prior }] = await Promise.all([
+      supabaseAdmin
+        .from('approvals').select('status')
+        .eq('entity_type', 'purchase_order').eq('entity_id', id).maybeSingle(),
+      supabaseAdmin
+        .from('purchase_orders').select('status').eq('id', id).single(),
+    ]);
     if (approval && approval.status === 'pending') {
       return NextResponse.json({
         error: 'This PO needs approval before it can be sent. Check /d/approvals.',
@@ -123,6 +127,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         error: 'This PO was rejected during approval and cannot be sent. Cancel it or revise and resubmit.',
       }, { status: 409 });
     }
+    if (prior && prior.status !== 'sent') willSendToSupplier = true;
   }
 
   const { error: poError } = await supabaseAdmin
@@ -148,7 +153,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
   }
 
-  return NextResponse.json({ success: true });
+  // Auto-email the supplier when status transitioned into 'sent'. Fail-safe —
+  // a missing supplier email or SMTP outage shouldn't unwind the status change.
+  let emailedSupplier = false;
+  if (willSendToSupplier) {
+    try {
+      await sendPOConfirmation(id);
+      emailedSupplier = true;
+    } catch (err) {
+      console.warn('[purchase-orders] auto-send to supplier failed:', err);
+    }
+  }
+
+  return NextResponse.json({ success: true, emailed_supplier: emailedSupplier });
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {

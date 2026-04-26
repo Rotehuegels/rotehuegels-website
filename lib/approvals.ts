@@ -3,6 +3,16 @@
 // The approvals API + UI handle the rest (decide, list-mine, etc).
 
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import {
+  sendApprovalRequestedEmail,
+  sendApprovalCompletedEmail,
+} from '@/lib/notifications';
+
+// Email failures must never block the approval state change. Caller code
+// already runs in API request scope; we don't want a stuck SMTP to 500.
+function fireAndForget(p: Promise<unknown>, label: string) {
+  p.catch((err) => console.warn(`[approvals] email "${label}" failed:`, err));
+}
 
 export type ChainStep = {
   level:           number;
@@ -62,6 +72,10 @@ export async function requestApproval(args: RequestArgs): Promise<{ id: string; 
     .single();
 
   if (error || !data) throw new Error(error?.message ?? 'Failed to create approval');
+
+  // Notify the first approver in the chain (fire-and-forget).
+  fireAndForget(sendApprovalRequestedEmail(data.id as string), 'requested:' + data.id);
+
   return { id: data.id as string, created: true };
 }
 
@@ -155,6 +169,14 @@ export async function decide(args: {
     })
     .eq('id', args.approval_id);
   if (updErr) throw new Error(updErr.message);
+
+  // Email side-effects (fire-and-forget so SMTP issues don't break the API).
+  if (completedAt) {
+    fireAndForget(sendApprovalCompletedEmail(args.approval_id), 'completed:' + args.approval_id);
+  } else if (newLevel !== row.current_level) {
+    // Chain advanced — ping the next approver.
+    fireAndForget(sendApprovalRequestedEmail(args.approval_id), 'next-step:' + args.approval_id);
+  }
 
   return { status: newStatus, current_level: newLevel, completed: !!completedAt };
 }

@@ -5,7 +5,7 @@
 import nodemailer from "nodemailer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getCompanyCO } from "@/lib/company";
-import { generateInvoicePdfBuffer } from "@/lib/invoicePdf";
+import { generateInvoicePdfBuffer, type InvoicePdfOpts } from "@/lib/invoicePdf";
 import { generatePurchaseOrderPdfBuffer } from "@/lib/purchaseOrderPdf";
 
 /* ── SMTP setup (mirrors lib/mailer.ts) ──────────────────────────────────── */
@@ -142,7 +142,16 @@ const SALES_FROM = "Rotehügels Sales <noreply@rotehuegels.com>";
 
 /* ── 1. Order Confirmation / Invoice Email ───────────────────────────────── */
 
-export async function sendOrderConfirmation(orderId: string) {
+export async function sendOrderConfirmation(
+  orderId: string,
+  opts: InvoicePdfOpts = {},
+) {
+  // Stage-filtered invoice (e.g., single stage or cumulative) — takes a
+  // different code path with a slimmer, stage-focused email body.
+  if (opts.stage != null || opts.upto != null) {
+    return sendStageInvoice(orderId, opts);
+  }
+
   const CO = await getCompanyCO();
   const { data: order, error } = await supabaseAdmin
     .from("orders")
@@ -318,6 +327,141 @@ export async function sendOrderConfirmation(orderId: string) {
     .from("orders")
     .update({ last_emailed_at: new Date().toISOString() })
     .eq("id", orderId);
+}
+
+/* ── 1b. Stage-specific Invoice Email ────────────────────────────────────── */
+
+async function sendStageInvoice(orderId: string, opts: InvoicePdfOpts) {
+  const CO = await getCompanyCO();
+
+  const [orderRes, stagesRes] = await Promise.all([
+    supabaseAdmin.from("orders").select("*, customers(email, cc_emails)").eq("id", orderId).single(),
+    supabaseAdmin.from("order_payment_stages").select("*").eq("order_id", orderId).order("stage_number"),
+  ]);
+  if (orderRes.error || !orderRes.data) throw new Error(`Order not found: ${orderId}`);
+  const order = orderRes.data;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clientEmail = (order as any).customers?.email;
+  if (!clientEmail) throw new Error("Order has no linked customer email address.");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ccList = ((order as any).customers?.cc_emails ?? []) as CcEntry[];
+
+  const allStages = stagesRes.data ?? [];
+  const filtered = opts.upto != null
+    ? allStages.filter(s => s.stage_number <= opts.upto!)
+    : allStages.filter(s => s.stage_number === opts.stage!);
+  if (!filtered.length) throw new Error(`No stages match filter (stage=${opts.stage}, upto=${opts.upto})`);
+
+  // Generate PDF first — fail-hard.
+  const pdf = await generateInvoicePdfBuffer(orderId, opts);
+
+  const isCumulative = opts.upto != null;
+  const stageLabel = isCumulative ? `Stages 1–${opts.upto}` : `Stage ${opts.stage}`;
+  const headline = isCumulative
+    ? `Invoice — ${stageLabel}`
+    : `Invoice — Stage ${opts.stage}: ${filtered[0].stage_name}`;
+
+  const baseSum = filtered.reduce((s, x) => s + Number(x.amount_due ?? 0), 0);
+  const gstSum  = filtered.reduce((s, x) => s + Number(x.gst_on_stage ?? 0), 0);
+  const tdsSum  = filtered.reduce((s, x) => s + Number(x.tds_amount ?? 0), 0);
+  const gross   = baseSum + gstSum;
+  const net     = gross - tdsSum;
+
+  const stageRowsHtml = filtered.map(s => `
+    <tr style="border-bottom:1px solid #eee;">
+      <td style="padding:6px 8px;font-size:11px;text-align:center;">${s.stage_number}</td>
+      <td style="padding:6px 8px;font-size:11px;">${esc(s.stage_name)}</td>
+      <td style="padding:6px 8px;font-size:11px;text-align:right;font-family:monospace;">${fmt(Number(s.amount_due ?? 0))}</td>
+      <td style="padding:6px 8px;font-size:11px;text-align:right;font-family:monospace;">${fmt(Number(s.gst_on_stage ?? 0))}</td>
+      <td style="padding:6px 8px;font-size:11px;text-align:right;font-family:monospace;">${fmt(Number(s.tds_amount ?? 0))}</td>
+      <td style="padding:6px 8px;font-size:11px;text-align:right;font-weight:700;font-family:monospace;">${fmt(Number(s.net_receivable ?? 0))}</td>
+    </tr>`).join("");
+
+  const invoiceDateRaw = filtered[filtered.length - 1].invoice_date ?? new Date().toISOString();
+
+  const html = `${letterhead(CO, "Tax Invoice")}
+    <p style="font-size:13px;">Dear <strong>${esc(order.client_name)}</strong>,</p>
+    <p style="font-size:12px;color:#444;">Please find attached the tax invoice for <strong>${esc(stageLabel)}</strong> of Order <strong>${esc(order.order_no)}</strong>.</p>
+
+    <table style="font-size:12px;line-height:1.8;margin:12px 0;">
+      <tr><td style="color:#666;padding-right:14px;">Order No</td><td style="font-weight:700;font-family:monospace;">${esc(order.order_no)}</td></tr>
+      <tr><td style="color:#666;padding-right:14px;">Order Date</td><td>${fmtDate(order.order_date)}</td></tr>
+      <tr><td style="color:#666;padding-right:14px;">Invoice Date</td><td>${fmtDate(invoiceDateRaw)}</td></tr>
+      <tr><td style="color:#666;padding-right:14px;">Invoice Scope</td><td style="font-weight:700;">${esc(stageLabel)}</td></tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;margin:12px 0;">
+      <thead>
+        <tr style="background:#f5f5f5;">
+          <th style="padding:6px 8px;font-size:10px;text-align:center;border-bottom:2px solid #ddd;">Stage</th>
+          <th style="padding:6px 8px;font-size:10px;text-align:left;border-bottom:2px solid #ddd;">Description</th>
+          <th style="padding:6px 8px;font-size:10px;text-align:right;border-bottom:2px solid #ddd;">Base</th>
+          <th style="padding:6px 8px;font-size:10px;text-align:right;border-bottom:2px solid #ddd;">GST</th>
+          <th style="padding:6px 8px;font-size:10px;text-align:right;border-bottom:2px solid #ddd;">TDS</th>
+          <th style="padding:6px 8px;font-size:10px;text-align:right;border-bottom:2px solid #ddd;">Net</th>
+        </tr>
+      </thead>
+      <tbody>${stageRowsHtml}</tbody>
+      <tfoot>
+        <tr style="background:#f9f9f9;border-top:2px solid #ddd;">
+          <td colspan="2" style="padding:8px;font-size:12px;text-align:right;font-weight:700;">Totals</td>
+          <td style="padding:8px;font-size:12px;text-align:right;font-weight:700;font-family:monospace;">${fmt(baseSum)}</td>
+          <td style="padding:8px;font-size:12px;text-align:right;font-weight:700;font-family:monospace;">${fmt(gstSum)}</td>
+          <td style="padding:8px;font-size:12px;text-align:right;font-weight:700;font-family:monospace;">${fmt(tdsSum)}</td>
+          <td style="padding:8px;font-size:13px;text-align:right;font-weight:900;font-family:monospace;">${fmt(net)}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div style="border:1px solid #ddd;border-radius:4px;padding:10px 12px;margin:12px 0;background:#fafafa;">
+      <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Payable Summary</div>
+      <table style="width:100%;font-size:11px;border-collapse:collapse;">
+        <tr><td style="padding:3px 0;color:#555;">Invoice Value (Base + GST)</td><td style="padding:3px 0;text-align:right;font-family:monospace;">${fmt(gross)}</td></tr>
+        <tr><td style="padding:3px 0;color:#555;">Less: TDS</td><td style="padding:3px 0;text-align:right;color:#16a34a;font-family:monospace;">−${fmt(tdsSum)}</td></tr>
+        <tr style="border-top:2px solid #111;">
+          <td style="padding:5px 0 3px;font-weight:900;font-size:12px;">Net Receivable</td>
+          <td style="padding:5px 0 3px;text-align:right;font-weight:900;font-family:monospace;font-size:12px;color:#dc2626;">${fmt(net)}</td>
+        </tr>
+      </table>
+    </div>
+
+    ${bankDetailsHtml(CO)}
+
+    <p style="font-size:12px;color:#444;margin-top:16px;">The full tax invoice for ${esc(stageLabel)} (with HSN/SAC codes, GST breakdown, bank details and UPI QR for immediate payment) is attached as a PDF: <strong>${esc(pdf.filename)}</strong>.</p>
+    <p style="font-size:11px;color:#666;margin-top:8px;">If you have any questions regarding this invoice, please reply to this email or contact us at ${CO.email}.</p>
+  ${footer(CO)}`;
+
+  const text = [
+    `TAX INVOICE — ${stageLabel} — ${order.order_no}`,
+    ``,
+    `Dear ${order.client_name},`,
+    ``,
+    `Please find attached the tax invoice for ${stageLabel} of Order ${order.order_no}.`,
+    ``,
+    `Order Date: ${fmtDate(order.order_date)}`,
+    `Invoice Date: ${fmtDate(invoiceDateRaw)}`,
+    ``,
+    ...filtered.map(s => `Stage ${s.stage_number}: ${s.stage_name} — Base ${fmt(Number(s.amount_due ?? 0))} + GST ${fmt(Number(s.gst_on_stage ?? 0))} − TDS ${fmt(Number(s.tds_amount ?? 0))} = Net ${fmt(Number(s.net_receivable ?? 0))}`),
+    ``,
+    `Invoice Value: ${fmt(gross)}`,
+    `Less TDS: ${fmt(tdsSum)}`,
+    `Net Receivable: ${fmt(net)}`,
+    ``,
+    `Full invoice attached as PDF: ${pdf.filename}`,
+    ``,
+    `For queries contact ${CO.email} or ${CO.phone}.`,
+    `— ${CO.name}`,
+  ].join("\n");
+
+  await send(
+    clientEmail,
+    `${headline} — ${order.order_no} | ${CO.name}`,
+    html,
+    text,
+    SALES_FROM,
+    ccList,
+    [{ filename: pdf.filename, content: pdf.buffer, contentType: 'application/pdf' }],
+  );
 }
 
 /* ── 2. Payment Receipt ──────────────────────────────────────────────────── */
@@ -790,4 +934,115 @@ export async function sendCandidateStageEmail(applicationId: string, newStage: s
     html,
     `Dear ${app.applicant_name},\n\n${msg.body}\n\nPosition: ${jobTitle}\nStatus: ${newStage}\n\nBest regards,\nRotehügels HR Team`
   );
+}
+
+/* ── Approval framework emails ─────────────────────────────────────────────── */
+
+const APPROVAL_FROM = "Rotehügels Approvals <noreply@rotehuegels.com>";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.rotehuegels.com";
+
+/**
+ * Email an approver that an item is waiting for their decision. Called when an
+ * approval is first created and when the chain advances to the next step.
+ */
+export async function sendApprovalRequestedEmail(approvalId: string) {
+  const CO = await getCompanyCO();
+  const { data: row, error } = await supabaseAdmin
+    .from("approvals")
+    .select("id, entity_type, entity_label, requested_by_email, status, current_level, total_levels, approval_chain, amount, notes")
+    .eq("id", approvalId)
+    .single();
+  if (error || !row) return;
+  if (row.status !== "pending") return;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chain = row.approval_chain as any[];
+  const step = chain.find((s) => s.level === row.current_level);
+  const approverEmail = step?.approver_email;
+  if (!approverEmail) return;
+
+  const subject = `[Approval needed] ${row.entity_label ?? row.entity_type}`;
+  const link = `${SITE_URL}/d/approvals?tab=mine`;
+
+  const html = `${letterhead(CO, "Approval Needed")}
+    <p style="font-size:13px;">An item is waiting for your approval.</p>
+    <table style="font-size:12px;line-height:1.8;margin:12px 0;">
+      <tr><td style="color:#666;padding-right:14px;">Item</td><td style="font-weight:700;">${esc(row.entity_label ?? row.entity_type)}</td></tr>
+      <tr><td style="color:#666;padding-right:14px;">Type</td><td style="text-transform:capitalize;">${esc(row.entity_type.replace("_", " "))}</td></tr>
+      ${row.amount != null ? `<tr><td style="color:#666;padding-right:14px;">Amount</td><td style="font-weight:700;font-family:monospace;">₹ ${Number(row.amount).toLocaleString("en-IN")}</td></tr>` : ""}
+      ${row.requested_by_email ? `<tr><td style="color:#666;padding-right:14px;">Requested by</td><td>${esc(row.requested_by_email)}</td></tr>` : ""}
+      ${row.total_levels > 1 ? `<tr><td style="color:#666;padding-right:14px;">Step</td><td>${row.current_level} of ${row.total_levels}</td></tr>` : ""}
+    </table>
+    ${row.notes ? `<p style="font-size:12px;color:#444;font-style:italic;">${esc(row.notes)}</p>` : ""}
+    <p style="margin-top:18px;">
+      <a href="${link}" style="display:inline-block;padding:10px 18px;background:#dc2626;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;font-size:13px;">Review &amp; decide</a>
+    </p>
+    <p style="font-size:11px;color:#888;margin-top:14px;">Or copy this link into a browser: <a href="${link}">${link}</a></p>
+  ${footer(CO)}`;
+
+  const text = [
+    `Approval needed: ${row.entity_label ?? row.entity_type}`,
+    ``,
+    `Type: ${row.entity_type}`,
+    row.amount != null ? `Amount: ₹${Number(row.amount).toLocaleString("en-IN")}` : "",
+    row.requested_by_email ? `Requested by: ${row.requested_by_email}` : "",
+    row.total_levels > 1 ? `Step: ${row.current_level}/${row.total_levels}` : "",
+    ``,
+    `Review and decide: ${link}`,
+    ``,
+    `— ${CO.name}`,
+  ].filter(Boolean).join("\n");
+
+  await send(approverEmail, subject, html, text, APPROVAL_FROM);
+}
+
+/**
+ * Email the requester when an approval chain reaches a terminal state.
+ * Sends one email — either "approved" or "rejected" — with the final notes.
+ */
+export async function sendApprovalCompletedEmail(approvalId: string) {
+  const CO = await getCompanyCO();
+  const { data: row, error } = await supabaseAdmin
+    .from("approvals")
+    .select("id, entity_type, entity_label, requested_by_email, status, approval_chain, amount")
+    .eq("id", approvalId)
+    .single();
+  if (error || !row || !row.requested_by_email) return;
+  if (row.status !== "approved" && row.status !== "rejected") return;
+
+  const isApproved = row.status === "approved";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chain = (row.approval_chain ?? []) as any[];
+  const lastAction = [...chain].reverse().find((s) => s.acted_at);
+
+  const subject = `[${isApproved ? "Approved" : "Rejected"}] ${row.entity_label ?? row.entity_type}`;
+  const link = `${SITE_URL}/d/approvals`;
+
+  const html = `${letterhead(CO, isApproved ? "Your request was approved" : "Your request was rejected")}
+    <p style="font-size:13px;">Your ${esc(row.entity_type.replace("_", " "))} request has been <strong style="color:${isApproved ? "#059669" : "#dc2626"};">${isApproved ? "approved" : "rejected"}</strong>.</p>
+    <table style="font-size:12px;line-height:1.8;margin:12px 0;">
+      <tr><td style="color:#666;padding-right:14px;">Item</td><td style="font-weight:700;">${esc(row.entity_label ?? row.entity_type)}</td></tr>
+      ${row.amount != null ? `<tr><td style="color:#666;padding-right:14px;">Amount</td><td style="font-family:monospace;">₹ ${Number(row.amount).toLocaleString("en-IN")}</td></tr>` : ""}
+      ${lastAction?.acted_by_email ? `<tr><td style="color:#666;padding-right:14px;">${isApproved ? "Approved" : "Rejected"} by</td><td>${esc(lastAction.acted_by_email)}</td></tr>` : ""}
+    </table>
+    ${lastAction?.notes ? `<p style="font-size:12px;color:#444;background:#f9f9f9;padding:10px 14px;border-left:3px solid ${isApproved ? "#059669" : "#dc2626"};">${esc(lastAction.notes)}</p>` : ""}
+    <p style="margin-top:18px;">
+      <a href="${link}" style="display:inline-block;padding:10px 18px;background:#27272a;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;font-size:13px;">View on dashboard</a>
+    </p>
+  ${footer(CO)}`;
+
+  const text = [
+    `${isApproved ? "Approved" : "Rejected"}: ${row.entity_label ?? row.entity_type}`,
+    ``,
+    row.amount != null ? `Amount: ₹${Number(row.amount).toLocaleString("en-IN")}` : "",
+    lastAction?.acted_by_email ? `${isApproved ? "Approved" : "Rejected"} by: ${lastAction.acted_by_email}` : "",
+    lastAction?.notes ? `\nNote: ${lastAction.notes}` : "",
+    ``,
+    `View: ${link}`,
+    ``,
+    `— ${CO.name}`,
+  ].filter(Boolean).join("\n");
+
+  await send(row.requested_by_email, subject, html, text, APPROVAL_FROM);
 }

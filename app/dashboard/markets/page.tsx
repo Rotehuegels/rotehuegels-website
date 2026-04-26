@@ -6,6 +6,7 @@
 
 import MarketOverview from '@/components/MarketOverview';
 import EconomicCalendar from '@/components/EconomicCalendar';
+import MarketINR from '@/components/MarketINR';
 
 export default function DashboardMarkets() {
   return (
@@ -16,8 +17,12 @@ export default function DashboardMarkets() {
         </h1>
         <p className="mt-2 text-zinc-300 max-w-[1800px]">
           Live metals overview (LME, copper, aluminium, zinc, gold, silver) alongside
-          the global economic calendar. Data via TradingView.
+          MCX India INR pricing and the global economic calendar.
         </p>
+      </div>
+
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 md:p-5 mb-6">
+        <MarketINR />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -43,7 +48,8 @@ export default function DashboardMarkets() {
       </div>
 
       <p className="mt-6 text-xs text-zinc-500">
-        Tip: use the widget controls to change timeframe, symbols, or filters.
+        Tip: use the widget controls to change timeframe, symbols, or filters. INR feed
+        refreshes every 60 seconds.
       </p>
     </section>
   );

@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
-import { requestApproval } from '@/lib/approvals';
+import { requestApproval, resolveApproverEmail } from '@/lib/approvals';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -127,31 +127,38 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: itemsErr.message }, { status: 500 });
   }
 
-  // Threshold-driven approval gate. If po.approval_threshold is configured and
-  // the PO total exceeds it AND po.approver_email is set, request approval.
-  // The PO can stay in 'draft' but won't be allowed to move to 'sent' until
-  // the approval clears (enforced by the PATCH handler in [id]/route.ts).
+  // Threshold-driven approval gate. The approver is resolved through the org
+  // chart cascade: po.approver_position_id (default 'cfo') walks up reports_to_id
+  // until it finds a filled position, then uses that employee's email. If the
+  // entire chain is vacant (typical for solo ops before any positions are filled),
+  // we skip the gate — there's no one to route to. Once the CEO position is
+  // assigned to a real employee, the cascade always resolves and gates kick in.
   let approvalRequested = false;
   try {
     const { data: settings } = await supabaseAdmin
       .from('app_settings')
       .select('key, value')
-      .in('key', ['po.approval_threshold', 'po.approver_email']);
+      .in('key', ['po.approval_threshold', 'po.approver_position_id']);
     const cfg = Object.fromEntries((settings ?? []).map((r) => [r.key, r.value]));
-    const threshold = Number(cfg['po.approval_threshold'] ?? 0);
-    const approver  = String(cfg['po.approver_email'] ?? '').trim();
-    if (threshold > 0 && approver && parsed.data.total_amount > threshold) {
-      await requestApproval({
-        entity_type:        'purchase_order',
-        entity_id:          po.id,
-        entity_label:       `${po.po_no} — ₹${parsed.data.total_amount.toLocaleString('en-IN')}`,
-        requested_by_id:    user.id,
-        requested_by_email: user.email ?? undefined,
-        amount:             parsed.data.total_amount,
-        approver_emails:    [approver],
-        notes:              `PO above ₹${threshold.toLocaleString('en-IN')} threshold`,
-      });
-      approvalRequested = true;
+    const threshold        = Number(cfg['po.approval_threshold'] ?? 0);
+    const approverPosition = String(cfg['po.approver_position_id'] ?? 'cfo').trim();
+
+    if (threshold > 0 && parsed.data.total_amount > threshold) {
+      const approverEmail = await resolveApproverEmail(approverPosition);
+      if (approverEmail) {
+        await requestApproval({
+          entity_type:        'purchase_order',
+          entity_id:          po.id,
+          entity_label:       `${po.po_no} — ₹${parsed.data.total_amount.toLocaleString('en-IN')}`,
+          requested_by_id:    user.id,
+          requested_by_email: user.email ?? undefined,
+          amount:             parsed.data.total_amount,
+          approver_emails:    [approverEmail],
+          notes:              `PO above ₹${threshold.toLocaleString('en-IN')} threshold (resolved via ${approverPosition})`,
+        });
+        approvalRequested = true;
+      }
+      // approverEmail null = entire chain vacant; PO goes through unblocked
     }
   } catch (e) {
     // Approval request shouldn't block PO creation — log and move on

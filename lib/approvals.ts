@@ -65,6 +65,26 @@ export async function requestApproval(args: RequestArgs): Promise<{ id: string; 
   return { id: data.id as string, created: true };
 }
 
+/**
+ * Resolve the email of whoever should approve at a given position. Walks the
+ * reporting chain (via the DB function) until it finds a filled position, then
+ * looks up that employee's email. Returns null if every position in the chain
+ * up to and including the root is vacant — caller decides whether to skip the
+ * gate or fall back to admin notifications.
+ */
+export async function resolveApproverEmail(positionId: string): Promise<string | null> {
+  const { data, error } = await supabaseAdmin.rpc('resolve_approver_for_position', {
+    p_position_id: positionId,
+  });
+  if (error || !data) return null;
+  const { data: emp } = await supabaseAdmin
+    .from('employees')
+    .select('email')
+    .eq('id', data as string)
+    .maybeSingle();
+  return emp?.email ?? null;
+}
+
 /** Given an entity, return the current approval status (or null if none). */
 export async function getApproval(entity_type: string, entity_id: string) {
   const { data } = await supabaseAdmin

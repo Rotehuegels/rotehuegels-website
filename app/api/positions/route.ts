@@ -37,10 +37,15 @@ export async function POST(req: Request) {
   const parsed = CreateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
-  // Verify the parent position exists so we don't create orphans.
-  const { data: parent } = await supabaseAdmin
-    .from('positions').select('id, level').eq('id', parsed.data.reports_to_id).maybeSingle();
+  // Pre-flight checks: surface a clean 400 instead of letting a Postgres
+  // FK violation bubble up as a 500. Both the parent position and the
+  // department must exist before we attempt the INSERT.
+  const [{ data: parent }, { data: dept }] = await Promise.all([
+    supabaseAdmin.from('positions').select('id, level').eq('id', parsed.data.reports_to_id).maybeSingle(),
+    supabaseAdmin.from('departments').select('id').eq('id', parsed.data.department_id).maybeSingle(),
+  ]);
   if (!parent) return NextResponse.json({ error: `Parent position "${parsed.data.reports_to_id}" not found.` }, { status: 400 });
+  if (!dept)   return NextResponse.json({ error: `Department "${parsed.data.department_id}" not found.` }, { status: 400 });
 
   const { data, error } = await supabaseAdmin
     .from('positions')

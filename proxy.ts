@@ -41,6 +41,7 @@ const PUBLIC_API = [
   '/api/cron/reminders',
   '/api/cron/stock-analysis',
   '/api/cron/tracking',
+  '/api/cron/auto-indents',
   // Diagnostics / feeds
   '/api/health',
   '/api/rss',

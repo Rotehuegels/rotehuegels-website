@@ -1077,6 +1077,148 @@ const NET_002: SOP = {
   kpis: ['Registration processing: < 48 hours', 'Partner data accuracy: > 99%', 'Annual review completion: 100% of active partners'],
 };
 
+// ── ECOSYSTEM / RECYCLING ─────────────────────────────────────────────────────
+
+const ECO_001: SOP = {
+  id: 'SOP-ECO-001',
+  title: 'E-Waste Pickup Request Intake',
+  department: 'Operations',
+  category: 'Circular Economy',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To establish a standard process for receiving, validating, and triaging e-waste pickup requests from customers (corporate, industrial, residential) so each request flows cleanly into the recycler-assignment step with no duplicates and no missing fields.',
+  scope: 'Applies to all incoming e-waste pickup requests via the public form (/recycling), email, or phone. Covers categorisation, verification of waste type, weight estimation, and initial communication with the requester.',
+  responsibilities: [
+    'Operations Coordinator: Receives request, validates details, sets initial status',
+    'Compliance Officer: Confirms the waste category aligns with CPCB / SPCB rules',
+    'Customer Success: Acknowledges the requester within 1 working day',
+  ],
+  procedure: [
+    { step: 1, action: 'Receive Request',           detail: 'Public form submissions land in the dashboard automatically. Phone / email requests must be entered into the same module so every pickup has a single source of truth.', system: '/d/recycling/requests' },
+    { step: 2, action: 'Validate Required Fields',  detail: 'Confirm contact name, phone, pickup address (with PIN code), waste category (Cat I/II/III/IV/V/VI/VII/VIII/IX), approximate weight or unit count, and preferred pickup window. Reject incomplete entries back to the requester with a single follow-up email.', system: '/d/recycling/requests' },
+    { step: 3, action: 'De-duplicate',              detail: 'Search by phone and address for existing requests in the last 30 days; merge into one request rather than creating duplicates.', system: '/d/recycling/requests' },
+    { step: 4, action: 'Categorise & Tag',          detail: 'Tag the request with category (1–9 per E-Waste Rules 2022), and flag any items that need special handling (CRT, batteries, refrigerants).', system: '/d/recycling/requests' },
+    { step: 5, action: 'Acknowledge Requester',     detail: 'Send the auto-acknowledgement email with the request reference number and expected next-step timeline (assignment within 2 working days).', system: 'Auto-email' },
+    { step: 6, action: 'Hand off to Assignment',    detail: 'Set status to "ready_for_assignment" so SOP-ECO-002 can pick it up.', system: '/d/recycling/requests' },
+  ],
+  relatedDocs: ['SOP-ECO-002 (Recycler Assignment & Routing)', 'CPCB E-Waste Rules 2022', 'EPR Compliance Checklist'],
+  kpis: ['Acknowledgement turnaround: < 1 working day', 'Field-completeness on intake: > 95%', 'Duplicate rate: < 2%'],
+};
+
+const ECO_002: SOP = {
+  id: 'SOP-ECO-002',
+  title: 'Recycler Assignment & Routing',
+  department: 'Operations',
+  category: 'Circular Economy',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To route a validated pickup request to the most appropriate registered recycler based on waste category, geographic proximity, current capacity, and regulatory authorisation status.',
+  scope: 'Applies to every pickup request in "ready_for_assignment" status. Covers eligibility check, recycler selection, assignment confirmation, and recycler acknowledgement.',
+  responsibilities: [
+    'Operations Coordinator: Picks the recycler and triggers the assignment',
+    'Recycler: Acknowledges within 24 hours of assignment',
+    'Compliance Officer: Audits assignments quarterly for category-rule alignment',
+  ],
+  procedure: [
+    { step: 1, action: 'Pull Eligible Recyclers',     detail: 'From the Ecosystem Directory filter recyclers by: (a) authorised for the waste category, (b) service radius covers the pickup PIN code, (c) license valid_until > today, (d) current load below capacity threshold.', system: '/d/ecosystem' },
+    { step: 2, action: 'Score & Select',              detail: 'Rank by distance, then capacity headroom, then prior performance score. Top 1 is the primary; top 2 is the fallback.', system: '/d/recycling/requests' },
+    { step: 3, action: 'Assign in System',            detail: 'Set recycler_id on the request; status moves to "assigned". An email with the pickup details (excluding sensitive customer info beyond what the recycler needs) is sent to the recycler.', system: '/d/recycling/requests' },
+    { step: 4, action: 'Capture Recycler ACK',        detail: 'Recycler logs into the recycler portal, confirms or declines within 24 hours. On decline, fall back to the next-ranked recycler. On accept, status → "scheduled".', system: '/recycling-portal' },
+    { step: 5, action: 'Notify Requester',            detail: 'Once recycler accepts, notify the original requester with the assigned recycler\'s name, vehicle/contact, and scheduled window.', system: 'Auto-email' },
+  ],
+  relatedDocs: ['SOP-ECO-001', 'SOP-ECO-003', 'Recycler Onboarding Checklist'],
+  kpis: ['Assignment turnaround: < 2 working days', 'Recycler ACK rate: > 90% accepted on first try', 'Coverage: every PIN code covered by ≥ 1 authorised recycler'],
+};
+
+const ECO_003: SOP = {
+  id: 'SOP-ECO-003',
+  title: 'Pickup Completion & Confirmation',
+  department: 'Operations',
+  category: 'Circular Economy',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To capture the actual pickup outcome (weights, item-counts, photographs, weighbridge slip) and reconcile with the request so the certificate (SOP-ECO-004) and EPR claim can be raised against verified data.',
+  scope: 'Applies between the moment a recycler arrives at the pickup location and the moment the waste is offloaded at the recycler facility.',
+  responsibilities: [
+    'Recycler Driver: Captures field data on the recycler portal mobile flow',
+    'Recycler Plant: Confirms received weight at the weighbridge',
+    'Operations Coordinator: Reviews variance and approves',
+  ],
+  procedure: [
+    { step: 1, action: 'On-site Capture',             detail: 'At pickup, recycler captures: actual weight (kg), photographs of the consignment, signed handover slip from the requester, and any deviations from the original request.', system: '/recycling-portal (mobile)' },
+    { step: 2, action: 'Weighbridge Reconciliation',  detail: 'Once the consignment reaches the recycler facility, the weighbridge slip is uploaded. Variance against on-site capture must be < 5%; larger variances flag for investigation.', system: '/recycling-portal' },
+    { step: 3, action: 'Status → "completed"',        detail: 'When the weighbridge entry is approved, the request transitions to "completed". The system computes the recycler invoice basis and reserves the data needed for SOP-ECO-004.', system: '/d/recycling/requests' },
+    { step: 4, action: 'Customer Notification',       detail: 'Auto-email to the original requester confirming pickup completion, with weight summary and a link to the certificate (when generated).', system: 'Auto-email' },
+    { step: 5, action: 'Discrepancy Handling',        detail: 'If material weight or category differs materially from the request, flag the request, hold the certificate, and route to the Compliance Officer for resolution within 3 working days.', system: '/d/recycling/requests' },
+  ],
+  relatedDocs: ['SOP-ECO-002', 'SOP-ECO-004 (Recycling Certificate Generation)', 'Weighbridge Calibration Schedule'],
+  kpis: ['Weight variance vs. weighbridge: < 5%', 'Pickup-to-completion cycle time: ≤ 7 days', 'Discrepancy resolution: < 3 working days'],
+};
+
+const ECO_004: SOP = {
+  id: 'SOP-ECO-004',
+  title: 'Recycling Certificate Generation',
+  department: 'Operations',
+  category: 'Circular Economy',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To produce a compliant, audit-ready Certificate of Recycling for every completed pickup so the requester can claim EPR credits and meet their statutory obligations.',
+  scope: 'Applies to every request in "completed" status with reconciled weighbridge data. Covers data assembly, PDF generation, digital signature, and delivery.',
+  responsibilities: [
+    'Compliance Officer: Reviews and signs the certificate',
+    'Operations Coordinator: Generates the PDF and emails the requester',
+    'Recycler: Provides any source-document copies needed for the audit pack',
+  ],
+  procedure: [
+    { step: 1, action: 'Eligibility Check',           detail: 'Confirm the request is "completed", has weighbridge variance < 5%, and the assigned recycler\'s authorisation is still valid as of the pickup date.', system: '/d/recycling/requests' },
+    { step: 2, action: 'Assemble Certificate Data',   detail: 'Pull requester details, pickup location & date, waste category & sub-category, weight (kg), recycler company name + CPCB / SPCB registration numbers, serial number for the certificate.', system: '/d/recycling/requests' },
+    { step: 3, action: 'Generate PDF',                detail: 'Use the IMS template via lib/reports. Output includes Rotehügels and recycler logos, the certificate serial (RC-YYYY-NNNN), QR code linking to the public verification page.', system: 'lib/reports' },
+    { step: 4, action: 'Sign & Issue',                detail: 'Compliance Officer signs digitally (or wet-signs if required by the requester). Status moves to "certificate_issued". File is filed under the request and a hash is stored for tamper verification.', system: '/d/recycling/requests' },
+    { step: 5, action: 'Deliver to Requester',        detail: 'Auto-email the certificate PDF to the requester. Cc the recycler. Update EPR claim system if applicable.', system: 'Auto-email' },
+    { step: 6, action: 'Archive',                     detail: 'Retain certificate + supporting documents for 5 years per CPCB record-keeping rules.', system: '/d/documents' },
+  ],
+  relatedDocs: ['SOP-ECO-003', 'CPCB E-Waste Rules 2022', 'Certificate Template (RC-YYYY-NNNN)'],
+  kpis: ['Certificate turnaround from completion: < 3 working days', 'Verification QR scan accuracy: 100%', 'Audit-trail completeness: 100% of issued certificates traceable to weighbridge slip'],
+};
+
+// ── PROCUREMENT — Indent (added 2026-04-26 alongside the new module) ──────────
+
+const PRO_004: SOP = {
+  id: 'SOP-PRO-004',
+  title: 'Indent (Purchase Requisition) Process',
+  department: 'Procurement',
+  category: 'Demand Management',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To document the formal demand-initiation step that precedes every Purchase Order. An Indent ensures that purchases are traceable to a specific requester, justified, approved, and prioritised before any commitment to a supplier is made.',
+  scope: 'Applies to all goods and services that need to be procured, including stores replenishment (auto-generated by SOP-PRO-005), capex, lab consumables, and one-off purchases.',
+  responsibilities: [
+    'Indent Initiator: Any user with procurement.view raises a draft indent with full details and justification',
+    'Department Head / Approver: Reviews and approves or rejects submitted indents',
+    'Procurement Officer: Converts approved indents into Purchase Orders, choosing supplier and finalising commercials',
+  ],
+  procedure: [
+    { step: 1, action: 'Raise Draft Indent',  detail: 'Navigate to Procurement > Indents > New. Enter department, required-by date, priority, justification, and at least one line item. Items can be picked from the stock master (auto-fills name + UoM) or typed as custom items.', system: '/d/indents/new' },
+    { step: 2, action: 'Add Line Items',      detail: 'For each item: name, description / spec, UoM, qty (> 0), and an estimated unit cost where known. The estimated total auto-computes. Attach a preferred supplier if known.', system: '/d/indents/new' },
+    { step: 3, action: 'Submit for Approval', detail: 'From the indent detail page, click Submit for Approval. The indent moves to status "submitted" and becomes read-only for the initiator.', system: '/d/indents/[id]' },
+    { step: 4, action: 'Approve or Reject',   detail: 'Department head reviews on /d/indents and clicks Approve or Reject (rejection requires a reason). Approval is captured with timestamp and approver email for audit.', system: '/d/indents/[id]' },
+    { step: 5, action: 'Convert to PO',       detail: 'Procurement officer opens the approved indent and clicks Convert to PO. A draft PO is created with line items mapped from the indent (default 18% IGST), notes link back to the indent number, and the indent moves to "converted".', system: '/d/indents/[id]' },
+    { step: 6, action: 'Cancel if Needed',    detail: 'Any indent that has not yet been converted can be cancelled (initiator or approver). Cancelled indents stay in the audit trail but are excluded from open-demand reports.', system: '/d/indents/[id]' },
+  ],
+  relatedDocs: ['SOP-ACC-004 (Purchase Order Processing)', 'SOP-PRO-001 (Stock & Inventory Management)', 'Approval Authority Matrix'],
+  kpis: ['Indent submission to approval: < 2 working days', 'Approval rate first-pass: > 80%', 'Indents that age beyond required-by date without conversion: < 5%'],
+};
+
 // ── SETTINGS ──────────────────────────────────────────────────────────────────
 
 const SET_001: SOP = {
@@ -1121,8 +1263,10 @@ export const ALL_SOPS: SOP[] = [
   OPS_001, OPS_002,
   // Sales (2)
   SAL_001, SAL_002,
-  // Procurement (3)
-  PRO_001, PRO_002, PRO_003,
+  // Procurement (4)
+  PRO_001, PRO_002, PRO_003, PRO_004,
+  // Ecosystem / Recycling (4)
+  ECO_001, ECO_002, ECO_003, ECO_004,
   // Finance (3)
   FIN_001, FIN_002, FIN_003,
   // Projects (2)

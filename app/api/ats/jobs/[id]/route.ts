@@ -49,9 +49,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const parsed = UpdateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
+  // Tag the row with the editor email so the version-snapshot trigger
+  // records who made the change.
   const { error } = await supabaseAdmin
     .from('job_postings')
-    .update({ ...parsed.data, updated_at: new Date().toISOString() })
+    .update({
+      ...parsed.data,
+      updated_at: new Date().toISOString(),
+      last_edited_by_email: user.email ?? null,
+    })
     .eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

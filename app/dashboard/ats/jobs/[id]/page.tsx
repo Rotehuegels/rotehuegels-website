@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Network } from 'lucide-react';
 import StageSelector from './StageSelector';
+import JobVersions from './JobVersions';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
@@ -144,6 +145,9 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           </div>
         )}
       </div>
+
+      {/* Edit history */}
+      <JobVersions jobId={job.id} />
     </div>
   );
 }

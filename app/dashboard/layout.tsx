@@ -6,6 +6,7 @@ import { getUserRole } from '@/lib/portalAuth';
 import Sidebar from '@/components/dashboard/Sidebar';
 import MobileNav from '@/components/dashboard/MobileNav';
 import MobileBottomNav from '@/components/dashboard/MobileBottomNav';
+import InstallAppButton from '@/components/dashboard/InstallAppButton';
 import InactivityGuard from '@/components/dashboard/InactivityGuard';
 
 export const metadata: Metadata = {
@@ -49,6 +50,10 @@ export default async function DashboardLayout({
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Mobile top bar + drawer */}
           <MobileNav userEmail={user.email ?? ''} userRole={role ?? 'admin'} permissions={permissions} />
+          {/* Install nudge — mobile-only, self-hides if installed/dismissed/unsupported. */}
+          <div className="md:hidden px-3 pt-3">
+            <InstallAppButton />
+          </div>
           {/* pb-20 leaves room for fixed mobile bottom bar (h-14 + safe-area). md+ has no bar so no padding. */}
           <div className="flex-1 pb-20 md:pb-0">
             {children}

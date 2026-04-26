@@ -88,16 +88,55 @@ export default function InstallAppButton({ compact = false }: { compact?: boolea
     localStorage.setItem('pwa-install-dismissed', String(Date.now()));
   };
 
+  const iosGuideModal = showIOSGuide ? (
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowIOSGuide(false)} />
+      <div className="relative w-full max-w-sm mx-4 mb-4 sm:mb-0 rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
+        <button onClick={() => setShowIOSGuide(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white">
+          <X className="h-5 w-5" />
+        </button>
+        <div className="text-center space-y-4">
+          <Smartphone className="h-10 w-10 text-emerald-400 mx-auto" />
+          <h3 className="text-lg font-bold text-white">Install on iOS</h3>
+          <p className="text-xs text-zinc-500">Adds a real app icon to your Home Screen — opens straight into the dashboard, works offline once cached, no App Store needed.</p>
+          <div className="text-sm text-zinc-400 space-y-3 text-left">
+            <div className="flex gap-3">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400">1</span>
+              <p>Tap the <strong className="text-white">Share</strong> button <span className="inline-block text-base align-middle">&#x2191;&#xFE0E;</span> at the bottom of Safari</p>
+            </div>
+            <div className="flex gap-3">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400">2</span>
+              <p>Scroll down and tap <strong className="text-white">Add to Home Screen</strong></p>
+            </div>
+            <div className="flex gap-3">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400">3</span>
+              <p>Tap <strong className="text-white">Add</strong> to confirm</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowIOSGuide(false)}
+            className="w-full rounded-xl bg-emerald-500/20 py-3 text-sm font-medium text-emerald-400"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   // ── Compact mode (sidebar/nav) ──────────────────────────────────────────
   if (compact) {
     return (
-      <button
-        onClick={handleInstall}
-        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-emerald-400 hover:bg-emerald-500/10 transition-colors"
-      >
-        <Download className="h-4 w-4 shrink-0" />
-        Install App
-      </button>
+      <>
+        <button
+          onClick={handleInstall}
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+        >
+          <Download className="h-4 w-4 shrink-0" />
+          Install App
+        </button>
+        {iosGuideModal}
+      </>
     );
   }
 
@@ -121,41 +160,7 @@ export default function InstallAppButton({ compact = false }: { compact?: boolea
         </button>
       </div>
 
-      {/* iOS Safari instructions modal */}
-      {showIOSGuide && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowIOSGuide(false)} />
-          <div className="relative w-full max-w-sm mx-4 mb-4 sm:mb-0 rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
-            <button onClick={() => setShowIOSGuide(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white">
-              <X className="h-5 w-5" />
-            </button>
-            <div className="text-center space-y-4">
-              <Smartphone className="h-10 w-10 text-emerald-400 mx-auto" />
-              <h3 className="text-lg font-bold text-white">Install on iOS</h3>
-              <div className="text-sm text-zinc-400 space-y-3 text-left">
-                <div className="flex gap-3">
-                  <span className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400">1</span>
-                  <p>Tap the <strong className="text-white">Share</strong> button <span className="inline-block text-base align-middle">&#x2191;&#xFE0E;</span> at the bottom of Safari</p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400">2</span>
-                  <p>Scroll down and tap <strong className="text-white">Add to Home Screen</strong></p>
-                </div>
-                <div className="flex gap-3">
-                  <span className="shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400">3</span>
-                  <p>Tap <strong className="text-white">Add</strong> to confirm</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowIOSGuide(false)}
-                className="w-full rounded-xl bg-emerald-500/20 py-3 text-sm font-medium text-emerald-400"
-              >
-                Got it
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {iosGuideModal}
     </>
   );
 }

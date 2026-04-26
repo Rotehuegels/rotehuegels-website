@@ -52,9 +52,10 @@ export type FormatEntry = {
   /** What happens after submit: where the record lands, who reviews, what
    *  downstream document or system action is triggered. */
   workflow?:   string;
-  /** True when the form is genuinely missing — no live ERP page, no PDF
-   *  generator, no offline blank. New hires can't be trained on it until
-   *  the blank template is built. Surfaced in Appendix D as "TO BE BUILT". */
+  /** Optional flag for formats added without a corresponding blank-form
+   *  template wired up. All current formats render through the generic
+   *  blank route at /api/ims/formats/[code]/blank/pdf, so this is unused
+   *  in practice — kept for future formats authored ahead of their blank. */
   blankPending?: boolean;
 };
 
@@ -273,7 +274,7 @@ export const FORMATS: FormatEntry[] = [
   },
   {
     formatNo: 'F-WH-03-CYCLECOUNT', title: 'Cycle Count Variance Sheet',
-    revision: 'Rev 1.0', parentSop: 'SOP-WH-003', status: 'active', source: '/d/stock', blankPending: true,
+    revision: 'Rev 1.0', parentSop: 'SOP-WH-003', status: 'active', source: '/d/stock',
     purpose: 'Captures physical-count vs system-stock variance for a chosen item set during a periodic cycle count.',
     whoUses: 'Warehouse Team, supervised by Internal Audit.',
     whenUsed: 'Per the cycle-count plan: A-class items monthly, B-class quarterly, C-class half-yearly. Also on demand after suspected mis-bookings.',
@@ -456,7 +457,7 @@ export const FORMATS: FormatEntry[] = [
   // ── R&D ───────────────────────────────────────────────────────────────
   {
     formatNo: 'F-RND-01-TRIAL-CHARTER', title: 'Pilot Trial Charter',
-    revision: 'Rev 1.0', parentSop: 'SOP-RND-001', status: 'active', source: '/d/documents', blankPending: true,
+    revision: 'Rev 1.0', parentSop: 'SOP-RND-001', status: 'active', source: '/d/documents',
     purpose: 'Charter document for a pilot-plant trial. States hypothesis, success criteria, conditions to be tested, safety + environmental controls.',
     whoUses: 'R&D Lead, signed off by CEO and OHS Officer.',
     whenUsed: 'Before any pilot trial is run on the in-house Zinc Dross Pilot or any equipment at the pilot facility.',
@@ -473,7 +474,7 @@ export const FORMATS: FormatEntry[] = [
   },
   {
     formatNo: 'F-RND-02-METHOD-VALIDATION', title: 'Method Validation Report',
-    revision: 'Rev 1.0', parentSop: 'SOP-RND-002', status: 'active', source: '/d/documents', blankPending: true,
+    revision: 'Rev 1.0', parentSop: 'SOP-RND-002', status: 'active', source: '/d/documents',
     purpose: 'Validates a new lab method (or a method moved to a new instrument) per ISO 17025 expectations: accuracy, precision, linearity, LOQ, ruggedness.',
     whoUses: 'R&D Method Owner, peer-reviewed by Lab Manager.',
     whenUsed: 'Before a method goes into production; on re-validation triggers (instrument change, calibration drift, customer challenge).',
@@ -577,7 +578,7 @@ export const FORMATS: FormatEntry[] = [
   // ── LEGAL / COMPLIANCE ────────────────────────────────────────────────
   {
     formatNo: 'F-LEG-01-CONTRACT-REQUEST', title: 'Contract Drafting Request',
-    revision: 'Rev 1.0', parentSop: 'SOP-LEG-001', status: 'active', source: '/d/documents', blankPending: true,
+    revision: 'Rev 1.0', parentSop: 'SOP-LEG-001', status: 'active', source: '/d/documents',
     purpose: 'Internal intake form for any new contract that needs Legal\'s attention — NDAs, MoUs, customer contracts, supplier MSAs.',
     whoUses: 'Any function (Sales, Procurement, HR, R&D); routed to Legal.',
     whenUsed: 'As soon as a counter-party indicates a contract is needed.',
@@ -593,7 +594,7 @@ export const FORMATS: FormatEntry[] = [
   },
   {
     formatNo: 'F-LEG-02-COMPLIANCE-CALENDAR', title: 'Statutory Compliance Calendar',
-    revision: 'Rev 1.0', parentSop: 'SOP-LEG-002', status: 'active', source: '/d/documents', blankPending: true,
+    revision: 'Rev 1.0', parentSop: 'SOP-LEG-002', status: 'active', source: '/d/documents',
     purpose: 'Year-at-a-glance schedule of every statutory filing the company owes — GST returns, TDS, EPF, ESI, ROC, professional tax, factory inspections.',
     whoUses: 'Legal & Compliance Officer; visible to Finance and CEO.',
     whenUsed: 'Reviewed monthly; rebuilt at the start of every financial year.',
@@ -612,7 +613,7 @@ export const FORMATS: FormatEntry[] = [
   // ── SOFTWARE & PLATFORM ───────────────────────────────────────────────
   {
     formatNo: 'F-SW-01-RELEASE-NOTES', title: 'Software Release Notes Template',
-    revision: 'Rev 1.0', parentSop: 'SOP-SW-001', status: 'active', source: '/d/documents', blankPending: true,
+    revision: 'Rev 1.0', parentSop: 'SOP-SW-001', status: 'active', source: '/d/documents',
     purpose: 'Standardises every release of AutoREX / Operon ERP / LabREX with: what shipped, what changed, who is impacted, what to test, what to communicate.',
     whoUses: 'Software Engineering, reviewed by CTO.',
     whenUsed: 'On every production release.',
@@ -631,7 +632,7 @@ export const FORMATS: FormatEntry[] = [
   // ── QUALITY MANAGEMENT ────────────────────────────────────────────────
   {
     formatNo: 'F-QMS-01-NCR', title: 'Non-Conformance Report (NCR)',
-    revision: 'Rev 1.0', parentSop: 'SOP-QMS-001', status: 'active', source: '/d/documents', blankPending: true,
+    revision: 'Rev 1.0', parentSop: 'SOP-QMS-001', status: 'active', source: '/d/documents',
     purpose: 'Captures any product, process, or supplier non-conformance — the controlled record that drives root-cause analysis and CAPA.',
     whoUses: 'Anyone observing a non-conformance — production, lab, warehouse, customer-success. Closed by the Quality Function.',
     whenUsed: 'The moment a non-conformance is identified. There is no threshold — every NCR is logged.',
@@ -650,7 +651,7 @@ export const FORMATS: FormatEntry[] = [
   },
   {
     formatNo: 'F-QMS-02-INTERNAL-AUDIT', title: 'Internal Audit Checklist',
-    revision: 'Rev 1.0', parentSop: 'SOP-QMS-001', status: 'active', source: '/d/documents', blankPending: true,
+    revision: 'Rev 1.0', parentSop: 'SOP-QMS-001', status: 'active', source: '/d/documents',
     purpose: 'Structured checklist used during an internal IMS audit to confirm a department\'s compliance with the SOPs, this manual, and the relevant ISO clauses.',
     whoUses: 'Internal Auditor (cannot audit own department).',
     whenUsed: 'Per the annual internal audit programme; risk-weighted areas more frequent.',

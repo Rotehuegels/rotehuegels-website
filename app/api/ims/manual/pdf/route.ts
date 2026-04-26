@@ -531,7 +531,7 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
   // relevant to them, but the full set lives here for cross-team awareness.
   content.push(clauseHeading('D', 'Appendix D — Formats Training Pack'));
   content.push(para(`This appendix is the on-boarding pack for every form (format) used across Rotehügels. ${FORMATS.length} formats are documented; each entry describes what the form captures, who fills it, when, what fields it has, and what happens after submission. Read end-to-end before your first day; refer back when you encounter a form for the first time.`));
-  content.push(para('Forms marked TO BE BUILT have no live blank template yet — the spec on this page authorises their construction (Pass 2 of the IMS rollout).'));
+  content.push(para('Every format has a printable blank PDF available at /api/ims/formats/<format-no>/blank/pdf — useful when the live system is unreachable, or when an auditor or trainee asks for the controlled blank.'));
 
   // Group by parent-SOP department label inferred from the format number prefix.
   const formatGroupLabel: Record<string, string> = {
@@ -578,13 +578,11 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
 
     group.forEach((f, idx) => {
       formatCounter += 1;
-      // Header row for the format
-      const statusLabel = f.blankPending
-        ? 'TO BE BUILT (blank template pending)'
-        : (f.source.startsWith('/') || f.source.startsWith('http')
-            ? `Live form: ${f.source}`
-            : `Source: ${f.source}`);
-      const statusColor = f.blankPending ? '#dc2626' : COLORS.positive;
+      // Source / live-form line.
+      const liveLine = (f.source.startsWith('/') || f.source.startsWith('http'))
+        ? `Live form: ${f.source}`
+        : `Source: ${f.source}`;
+      const blankLine = `Print blank: /api/ims/formats/${f.formatNo}/blank/pdf`;
 
       content.push({
         text: [
@@ -596,7 +594,8 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
         margin: [0, 0, 0, 1],
       });
       content.push({ text: f.title, fontSize: FONT.heading - 1, bold: true, color: COLORS.darkGray, margin: [0, 0, 0, 3] });
-      content.push({ text: statusLabel, fontSize: FONT.small, color: statusColor, bold: true, margin: [0, 0, 0, 4] });
+      content.push({ text: liveLine,  fontSize: FONT.small, color: COLORS.positive, bold: true, margin: [0, 0, 0, 1] });
+      content.push({ text: blankLine, fontSize: FONT.small, color: COLORS.medGray,                margin: [0, 0, 0, 4] });
 
       // Spec block
       const specRows: any[][] = [];

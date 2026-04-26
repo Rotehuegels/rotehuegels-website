@@ -60,6 +60,7 @@ export default function RecyclerRegisterPage() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMsg, setError] = useState('');
   const [regCode, setRegCode] = useState('');
+  const [agreed, setAgreed] = useState(false);
 
   function toggleCategory(cat: string) {
     setCapabilities(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
@@ -68,6 +69,7 @@ export default function RecyclerRegisterPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (capabilities.length === 0) { setError('Please select at least one waste category.'); return; }
+    if (!agreed) { setError('Please agree to the compliance terms before submitting.'); return; }
     setStatus('loading');
     setError('');
 
@@ -264,10 +266,29 @@ export default function RecyclerRegisterPage() {
             <p>You agree to provide processing certificates and maintain records as required by law. Delivery/transportation charges to your facility will be borne by you.</p>
           </div>
 
-          <button type="submit" disabled={status === 'loading'}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-sm font-semibold text-white transition-colors disabled:opacity-60">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              required
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded accent-emerald-500"
+            />
+            <span className="text-xs text-zinc-400">
+              I have read and agree to the compliance terms above, and confirm that the information
+              provided is accurate.
+            </span>
+          </label>
+
+          <button type="submit" disabled={status === 'loading' || !agreed}
+            title={!agreed ? 'Please tick the terms checkbox to continue' : undefined}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60">
             {status === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Recycle className="h-4 w-4" />}
-            Submit Registration
+            {status === 'loading'
+              ? 'Submitting…'
+              : !agreed
+              ? 'Tick the terms to continue'
+              : 'Submit Registration'}
           </button>
         </form>
       </div>

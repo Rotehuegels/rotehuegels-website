@@ -58,6 +58,7 @@ export default function SupplierRegisterPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [status, setStatus]         = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMsg, setError]        = useState('');
+  const [agreed, setAgreed]         = useState(false);
 
   function toggleCategory(cat: string) {
     setCategories(prev =>
@@ -68,6 +69,7 @@ export default function SupplierRegisterPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (categories.length === 0) { setError('Please select at least one category.'); return; }
+    if (!agreed) { setError('Please agree to the terms before submitting.'); return; }
     setStatus('loading');
     setError('');
 
@@ -224,19 +226,35 @@ export default function SupplierRegisterPage() {
             </div>
           )}
 
+          {/* Terms */}
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              required
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded accent-rose-500"
+            />
+            <span className="text-xs text-zinc-400">
+              I agree to be contacted by Rotehügels for procurement enquiries matching my categories,
+              and confirm the information provided is accurate.
+            </span>
+          </label>
+
           {/* Submit */}
           <button
             type="submit"
-            disabled={status === 'loading'}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-500 disabled:opacity-50 transition-colors"
+            disabled={status === 'loading' || !agreed}
+            title={!agreed ? 'Please tick the terms checkbox to continue' : undefined}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
           >
             {status === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />}
-            {status === 'loading' ? 'Submitting…' : 'Submit Registration'}
+            {status === 'loading'
+              ? 'Submitting…'
+              : !agreed
+              ? 'Tick the terms to continue'
+              : 'Submit Registration'}
           </button>
-
-          <p className="text-xs text-zinc-600 text-center">
-            By submitting, you agree to be contacted by Rotehügels for procurement enquiries matching your categories.
-          </p>
         </form>
 
         <p className="text-center text-xs text-zinc-600 mt-6">

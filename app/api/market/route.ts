@@ -103,20 +103,20 @@ async function scrapeWestmetallOfficial(): Promise<
   return out;
 }
 
-// ---------- Yahoo Finance: Gold Futures (GC=F), USD/oz ----------
-async function fetchGoldUSDperOz(): Promise<{ price: number | null; dbg?: any }> {
-  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/GC=F';
+// ---------- Yahoo Finance: futures price by symbol ----------
+async function fetchYahooPrice(symbol: string): Promise<{ price: number | null; dbg?: any }> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}`;
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
       const txt = await res.text().catch(() => '');
-      return { price: null, dbg: { status: res.status, body: txt.slice(0, 300) } };
+      return { price: null, dbg: { symbol, status: res.status, body: txt.slice(0, 300) } };
     }
     const json = await res.json();
     const p = json?.chart?.result?.[0]?.meta?.regularMarketPrice ?? null;
-    return { price: p !== null ? Math.round(p) : null, dbg: json?.chart?.result?.[0]?.meta };
+    return { price: p !== null ? p : null, dbg: { symbol, meta: json?.chart?.result?.[0]?.meta } };
   } catch (e: any) {
-    return { price: null, dbg: { error: String(e?.message || e) } };
+    return { price: null, dbg: { symbol, error: String(e?.message || e) } };
   }
 }
 
@@ -126,24 +126,30 @@ export async function GET(req: Request) {
   const debug = searchParams.get('debug') === '1';
 
   try {
-    const [table, gold] = await Promise.all([
+    const [table, gold, silver, platinum, palladium] = await Promise.all([
       scrapeWestmetallOfficial(),
-      fetchGoldUSDperOz(),
+      fetchYahooPrice('GC=F'),  // Gold,     USD/oz
+      fetchYahooPrice('SI=F'),  // Silver,   USD/oz
+      fetchYahooPrice('PL=F'),  // Platinum, USD/oz
+      fetchYahooPrice('PA=F'),  // Palladium, USD/oz
     ]);
 
     const wanted: Array<[label: string, key: string, which: 'cash' | 'm3']> = [
-      ['LME Copper (Cash)',    'copper',    'cash'],
-      ['LME Copper (3M)',      'copper',    'm3'],
-      ['Aluminium (Cash)',     'aluminium', 'cash'],
-      ['Aluminium (3M)',       'aluminium', 'm3'],
-      ['Zinc (Cash)',          'zinc',      'cash'],
-      ['Zinc (3M)',            'zinc',      'm3'],
-      ['Nickel (Cash)',        'nickel',    'cash'],
-      ['Nickel (3M)',          'nickel',    'm3'],
-      ['Lead (Cash)',          'lead',      'cash'],
-      ['Lead (3M)',            'lead',      'm3'],
-      ['Tin (Cash)',           'tin',       'cash'],
-      ['Tin (3M)',             'tin',       'm3'],
+      ['LME Copper (Cash)',    'copper',           'cash'],
+      ['LME Copper (3M)',      'copper',           'm3'],
+      ['Aluminium (Cash)',     'aluminium',        'cash'],
+      ['Aluminium (3M)',       'aluminium',        'm3'],
+      ['Zinc (Cash)',          'zinc',             'cash'],
+      ['Zinc (3M)',            'zinc',             'm3'],
+      ['Nickel (Cash)',        'nickel',           'cash'],
+      ['Nickel (3M)',          'nickel',           'm3'],
+      ['Lead (Cash)',          'lead',             'cash'],
+      ['Lead (3M)',            'lead',             'm3'],
+      ['Tin (Cash)',           'tin',              'cash'],
+      ['Tin (3M)',             'tin',              'm3'],
+      // Soft-optional — included only if Westmetall publishes them today
+      ['Cobalt (Cash)',        'cobalt',           'cash'],
+      ['NASAAC Alloy (Cash)',  'aluminium alloy',  'cash'],
     ];
 
     const data: Quote[] = wanted.map(([label, key, which]) => {
@@ -157,16 +163,25 @@ export async function GET(req: Request) {
       };
     });
 
-    // Add Gold (USD/oz) from Yahoo Finance
-    data.push({
-      label: 'Gold (USD/oz)',
-      price: gold.price,
-      ok: gold.price !== null,
-      ...(debug ? { debug: gold.dbg } : {}),
-    });
+    // Precious metals (Yahoo Finance, USD/oz)
+    const pushOz = (label: string, q: { price: number | null; dbg?: any }) => {
+      data.push({
+        label,
+        price: q.price !== null ? Math.round(q.price * 100) / 100 : null,
+        ok: q.price !== null,
+        ...(debug ? { debug: q.dbg } : {}),
+      });
+    };
+    pushOz('Gold (USD/oz)',      gold);
+    pushOz('Silver (USD/oz)',    silver);
+    pushOz('Platinum (USD/oz)',  platinum);
+    pushOz('Palladium (USD/oz)', palladium);
+
+    // Public consumers want only quotes that resolved — debug callers see everything.
+    const out = debug ? data : data.filter(q => q.ok);
 
     return NextResponse.json(
-      { data },
+      { data: out },
       { headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' } }
     );
   } catch (e: any) {

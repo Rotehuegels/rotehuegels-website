@@ -43,19 +43,26 @@ export default function TickerBar() {
     return out;
   };
 
-  // Desired groupings (order within each group matters)
+  // Desired groupings (order within each group matters).
+  // Top row — precious metals (USD/oz) + Cu / Al (USD/t)
   const topOrder = [
-    'gold',                 // Gold (USD/oz)
+    'gold (usd/oz)',
+    'silver (usd/oz)',
+    'platinum (usd/oz)',
+    'palladium (usd/oz)',
     'lme copper (cash)',
     'lme copper (3m)',
     'aluminium (cash)',
     'aluminium (3m)',
+    'nasaac alloy (cash)',
   ];
+  // Bottom row — base / battery metals (USD/t)
   const bottomOrder = [
     'zinc (cash)', 'zinc (3m)',
     'nickel (cash)', 'nickel (3m)',
     'lead (cash)', 'lead (3m)',
     'tin (cash)', 'tin (3m)',
+    'cobalt (cash)',
   ];
 
   // Build rows
@@ -74,40 +81,49 @@ export default function TickerBar() {
   const loopTop = useMemo(() => [...rowTop, ...rowTop], [rowTop]);
   const loopBottom = useMemo(() => [...rowBottom, ...rowBottom], [rowBottom]);
 
+  // Trim "(USD/oz)" / "(Cash)" / "(3M)" off the visible label — context comes from the unit suffix.
+  const shortLabel = (s: string) =>
+    s.replace(/\s*\(USD\/oz\)\s*/i, '')
+     .replace(/\s*\(cash\)\s*/i, ' · cash')
+     .replace(/\s*\(3m\)\s*/i, ' · 3M');
+
+  const unitFor = (label: string) =>
+    /usd\/oz/i.test(label) ? '$/oz' : '$/t';
+
   const Pill = ({ q, k }: { q: Quote; k: string }) => (
     <span
       key={k}
       className={[
-        'inline-flex items-center gap-2 px-3 py-1 rounded-xl',
-        q.ok ? 'bg-zinc-800 text-zinc-100' : 'bg-zinc-900 text-zinc-400 border border-zinc-700',
+        'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md',
+        q.ok ? 'bg-zinc-800/80 text-zinc-100' : 'bg-zinc-900 text-zinc-400 border border-zinc-700',
       ].join(' ')}
       title={q.ok ? q.label : (q.error || q.label)}
     >
-      <span className="font-medium">{q.label}</span>
-      <span>•</span>
+      <span className="font-medium">{shortLabel(q.label)}</span>
       {q.price !== null ? (
-        <span>
-          {q.price.toLocaleString()} {q.label.toLowerCase().includes('gold') ? 'USD/oz' : 'USD/t'}
+        <span className="tabular-nums">
+          {q.price.toLocaleString()}
+          <span className="ml-1 text-[9px] opacity-50">{unitFor(q.label)}</span>
         </span>
       ) : (
         <span className="opacity-70">N/A</span>
       )}
       {typeof q.change === 'number' && (
-        <span className={q.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+        <span className={`tabular-nums ${q.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
           {q.change >= 0 ? '+' : ''}
           {q.change.toFixed(2)}
         </span>
       )}
-      {!q.ok && <span className="opacity-70">(source offline)</span>}
+      {!q.ok && <span className="opacity-70">(offline)</span>}
     </span>
   );
 
   return (
-    <div className="w-full border-b border-zinc-800/50 bg-black/20 backdrop-blur supports-[backdrop-filter]:bg-black/15">
-      {/* Row 1: right -> left (Gold + LME Copper + Aluminium) */}
+    <div className="w-full border-b border-zinc-800/50 bg-black/20 backdrop-blur supports-[backdrop-filter]:bg-black/15 text-[11px] leading-none text-zinc-200">
+      {/* Row 1: right -> left — precious metals + Cu + Al */}
       <div className="overflow-hidden">
         <div
-          className="flex gap-6 whitespace-nowrap animate-[ticker-rtl_36s_linear_infinite] hover:[animation-play-state:paused] px-3 py-2"
+          className="flex gap-3 whitespace-nowrap animate-[ticker-rtl_22s_linear_infinite] hover:[animation-play-state:paused] px-3 py-1.5"
           aria-live="polite"
           role="status"
         >
@@ -115,10 +131,10 @@ export default function TickerBar() {
         </div>
       </div>
 
-      {/* Row 2: left -> right (Zinc + Nickel + Lead + Tin) */}
+      {/* Row 2: left -> right — Zn / Ni / Pb / Sn (+ Co) */}
       <div className="overflow-hidden border-t border-zinc-800/50">
         <div
-          className="flex gap-6 whitespace-nowrap animate-[ticker-ltr_36s_linear_infinite] hover:[animation-play-state:paused] px-3 py-2"
+          className="flex gap-3 whitespace-nowrap animate-[ticker-ltr_22s_linear_infinite] hover:[animation-play-state:paused] px-3 py-1.5"
           aria-live="polite"
           role="status"
         >

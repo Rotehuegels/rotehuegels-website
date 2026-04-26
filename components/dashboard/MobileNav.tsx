@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import InstallAppButton from './InstallAppButton';
 import { canSeeHref } from './permissionMap';
+import { MOBILE_MENU_OPEN_EVENT } from './MobileBottomNav';
 import {
   Menu, X, ChevronDown, LogOut,
   LayoutDashboard,
@@ -281,6 +282,12 @@ export default function MobileNav({
     document.body.style.overflow = open ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [open]);
+
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener(MOBILE_MENU_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(MOBILE_MENU_OPEN_EVENT, onOpen);
+  }, []);
 
   return (
     <>

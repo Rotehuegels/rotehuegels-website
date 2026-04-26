@@ -13,12 +13,19 @@
     height: 100%;
     background: var(--bg);
     color: var(--fg);
+    /* Stop the document itself from sliding horizontally on phones — wide
+       content (tables, code blocks, dashboards) should scroll inside its own
+       wrapper, never the page. Pair with .scroll-x or overflow-x-auto on the
+       inner element. */
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     height: 100%;
     background: transparent;
     color: var(--fg);
+    overflow-x: hidden;
   }
 
   a { @apply underline underline-offset-4; }
@@ -34,6 +41,16 @@
   .btn-primary { @apply btn bg-brand-500 hover:bg-brand-600 text-white; }
   .btn-ghost { @apply btn border border-white/20 hover:bg-white/10; }
   .card { @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 shadow; }
+
+  /* Wrap wide tables / grids with this so they scroll horizontally on phones
+     instead of being clipped or stretching the document.
+     Usage:  <div class="scroll-x"><table>…</table></div> */
+  .scroll-x { @apply -mx-2 sm:mx-0 overflow-x-auto; }
+  .scroll-x > * { min-width: max-content; }
+
+  /* Mobile-first table: every <table> inside .table-mobile gets a default
+     horizontal-scroll wrapper without needing a parent div. */
+  .table-mobile { @apply block w-full overflow-x-auto; }
 }
 
 /* ── Rotehügels Assist Widget animations ── */

@@ -20,6 +20,7 @@ const HREF_TO_PERMISSION: Array<[prefix: string, permission: string]> = [
   ['/d/stock-intel',      'sales.intelligence'],
 
   // Procurement
+  ['/d/indents',          'procurement.view'],
   ['/d/purchase-orders',  'procurement.view'],
   ['/d/grn',              'procurement.view'],
   ['/d/suppliers',        'procurement.view'],

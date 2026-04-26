@@ -189,6 +189,9 @@ const nextConfig = {
       { source: '/d/orders/:id/invoice', destination: '/dashboard/accounts/orders/:id/invoice' },
 
       // Procurement
+      { source: '/d/indents', destination: '/dashboard/indents' },
+      { source: '/d/indents/new', destination: '/dashboard/indents/new' },
+      { source: '/d/indents/:id', destination: '/dashboard/indents/:id' },
       { source: '/d/purchase-orders', destination: '/dashboard/accounts/purchase-orders' },
       { source: '/d/purchase-orders/new', destination: '/dashboard/accounts/purchase-orders/new' },
       { source: '/d/purchase-orders/:id', destination: '/dashboard/accounts/purchase-orders/:id' },

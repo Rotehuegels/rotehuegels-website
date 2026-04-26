@@ -96,6 +96,7 @@ const NAV: NavItem[] = [
   {
     label: 'Procurement', icon: Package,
     children: [
+      { label: 'Indents',          href: '/d/indents',         icon: ClipboardList },
       { label: 'Purchase Orders',  href: '/d/purchase-orders', icon: ShoppingCart },
       { label: 'GRN (Receipts)',   href: '/d/grn',             icon: ClipboardList },
       { label: 'Re-Invoice',       href: '/d/reinvoice',       icon: ReceiptText },

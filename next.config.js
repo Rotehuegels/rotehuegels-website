@@ -213,6 +213,7 @@ const nextConfig = {
       { source: '/d/fixed-assets/new', destination: '/dashboard/accounts/fixed-assets/new' },
       { source: '/d/fixed-assets/:id', destination: '/dashboard/accounts/fixed-assets/:id' },
       { source: '/d/stock', destination: '/dashboard/accounts/stock' },
+      { source: '/d/stock/:id', destination: '/dashboard/accounts/stock/:id' },
       { source: '/d/stock/:id/edit', destination: '/dashboard/accounts/stock/:id/edit' },
 
       // Finance

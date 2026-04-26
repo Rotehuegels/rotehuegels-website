@@ -36,22 +36,30 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: 'Invalid body.' }, { status: 400 });
   }
 
+  // NOTE: 'quantity' is intentionally NOT editable here. Stock changes must
+  // flow through stock_movements via /api/accounts/stock/movements so the
+  // ledger stays the source of truth. We accept the field for backwards
+  // compatibility but strip it before writing.
   const parsed = z.object({
-    item_name:   z.string().min(1).optional(),
-    item_code:   z.string().optional().nullable(),
-    description: z.string().optional().nullable(),
-    category:    z.string().optional().nullable(),
-    hsn_code:    z.string().optional().nullable(),
-    unit:        z.string().optional(),
-    quantity:    z.number().min(0).optional(),
-    unit_cost:   z.number().min(0).optional(),
-    order_id:    z.string().uuid().optional().nullable(),
-    notes:       z.string().optional().nullable(),
+    item_name:      z.string().min(1).optional(),
+    item_code:      z.string().optional().nullable(),
+    description:    z.string().optional().nullable(),
+    category:       z.string().optional().nullable(),
+    hsn_code:       z.string().optional().nullable(),
+    unit:           z.string().optional(),
+    quantity:       z.number().min(0).optional(),                // ignored — see note above
+    unit_cost:      z.number().min(0).optional(),
+    reorder_level:  z.number().min(0).nullable().optional(),
+    reorder_qty:    z.number().min(0).nullable().optional(),
+    order_id:       z.string().uuid().optional().nullable(),
+    notes:          z.string().optional().nullable(),
   }).safeParse(body);
 
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
-  const { error } = await supabaseAdmin.from('stock_items').update(parsed.data).eq('id', id);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { quantity: _ignoredQty, ...patch } = parsed.data;
+  const { error } = await supabaseAdmin.from('stock_items').update(patch).eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

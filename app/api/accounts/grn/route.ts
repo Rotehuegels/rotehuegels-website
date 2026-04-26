@@ -68,20 +68,35 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Insert items
+  // Insert items and capture their IDs so we can link stock movements back to GRN lines
   const grnItems = items.map(item => ({ ...item, grn_id: grn.id }));
-  await supabaseAdmin.from('grn_items').insert(grnItems);
+  const { data: insertedItems } = await supabaseAdmin
+    .from('grn_items')
+    .insert(grnItems)
+    .select('id, description, accepted_qty, unit_price');
 
-  // Update stock quantities for accepted items
-  for (const item of items) {
-    if (item.accepted_qty > 0 && item.description) {
-      try {
-        await supabaseAdmin.rpc('increment_stock_quantity', {
-          p_item_name: item.description,
-          p_qty: item.accepted_qty,
-        });
-      } catch { /* RPC may not exist yet */ }
-    }
+  // Receipt every accepted line into the stock_movements ledger so the audit
+  // trail traces back to the GRN. The ledger trigger will recompute
+  // stock_items.quantity automatically.
+  for (const gi of insertedItems ?? []) {
+    if (Number(gi.accepted_qty ?? 0) <= 0 || !gi.description) continue;
+    const { data: si } = await supabaseAdmin
+      .from('stock_items')
+      .select('id')
+      .eq('item_name', gi.description)
+      .maybeSingle();
+    if (!si) continue;   // no matching stock item — skip silently (matches legacy behaviour)
+
+    await supabaseAdmin.rpc('record_stock_movement', {
+      p_stock_item_id:    si.id,
+      p_movement_type:    'receipt',
+      p_quantity:         gi.accepted_qty,
+      p_unit_cost:        gi.unit_price,
+      p_source_type:      'grn',
+      p_source_id:        gi.id,
+      p_created_by_email: user.email ?? null,
+      p_notes:            `Receipt against ${grnNo}`,
+    });
   }
 
   logAudit({

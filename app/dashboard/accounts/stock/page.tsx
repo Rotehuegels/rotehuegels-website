@@ -124,7 +124,9 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
                     className="flex flex-col lg:grid lg:grid-cols-[80px_1fr_1fr_80px_80px_120px_120px_1fr_40px] gap-2 lg:gap-4 px-6 py-4 items-start lg:items-center hover:bg-zinc-800/20 transition-colors">
                     <p className="text-xs font-mono text-zinc-500">{item.item_code ?? '—'}</p>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-zinc-200 truncate">{item.item_name}</p>
+                      <Link href={`/d/stock/${item.id}`} className="block">
+                        <p className="text-sm font-medium text-rose-300 hover:text-rose-200 truncate">{item.item_name}</p>
+                      </Link>
                       {item.description && <p className="text-xs text-zinc-600 truncate">{item.description}</p>}
                       {item.hsn_code && <p className="text-xs text-zinc-700 font-mono">HSN: {item.hsn_code}</p>}
                     </div>

@@ -23,6 +23,18 @@ export async function GET(req: Request) {
   const statusParam = url.searchParams.get('status');
   const entityType  = url.searchParams.get('entity_type');
 
+  // ?mine=1 path — pushed into Postgres via an RPC that walks approval_chain
+  // with LATERAL jsonb_array_elements. Avoids the previous fetch-then-filter
+  // pattern that didn't scale beyond a few hundred rows.
+  if (mine && user.email) {
+    const { data, error } = await supabaseAdmin.rpc('approvals_pending_for_email', { p_email: user.email });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    let rows = (data ?? []) as Array<{ entity_type: string }>;
+    if (entityType) rows = rows.filter((r) => r.entity_type === entityType);
+    return NextResponse.json({ data: rows });
+  }
+
+  // Generic listing — supports status + entity_type filters.
   let q = supabaseAdmin
     .from('approvals')
     .select('id, entity_type, entity_id, entity_label, requested_by_email, status, current_level, total_levels, approval_chain, amount, created_at, completed_at')
@@ -32,18 +44,5 @@ export async function GET(req: Request) {
 
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  let rows = data ?? [];
-  if (mine && user.email) {
-    const me = user.email.toLowerCase();
-    rows = rows.filter((row) => {
-      if (row.status !== 'pending') return false;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const chain = row.approval_chain as any[];
-      const step = chain.find((s) => s.level === row.current_level);
-      return step?.approver_email?.toLowerCase() === me;
-    });
-  }
-
-  return NextResponse.json({ data: rows });
+  return NextResponse.json({ data: data ?? [] });
 }

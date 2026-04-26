@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { requestApproval } from '@/lib/approvals';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -126,5 +127,41 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: itemsErr.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, id: po.id, po_no: po.po_no }, { status: 201 });
+  // Threshold-driven approval gate. If po.approval_threshold is configured and
+  // the PO total exceeds it AND po.approver_email is set, request approval.
+  // The PO can stay in 'draft' but won't be allowed to move to 'sent' until
+  // the approval clears (enforced by the PATCH handler in [id]/route.ts).
+  let approvalRequested = false;
+  try {
+    const { data: settings } = await supabaseAdmin
+      .from('app_settings')
+      .select('key, value')
+      .in('key', ['po.approval_threshold', 'po.approver_email']);
+    const cfg = Object.fromEntries((settings ?? []).map((r) => [r.key, r.value]));
+    const threshold = Number(cfg['po.approval_threshold'] ?? 0);
+    const approver  = String(cfg['po.approver_email'] ?? '').trim();
+    if (threshold > 0 && approver && parsed.data.total_amount > threshold) {
+      await requestApproval({
+        entity_type:        'purchase_order',
+        entity_id:          po.id,
+        entity_label:       `${po.po_no} — ₹${parsed.data.total_amount.toLocaleString('en-IN')}`,
+        requested_by_id:    user.id,
+        requested_by_email: user.email ?? undefined,
+        amount:             parsed.data.total_amount,
+        approver_emails:    [approver],
+        notes:              `PO above ₹${threshold.toLocaleString('en-IN')} threshold`,
+      });
+      approvalRequested = true;
+    }
+  } catch (e) {
+    // Approval request shouldn't block PO creation — log and move on
+    console.warn('[purchase-orders] Could not request approval:', e);
+  }
+
+  return NextResponse.json({
+    success: true,
+    id: po.id,
+    po_no: po.po_no,
+    approval_requested: approvalRequested,
+  }, { status: 201 });
 }

@@ -17,7 +17,7 @@ import {
   Package, ShoppingCart, Truck,
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
   Network, FolderKanban, FolderPlus, CalendarDays, Factory, FlaskConical,
-  Shield, BarChart3, Globe, Eye, Mail, History,
+  Shield, ShieldCheck, BarChart3, Globe, Eye, Mail, History,
   Radar, AlertTriangle, FileCheck,
   BookOpenCheck, HandCoins, CreditCard,
 } from 'lucide-react';
@@ -31,7 +31,8 @@ type NavTop     = { label: string; href: string; icon: React.ElementType };
 type NavItem    = NavTop | NavGroup;
 
 const NAV: NavItem[] = [
-  { label: 'Overview', href: '/d', icon: LayoutDashboard },
+  { label: 'Overview',  href: '/d',           icon: LayoutDashboard },
+  { label: 'Approvals', href: '/d/approvals', icon: ShieldCheck },
 
   {
     label: 'Projects', icon: FolderKanban,

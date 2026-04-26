@@ -105,6 +105,26 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const { items, ...poFields } = parsed.data;
 
+  // Approval gate — block "draft → sent" while there's an open approval on this PO.
+  if (poFields.status === 'sent') {
+    const { data: approval } = await supabaseAdmin
+      .from('approvals')
+      .select('status')
+      .eq('entity_type', 'purchase_order')
+      .eq('entity_id',   id)
+      .maybeSingle();
+    if (approval && approval.status === 'pending') {
+      return NextResponse.json({
+        error: 'This PO needs approval before it can be sent. Check /d/approvals.',
+      }, { status: 409 });
+    }
+    if (approval && approval.status === 'rejected') {
+      return NextResponse.json({
+        error: 'This PO was rejected during approval and cannot be sent. Cancel it or revise and resubmit.',
+      }, { status: 409 });
+    }
+  }
+
   const { error: poError } = await supabaseAdmin
     .from('purchase_orders')
     .update({ ...poFields, updated_at: new Date().toISOString() })

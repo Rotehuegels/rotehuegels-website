@@ -200,6 +200,7 @@ const nextConfig = {
       { source: '/d/purchase-invoices', destination: '/dashboard/accounts/purchase-invoices' },
       { source: '/d/purchase-invoices/new', destination: '/dashboard/accounts/purchase-invoices/new' },
       { source: '/d/purchase-invoices/:id', destination: '/dashboard/accounts/purchase-invoices/:id' },
+      { source: '/d/approvals', destination: '/dashboard/approvals' },
       { source: '/d/suppliers', destination: '/dashboard/accounts/suppliers' },
       { source: '/d/suppliers/new', destination: '/dashboard/accounts/suppliers/new' },
       { source: '/d/suppliers/:id', destination: '/dashboard/accounts/suppliers/:id' },

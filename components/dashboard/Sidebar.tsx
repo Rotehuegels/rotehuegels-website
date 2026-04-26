@@ -15,7 +15,7 @@ import {
   Package, ShoppingCart, Truck,
   Wallet, Landmark, BadgePercent, TrendingUp, BarChart2,
   Network,
-  Shield, BarChart3, Globe, Eye, Mail, History,
+  Shield, ShieldCheck, BarChart3, Globe, Eye, Mail, History,
   Radar, AlertTriangle,
   FileCheck, FolderKanban, FolderPlus, CalendarDays, Factory, FlaskConical,
   ChevronDown, BookOpenCheck, HandCoins, CreditCard,
@@ -38,7 +38,8 @@ type NavItem = NavTop | NavGroup;
 
 // ── Navigation tree ────────────────────────────────────────────────────────────
 const NAV: NavItem[] = [
-  { label: 'Overview', href: '/d', icon: LayoutDashboard },
+  { label: 'Overview',  href: '/d',           icon: LayoutDashboard },
+  { label: 'Approvals', href: '/d/approvals', icon: ShieldCheck },
 
   {
     label: 'Projects', icon: FolderKanban,

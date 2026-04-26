@@ -86,6 +86,9 @@ const HREF_TO_PERMISSION: Array<[prefix: string, permission: string]> = [
   ['/d/admin',            'admin.users'],
   ['/d/settings',         'admin.settings'],
   ['/d/audit',            'admin.audit'],
+
+  // /d/approvals — intentionally unmapped so every authenticated user sees it.
+  // The page itself filters by approver email, so visibility = no privacy leak.
 ];
 
 // Longest prefix wins — so /d/gst/filing matches finance.gst before

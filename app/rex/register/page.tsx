@@ -20,9 +20,14 @@ export default function RexRegisterPage() {
   const [status, setStatus] = useState<Status>('idle');
   const [rexId, setRexId] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [agreed, setAgreed] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!agreed) {
+      setErrorMsg('Please agree to the terms before submitting.');
+      return;
+    }
     setStatus('loading');
     setErrorMsg('');
 
@@ -225,7 +230,13 @@ export default function RexRegisterPage() {
 
         {/* Terms checkbox */}
         <label className="flex items-start gap-3 cursor-pointer">
-          <input type="checkbox" required className="mt-0.5 h-4 w-4 rounded accent-rose-500" />
+          <input
+            type="checkbox"
+            required
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded accent-rose-500"
+          />
           <span className="text-sm text-zinc-400">
             I have read and agree to the above terms. I confirm this is my first registration with REX.
           </span>
@@ -239,10 +250,15 @@ export default function RexRegisterPage() {
 
         <button
           type="submit"
-          disabled={status === 'loading'}
+          disabled={status === 'loading' || !agreed}
+          title={!agreed ? 'Please tick the terms checkbox to continue' : undefined}
           className="w-full rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {status === 'loading' ? 'Registering…' : 'Register & get my REX ID'}
+          {status === 'loading'
+            ? 'Registering…'
+            : !agreed
+            ? 'Tick the terms to continue'
+            : 'Register & get my REX ID'}
         </button>
       </form>
     </main>

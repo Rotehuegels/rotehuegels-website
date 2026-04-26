@@ -80,6 +80,8 @@ const NAV: NavItem[] = [
       { label: 'Recurring Orders', href: '/d/recurring-orders',       icon: ReceiptText },
       { type: 'section', label: 'Intelligence' },
       { label: 'Market Intelligence', href: '/d/intelligence',         icon: Radar },
+      { label: 'Commodity Prices',    href: '/d/markets',              icon: BarChart2 },
+      { label: 'Bookings',            href: '/d/bookings',             icon: CalendarDays },
     ],
   },
 
@@ -162,7 +164,13 @@ const NAV: NavItem[] = [
     ],
   },
 
-  { label: 'Settings', href: '/d/settings', icon: Settings2 },
+  {
+    label: 'Administration', icon: Shield,
+    children: [
+      { label: 'User Management', href: '/d/admin/users', icon: Users },
+      { label: 'Settings',        href: '/d/settings',    icon: Settings2 },
+    ],
+  },
 ];
 
 function isGroup(item: NavItem): item is NavGroup {

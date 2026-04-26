@@ -1249,6 +1249,347 @@ const SET_001: SOP = {
   kpis: ['Configuration change documentation: 100%', 'Unauthorized access attempts: zero tolerance', 'Access review: quarterly'],
 };
 
+// ── ENGINEERING & DESIGN ──────────────────────────────────────────────────────
+
+const ENG_001: SOP = {
+  id: 'SOP-ENG-001',
+  title: 'Engineering Design & Drawing Approval',
+  department: 'Engineering & Design',
+  category: 'Design Control',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To control the issue, review, and approval of engineering designs (process flowsheets, P&IDs, GA layouts, equipment drawings) so every drawing released for procurement or construction has been verified and signed off.',
+  scope: 'Applies to all engineering deliverables produced for plant EPC, custom equipment, and feasibility engagements. Covers conceptual through "issued for construction" stages.',
+  responsibilities: [
+    'Design Engineer: Produces drawings and calculations to project specs',
+    'Lead Engineer: Reviews technical correctness and consistency',
+    'Project Manager: Confirms client scope alignment and authorises issue',
+    'Client (where applicable): Approves prior to construction release',
+  ],
+  procedure: [
+    { step: 1, action: 'Receive Inputs',         detail: 'Collect process basis, client spec, site survey, applicable codes (ASME, IS, IEC). Log inputs against the project number.', system: '/d/projects' },
+    { step: 2, action: 'Conceptual Design',      detail: 'Produce mass/energy balance, block flow, layout concept. Internal review at this stage to catch scope issues early.' },
+    { step: 3, action: 'Detailed Design',        detail: 'Develop P&IDs, GA drawings, equipment specs, BOM, instrumentation list, electrical schematic. Each drawing carries a unique number and revision letter.' },
+    { step: 4, action: 'Internal Review',        detail: 'Lead engineer reviews; markups returned; designer revises. Iteration count is logged so chronic rework can be analysed.' },
+    { step: 5, action: 'Client Review',          detail: 'Issue "for review" (rev A/B). Track client comments in a comment register; close-out responses before next issue.' },
+    { step: 6, action: 'Issued for Construction', detail: 'On approval, drawing rev moves to numeric (rev 0). Released to procurement and site teams. Earlier revs are superseded with watermark.' },
+    { step: 7, action: 'Change Control',         detail: 'Field changes after IFC require an Engineering Change Note (ECN) with approval before implementation.' },
+  ],
+  relatedDocs: ['SOP-ENG-002', 'SOP-ENG-003', 'Drawing Numbering Convention', 'Drawing Register Template'],
+  kpis: ['On-time issue against project schedule', 'Average revision count per drawing', 'Field rework hours attributable to design errors'],
+};
+
+const ENG_002: SOP = {
+  id: 'SOP-ENG-002',
+  title: 'Plant EPC Project Execution',
+  department: 'Engineering & Design',
+  category: 'Project Delivery',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To deliver plant EPC contracts on time, within budget, and to spec — from kick-off through commissioning and handover — with clear stage-gates and accountability.',
+  scope: 'All EPC contracts above a project-size threshold. Smaller jobs follow a lighter-touch variant of this SOP.',
+  responsibilities: [
+    'Project Manager: Schedule, budget, risk, client communication',
+    'Lead Engineer: Technical scope and design quality',
+    'Procurement Lead: Material and subcontract delivery',
+    'Site/Construction Manager: Execution, safety, commissioning',
+  ],
+  procedure: [
+    { step: 1, action: 'Project Kick-off',      detail: 'Internal kick-off + client kick-off within 1 week of LOA. Confirm scope, schedule, deliverables, milestones, payment terms. Set up project folder and approval matrix.', system: '/d/projects/new' },
+    { step: 2, action: 'Engineering Phase',     detail: 'Per SOP-ENG-001. Issue critical drawings to procurement first (long-lead items).' },
+    { step: 3, action: 'Procurement Phase',     detail: 'Indents → POs (per SOP-PRO-004 / SOP-ACC-004). Track expediting weekly. Critical-path items reviewed in daily stand-up during peak.' },
+    { step: 4, action: 'Construction Phase',    detail: 'Site mobilisation, civil/mech/elec works, daily progress log, weekly client report. HSE incidents reviewed within 24 h.' },
+    { step: 5, action: 'Pre-commissioning',     detail: 'Hydrostatic tests, instrument loop checks, trial runs on water/dummy media. Sign-off on a formal punch-list before chemicals introduced.' },
+    { step: 6, action: 'Commissioning & Ramp-up', detail: 'Live introduction of feed; performance run for guarantee period; capture KPIs vs design.' },
+    { step: 7, action: 'Handover',              detail: 'Final dossier (drawings, manuals, training records, test certs) signed off; warranty period clock starts.' },
+  ],
+  relatedDocs: ['SOP-ENG-001', 'SOP-PRO-004', 'SOP-ACC-004', 'Project Risk Register Template', 'HSE Plan Template'],
+  kpis: ['Schedule slippage %', 'Budget variance %', 'Safety incidents (LTI/Recordable)', 'Punch-list closure days'],
+};
+
+const ENG_003: SOP = {
+  id: 'SOP-ENG-003',
+  title: 'Custom Equipment Design & Fabrication',
+  department: 'Engineering & Design',
+  category: 'Specialty Manufacturing',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To design and produce custom electrowinning electrodes (Pb anodes 99.99 %, Al cathodes), process vessels, and other made-to-order equipment to client-specific operating envelopes.',
+  scope: 'Applies to every custom-equipment order received via /services/custom-electrodes or direct enquiry. Covers from spec capture to dispatch.',
+  responsibilities: [
+    'Design Engineer: Produces fabrication drawings, BOM, weld map',
+    'Fabrication Shop: Executes per drawings; raises NCRs on deviations',
+    'QC: Dimensional and material verification before dispatch',
+    'Sales: Captures client spec and confirms order acceptance',
+  ],
+  procedure: [
+    { step: 1, action: 'Capture Spec',          detail: 'Client supplies cell geometry, current density, feed chemistry, operating temperature, intended duty cycle. Quote against the spec.', system: '/d/quotes' },
+    { step: 2, action: 'Design',                detail: 'Material grade (Pb-Sb-Sn alloy %, Al alloy 1050/1060/3003), cross-section, surface finish, edge strips, lifting features. Issue fab drawing per SOP-ENG-001.' },
+    { step: 3, action: 'BOM & Routing',         detail: 'Generate BOM, fabrication routing (cast / roll / weld / machine / passivate), heat-treatment plan if applicable.' },
+    { step: 4, action: 'Material Inward',       detail: 'Per SOP-WH-001. Mill test certs (MTCs) verified against spec; reject if non-conforming.' },
+    { step: 5, action: 'Fabrication',           detail: 'Run per routing card. In-process checks at each stage. Variances raised via NCR.' },
+    { step: 6, action: 'Final QC',              detail: 'Dimensional (calipers/CMM), surface finish (Ra), weight, weld penetration (where applicable), passivation check. Issue Inspection Report.' },
+    { step: 7, action: 'Pack & Dispatch',       detail: 'Per SOP-WH-002. Package per export/domestic spec. Include MTC, Inspection Report, and operating notes in shipping doc.' },
+  ],
+  relatedDocs: ['SOP-ENG-001', 'SOP-WH-001', 'SOP-WH-002', 'Material Grade Specification (Lead Anodes)', 'Material Grade Specification (Aluminium Cathodes)'],
+  kpis: ['On-time delivery %', 'Field-failure rate within first 6 months', 'NCR count per order', 'Customer-rejection rate at goods-in'],
+};
+
+// ── WAREHOUSE ─────────────────────────────────────────────────────────────────
+
+const WH_001: SOP = {
+  id: 'SOP-WH-001',
+  title: 'Goods Receipt & Inward Inspection',
+  department: 'Warehouse',
+  category: 'Inbound Logistics',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To receive incoming materials against an authorised PO, verify quantity and quality, and update stock so downstream procurement, finance, and consumption flows operate against accurate inventory.',
+  scope: 'Every inbound consignment from a supplier — raw material, consumable, capital equipment, return-to-vendor reverse flow.',
+  responsibilities: [
+    'Warehouse Keeper: Physical receipt, count, GRN entry',
+    'QC Inspector: Quality acceptance/rejection',
+    'Procurement Officer: Resolves PO/quantity discrepancies with supplier',
+    'Security: Gate entry verification',
+  ],
+  procedure: [
+    { step: 1, action: 'Pre-arrival Doc Check', detail: 'Driver presents invoice, e-way bill, vehicle papers. Match invoice number against open PO before unloading.', system: '/d/purchase-orders' },
+    { step: 2, action: 'Physical Receipt',      detail: 'Unload under supervision. Count packages, check seals, photograph any damage on arrival.' },
+    { step: 3, action: 'Quantity Verification', detail: 'Open packages, count units, weigh where weight is the basis. Note any over/short delivery on the GRN.' },
+    { step: 4, action: 'Quality Inspection',    detail: 'For materials with QC plan: sample as per plan, run tests, record results. Visual inspection for damage on all items.' },
+    { step: 5, action: 'GRN Entry',             detail: 'Create GRN linked to PO; record received_qty, accepted_qty, rejected_qty, rejection reason. Stock movements ledger writes a "receipt" event automatically.', system: '/d/grn/new' },
+    { step: 6, action: 'Bin Allocation',        detail: 'Place accepted material in the assigned bin/location. Tag with item code + lot/batch where applicable.' },
+    { step: 7, action: 'Discrepancy Handling',  detail: 'Rejected qty held in quarantine bin. Procurement raises debit note / return-to-vendor. Escalate to head of warehouse if unresolved in 48 h.' },
+  ],
+  relatedDocs: ['SOP-PRO-004', 'SOP-WH-003', 'QC Inspection Plan Template', 'Bin Map'],
+  kpis: ['Receipt-to-stock cycle time (hours)', 'Rejection rate %', 'GRN entry within 24 h of physical receipt'],
+};
+
+const WH_002: SOP = {
+  id: 'SOP-WH-002',
+  title: 'Material Issue & Dispatch',
+  department: 'Warehouse',
+  category: 'Outbound Logistics',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To issue materials to internal consumption (production, projects, expense) and to despatch finished goods / equipment to customers, with full traceability and matching tax documentation.',
+  scope: 'All material movements out of the warehouse, whether internal issue (job/project/cost-centre) or external dispatch (customer/branch transfer/RTV).',
+  responsibilities: [
+    'Indent Originator: Raises a request via /d/indents or production order',
+    'Warehouse Keeper: Picks, packs, issues',
+    'Security: Gate exit verification',
+    'Sales/Project: Triggers customer invoice on dispatch',
+  ],
+  procedure: [
+    { step: 1, action: 'Receive Indent',        detail: 'Internal issue: from /d/indents (approved). Customer despatch: from a confirmed sales order. Reject ad-hoc verbal requests.', system: '/d/indents' },
+    { step: 2, action: 'Pick List',             detail: 'System generates pick list with bin locations. Verify FIFO/expiry rules where applicable.' },
+    { step: 3, action: 'Physical Pick & Pack',  detail: 'Pick exact qty; pack per export/domestic spec. Re-count at packing to catch errors.' },
+    { step: 4, action: 'Documentation',         detail: 'For external despatch: invoice, delivery challan, e-way bill (if value > ₹50,000 or interstate). For internal: stores issue voucher.', system: '/d/eway-bills' },
+    { step: 5, action: 'Stock Movement Entry',  detail: 'System logs an "issue" movement reducing on-hand qty; FIFO trigger consumes the oldest cost layer and records COGS on the movement.', system: '/d/stock' },
+    { step: 6, action: 'Vehicle Dispatch',      detail: 'Security verifies docs vs vehicle vs gate pass. Driver signs handover. Dispatch confirmed to customer/internal recipient.' },
+    { step: 7, action: 'POD Capture',           detail: 'Proof of delivery (POD) returned by transporter; uploaded against the dispatch record. Triggers customer invoice if not already raised.' },
+  ],
+  relatedDocs: ['SOP-WH-001', 'SOP-WH-003', 'SOP-ACC-006', 'E-way Bill Generation Procedure'],
+  kpis: ['Pick accuracy %', 'On-time despatch %', 'Vehicle turnaround time', 'POD-to-invoice gap (days)'],
+};
+
+const WH_003: SOP = {
+  id: 'SOP-WH-003',
+  title: 'Cycle Count & Stock Reconciliation',
+  department: 'Warehouse',
+  category: 'Inventory Control',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To verify that physical stock matches book stock through periodic cycle counts, identify discrepancies early, and post adjustments through proper authorisation.',
+  scope: 'All items in all warehouse locations. Frequency tied to ABC classification — A (high-value): monthly; B: quarterly; C: half-yearly. Wall-to-wall annual count.',
+  responsibilities: [
+    'Warehouse Manager: Schedules counts and reviews variances',
+    'Counters (independent of keeper): Perform physical count',
+    'Audit: Random verification of count accuracy',
+    'Finance: Approves adjustment posting',
+  ],
+  procedure: [
+    { step: 1, action: 'Schedule',              detail: 'Annual cycle-count calendar derived from ABC analysis. Notify staff in advance; freeze movements for the count window.', system: '/d/stock' },
+    { step: 2, action: 'Physical Count',        detail: 'Two counters independently — count, recount on variance. Use bin-by-bin sweep, not item-by-item, to prevent missed bins.' },
+    { step: 3, action: 'Variance Log',          detail: 'Record physical vs system qty per item. Flag variances above threshold (₹ value or %) for investigation.' },
+    { step: 4, action: 'Investigation',         detail: 'Trace last 30 days of movements for variant items. Common causes: wrong UoM at receipt, picked from wrong bin, untagged sample issue.' },
+    { step: 5, action: 'Adjustment Posting',    detail: 'After investigation, post a "stock_adjustment" movement with reason and approver. The ledger\'s FIFO trigger updates cost layers automatically.', system: '/d/stock' },
+    { step: 6, action: 'Root-Cause & Action',   detail: 'For repeat variances on the same item, raise a corrective action — bin re-org, training refresher, system tweak.' },
+    { step: 7, action: 'Reporting',             detail: 'Monthly: stock accuracy %, variance value, top-5 variant items. Reviewed by COO.' },
+  ],
+  relatedDocs: ['SOP-WH-001', 'SOP-WH-002', 'ABC Classification', 'Cycle Count Calendar'],
+  kpis: ['Stock accuracy % (target ≥ 98)', 'Variance value as % of inventory', 'Cycle count completion rate', 'Adjustment cycle time (days)'],
+};
+
+// ── R&D ───────────────────────────────────────────────────────────────────────
+
+const RND_001: SOP = {
+  id: 'SOP-RND-001',
+  title: 'Pilot Plant Trial Management',
+  department: 'R&D',
+  category: 'Process Development',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To plan, run, and document pilot-scale trials so results are reproducible, safety risks are managed, and outcomes feed cleanly into commercial scale-up or client deliverables.',
+  scope: 'All pilot-scale process trials at the Chennai pilot facility, including hydromet leach/SX/EW and pyromet/secondary smelting trials, whether internal or client-funded.',
+  responsibilities: [
+    'R&D Engineer (lead): Trial plan, execution oversight, report',
+    'Plant Supervisor: Operations during the trial window',
+    'Safety Officer: HSE review and sign-off',
+    'Client/Sponsor (where applicable): Approves objectives and reviews report',
+  ],
+  procedure: [
+    { step: 1, action: 'Define Scope',          detail: 'Confirm objectives, success criteria (recovery target, purity, throughput), feed source, run duration, budget. Capture in a Trial Charter.' },
+    { step: 2, action: 'Trial Plan',            detail: 'Detailed plan: feed prep, reagent regime, operating envelope, sample/measurement schedule, data capture template, exit criteria.' },
+    { step: 3, action: 'Safety Review',         detail: 'JSA / HAZOP-light covering chemical hazards (HF, NaCN, conc. acids), pressure/temperature, electrical, PPE. Sign-off before run.' },
+    { step: 4, action: 'Pre-trial Setup',       detail: 'Equipment calibration check, reagent inventory, instrumentation, emergency drill walk-through.' },
+    { step: 5, action: 'Execute & Capture',     detail: 'Run per plan. Hourly readings (T, pH, Eh, flow, density), shift-end metallurgical balances, sample retention. Deviations logged in real time.' },
+    { step: 6, action: 'Analyse',               detail: 'Mass-balance reconciliation, statistical analysis where applicable, comparison to literature/prior runs. Identify variability sources.' },
+    { step: 7, action: 'Report & Tech Transfer', detail: 'Final report with raw data, conclusions, scale-up considerations, recommended commercial design parameters. Knowledge-transfer session to engineering / client.' },
+  ],
+  relatedDocs: ['SOP-RND-002', 'SOP-OPS-002 (Lab Parameter Configuration)', 'JSA Template', 'Trial Report Template'],
+  kpis: ['Trials completed against plan', 'Mass-balance closure %', 'Time from trial-end to report issue', 'Scale-up success rate'],
+};
+
+const RND_002: SOP = {
+  id: 'SOP-RND-002',
+  title: 'Method Development & Testwork Registry',
+  department: 'R&D',
+  category: 'Method Validation',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To develop, validate, and register analytical and process methods so test results across projects are traceable, comparable, and defensible to clients and auditors.',
+  scope: 'Every method that produces a quantitative result used in a deliverable: ICP-OES element panels, AAS, wet-chem titrations, sample digestion procedures, leach test protocols, etc.',
+  responsibilities: [
+    'Lead Chemist: Method drafting and validation',
+    'R&D Engineer: Process-side methods (leach kinetics, SX isotherms, EW polarisation)',
+    'QC: Verifies method against CRMs',
+    'IMS Administrator: Registers approved methods in the SOP/method registry',
+  ],
+  procedure: [
+    { step: 1, action: 'Need Identification',   detail: 'Triggered by new analyte, new matrix, instrument change, or method failure. Capture as a Method Development Request.' },
+    { step: 2, action: 'Literature Review',     detail: 'Reference texts (e.g. Marcali, Vogel), peer-reviewed papers, vendor app notes. Identify candidate methods and their performance envelopes.' },
+    { step: 3, action: 'Method Draft',          detail: 'Procedure, reagents, calibration scheme, control sample plan, acceptance criteria, expected uncertainty.' },
+    { step: 4, action: 'Validation',            detail: 'Linearity, LoD/LoQ, accuracy (vs CRM), precision (intra- and inter-day), robustness. Document all results.' },
+    { step: 5, action: 'Approval',              detail: 'Lead Chemist + IMS Administrator sign off. Review against existing methods for redundancy/contradiction.' },
+    { step: 6, action: 'Register',              detail: 'Method gets a unique ID, version, scope, performance characteristics. Entered into the registry and linked from /d/operations/lab.' },
+    { step: 7, action: 'Train & Roll Out',      detail: 'Brief analysts; competency check before independent use. Periodic refresher and re-validation per review interval.' },
+  ],
+  relatedDocs: ['SOP-RND-001', 'SOP-OPS-002', 'Method Validation Template', 'CRM Inventory'],
+  kpis: ['Method validation cycle time', 'Active methods in registry', 'Method-failure incidents', 'Time-to-train new analyst on a method'],
+};
+
+// ── LEGAL & COMPLIANCE ────────────────────────────────────────────────────────
+
+const LEG_001: SOP = {
+  id: 'SOP-LEG-001',
+  title: 'Contract Lifecycle Management',
+  department: 'Legal & Compliance',
+  category: 'Contracts',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To ensure every contract Rotehügels enters into — customer, supplier, employment, NDA, partnership, lease — is drafted to minimise risk, signed by an authorised signatory, stored centrally, and monitored for renewal/expiry.',
+  scope: 'All written agreements that bind the company. Excludes purchase orders ≤ ₹1 lakh which follow standard PO terms.',
+  responsibilities: [
+    'Business Owner (originator): Captures commercial terms and counterparty info',
+    'Legal Counsel (internal or retainer): Drafts/reviews legal terms',
+    'Authorised Signatory: As per delegation matrix (CEO above ₹50 L; COO/CFO under)',
+    'Compliance Officer: Maintains the contract register and renewal calendar',
+  ],
+  procedure: [
+    { step: 1, action: 'Request',               detail: 'Originator raises a contract request with: counterparty, scope, value, term, key commercial terms.' },
+    { step: 2, action: 'Drafting',              detail: 'Use approved template where available; otherwise legal drafts from scratch. Versions tracked.' },
+    { step: 3, action: 'Internal Review',       detail: 'Finance reviews payment/tax terms; technical lead reviews scope; legal reviews liability/indemnity/IP/governing-law clauses.' },
+    { step: 4, action: 'Counterparty Negotiation', detail: 'Comments exchanged via redlines. Track every change; final version locked.' },
+    { step: 5, action: 'Signature',             detail: 'Authorised signatory per delegation matrix. Digital signature (DSC) for India-side; counterparty may use DocuSign equivalent.' },
+    { step: 6, action: 'Repository',            detail: 'Signed PDF + metadata (counterparty, value, start, end, renewal terms) entered into the contract register.', system: '/d/documents' },
+    { step: 7, action: 'Monitor',               detail: 'Renewal/expiry alerts at T-90/60/30 days. Auto-flag for renegotiate, extend, or close-out decision. Close-out includes settlement of all open obligations.' },
+  ],
+  relatedDocs: ['SOP-LEG-002', 'Contract Templates Library', 'Delegation of Authority Matrix', 'Standard NDA Template'],
+  kpis: ['Contract turnaround time (request → signed)', '% of expiring contracts actioned > 30 days before expiry', 'Disputes per active contract', 'Standard-template usage rate'],
+};
+
+const LEG_002: SOP = {
+  id: 'SOP-LEG-002',
+  title: 'Statutory Compliance Calendar',
+  department: 'Legal & Compliance',
+  category: 'Regulatory',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To track and meet every recurring statutory obligation — GST, TDS, ROC/MCA, EPF/ESI, professional tax, factory/EHS, CPCB/SPCB consents — without missed filings or penalty exposure.',
+  scope: 'All Indian statutory filings applicable to Rotehügels. Extended to include foreign-jurisdiction filings as overseas operations are added (Singapore, USA reps).',
+  responsibilities: [
+    'Compliance Officer (lead): Owns the calendar; assigns and tracks',
+    'Finance: GST, TDS, advance tax filings',
+    'HR: EPF, ESI, professional tax, labour returns',
+    'Plant/EHS: Factory licence, CPCB/SPCB consents, hazardous-waste returns',
+    'Company Secretary / external advisor: ROC/MCA filings',
+  ],
+  procedure: [
+    { step: 1, action: 'Master Calendar',       detail: 'Single calendar listing every recurring filing (monthly/quarterly/annual) with statutory due date, internal-due (3-5 working days earlier), assignee, and document owner.' },
+    { step: 2, action: 'Reminders',             detail: 'Auto-email assignee at T-14, T-7, T-3, T-0 days. Escalation to compliance officer at T-1 if not actioned.' },
+    { step: 3, action: 'Preparation',           detail: 'Assignee gathers data, reconciles with books, prepares the return. Compliance officer review for monthly+ filings.' },
+    { step: 4, action: 'Submission',            detail: 'File via the official portal or appointed practitioner. Capture acknowledgement (ARN, e-receipt, etc.).' },
+    { step: 5, action: 'Archive',               detail: 'Acknowledgement uploaded to /d/documents under the relevant compliance bucket. Master calendar marked complete.', system: '/d/documents' },
+    { step: 6, action: 'Late-filing Drill',     detail: 'If a deadline is missed: file ASAP, pay penalty/interest if any, raise an internal incident with root cause. Trends reviewed quarterly.' },
+    { step: 7, action: 'Annual Refresh',        detail: 'Calendar reviewed every April for new/amended filings (Budget changes, new licences, expanded scope). Updated calendar published to all assignees.' },
+  ],
+  relatedDocs: ['SOP-LEG-001', 'SOP-ACC-008 (GST Compliance)', 'SOP-HR-003 (Payroll)', 'Master Compliance Calendar (live document)'],
+  kpis: ['On-time filing rate (target: 100 %)', 'Penalty / interest paid (₹)', 'Open compliance gaps (count)', 'Audit findings closed within target days'],
+};
+
+// ── SOFTWARE & PLATFORM ───────────────────────────────────────────────────────
+
+const SW_001: SOP = {
+  id: 'SOP-SW-001',
+  title: 'Software Release & Customer SLA Management',
+  department: 'Software & Platform',
+  category: 'Product Operations',
+  version: '1.0',
+  effectiveDate: '2026-04-26',
+  reviewDate: '2027-04-26',
+  approvedBy: 'Management Representative',
+  purpose: 'To deliver releases of AutoREX™, Operon, and LabREX on a predictable cadence with controlled quality, while meeting contractual SLAs for incident response and resolution on customer tenants.',
+  scope: 'All software products under the AutoREX platform (process automation), Operon (industrial cloud ERP), and LabREX (multi-industry LIMS). Covers feature releases, bug fixes, and customer support.',
+  responsibilities: [
+    'Software Lead (CTO): Release authorisation and SLA accountability',
+    'Engineering: Implementation, testing, deployment',
+    'QA: Test plans, regression suites, UAT coordination',
+    'Customer Success: Triages tickets, owns customer comms, SLA reporting',
+  ],
+  procedure: [
+    { step: 1, action: 'Backlog & Sprint Plan', detail: 'Bi-weekly grooming. Stories sized; release targets agreed; dependencies flagged. Customer-impacting changes get a customer-comms note.' },
+    { step: 2, action: 'Develop',               detail: 'Feature branch, peer review on PR, automated test pass before merge. No direct commits to main.' },
+    { step: 3, action: 'QA',                    detail: 'Smoke + regression on staging. Critical-path scenarios per product (e.g. for Operon: order-to-cash + procure-to-pay end-to-end).' },
+    { step: 4, action: 'UAT (where applicable)', detail: 'Customer-led UAT for tenant-specific changes. Sign-off required before production deploy.' },
+    { step: 5, action: 'Deploy',                detail: 'Release notes published; staged rollout (test → pilot tenants → all). Roll-back plan reviewed before deploy.' },
+    { step: 6, action: 'Incident Triage',       detail: 'Tickets received → severity classified per SLA matrix (P1: 1 h response / 4 h resolve; P2: 4 h / 1 day; P3: 1 day / 5 days). On-call engineer engaged for P1.' },
+    { step: 7, action: 'SLA Reporting',         detail: 'Monthly SLA report per customer: tickets opened/closed, % met SLA, MTBF/MTTR, top-5 issue themes, planned mitigations. Shared with customer + filed.' },
+  ],
+  relatedDocs: ['Customer SLA Matrix per Product', 'Release Calendar', 'Incident Severity Classification', 'On-call Rota'],
+  kpis: ['Release cadence (planned vs actual)', 'Defect escape rate (post-release P1/P2 count)', '% incidents within SLA', 'Customer NPS / CSAT'],
+};
+
 // ── EXPORT ────────────────────────────────────────────────────────────────────
 
 export const ALL_SOPS: SOP[] = [
@@ -1267,6 +1608,16 @@ export const ALL_SOPS: SOP[] = [
   PRO_001, PRO_002, PRO_003, PRO_004,
   // Ecosystem / Recycling (4)
   ECO_001, ECO_002, ECO_003, ECO_004,
+  // Engineering & Design (3)
+  ENG_001, ENG_002, ENG_003,
+  // Warehouse (3)
+  WH_001, WH_002, WH_003,
+  // R&D (2)
+  RND_001, RND_002,
+  // Legal & Compliance (2)
+  LEG_001, LEG_002,
+  // Software & Platform (1)
+  SW_001,
   // Finance (3)
   FIN_001, FIN_002, FIN_003,
   // Projects (2)
@@ -1285,10 +1636,15 @@ export const DEPARTMENTS = [
   'Accounts',
   'Human Resources',
   'Recruitment',
+  'Engineering & Design',
   'Operations',
+  'R&D',
   'Sales',
   'Procurement',
+  'Warehouse',
   'Finance',
+  'Legal & Compliance',
+  'Software & Platform',
   'Projects',
   'IT',
   'Quality',

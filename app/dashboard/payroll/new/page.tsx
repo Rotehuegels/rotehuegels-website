@@ -3,7 +3,7 @@ import NewRunForm from './NewRunForm';
 
 export default async function NewRunPage() {
   const { data } = await supabaseAdmin
-    .from('employees').select('id').ilike('status', 'active');
+    .from('employees').select('id').eq('status', 'active');
   const activeCount = data?.length ?? 0;
 
   return (

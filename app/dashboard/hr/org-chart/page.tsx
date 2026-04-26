@@ -40,8 +40,7 @@ const initials = (name?: string | null) =>
 export default async function OrgChartPage() {
   const [{ data: positions }, { data: employees }, { data: departments }] = await Promise.all([
     supabaseAdmin.from('positions').select('*').eq('active', true).order('sort_order'),
-    // ilike not eq — production data has 'ACTIVE' (uppercase) while older code wrote 'active'.
-    supabaseAdmin.from('employees').select('id, full_name, email, department, status').ilike('status', 'active').order('full_name'),
+    supabaseAdmin.from('employees').select('id, full_name, email, department, status').eq('status', 'active').order('full_name'),
     supabaseAdmin.from('departments').select('*').eq('active', true).order('sort_order'),
   ]);
 

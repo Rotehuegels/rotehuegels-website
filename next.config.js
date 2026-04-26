@@ -156,6 +156,7 @@ const nextConfig = {
       { source: '/d/ims', destination: '/dashboard/ims' },
       { source: '/d/ims/sops', destination: '/dashboard/ims/sops' },
       { source: '/d/ims/sops/:id', destination: '/dashboard/ims/sops/:id' },
+      { source: '/d/ims/manual', destination: '/dashboard/ims/manual' },
 
       // ── Dashboard shortcuts (/d/...) ──────────────────────────────
       // Overview

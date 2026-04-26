@@ -9,6 +9,26 @@ export type SOPStep = {
   system?: string;        // ERP path / module reference
 };
 
+/**
+ * One entry in a SOP's change history. Per ISO 9001:2015 §7.5.3 we track
+ * every controlled-document revision with date, author, and a description
+ * sufficient for a future reader (or auditor) to understand what shifted.
+ *
+ *   major     — procedure restructure, scope expansion, regulatory rewrite.
+ *               Bumps the integer (1.x → 2.0).
+ *   minor     — clarification, additional control, KPI addition, wording
+ *               that changes interpretation. Bumps the decimal (1.0 → 1.1).
+ *   editorial — typo fix, formatting, no procedural impact. Logged for
+ *               trace but does not bump the version.
+ */
+export type ChangeEntry = {
+  version:     string;          // '1.0', '1.1', '2.0'
+  date:        string;          // 'YYYY-MM-DD'
+  type:        'major' | 'minor' | 'editorial';
+  description: string;
+  approvedBy:  string;
+};
+
 export type SOP = {
   id: string;
   title: string;
@@ -24,7 +44,27 @@ export type SOP = {
   procedure: SOPStep[];
   relatedDocs: string[];
   kpis?: string[];
+  changeHistory?: ChangeEntry[];   // optional today, populated by deriveChangeHistory()
 };
+
+/**
+ * Returns the change history for a SOP. If the author hasn't set one
+ * explicitly, synthesises a single 'major' entry from the SOP's existing
+ * version + effectiveDate + approvedBy fields — so the IMS manual's
+ * change-history table is never empty.
+ *
+ * Future revisions append entries to changeHistory and bump version.
+ */
+export function deriveChangeHistory(sop: SOP): ChangeEntry[] {
+  if (sop.changeHistory && sop.changeHistory.length > 0) return sop.changeHistory;
+  return [{
+    version:     sop.version,
+    date:        sop.effectiveDate,
+    type:        'major',
+    description: 'Initial release of this SOP.',
+    approvedBy:  sop.approvedBy,
+  }];
+}
 
 // ── ACCOUNTS / FINANCE ───────────────────────────────────────────────────────
 

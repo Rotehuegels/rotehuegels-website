@@ -158,9 +158,10 @@ const NAV: NavItem[] = [
   {
     label: 'IMS', icon: Shield,
     children: [
-      { label: 'Overview',   href: '/d/ims',       icon: Shield },
-      { label: 'SOPs',       href: '/d/ims/sops',  icon: BookOpenCheck },
-      { label: 'Documents',  href: '/d/documents', icon: FileCheck },
+      { label: 'Overview',    href: '/d/ims',          icon: Shield },
+      { label: 'IMS Manual',  href: '/d/ims/manual',   icon: BookOpenCheck },
+      { label: 'SOPs',        href: '/d/ims/sops',     icon: BookOpenCheck },
+      { label: 'Documents',   href: '/d/documents',    icon: FileCheck },
     ],
   },
 

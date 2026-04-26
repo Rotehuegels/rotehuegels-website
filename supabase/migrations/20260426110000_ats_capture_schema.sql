@@ -59,7 +59,10 @@ CREATE INDEX IF NOT EXISTS idx_applications_stage ON applications (stage);
 -- 3. interview_rounds (interview history per application)
 CREATE TABLE IF NOT EXISTS interview_rounds (
   id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  application_id  uuid        NOT NULL REFERENCES applications(id),
+  -- ON DELETE CASCADE: when an application is deleted (e.g. via job_postings
+  -- cascade), its interview history goes too. Without CASCADE, deleting a
+  -- job posting that has applicants with interviews fails with a 500.
+  application_id  uuid        NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
   round_number    integer     NOT NULL,
   round_type      text        NOT NULL,
   scheduled_at    timestamptz,
@@ -70,5 +73,19 @@ CREATE TABLE IF NOT EXISTS interview_rounds (
   decision        text,
   created_at      timestamptz DEFAULT now()
 );
+
+-- For DBs that already had interview_rounds without CASCADE, upgrade in place.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'interview_rounds_application_id_fkey'
+      AND confdeltype <> 'c'
+  ) THEN
+    ALTER TABLE interview_rounds DROP CONSTRAINT interview_rounds_application_id_fkey;
+    ALTER TABLE interview_rounds ADD CONSTRAINT interview_rounds_application_id_fkey
+      FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE;
+  END IF;
+END$$;
 
 CREATE INDEX IF NOT EXISTS idx_interviews_app ON interview_rounds (application_id);

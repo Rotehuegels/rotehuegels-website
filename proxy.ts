@@ -23,12 +23,14 @@ const PUBLIC_API = [
   '/api/customer-registrations',       // POST public; GET gated in handler
   '/api/customer-registrations/verify',
   '/api/supplier-registrations',       // POST public; GET gated in handler
+  '/api/trading-partners',             // POST public; GET gated in handler
   '/api/rex/register',
   // Public job board + public apply
   '/api/ats/jobs/public',
   '/api/ats/apply',
   // Public e-waste self-service
   '/api/ewaste/requests',              // POST public; GET gated in handler
+  '/api/ewaste/recyclers',             // POST public (self-register, rate-limited); GET gated in handler
   '/api/ewaste/recyclers/verify',
   '/api/ewaste/recyclers/logout',
   // Marketplace — PREVIEW MODE: auth-gated at the page layer, so the API

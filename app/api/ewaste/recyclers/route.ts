@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { logAudit } from '@/lib/audit';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -40,11 +41,16 @@ export async function GET() {
   return NextResponse.json({ data });
 }
 
-// POST — register new recycler
+// POST — register new recycler (public self-service, rate-limited)
 export async function POST(req: Request) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ip = getClientIp(req);
+  const { allowed, resetAt } = rateLimit(ip, 3, 60 * 60 * 1000); // 3 / hour / IP
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many registration attempts. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((resetAt - Date.now()) / 1000)) } }
+    );
+  }
 
   const body = await req.json();
   const parsed = RecyclerSchema.safeParse(body);
@@ -63,7 +69,7 @@ export async function POST(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   logAudit({
-    userId: user.id, userEmail: user.email ?? undefined,
+    userId: 'public', userEmail: parsed.data.email,
     action: 'create', entityType: 'ewaste_recycler', entityId: data.id,
     entityLabel: `${recyclerCode} - ${parsed.data.company_name}`,
   });

@@ -3,6 +3,7 @@ export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabaseServer } from '@/lib/supabaseServer';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
@@ -49,7 +50,11 @@ function getTransporter() {
 }
 
 export async function GET() {
-  // Admin: list all registrations
+  // Admin: list all registrations — auth-gated (route is in PUBLIC_API for public POST)
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { data, error } = await supabaseAdmin
     .from('customer_registrations')
     .select('*')

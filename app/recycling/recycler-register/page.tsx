@@ -78,7 +78,7 @@ export default function RecyclerRegisterPage() {
     fd.forEach((val, key) => { if (val !== '') body[key] = val; });
     body.service_radius_km = Number(body.service_radius_km) || 100;
 
-    const res = await fetch('/api/recycling/recyclers', {
+    const res = await fetch('/api/ewaste/recyclers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

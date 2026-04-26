@@ -15,7 +15,17 @@ export const maxDuration = 60;
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  const isProd     = process.env.NODE_ENV === 'production';
+
+  // Production: CRON_SECRET must be set AND the bearer must match.
+  // Non-prod: allow when CRON_SECRET is unset so a developer can curl the
+  // route without env-var setup. If CRON_SECRET *is* set locally, still
+  // require it (so dev can mirror prod behaviour when desired).
+  const allowed = isProd
+    ? (!!cronSecret && authHeader === `Bearer ${cronSecret}`)
+    : (!cronSecret || authHeader === `Bearer ${cronSecret}`);
+
+  if (!allowed) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

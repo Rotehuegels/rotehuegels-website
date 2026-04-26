@@ -100,37 +100,10 @@ export async function POST(req: Request) {
 
   const tolerances = await loadTolerances();
 
-  // 1. Insert header
-  const { data: inv, error: insErr } = await supabaseAdmin
-    .from('purchase_invoices')
-    .insert({
-      invoice_no:    parsed.data.invoice_no,
-      supplier_id:   parsed.data.supplier_id,
-      po_id:         parsed.data.po_id ?? null,
-      invoice_date:  parsed.data.invoice_date,
-      received_date: parsed.data.received_date ?? null,
-      due_date:      parsed.data.due_date ?? null,
-      subtotal:      parsed.data.subtotal,
-      taxable_value: parsed.data.taxable_value,
-      igst_amount:   parsed.data.igst_amount,
-      cgst_amount:   parsed.data.cgst_amount,
-      sgst_amount:   parsed.data.sgst_amount,
-      total_amount:  parsed.data.total_amount,
-      notes:         parsed.data.notes ?? null,
-      match_status:  'pending',
-    })
-    .select('id')
-    .single();
-  if (insErr || !inv) {
-    if (insErr?.code === '23505') {
-      return NextResponse.json({ error: 'An invoice with this number already exists for this supplier.' }, { status: 409 });
-    }
-    return NextResponse.json({ error: insErr?.message ?? 'Insert failed' }, { status: 500 });
-  }
-
-  // 2. Pre-fetch PO items + cumulative GRN qty per po_item_id (in one shot)
+  // 1. Pre-fetch PO items + cumulative GRN qty per po_item_id, plus the PO
+  //    total (for the header rollup if the invoice is under-billed).
   const poItemIds = Array.from(new Set(parsed.data.items.map((it) => it.po_item_id).filter(Boolean) as string[]));
-  const [poItemsRes, grnRowsRes] = await Promise.all([
+  const [poItemsRes, grnRowsRes, poTotalRow] = await Promise.all([
     poItemIds.length
       ? supabaseAdmin.from('po_items').select('id, quantity, unit_price').in('id', poItemIds)
       : Promise.resolve({ data: [], error: null }),
@@ -141,6 +114,9 @@ export async function POST(req: Request) {
           .in('po_item_id', poItemIds)
           .eq('goods_receipt_notes.status', 'accepted')
       : Promise.resolve({ data: [], error: null }),
+    parsed.data.po_id
+      ? supabaseAdmin.from('purchase_orders').select('total_amount').eq('id', parsed.data.po_id).single()
+      : Promise.resolve({ data: null }),
   ]);
 
   const poByItem = new Map((poItemsRes.data ?? []).map((p) => [p.id, p]));
@@ -152,7 +128,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // 3. Build line-level match results
+  // 2. Run the 3-way match per line
   const itemRows = parsed.data.items.map((it) => {
     const po  = it.po_item_id ? poByItem.get(it.po_item_id) ?? null : null;
     const grn = it.po_item_id
@@ -165,7 +141,6 @@ export async function POST(req: Request) {
       tolerances,
     );
     return {
-      invoice_id:         inv.id,
       po_item_id:         it.po_item_id ?? null,
       description:        it.description,
       hsn_code:           it.hsn_code ?? null,
@@ -183,39 +158,50 @@ export async function POST(req: Request) {
     };
   });
 
-  const { error: itemsErr } = await supabaseAdmin
-    .from('purchase_invoice_items')
-    .insert(itemRows);
-  if (itemsErr) {
-    await supabaseAdmin.from('purchase_invoices').delete().eq('id', inv.id);
-    return NextResponse.json({ error: itemsErr.message }, { status: 500 });
-  }
-
-  // 4. Roll up header status
-  const { data: poTotalRow } = parsed.data.po_id
-    ? await supabaseAdmin.from('purchase_orders').select('total_amount').eq('id', parsed.data.po_id).single()
-    : { data: null };
+  // 3. Roll up header status
   const headerStatus = rollupHeaderStatus(
     itemRows.map((r) => r.match_status as LineMatchStatus),
     parsed.data.total_amount,
-    poTotalRow?.total_amount ? Number(poTotalRow.total_amount) : null,
+    poTotalRow?.data?.total_amount ? Number(poTotalRow.data.total_amount) : null,
   );
-
-  // Auto-hold payment when match is anything other than matched / under_billed
   const autoOnHold = !['matched', 'under_billed'].includes(headerStatus);
+  const paymentStatus = autoOnHold ? 'on_hold' : 'unpaid';
 
-  await supabaseAdmin
-    .from('purchase_invoices')
-    .update({
-      match_status:   headerStatus,
-      payment_status: autoOnHold ? 'on_hold' : 'unpaid',
-    })
-    .eq('id', inv.id);
+  // 4. Single atomic insert via RPC. Header + items go in or neither does —
+  //    no orphan headers possible from a mid-flight failure.
+  const { data: invoiceId, error: rpcErr } = await supabaseAdmin.rpc('create_purchase_invoice_with_items', {
+    p_header: {
+      invoice_no:    parsed.data.invoice_no,
+      supplier_id:   parsed.data.supplier_id,
+      po_id:         parsed.data.po_id ?? '',
+      invoice_date:  parsed.data.invoice_date,
+      received_date: parsed.data.received_date ?? '',
+      due_date:      parsed.data.due_date ?? '',
+      subtotal:      parsed.data.subtotal,
+      taxable_value: parsed.data.taxable_value,
+      igst_amount:   parsed.data.igst_amount,
+      cgst_amount:   parsed.data.cgst_amount,
+      sgst_amount:   parsed.data.sgst_amount,
+      total_amount:  parsed.data.total_amount,
+      notes:         parsed.data.notes ?? null,
+    },
+    p_items: itemRows,
+    p_match_status:   headerStatus,
+    p_payment_status: paymentStatus,
+  });
+
+  if (rpcErr || !invoiceId) {
+    // Postgres returns 23505 as a string code in the JSON error
+    if (rpcErr?.code === '23505') {
+      return NextResponse.json({ error: 'An invoice with this number already exists for this supplier.' }, { status: 409 });
+    }
+    return NextResponse.json({ error: rpcErr?.message ?? 'Insert failed' }, { status: 500 });
+  }
 
   return NextResponse.json({
     success:        true,
-    id:             inv.id,
+    id:             invoiceId,
     match_status:   headerStatus,
-    payment_status: autoOnHold ? 'on_hold' : 'unpaid',
+    payment_status: paymentStatus,
   }, { status: 201 });
 }

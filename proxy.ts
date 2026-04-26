@@ -6,7 +6,7 @@ import { createServerClient } from '@supabase/ssr';
 // ready to launch publicly, (a) remove '/marketplace' from this list, and
 // (b) un-comment '/api/listings' in the PUBLIC_API allowlist below, and
 // (c) remove the amber Preview banner from app/marketplace/page.tsx.
-const PROTECTED_PAGE_PREFIXES = ['/dashboard', '/admin', '/tickets', '/requests', '/marketplace'];
+const PROTECTED_PAGE_PREFIXES = ['/dashboard', '/admin', '/requests', '/marketplace'];
 
 // ── API auth: allowlist of routes reachable without a Supabase session ───────
 // Additions must be justified: public-facing flow, webhook receiver, cron
@@ -52,7 +52,7 @@ const PUBLIC_API = [
   '/api/me',
   // Host calendar feed — authenticates with CALENDAR_SUBSCRIBE_SECRET query
   // token, used by external calendar apps (Google / MS / Apple / Zoho).
-  '/api/cal',
+  '/api/cal/bookings.ics',
 ];
 
 // Customer portal uses its own session check inside each handler.
@@ -130,7 +130,6 @@ export const config = {
     '/admin/:path*',
     '/marketplace/:path*',
     '/marketplace',
-    '/tickets/:path*',
     '/requests/:path*',
   ],
 };

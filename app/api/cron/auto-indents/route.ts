@@ -36,7 +36,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, created: 0, message: 'No items below reorder level.' });
   }
 
-  // 2. Items already covered by an open indent
+  // 2. Items already covered by an open indent.
+  //    We only match against indent_items that have a stock_item_id FK —
+  //    free-text indent lines (no stock_item_id) are by design separate
+  //    from the stock-master coverage check. A free-text request for
+  //    "office stationery" never blocks an auto-indent for stock_item_id=X.
   const { data: openIndentItems } = await supabaseAdmin
     .from('indent_items')
     .select('stock_item_id, indents!inner(status)')

@@ -48,8 +48,8 @@ const fmtDate = (d: string) =>
   new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
 export default function ApprovalRow({
-  approval, canAct, isMine,
-}: { approval: Approval; canAct: boolean; isMine: boolean }) {
+  approval, canAct, isMine, canCancel,
+}: { approval: Approval; canAct: boolean; isMine: boolean; canCancel: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr]   = useState('');
@@ -133,7 +133,7 @@ export default function ApprovalRow({
       )}
 
       {/* Action bar */}
-      {(canAct || isMine) && approval.status === 'pending' && (
+      {(canAct || canCancel) && approval.status === 'pending' && (
         <div className="mt-4 flex flex-wrap gap-2">
           {canAct && (
             <>
@@ -149,11 +149,12 @@ export default function ApprovalRow({
               </button>
             </>
           )}
-          {isMine && (
+          {canCancel && (
             <button onClick={cancel} disabled={busy !== null}
+              title={isMine ? undefined : 'Cancel as admin'}
               className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 hover:border-zinc-500 px-3.5 py-1.5 text-xs text-zinc-400 disabled:opacity-50">
               {busy === 'cancel' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Ban className="h-3.5 w-3.5" />}
-              Cancel request
+              {isMine ? 'Cancel request' : 'Cancel (admin)'}
             </button>
           )}
         </div>

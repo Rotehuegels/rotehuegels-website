@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { getUserRole } from '@/lib/portalAuth';
 import { decide } from '@/lib/approvals';
 
 const PatchSchema = z.discriminatedUnion('action', [
@@ -45,18 +46,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
 
   if (parsed.data.action === 'cancel') {
-    // Only the requester (or an admin) can cancel; here we check requester.
-    const { data: row } = await supabaseAdmin
-      .from('approvals')
-      .select('requested_by_email, status')
-      .eq('id', id)
-      .single();
+    // Allowed: the original requester OR an admin (so a solo founder isn't
+    // locked out when the requester is unavailable / has left).
+    const [{ data: row }, role] = await Promise.all([
+      supabaseAdmin
+        .from('approvals')
+        .select('requested_by_email, status')
+        .eq('id', id)
+        .single(),
+      getUserRole(),
+    ]);
     if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     if (row.status !== 'pending') {
       return NextResponse.json({ error: `Cannot cancel a ${row.status} approval.` }, { status: 409 });
     }
-    if ((row.requested_by_email ?? '').toLowerCase() !== user.email.toLowerCase()) {
-      return NextResponse.json({ error: 'Only the requester can cancel.' }, { status: 403 });
+    const isRequester = (row.requested_by_email ?? '').toLowerCase() === user.email.toLowerCase();
+    const isAdmin     = role === 'admin';
+    if (!isRequester && !isAdmin) {
+      return NextResponse.json({ error: 'Only the requester or an admin can cancel.' }, { status: 403 });
     }
     await supabaseAdmin
       .from('approvals')

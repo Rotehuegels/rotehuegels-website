@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { getUserRole } from '@/lib/portalAuth';
 import { redirect } from 'next/navigation';
 import { ShieldCheck } from 'lucide-react';
 import ApprovalRow from './ApprovalRow';
@@ -37,6 +38,8 @@ export default async function ApprovalsPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login?next=/d/approvals');
   const me = (user.email ?? '').toLowerCase();
+  const role = await getUserRole();
+  const isAdmin = role === 'admin';
 
   const sp = await searchParams;
   const tab = sp.tab ?? 'mine';
@@ -110,6 +113,7 @@ export default async function ApprovalsPage({
             approval={a}
             canAct={isWaitingOnMe(a)}
             isMine={isMyRequest(a)}
+            canCancel={isMyRequest(a) || isAdmin}
           />
         ))}
       </div>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Users, Award, Globe, Leaf, Cpu, FlaskConical } from 'lucide-react';
+import { Users, Award, Globe, Leaf, Cpu, FlaskConical, Sparkles, ArrowRight } from 'lucide-react';
 
 export const metadata = {
   title: 'REX — Rotehügels Expert Network',
@@ -47,35 +47,40 @@ export default function RexPage() {
   return (
     <main className="relative pb-32">
 
-      {/* Hero */}
-      <section className="mx-auto max-w-[1800px] px-6 pt-24 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-400 mb-8">
-          <Users className="h-3.5 w-3.5" />
-          Rotehügels Expert Network
-        </div>
-        <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white">
-          Join{' '}
-          <span className="bg-gradient-to-r from-rose-400 to-rose-300 bg-clip-text text-transparent">
-            REX
-          </span>
-        </h1>
-        <p className="mt-6 mx-auto max-w-2xl text-zinc-300 text-xl leading-relaxed">
-          A growing global community of experts, practitioners, and passionate individuals
-          advancing sustainability, recycling, and plant automation.
-        </p>
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Link
-            href="/rex/register"
-            className="rounded-xl bg-rose-600 px-8 py-3.5 text-sm font-semibold text-white hover:bg-rose-500 transition-colors shadow-lg"
-          >
-            Register for free
-          </Link>
-          <a
-            href="#how-it-works"
-            className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-8 py-3.5 text-sm font-semibold text-zinc-200 hover:border-zinc-600 transition-colors"
-          >
-            How it works
-          </a>
+      {/* HERO */}
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <Sparkles className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">Rotehügels Expert Network</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            Join<br />
+            <span className="text-rose-400">REX</span>
+          </h1>
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
+            A growing global community of experts, practitioners, and passionate individuals
+            advancing sustainability, recycling, and plant automation.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <Link
+              href="/rex/register"
+              className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors"
+            >
+              Register for free <ArrowRight className="h-5 w-5" />
+            </Link>
+            <a
+              href="#how-it-works"
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
+            >
+              How it works
+            </a>
+          </div>
         </div>
       </section>
 

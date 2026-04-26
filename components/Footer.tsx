@@ -25,6 +25,7 @@ export default function Footer() {
           <ul className="space-y-0.5">
             <li><a href="/services" className="hover:underline hover:text-white">Engineering</a></li>
             <li><a href="/digital-solutions" className="hover:underline hover:text-white">AutoREX</a></li>
+            <li><a href="/talent" className="hover:underline hover:text-white">Talent</a></li>
             <li><a href="/circular" className="hover:underline hover:text-white">Circular</a></li>
             <li><a href="/about" className="hover:underline hover:text-white">About Us</a></li>
             <li><a href="/contact" className="hover:underline hover:text-white">Contact</a></li>

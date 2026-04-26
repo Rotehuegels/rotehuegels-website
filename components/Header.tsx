@@ -40,6 +40,14 @@ const NAV: NavItem[] = [
     ],
   },
   {
+    label: 'Talent',
+    children: [
+      { label: 'Overview',            href: '/talent' },
+      { label: 'Corporate Training',  href: '/talent/training' },
+      { label: 'Recruitment',         href: '/talent/recruitment' },
+    ],
+  },
+  {
     label: 'Circular',
     children: [
       { label: 'Overview',                    href: '/circular' },
@@ -116,11 +124,11 @@ export default function Header() {
           </Link>
 
           {/* Desktop nav */}
-          <nav ref={navRef} className="hidden md:flex items-center gap-1">
+          <nav ref={navRef} className="hidden lg:flex items-center gap-0.5">
             {NAV.map((item) => (
               item.href ? (
                 <Link key={item.label} href={item.href}
-                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                  className={`px-2.5 py-1.5 text-[13px] rounded-lg transition-colors ${
                     isActive(item)
                       ? 'text-red-400 font-semibold'
                       : 'text-zinc-200 hover:text-white hover:bg-white/5'
@@ -131,24 +139,24 @@ export default function Header() {
                 <div key={item.label} className="relative">
                   <button
                     onClick={() => setActive(activeDropdown === item.label ? null : item.label)}
-                    className={`flex items-center gap-1 px-3 py-2 text-sm rounded-lg transition-colors ${
+                    className={`flex items-center gap-1 px-2.5 py-1.5 text-[13px] rounded-lg transition-colors ${
                       isActive(item) || activeDropdown === item.label
                         ? 'text-red-400 font-semibold'
                         : 'text-zinc-200 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     {item.label}
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                    <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${
                       activeDropdown === item.label ? 'rotate-180' : ''
                     }`} />
                   </button>
 
                   {/* Dropdown */}
                   {activeDropdown === item.label && (
-                    <div className="absolute top-full left-0 mt-1.5 min-w-[200px] rounded-xl border border-white/10 bg-black/90 backdrop-blur-xl shadow-2xl py-1.5 z-50">
+                    <div className="absolute top-full left-0 mt-2 min-w-[210px] rounded-xl border border-white/10 bg-zinc-950/95 backdrop-blur-xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] ring-1 ring-white/5 py-1.5 z-50">
                       {item.children?.map((child) => (
                         <Link key={child.href} href={child.href}
-                          className={`flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
+                          className={`flex items-center gap-2 px-3.5 py-2 text-[13px] transition-colors ${
                             child.highlight
                               ? 'text-rose-300 hover:bg-rose-500/10'
                               : pathname === child.href
@@ -168,7 +176,7 @@ export default function Header() {
             ))}
 
             <Link href="/contact"
-              className="ml-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors">
+              className="ml-2 rounded-lg bg-red-600 px-3.5 py-1.5 text-[13px] font-semibold text-white hover:bg-red-500 transition-colors">
               Get in Touch
             </Link>
           </nav>
@@ -176,7 +184,7 @@ export default function Header() {
           {/* Mobile hamburger */}
           <button
             type="button"
-            className="md:hidden relative z-[1001] p-2 rounded hover:bg-white/5 active:scale-95 transition"
+            className="lg:hidden relative z-[1001] p-2 rounded hover:bg-white/5 active:scale-95 transition"
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
           >
@@ -188,7 +196,7 @@ export default function Header() {
       {/* Mobile drawer */}
       {mounted && createPortal(
         <div className={[
-          'fixed inset-0 z-[9999] md:hidden flex flex-col bg-black transition-transform duration-300 ease-in-out overflow-y-auto',
+          'fixed inset-0 z-[9999] lg:hidden flex flex-col bg-black transition-transform duration-300 ease-in-out overflow-y-auto',
           mobileOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-full pointer-events-none',
         ].join(' ')}>
 

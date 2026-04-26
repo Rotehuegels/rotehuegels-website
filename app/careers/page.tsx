@@ -16,6 +16,8 @@ import {
   ShieldCheck,
   Users,
   Rocket,
+  Briefcase,
+  ArrowRight,
 } from "lucide-react";
 
 type Job = { id: string; title: string; department: string | null; location: string; employment_type: string };
@@ -162,37 +164,39 @@ export default function CareersPage() {
 
   return (
     <div className="min-h-screen"> {/* global dark bg comes from globals.css */}
-      {/* Hero */}
-      <section className="relative">
-        {/* Remove light gradient; keep spacing; ensure contrast */}
-        <div className="max-w-[1800px] mx-auto px-6 pt-16 pb-10">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-100"
-          >
-            Build tomorrow’s materials economy—today.
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.05 }}
-            className="mt-4 text-lg md:text-xl text-slate-300 max-w-[1800px]"
-          >
+      {/* HERO */}
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <Briefcase className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">Careers</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            Build tomorrow’s materials economy<br />
+            <span className="text-rose-400">—today.</span>
+          </h1>
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
             Rotehügels is a research-business consultancy advancing
             sustainability and circular economy across metals, recycling, and
             advanced manufacturing. We’re assembling a team of domain experts
             who love hard problems and elegant solutions.
-          </motion.p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
             <a
               href="mailto:hr@rotehuegels.com?subject=Open%20Application%20—%20Roteh%C3%BCgels&body=Share%20links%20to%20your%20work%2C%20CV%2C%20and%20a%20200-word%20note%20on%20why%20you."
-              className="btn btn-primary"
+              className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors"
             >
-              Open Application
+              Open Application <ArrowRight className="h-5 w-5" />
             </a>
-            <a href="#domains" className="btn btn-ghost">
+            <a
+              href="#domains"
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
+            >
               Explore Domains
             </a>
           </div>

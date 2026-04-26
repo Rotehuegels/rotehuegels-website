@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Mail, ArrowRight } from "lucide-react";
 import { Copyable } from "./Copyable";
 import { ContactForm } from "./ContactForm";
 
@@ -5,20 +7,42 @@ export const metadata = { title: "Contact Us — Rotehügels" };
 
 export default function ContactPage() {
   return (
-    <main className="mt-10 px-4">
-      {/* Title */}
-      <h1 className="text-center text-3xl font-bold">
-        Contact Us
-        <span className="block mx-auto mt-2 h-[2px] w-20 rounded-full bg-gradient-to-r from-rose-500 to-rose-300"></span>
-      </h1>
+    <main>
+      {/* HERO */}
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <Mail className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">Contact Us</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            Contact Us<br />
+            <span className="text-rose-400">across three time zones.</span>
+          </h1>
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
+            Our regional teams operate across three strategic time zones to ensure seamless
+            24-hour global engagement.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <Link
+              href="#contact-form"
+              className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors"
+            >
+              Send us a message <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
 
-      <p className="mx-auto mt-4 max-w-[1800px] text-center text-sm text-white/80">
-        Our regional teams operate across three strategic time zones to ensure seamless
-        24-hour global engagement.
-      </p>
+      <div className="px-4">
 
       {/* Contact Form */}
       <section
+        id="contact-form"
         aria-label="Send us a message"
         className="mx-auto mt-12 max-w-2xl rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl shadow-black/30"
       >
@@ -242,6 +266,7 @@ export default function ContactPage() {
           executed wherever required.
         </p>
       </section>
+      </div>
     </main>
   );
 }

@@ -2,6 +2,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { Wrench, ArrowRight } from "lucide-react";
 
 // Note: metadata moved to layout.tsx since this is a client component
 
@@ -96,37 +97,46 @@ function Kpi({ value, label }: { value: string; label: string }) {
 
 export default function ServicesPage() {
   return (
-    <section className="max-w-[1800px] mx-auto px-4 py-12 md:py-16 space-y-12 md:space-y-16">
-      {/* Hero */}
-      <header className="text-center">
-        <p className="text-sm tracking-widest text-emerald-400/90 uppercase">
-          Services
-        </p>
-        <h1 className="mt-2 text-3xl md:text-5xl font-bold">
-          Practical expertise across{" "}
-          <span className="text-rose-400">Metals, Recycling & Strategy</span>
-        </h1>
-        <p className="mt-4 max-w-[1800px] mx-auto text-zinc-300">
-          We combine lab-grade research, on-ground commissioning experience, and
-          boardroom strategy to deliver measurable outcomes—on time and within
-          budget.
-        </p>
-
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link
-            href="/contact"
-            className="rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-rose-600"
-          >
-            Book a discovery call
-          </Link>
-          <Link
-            href="/suppliers/register"
-            className="rounded-xl border border-zinc-700 px-4 py-2.5 text-sm font-medium text-zinc-200 hover:border-zinc-600"
-          >
-            Become a supplier
-          </Link>
+    <main className="space-y-12 md:space-y-16">
+      {/* HERO */}
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <Wrench className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">Services</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            Practical expertise across<br />
+            <span className="text-rose-400">Metals, Recycling & Strategy</span>
+          </h1>
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
+            We combine lab-grade research, on-ground commissioning experience, and
+            boardroom strategy to deliver measurable outcomes—on time and within
+            budget.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <Link
+              href="/contact"
+              className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors"
+            >
+              Book a discovery call <ArrowRight className="h-5 w-5" />
+            </Link>
+            <Link
+              href="/suppliers/register"
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
+            >
+              Become a supplier
+            </Link>
+          </div>
         </div>
-      </header>
+      </section>
+
+      <section className="max-w-[1800px] mx-auto px-4 pb-12 md:pb-16 space-y-12 md:space-y-16">
 
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -322,6 +332,7 @@ export default function ServicesPage() {
           </Link>
         </div>
       </div>
-    </section>
+      </section>
+    </main>
   );
 }

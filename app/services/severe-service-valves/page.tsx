@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Gauge, Factory, Settings, Shield, Award, ArrowRight, CheckCircle2, Activity, Zap, Flame } from 'lucide-react';
+import { Gauge, Factory, Settings, Shield, Award, ArrowRight, CheckCircle2, Activity, Zap, Flame, Wrench } from 'lucide-react';
 import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
 
 const DESCRIPTION = 'Engineered severe-service control valve packages for process plants across oil & gas, petrochemicals, power, chemicals, fertilisers, metals & mining, pulp & paper, and more — anti-cavitation, anti-surge, high-dP, sour-service, cryogenic, and erosive applications. Fully integrated with actuator, positioner, and instrumentation.';
@@ -31,28 +31,40 @@ export default function SevereServiceValvesPage() {
         { name: 'Severe-Service Valves', path: '/services/severe-service-valves' },
       ])} />
 
-      <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-24">
-
-        <section className="text-center">
-          <p className="text-xs tracking-widest text-rose-400/90 uppercase mb-3">Services · Specialty Engineering</p>
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight">
-            Severe Service Control Valve Packages — <span className="text-rose-400">engineered for any process plant.</span>
+      {/* HERO */}
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <Wrench className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">Services · Specialty Engineering</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            Severe Service Control Valve Packages —<br />
+            <span className="text-rose-400">engineered for any process plant.</span>
           </h1>
-          <p className="mt-5 max-w-3xl mx-auto text-zinc-300 text-base md:text-lg leading-relaxed">
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
             Fully engineered control-valve packages for the hardest service across oil &amp; gas, petrochemicals,
             power, chemicals, fertilisers, metals &amp; mining, pulp &amp; paper, and every other process industry —
             anti-cavitation, anti-surge, high pressure-drop, sour-service, cryogenic, and erosive duty. Sized,
             selected, packaged, and certified to the standards your EPC and operator will accept without argument.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/contact" className="rounded-xl bg-rose-500 hover:bg-rose-600 px-6 py-3 text-sm font-semibold text-white transition-colors inline-flex items-center gap-2">
-              Request a valve package <ArrowRight className="h-4 w-4" />
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <Link href="/contact" className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors">
+              Request a valve package <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link href="/contact" className="rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
+            <Link href="/contact" className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors">
               Share your valve datasheet
             </Link>
           </div>
-        </section>
+        </div>
+      </section>
+
+      <div className="max-w-[1800px] mx-auto px-6 md:px-10 pb-16 space-y-24">
 
         <section>
           <div className="text-center mb-10">

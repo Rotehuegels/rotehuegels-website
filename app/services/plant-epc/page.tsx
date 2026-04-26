@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { HardHat, Cog, Package, Hammer, ClipboardList, Award, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { HardHat, Cog, Package, Hammer, ClipboardList, Award, ArrowRight, CheckCircle2, Factory } from 'lucide-react';
 import JsonLd, { serviceSchema, breadcrumbSchema } from '@/components/JsonLd';
 
 const DESCRIPTION = 'Detailed engineering, procurement, construction, and commissioning. One accountable delivery partner from DFS to running plant.';
@@ -31,27 +31,39 @@ export default function PlantEpcPage() {
         { name: 'Plant EPC', path: '/services/plant-epc' },
       ])} />
 
-      <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-24">
-
-        <section className="text-center">
-          <p className="text-xs tracking-widest text-emerald-400/90 uppercase mb-3">Services · Plant Engineering &amp; EPC</p>
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight">
-            From DFS to running plant — <span className="text-rose-400">one accountable delivery partner.</span>
+      {/* HERO */}
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <Factory className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">Services · Plant Engineering &amp; EPC</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            From DFS to running plant —<br />
+            <span className="text-rose-400">one accountable delivery partner.</span>
           </h1>
-          <p className="mt-5 max-w-3xl mx-auto text-zinc-300 text-base md:text-lg leading-relaxed">
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
             Detailed engineering, procurement, construction management, and commissioning under a single contract.
             We own the handoff from feasibility to steady-state operation so you don&apos;t have to coordinate four
             vendors across three continents.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/contact" className="rounded-xl bg-emerald-600 hover:bg-emerald-500 px-6 py-3 text-sm font-semibold text-white transition-colors inline-flex items-center gap-2">
-              Request a bid package <ArrowRight className="h-4 w-4" />
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <Link href="/contact" className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors">
+              Request a bid package <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link href="/success-stories" className="rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
+            <Link href="/success-stories" className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors">
               See delivered plants
             </Link>
           </div>
-        </section>
+        </div>
+      </section>
+
+      <div className="max-w-[1800px] mx-auto px-6 md:px-10 pb-16 space-y-24">
 
         <section>
           <div className="text-center mb-10">

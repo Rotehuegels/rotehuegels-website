@@ -32,51 +32,39 @@ export default function DigitalSolutionsPage() {
     <main className="text-white min-h-screen">
 
       {/* HERO */}
-      <section className="text-center py-32 px-6 relative overflow-hidden">
-
-        <div className="absolute inset-0 bg-gradient-to-r from-red-900/20 via-transparent to-red-900/20 blur-3xl"></div>
-
-        <motion.h1
-          initial="hidden"
-          animate="show"
-          variants={fadeUp}
-          transition={{ duration: 0.8 }}
-          className="text-5xl md:text-6xl font-bold mb-6 relative"
-        >
-          Digital Intelligence for <span className="text-red-500">Industrial Plants</span>
-        </motion.h1>
-
-        <motion.p
-          initial="hidden"
-          animate="show"
-          variants={fadeUp}
-          transition={{ delay: 0.2 }}
-          className="text-gray-400 max-w-2xl mx-auto mb-8 relative"
-        >
-          Real-time monitoring, AI-driven control, and intelligent automation for next-generation industrial operations.
-        </motion.p>
-
-        <motion.div
-          initial="hidden"
-          animate="show"
-          variants={fadeUp}
-          transition={{ delay: 0.4 }}
-          className="flex justify-center gap-4 relative"
-        >
-          <button
-            onClick={() => router.push('/book/autorex-suite-demo')}
-            className="bg-red-500 hover:bg-red-600 px-6 py-3 rounded-lg transition hover:scale-105"
-          >
-            Book a demo
-          </button>
-
-          <button
-            onClick={() => router.push('/digital-solutions/autorex')}
-            className="border border-white/20 px-6 py-3 rounded-lg hover:bg-white/10 transition"
-          >
-            Explore Platform
-          </button>
-        </motion.div>
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <Cpu className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">Digital Solutions</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            Digital Intelligence for<br />
+            <span className="text-rose-400">Industrial Plants</span>
+          </h1>
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
+            Real-time monitoring, AI-driven control, and intelligent automation for next-generation industrial operations.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <Link
+              href="/book/autorex-suite-demo"
+              className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors"
+            >
+              Book a demo <ArrowRight className="h-5 w-5" />
+            </Link>
+            <Link
+              href="/digital-solutions/autorex"
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors"
+            >
+              Explore Platform
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* AUTOREX HERO (NEXT LEVEL) */}

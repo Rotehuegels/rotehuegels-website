@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import {
   FlaskConical, Microscope, ClipboardCheck, BarChart3, QrCode, GitBranch,
-  ShieldCheck, ArrowRight, CheckCircle2,
+  ShieldCheck, ArrowRight, CheckCircle2, Beaker,
 } from 'lucide-react';
 import JsonLd, { softwareSchema, breadcrumbSchema } from '@/components/JsonLd';
 
@@ -36,34 +36,45 @@ export default function LabRexPage() {
         { name: 'LabREX', path: '/digital-solutions/labrex' },
       ])} />
 
-      <div className="max-w-[1800px] mx-auto px-6 md:px-10 py-16 space-y-20">
-
-        {/* Hero */}
-        <section className="text-center">
+      {/* HERO */}
+      <section className="relative overflow-hidden py-20 md:py-28 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="relative max-w-[1800px] mx-auto text-center">
           <div className="flex justify-center mb-6">
             <div className="rounded-2xl border border-emerald-500/30 bg-black/50 p-4">
               <FlaskConical className="h-12 w-12 text-emerald-400" />
             </div>
           </div>
-          <p className="text-xs tracking-widest text-emerald-400/90 uppercase mb-3">AutoREX Suite · Lab &amp; QA</p>
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight">
-            LabREX — <span className="text-emerald-400">the LIMS that closes the loop on process control.</span>
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 border border-rose-500/20 px-4 py-1.5 mb-6">
+              <Beaker className="h-4 w-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">AutoREX Suite · Lab &amp; QA</span>
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+            LabREX —<br />
+            <span className="text-rose-400">the LIMS that closes the loop on process control.</span>
           </h1>
-          <p className="mt-5 max-w-3xl mx-auto text-zinc-300 text-base md:text-lg leading-relaxed">
+          <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto">
             A multi-industry Laboratory Information Management System covering sample intake, instrument
             integration, CoA generation, and assay trend analytics. Built for metals, battery-recycling,
             and process-chemistry labs — and designed to feed its results back into AutoREX so the plant
             corrects itself.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/book/autorex-suite-demo" className="rounded-xl bg-emerald-500 hover:bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors inline-flex items-center gap-2">
-              Book a demo <ArrowRight className="h-4 w-4" />
+          <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <Link href="/book/autorex-suite-demo" className="flex items-center gap-2 rounded-xl bg-rose-500 hover:bg-rose-600 px-8 py-4 text-base font-semibold text-white transition-colors">
+              Book a demo <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link href="/digital-solutions" className="rounded-xl border border-zinc-700 hover:border-zinc-500 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors">
+            <Link href="/digital-solutions" className="flex items-center gap-2 rounded-xl border border-zinc-700 hover:border-zinc-500 px-8 py-4 text-base font-medium text-zinc-300 transition-colors">
               Back to the suite overview
             </Link>
           </div>
-        </section>
+        </div>
+      </section>
+
+      <div className="max-w-[1800px] mx-auto px-6 md:px-10 pb-16 space-y-20">
 
         {/* Capabilities */}
         <section>

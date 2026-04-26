@@ -20,6 +20,10 @@ CREATE TABLE IF NOT EXISTS grn_no_counter (
 
 -- 2. Backfill from existing rows so the next number doesn't collide.
 --    GREATEST() makes the migration safe to re-run after partial state.
+--    HAVING count(*) > 0 suppresses the INSERT entirely on an empty source
+--    table — without it, max() over zero rows returns NULL and the INSERT
+--    would violate the NOT NULL on next_seq. The function then starts
+--    fresh on first call.
 INSERT INTO po_no_year_counters (year, next_seq)
 SELECT
   m[1] AS year,
@@ -28,6 +32,7 @@ FROM purchase_orders,
 LATERAL regexp_match(po_no, '^PO-(\d{4})-(\d+)$') m
 WHERE m IS NOT NULL
 GROUP BY m[1]
+HAVING count(*) > 0
 ON CONFLICT (year) DO UPDATE SET next_seq = GREATEST(po_no_year_counters.next_seq, EXCLUDED.next_seq);
 
 INSERT INTO grn_no_counter (id, next_seq)
@@ -35,6 +40,7 @@ SELECT 'global', max(m[1]::int) + 1
 FROM goods_receipt_notes,
 LATERAL regexp_match(grn_no, '^GRN-(\d+)$') m
 WHERE m IS NOT NULL
+HAVING count(*) > 0
 ON CONFLICT (id) DO UPDATE SET next_seq = GREATEST(grn_no_counter.next_seq, EXCLUDED.next_seq);
 
 -- 3. RPCs — single-statement upsert + RETURNING. Atomic per Postgres

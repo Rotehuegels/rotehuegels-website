@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import DeleteButton from '@/components/DeleteButton';
 
 const input = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none transition-colors';
 const label = 'block text-xs font-medium text-zinc-400 mb-1.5';
@@ -159,7 +160,7 @@ export default function ItemDetailPage() {
 
         {error && <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">{error}</p>}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button type="submit" disabled={saving}
             className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-50 transition-colors">
             {saving ? 'Saving…' : 'Save Changes'}
@@ -168,6 +169,14 @@ export default function ItemDetailPage() {
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-6 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors">
             Cancel
           </Link>
+          <div className="ml-auto">
+            <DeleteButton
+              entityName="item"
+              entityLabel={`${form.sku_id} — ${form.name}`}
+              deleteUrl={`/api/accounts/items/${id}`}
+              redirectUrl="/d/catalog"
+            />
+          </div>
         </div>
       </form>
     </div>

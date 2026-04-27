@@ -14,6 +14,11 @@ interface DeleteButtonProps {
   method?: string;
   /** Additional class names for the outer button */
   className?: string;
+  /** Override the button text. Defaults to "Delete". Use "Cancel Order" /
+   *  "Discard Quote" / etc. when the API soft-deletes. */
+  label?: string;
+  /** Override the in-progress label. Defaults to "Deleting..." */
+  busyLabel?: string;
 }
 
 export default function DeleteButton({
@@ -23,6 +28,8 @@ export default function DeleteButton({
   redirectUrl,
   method = 'DELETE',
   className,
+  label = 'Delete',
+  busyLabel = 'Deleting...',
 }: DeleteButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -53,7 +60,7 @@ export default function DeleteButton({
         className={className ?? 'flex items-center gap-2 rounded-xl border border-red-600/40 bg-red-600/10 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-600/20 hover:border-red-500/60 disabled:opacity-50 transition-colors'}
       >
         <Trash2 className="h-3.5 w-3.5" />
-        {deleting ? 'Deleting...' : 'Delete'}
+        {deleting ? busyLabel : label}
       </button>
 
       {error && (

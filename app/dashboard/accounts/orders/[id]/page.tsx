@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ShoppingBag, Wrench, Pencil, FileText, Receipt } from 'lucide-react';
+import DeleteButton from '@/components/DeleteButton';
 import RecordPaymentForm from './RecordPaymentForm';
 import StageStatusButton from './StageStatusButton';
 import MarkCompleteButton from './MarkCompleteButton';
@@ -110,6 +111,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <Pencil className="h-3.5 w-3.5" /> Edit Order
             </Link>
             <ConvertToExpenseButton orderId={id} orderNo={order.order_no} />
+            {order.status !== 'cancelled' && (
+              <DeleteButton
+                entityName="order"
+                entityLabel={`${order.order_no} — ${order.client_name}`}
+                deleteUrl={`/api/accounts/orders/${id}`}
+                redirectUrl="/d/orders"
+                label="Cancel Order"
+                busyLabel="Cancelling..."
+              />
+            )}
           </div>
           <div className="text-right">
           <p className="text-xs text-zinc-500">Order Date</p>
@@ -291,6 +302,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     className="flex items-center justify-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800/40 px-2 py-1 text-[10px] text-zinc-400 hover:border-sky-500 hover:text-sky-400 transition-colors">
                     <Receipt className="h-2.5 w-2.5" /> S{s.stage_number} only
                   </Link>
+                  {s.invoice_date && (
+                    <SendEmailButton
+                      type="order_confirmation"
+                      entityId={id}
+                      stage={s.stage_number}
+                      label={`Email S${s.stage_number}`}
+                      compact
+                      confirmMessage={`Send Stage ${s.stage_number} invoice email to the client?`}
+                    />
+                  )}
                 </div>
               </div>
             ))}

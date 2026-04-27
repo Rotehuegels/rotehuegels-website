@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Network } from 'lucide-react';
 import StageSelector from './StageSelector';
 import JobVersions from './JobVersions';
+import DeleteButton from '@/components/DeleteButton';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 
@@ -53,11 +54,21 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
               {job.department && `${job.department} · `}{job.location} · {TYPE_LABEL[job.employment_type] ?? job.employment_type}
             </p>
           </div>
-          <span className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${
-            job.status === 'published' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-            job.status === 'closed' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-            'bg-amber-500/10 text-amber-400 border-amber-500/20'
-          }`}>{job.status}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${
+              job.status === 'published' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+              job.status === 'closed' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+              'bg-amber-500/10 text-amber-400 border-amber-500/20'
+            }`}>{job.status}</span>
+            {(applications?.length ?? 0) === 0 && (
+              <DeleteButton
+                entityName="job posting"
+                entityLabel={job.title}
+                deleteUrl={`/api/ats/jobs/${id}`}
+                redirectUrl="/d/jobs"
+              />
+            )}
+          </div>
         </div>
       </div>
 

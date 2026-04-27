@@ -4,6 +4,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ClipboardList } from 'lucide-react';
 import IndentActions from './IndentActions';
+import DeleteButton from '@/components/DeleteButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,7 +64,17 @@ export default async function IndentDetailPage({ params }: { params: Promise<{ i
       </div>
 
       {/* Action bar */}
-      <IndentActions indentId={indent.id} status={indent.status} hasSupplier={!!indent.preferred_supplier_id} />
+      <div className="flex flex-wrap items-center gap-3">
+        <IndentActions indentId={indent.id} status={indent.status} hasSupplier={!!indent.preferred_supplier_id} />
+        {indent.status === 'draft' && (
+          <DeleteButton
+            entityName="indent"
+            entityLabel={indent.indent_no}
+            deleteUrl={`/api/indents/${indent.id}`}
+            redirectUrl="/d/indents"
+          />
+        )}
+      </div>
 
       {/* Header details */}
       <div className="grid md:grid-cols-2 gap-4">

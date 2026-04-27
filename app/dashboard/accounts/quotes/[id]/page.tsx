@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import QuoteActions from './QuoteActions';
 import SendEmailButton from '@/components/SendEmailButton';
 import PDFDocumentViewer from '@/components/PDFDocumentViewer';
+import DeleteButton from '@/components/DeleteButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,7 +69,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
             {quote.valid_until && ` · Valid until ${fmtDate(quote.valid_until)}`}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <SendEmailButton type="quote_email" entityId={id} label="Email Quote"
             confirmMessage="Send this quotation to the customer via email?" />
           <QuoteActions
@@ -78,6 +79,14 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
             taxableValue={quote.taxable_value}
             defaultDesc={items.map(i => i.name).join('; ')}
           />
+          {!convertedOrder && quote.status !== 'accepted' && quote.status !== 'converted' && (
+            <DeleteButton
+              entityName="quote"
+              entityLabel={quote.quote_no}
+              deleteUrl={`/api/accounts/quotes/${id}`}
+              redirectUrl="/d/quotes"
+            />
+          )}
         </div>
       </div>
 

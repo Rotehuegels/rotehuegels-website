@@ -96,6 +96,14 @@ export default function EditPOPage() {
     const { suppliers: suppList } = await suppRes.json();
     const { data: orderList } = await ordersRes.json();
 
+    // Field-level edits are only permitted while a PO is in draft. Anything else
+    // — sent, acknowledged, partial, received, closed, cancelled — should go
+    // back to detail. Status transitions happen via POStatusActions, not here.
+    if (po.status !== 'draft') {
+      router.replace(`/d/purchase-orders/${id}`);
+      return;
+    }
+
     setSuppliers(suppList ?? []);
     setOrders(orderList ?? []);
     setPoStatus(po.status);

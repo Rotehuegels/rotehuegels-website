@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Trash2, ArrowLeft, ExternalLink, Printer, Pencil } from 'lucide-react';
 import SendEmailButton from '@/components/SendEmailButton';
+import POStatusActions from '@/components/POStatusActions';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const fmt = (n: number) =>
@@ -57,8 +58,12 @@ interface PO {
   igst_amount: number; cgst_amount: number; sgst_amount: number;
   total_amount: number;
   notes?: string; terms?: string;
+  closure_type?: 'full' | 'short' | null;
+  closure_reason?: string | null;
+  cancellation_reason?: string | null;
   items: POItem[];
   payments: POPayment[];
+  grn_count: number;
 }
 
 const input = 'w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-amber-500 focus:outline-none transition-colors';
@@ -69,7 +74,6 @@ export default function PODetailPage() {
   const router = useRouter();
   const [po, setPo] = useState<PO | null>(null);
   const [loading, setLoading] = useState(true);
-  const [statusSaving, setStatusSaving] = useState(false);
 
   // Payment form state
   const [showPmtForm, setShowPmtForm] = useState(false);
@@ -92,17 +96,6 @@ export default function PODetailPage() {
   }, [id, router]);
 
   useEffect(() => { load(); }, [load]);
-
-  async function updateStatus(status: string) {
-    setStatusSaving(true);
-    await fetch(`/api/accounts/purchase-orders/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    await load();
-    setStatusSaving(false);
-  }
 
   async function recordPayment(e: React.FormEvent) {
     e.preventDefault();
@@ -176,7 +169,7 @@ export default function PODetailPage() {
         <div className="flex items-center gap-2 shrink-0">
           <SendEmailButton type="po_confirmation" entityId={id} label="Email PO to Supplier"
             confirmMessage="Send this purchase order to the supplier via email?" />
-          {po.status !== 'completed' && (
+          {po.status === 'draft' && (
             <Link
               href={`/d/purchase-orders/${id}/edit`}
               className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-xs font-semibold text-zinc-300 hover:border-zinc-600 transition-colors"
@@ -190,21 +183,29 @@ export default function PODetailPage() {
           >
             <Printer className="h-3.5 w-3.5" /> Print PO
           </Link>
-          <select
-            value={po.status}
-            onChange={e => updateStatus(e.target.value)}
-            disabled={statusSaving}
-            className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-xs font-medium text-white focus:border-amber-500 focus:outline-none transition-colors"
-          >
-            {['draft','sent','acknowledged','partial','received','closed','cancelled'].map(s => (
-              <option key={s} value={s} className="capitalize">{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-            ))}
-          </select>
+          <POStatusActions
+            poId={id}
+            currentStatus={po.status}
+            hasGrn={(po.grn_count ?? 0) > 0}
+            onChanged={load}
+          />
           <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium capitalize border ${STATUS_COLOR[po.status] ?? STATUS_COLOR.draft}`}>
             {po.status}
+            {po.status === 'closed' && po.closure_type === 'short' && ' · short'}
           </span>
         </div>
       </div>
+
+      {(po.closure_reason || po.cancellation_reason) && (
+        <div className={`${glass} p-4 border-amber-500/30 bg-amber-500/5`}>
+          <p className="text-xs font-semibold text-amber-400 uppercase tracking-wide mb-1">
+            {po.cancellation_reason ? 'Cancellation reason' : 'Short-close reason'}
+          </p>
+          <p className="text-sm text-zinc-200 whitespace-pre-wrap">
+            {po.cancellation_reason ?? po.closure_reason}
+          </p>
+        </div>
+      )}
 
       {/* Supplier + Linked Order */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

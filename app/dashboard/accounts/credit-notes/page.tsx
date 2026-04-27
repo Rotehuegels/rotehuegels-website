@@ -71,7 +71,11 @@ export default async function CreditNotesPage() {
               <tbody>
                 {all.map(n => (
                   <tr key={n.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                    <td className="py-2.5 pr-3 font-mono text-xs text-rose-400 font-bold">{n.note_no}</td>
+                    <td className="py-2.5 pr-3 font-mono text-xs font-bold">
+                      <Link href={`/d/credit-notes/${n.id}`} className="text-rose-400 hover:text-rose-300">
+                        {n.note_no}
+                      </Link>
+                    </td>
                     <td className="py-2.5 pr-3">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         n.note_type === 'credit' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'

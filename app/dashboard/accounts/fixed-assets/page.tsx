@@ -111,7 +111,9 @@ export default async function FixedAssetsPage() {
                   return (
                     <tr key={a.id} className="hover:bg-zinc-800/20 transition-colors">
                       <td className="px-5 py-3">
-                        <span className="font-mono text-xs text-amber-400 font-bold">{a.asset_code}</span>
+                        <Link href={`/d/fixed-assets/${a.id}`} className="font-mono text-xs text-amber-400 font-bold hover:text-amber-300">
+                          {a.asset_code}
+                        </Link>
                         <p className="text-[10px] text-zinc-600">{fmtDate(a.purchase_date)}</p>
                       </td>
                       <td className="px-4 py-3">

@@ -65,7 +65,11 @@ export default async function ReceiptsPage() {
                   const order = r.orders as { order_no: string; client_name: string } | null;
                   return (
                     <tr key={r.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                      <td className="py-2.5 pr-3 font-mono text-xs text-rose-400 font-bold">{r.receipt_no}</td>
+                      <td className="py-2.5 pr-3 font-mono text-xs font-bold">
+                        <Link href={`/d/receipts/${r.id}`} className="text-rose-400 hover:text-rose-300">
+                          {r.receipt_no}
+                        </Link>
+                      </td>
                       <td className="py-2.5 pr-3 text-zinc-400 text-xs">{fmtDate(r.receipt_date)}</td>
                       <td className="py-2.5 pr-3 text-zinc-200">{r.received_from}</td>
                       <td className="py-2.5 pr-3 text-zinc-400 font-mono text-xs">

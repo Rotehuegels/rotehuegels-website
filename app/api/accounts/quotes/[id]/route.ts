@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { requireApiPermission } from '@/lib/apiAuthz';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -34,8 +35,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('sales.edit');
+  if (ctx instanceof NextResponse) return ctx;
   const { id } = await params;
 
   let body: unknown;
@@ -69,8 +70,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('sales.delete');
+  if (ctx instanceof NextResponse) return ctx;
   const { id } = await params;
 
   const { error } = await supabaseAdmin

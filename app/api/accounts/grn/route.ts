@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { supabaseServer } from '@/lib/supabaseServer';
 import { logAudit } from '@/lib/audit';
+import { requireApiPermission } from '@/lib/apiAuthz';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -45,9 +45,9 @@ export async function GET() {
 
 // POST — create new GRN
 export async function POST(req: Request) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('procurement.create');
+  if (ctx instanceof NextResponse) return ctx;
+  const user = { id: ctx.userId, email: ctx.email };
 
   const body = await req.json();
   const parsed = GRNSchema.safeParse(body);

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { requireApiPermission } from '@/lib/apiAuthz';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -47,8 +48,8 @@ const CreateSupplierSchema = z.object({
 
 // POST — create supplier
 export async function POST(req: Request) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('procurement.create');
+  if (ctx instanceof NextResponse) return ctx;
 
   let body: unknown;
   try { body = await req.json(); } catch {

@@ -6,6 +6,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { sendPOConfirmation } from '@/lib/notifications';
 import { logAudit } from '@/lib/audit';
+import { requireApiPermission } from '@/lib/apiAuthz';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -112,8 +113,13 @@ const FIELD_EDIT_KEYS = [
 const TERMINAL_STATUSES = new Set(['received','closed','cancelled']);
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // PATCH covers both field edits (draft only) and status transitions
+  // (Send / Acknowledge / Short-Close / Cancel) — all gated on
+  // procurement.edit. Procurement.delete additionally guards "cancelled"
+  // transitions further down (where we set cancellation_reason).
+  const ctx = await requireApiPermission('procurement.edit');
+  if (ctx instanceof NextResponse) return ctx;
+  const user = { id: ctx.userId, email: ctx.email };
 
   const { id } = await params;
   let body: unknown;
@@ -248,8 +254,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('procurement.delete');
+  if (ctx instanceof NextResponse) return ctx;
 
   const { id } = await params;
   const { error } = await supabaseAdmin.from('purchase_orders').delete().eq('id', id);

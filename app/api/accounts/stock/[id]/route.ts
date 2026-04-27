@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { requireApiPermission } from '@/lib/apiAuthz';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -27,8 +28,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('procurement.edit');
+  if (ctx instanceof NextResponse) return ctx;
 
   const { id } = await params;
   let body: unknown;
@@ -70,8 +71,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 // real delete (will only succeed when there are no FK references in
 // stock_movements / grn_items / etc).
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('procurement.delete');
+  if (ctx instanceof NextResponse) return ctx;
 
   const { id } = await params;
   const url = new URL(req.url);

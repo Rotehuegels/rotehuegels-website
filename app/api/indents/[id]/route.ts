@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { requireApiPermission } from '@/lib/apiAuthz';
 
 // PATCH actions:
 //   { action: 'submit' }                                    draft   → submitted
@@ -50,8 +51,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
 // PATCH — state transitions + edits
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // PATCH covers submit / approve / reject / cancel / edit. The action lives
+  // in the body, but we accept any procurement.edit-equivalent permission as
+  // the gate — submit/edit need procurement.edit, approve needs
+  // procurement.approve, cancel needs procurement.delete. We re-check below
+  // once we've parsed the body.
+  const ctx = await requireApiPermission('procurement.edit');
+  if (ctx instanceof NextResponse) return ctx;
+  const user = { id: ctx.userId, email: ctx.email };
 
   const { id } = await params;
   let body: unknown;
@@ -119,8 +126,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 // DELETE — only allowed for draft indents (otherwise cancel)
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('procurement.delete');
+  if (ctx instanceof NextResponse) return ctx;
 
   const { id } = await params;
   const { data: existing } = await supabaseAdmin

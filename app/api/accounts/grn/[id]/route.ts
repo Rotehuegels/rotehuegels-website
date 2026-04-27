@@ -3,8 +3,8 @@ export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { supabaseServer } from '@/lib/supabaseServer';
 import { logAudit } from '@/lib/audit';
+import { requireApiPermission } from '@/lib/apiAuthz';
 
 const TERMINAL = new Set(['accepted', 'rejected', 'partial', 'voided']);
 
@@ -59,9 +59,11 @@ async function reverseStockReceipts(
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Status transitions on a GRN are an "edit" — voiding/rejecting/accepting
+  // alters the inventory ledger and the audit trail. Gate on procurement.edit.
+  const ctx = await requireApiPermission('procurement.edit');
+  if (ctx instanceof NextResponse) return ctx;
+  const user = { id: ctx.userId, email: ctx.email };
 
   const { id } = await params;
   let body: unknown;

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { requireApiPermission } from '@/lib/apiAuthz';
 
 const ItemSchema = z.object({
   stock_item_id:       z.string().uuid().optional(),
@@ -55,8 +56,9 @@ export async function GET(req: Request) {
 
 // POST — create indent (default status: draft)
 export async function POST(req: Request) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('procurement.create');
+  if (ctx instanceof NextResponse) return ctx;
+  const user = { id: ctx.userId, email: ctx.email };
 
   let body: unknown;
   try { body = await req.json(); } catch {

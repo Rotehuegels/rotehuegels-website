@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { logAudit } from '@/lib/audit';
+import { requireApiPermission } from '@/lib/apiAuthz';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -54,8 +55,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('sales.create');
+  if (ctx instanceof NextResponse) return ctx;
+  const user = { id: ctx.userId, email: ctx.email };
 
   let body: unknown;
   try { body = await req.json(); } catch {

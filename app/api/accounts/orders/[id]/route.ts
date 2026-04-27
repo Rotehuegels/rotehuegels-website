@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { logAudit } from '@/lib/audit';
+import { requireApiPermission } from '@/lib/apiAuthz';
 
 async function requireAuth() {
   const supabase = await supabaseServer();
@@ -71,8 +72,9 @@ const UpdateOrderSchema = z.object({
 
 // PATCH — update order fields
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('sales.edit');
+  if (ctx instanceof NextResponse) return ctx;
+  const user = { id: ctx.userId, email: ctx.email };
 
   const { id } = await params;
   let body: unknown;
@@ -115,8 +117,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 // DELETE — soft-cancel (default) or hard delete (?hard=1)
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const ctx = await requireApiPermission('sales.delete');
+  if (ctx instanceof NextResponse) return ctx;
+  const user = { id: ctx.userId, email: ctx.email };
 
   const { id } = await params;
   const url = new URL(_req.url);

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ClipboardList } from 'lucide-react';
 import IndentActions from './IndentActions';
 import DeleteButton from '@/components/DeleteButton';
+import { Pencil } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,6 +67,12 @@ export default async function IndentDetailPage({ params }: { params: Promise<{ i
       {/* Action bar */}
       <div className="flex flex-wrap items-center gap-3">
         <IndentActions indentId={indent.id} status={indent.status} hasSupplier={!!indent.preferred_supplier_id} />
+        {indent.status === 'draft' && (
+          <Link href={`/d/indents/${indent.id}/edit`}
+            className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors">
+            <Pencil className="h-3.5 w-3.5" /> Edit
+          </Link>
+        )}
         {indent.status === 'draft' && (
           <DeleteButton
             entityName="indent"

@@ -22,9 +22,10 @@ const MR         = 'Management Representative';
 const CEO        = 'Sivakumar Shanmugam, CEO';
 
 const STD = {
-  qms: 'ISO 9001:2015',
-  ems: 'ISO 14001:2015',
-  ohs: 'ISO 45001:2018',
+  qms:  'ISO 9001:2015',
+  ems:  'ISO 14001:2015',
+  ohs:  'ISO 45001:2018',
+  isms: 'ISO/IEC 27001:2022',
 };
 
 const fmtDate = (d: string) =>
@@ -115,7 +116,7 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
   content.push({ text: '\n\n' });
   content.push({ text: 'Integrated Management System Manual', fontSize: 22, bold: true, alignment: 'center', color: COLORS.black, margin: [0, 20, 0, 8] });
   content.push({
-    text: `Quality, Environmental, and Occupational Health & Safety\n${STD.qms}  ·  ${STD.ems}  ·  ${STD.ohs}`,
+    text: `Quality, Environmental, Occupational Health & Safety, and Information Security\n${STD.qms}  ·  ${STD.ems}  ·  ${STD.ohs}  ·  ${STD.isms}`,
     fontSize: FONT.body, alignment: 'center', color: COLORS.gray, margin: [0, 0, 0, 24],
   });
   content.push({
@@ -193,7 +194,7 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
     'Sales & marketing, including the regional representative network',
     'Administrative functions — Finance & Accounts, Legal & Compliance, Human Resources, IT & Systems',
   ]));
-  content.push(para(`The IMS is designed to integrate the requirements of ${STD.qms} (Quality), ${STD.ems} (Environment), and ${STD.ohs} (Occupational Health & Safety). Where a clause has overlapping requirements across the three standards, this manual treats it as a single integrated requirement.`));
+  content.push(para(`The IMS is designed to integrate the requirements of ${STD.qms} (Quality), ${STD.ems} (Environment), ${STD.ohs} (Occupational Health & Safety), and ${STD.isms} (Information Security). Where a clause has overlapping requirements across the four standards, this manual treats it as a single integrated requirement. ${STD.isms} brings information-security management — confidentiality, integrity, and availability of customer, supplier, and operational data held in the ERP and lab systems — into the same management framework as quality, environment, and OHS.`));
   content.push(para('Permissible exclusions: none claimed at this revision. Future exclusions, if any, will be justified in clause 4.3 with explicit reference to the standard clause being excluded.'));
 
   // ── §2 Normative references ──────────────────────────────────────────────
@@ -203,6 +204,7 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
     `${STD.qms} — Quality management systems — Requirements`,
     `${STD.ems} — Environmental management systems — Requirements with guidance for use`,
     `${STD.ohs} — Occupational health and safety management systems — Requirements with guidance for use`,
+    `${STD.isms} — Information security, cybersecurity and privacy protection — Information security management systems — Requirements`,
     'Companies Act, 2013 (India) and rules made thereunder',
     'Goods and Services Tax (CGST/SGST/IGST) Acts and Rules',
     'E-Waste (Management) Rules, 2022 — CPCB',
@@ -214,7 +216,7 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
 
   // ── §3 Terms and definitions ─────────────────────────────────────────────
   content.push(clauseHeading('3', 'Terms and definitions'));
-  content.push(para(`For the purposes of this manual, the terms and definitions in ${STD.qms} clause 3, ${STD.ems} clause 3, and ${STD.ohs} clause 3 apply. The following Rotehügels-specific terms are also used:`));
+  content.push(para(`For the purposes of this manual, the terms and definitions in ${STD.qms} clause 3, ${STD.ems} clause 3, ${STD.ohs} clause 3, and ${STD.isms} clause 3 apply. The following Rotehügels-specific terms are also used:`));
   const defRows: any[][] = [
     ['REX',         'Rotehügels Expert Network — community of independent professionals registered with us for project assignments'],
     ['Indent',      'Internal purchase requisition raised before a Purchase Order is issued'],
@@ -261,7 +263,7 @@ function buildContent(CO: Awaited<ReturnType<typeof getCompanyCO>>, logoUrl: str
 
   content.push(subHeading('5.2.0', 'Integrated Management Policy'));
   content.push(policyBlock('Integrated Management Policy',
-    `Rotehügels is committed to delivering engineering services and industrial software that meet customer requirements, comply with applicable statutes, protect the environment, and safeguard the health and safety of every person at work — whether employee, REX-network consultant, supplier, or visitor. We will achieve this by integrating quality, environmental, and OHS considerations into every operational decision; by setting measurable objectives and reviewing them at least annually; by complying with ${STD.qms}, ${STD.ems}, and ${STD.ohs} and all other obligations we subscribe to; by consulting our workers on matters that affect them; and by continually improving the IMS.`
+    `Rotehügels is committed to delivering engineering services and industrial software that meet customer requirements, comply with applicable statutes, protect the environment, safeguard the health and safety of every person at work — whether employee, REX-network consultant, supplier, or visitor — and protect the confidentiality, integrity, and availability of the information entrusted to us by customers, employees, and partners. We will achieve this by integrating quality, environmental, OHS, and information-security considerations into every operational decision; by setting measurable objectives and reviewing them at least annually; by complying with ${STD.qms}, ${STD.ems}, ${STD.ohs}, and ${STD.isms} and all other legal, contractual, and regulatory obligations we subscribe to; by consulting our workers on matters that affect them; and by continually improving the IMS.`
   ));
   content.push(subHeading('5.2.1', 'Quality Policy'));
   content.push(policyBlock('Quality Policy',

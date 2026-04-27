@@ -1630,6 +1630,134 @@ const SW_001: SOP = {
   kpis: ['Release cadence (planned vs actual)', 'Defect escape rate (post-release P1/P2 count)', '% incidents within SLA', 'Customer NPS / CSAT'],
 };
 
+// ── INFORMATION SECURITY MANAGEMENT (ISO/IEC 27001:2022) ──────────────────────
+// Annex A controls are referenced inline; the manual maps the full set to these
+// SOPs. Risk register and Statement of Applicability are tracked as records
+// (lib/imsRegister.ts) — these SOPs prescribe the operating procedures.
+
+const ISMS_001: SOP = {
+  id: 'SOP-ISMS-001',
+  title: 'Information Security Policy',
+  department: 'IT',
+  category: 'Information Security',
+  version: '1.0',
+  effectiveDate: '2026-04-27',
+  reviewDate: '2027-04-27',
+  approvedBy: 'CEO',
+  purpose: 'To establish the organisational commitment to information security and define the framework under which the ISMS operates, in compliance with ISO/IEC 27001:2022 clause 5.2 and Annex A control 5.1.',
+  scope: 'All information assets owned, processed, transmitted, or stored by Rotehügels — customer data, supplier data, employee records, lab results, source code, financial records, and operational telemetry. Applies to every employee, REX-network consultant, contractor, and third-party with access to those assets.',
+  responsibilities: [
+    'CEO: Owns and approves the policy; chairs the annual ISMS review',
+    'Information Security Manager (CTO): Day-to-day operation of the ISMS, risk register, incident response',
+    'All Personnel: Understand and follow this policy; report security events',
+    'External Parties: Bound by NDA + supplier security clauses (SOP-ISMS-005, when published)',
+  ],
+  procedure: [
+    { step: 1, action: 'Confidentiality, Integrity, Availability (CIA)', detail: 'We protect information against unauthorised disclosure (C), unauthorised modification (I), and unavailability when needed (A). Every control in the ISMS targets one or more of these.' },
+    { step: 2, action: 'Risk-based approach',                            detail: 'Information-security decisions are driven by a documented risk assessment (ISO 27001 clause 6.1.2). Risks are reviewed at least annually and after any significant change. The risk register is filed under IMS records.' },
+    { step: 3, action: 'Statement of Applicability (SoA)',                detail: 'A Statement of Applicability is maintained listing every Annex A control with a justification for inclusion / exclusion and the implementing SOP / system. Reviewed at every management review.' },
+    { step: 4, action: 'Legal & contractual obligations',                 detail: 'We comply with the Information Technology Act 2000 / 2008 (India), the Digital Personal Data Protection Act 2023, GST/IT/Companies Act record-retention rules, and customer contractual obligations on data handling. Specific obligations are mapped in the Compliance Register.' },
+    { step: 5, action: 'Continual improvement',                           detail: 'The ISMS is reviewed at least annually; non-conformities raise a CAPA; incidents drive control updates; metrics (incident count, MTTR, audit findings, training completion) are reported to management quarterly.' },
+    { step: 6, action: 'Roles & accountabilities',                        detail: 'Defined in Section 5 of the IMS Manual. Conflicting duties are segregated where feasible (e.g. user provisioning vs admin approval).' },
+    { step: 7, action: 'Awareness & competence',                          detail: 'Every new joiner completes IS-awareness induction within 7 days; refreshed annually. Phishing-simulation results inform retraining (target click-rate < 5%).' },
+    { step: 8, action: 'Reporting security events',                       detail: 'Any suspected incident — phishing, lost device, unauthorised access, data leak, malware — must be reported to security@rotehuegels.com within 1 hour of discovery. See SOP-ISMS-004.' },
+  ],
+  relatedDocs: ['ISO/IEC 27001:2022 Annex A.5.1', 'SOP-ISMS-002 (Access Control)', 'SOP-ISMS-003 (Information Classification)', 'SOP-ISMS-004 (Incident Management)', 'Risk Register', 'Statement of Applicability', 'Compliance Register'],
+  kpis: ['Policy reviewed annually: 100%', 'Awareness induction within 7 days of joining: 100%', 'Phishing-simulation click-rate: < 5%', 'Quarterly metric report to management: 100%'],
+};
+
+const ISMS_002: SOP = {
+  id: 'SOP-ISMS-002',
+  title: 'Access Control & Identity Management',
+  department: 'IT',
+  category: 'Information Security',
+  version: '1.0',
+  effectiveDate: '2026-04-27',
+  reviewDate: '2027-04-27',
+  approvedBy: 'Management Representative',
+  purpose: 'To control physical and logical access to information assets so that users have only the privileges they need to perform their duties — implementing ISO/IEC 27001:2022 Annex A controls 5.15 (Access control), 5.16 (Identity management), 5.17 (Authentication information), 5.18 (Access rights), 8.2 (Privileged access), 8.3 (Information access restriction), and 8.5 (Secure authentication).',
+  scope: 'All systems holding Rotehügels information — the internal ERP (rotehuegels.com/d), Microsoft 365 (mail, OneDrive), Supabase (database), source code repositories, lab instruments, and physical premises (Chennai office, Maraimalai Nagar plant, Guindy pilot).',
+  responsibilities: [
+    'IT Administrator: Provisioning, de-provisioning, quarterly access review',
+    'Information Security Manager: Approves privileged-access requests',
+    'Department Head: Approves role / permission changes for their team',
+    'All Users: Comply with the password policy and report compromised credentials',
+  ],
+  procedure: [
+    { step: 1, action: 'Need-to-know / least privilege', detail: 'Every account receives the minimum set of permissions required for the role. Permissions are granular per-module / per-action (view / create / edit / delete) — see the catalogue in /d/admin/users. Default for a new staff user is staff-role with zero permissions; access is granted explicitly.', system: '/d/admin/users' },
+    { step: 2, action: 'Joiner provisioning',           detail: 'On hire (per SOP-HR-001), IT creates the M365 account, ERP user (role=staff), and email alias within 1 working day. Permission grants follow the role mapping in the Access Authorisation Matrix; deviations need department-head + ISM approval. All grants are audit-logged.', system: '/d/admin/users + M365 admin' },
+    { step: 3, action: 'Mover / role change',           detail: 'On role change, the new department head requests the new permission set; old permissions outside the new role are revoked the same day. Quarterly access review catches any drift.' },
+    { step: 4, action: 'Leaver de-provisioning',        detail: 'On separation (per SOP-HR-004), within 1 hour of last working day end-of-day: M365 account suspended, ERP user.is_active=false, all permissions revoked, devices reclaimed, and email forwarding set per Manager request. Audit-log entry recorded.', system: '/d/admin/users (Deactivate)' },
+    { step: 5, action: 'Privileged access',             detail: 'Admin / super-admin accounts are restricted to named individuals (currently CEO + ISM). Service accounts have rotated credentials stored in the secrets manager — no shared admin passwords. MFA mandatory on every admin account.' },
+    { step: 6, action: 'Authentication',                detail: 'Password policy: ≥ 12 characters, mixed case + digit + symbol, never reused across systems, rotated on suspicion of compromise. MFA required on M365 and the ERP for every staff user. Service-to-service auth uses scoped API keys, never user credentials.' },
+    { step: 7, action: 'Quarterly access review',       detail: 'ISM exports the user_permissions list from /d/admin/users and the M365 directory; each department head signs off on their team\'s entitlements. Discrepancies (orphan accounts, dormant logins > 60 days, over-privileged users) are remediated within 7 days.', system: '/d/admin/users' },
+    { step: 8, action: 'Physical access',               detail: 'Office and plant access via badge / biometric. Visitor log maintained; visitors escorted in restricted areas (server room, lab). Access logs reviewed monthly.' },
+  ],
+  relatedDocs: ['ISO/IEC 27001:2022 A.5.15-A.5.18, A.8.2-A.8.5', 'Access Authorisation Matrix', 'Password Policy', 'SOP-HR-001 (Onboarding)', 'SOP-HR-004 (Offboarding)', 'SOP-IT-002 (Audit Trail)', 'Permission Catalogue (lib/userPermissions.types.ts)'],
+  kpis: ['Joiner-to-access-grant: ≤ 1 working day', 'Leaver-to-deprovisioning: ≤ 1 hour', 'Quarterly access review completed on time: 100%', 'Dormant accounts (> 60 days no login) at quarter-end: 0', 'Admin accounts using MFA: 100%'],
+};
+
+const ISMS_003: SOP = {
+  id: 'SOP-ISMS-003',
+  title: 'Information Classification & Handling',
+  department: 'IT',
+  category: 'Information Security',
+  version: '1.0',
+  effectiveDate: '2026-04-27',
+  reviewDate: '2027-04-27',
+  approvedBy: 'Management Representative',
+  purpose: 'To classify information by sensitivity and prescribe handling rules — labelling, storage, transmission, retention, destruction — implementing ISO/IEC 27001:2022 Annex A controls 5.12 (Classification of information), 5.13 (Labelling), 5.14 (Information transfer), and 8.10 (Information deletion).',
+  scope: 'Every form of information held by Rotehügels — digital records in the ERP, mail, OneDrive, source code, lab data, customer drawings, supplier proposals, and physical documents (printed quotes, contracts, registration certificates).',
+  responsibilities: [
+    'Information Owner (Department Head): Assigns the classification level when creating an asset',
+    'IT Administrator: Maintains technical controls per classification level',
+    'All Users: Apply the correct label and follow the handling rules',
+  ],
+  procedure: [
+    { step: 1, action: 'Classification levels', detail: 'PUBLIC — published on rotehuegels.com or otherwise free to share (marketing material, job postings, published case studies). INTERNAL — for employees + REX network only (org chart, internal SOPs, dashboards). CONFIDENTIAL — restricted distribution, business impact if leaked (customer data, supplier contracts, financials, source code, formulations, PII). RESTRICTED — strictly need-to-know, severe impact if leaked (master credentials, encryption keys, M&A info, GST credentials, legal-privileged material).' },
+    { step: 2, action: 'Labelling',             detail: 'Documents and emails should carry the label in the footer or subject prefix (e.g. "[CONFIDENTIAL]"). ERP records inherit the classification of the parent entity (a customer record is CONFIDENTIAL; the audit log of who edited it is INTERNAL).' },
+    { step: 3, action: 'Storage',               detail: 'PUBLIC: anywhere. INTERNAL: company-managed systems only. CONFIDENTIAL: encryption-at-rest required (Supabase / OneDrive enterprise); never on personal devices; never on external USB without encryption. RESTRICTED: access limited to named individuals; stored in secrets manager or sealed envelope; never in email.' },
+    { step: 4, action: 'Transmission',          detail: 'CONFIDENTIAL+ over TLS only (https / encrypted email). External email containing CONFIDENTIAL data must use encrypted attachments where the recipient is outside our domain. Customer data shared with the customer goes via the client portal, not as raw exports.' },
+    { step: 5, action: 'Retention',             detail: 'Per the Retention Schedule in the IMS Manual §13. Indicative: financial records 8 years, employee records as per labour law, customer correspondence 7 years, audit logs 7 years, marketing material indefinitely.' },
+    { step: 6, action: 'Destruction',           detail: 'When retention expires: digital — secure delete (overwrite, not just file delete); physical — cross-cut shred. CONFIDENTIAL/RESTRICTED destruction logged.' },
+    { step: 7, action: 'Personal data (PII)',   detail: 'Always treated as CONFIDENTIAL minimum. Subject to the DPDP Act 2023: lawful basis required to process; access requests honoured within 30 days; breach notification within prescribed timelines.' },
+    { step: 8, action: 'Customer-supplied data',detail: 'Information received under NDA from a customer (drawings, process flows, formulations, market data) inherits CONFIDENTIAL minimum. Stored in the project folder; access restricted to project team; destroyed or returned per contract on project closure.' },
+  ],
+  relatedDocs: ['ISO/IEC 27001:2022 A.5.12-A.5.14, A.8.10', 'Retention Schedule', 'DPDP Act 2023 Compliance Note', 'NDA Template', 'Secrets Management Procedure'],
+  kpis: ['Documents with classification label: ≥ 95% sample compliance', 'CONFIDENTIAL data stored on personal devices: 0', 'Encrypted-at-rest CONFIDENTIAL stores: 100%', 'PII access requests answered within 30 days: 100%'],
+};
+
+const ISMS_004: SOP = {
+  id: 'SOP-ISMS-004',
+  title: 'Information Security Incident Management',
+  department: 'IT',
+  category: 'Information Security',
+  version: '1.0',
+  effectiveDate: '2026-04-27',
+  reviewDate: '2027-04-27',
+  approvedBy: 'Management Representative',
+  purpose: 'To detect, report, contain, and learn from information-security incidents — implementing ISO/IEC 27001:2022 Annex A controls 5.24 (Incident management planning), 5.25 (Assessment and decision), 5.26 (Response), 5.27 (Learning), and 5.28 (Evidence).',
+  scope: 'Every event that compromises — or could compromise — the confidentiality, integrity, or availability of Rotehügels information. Includes phishing, malware, lost / stolen device, accidental disclosure, account compromise, supplier breach affecting our data, ransomware, denial of service, and physical break-in.',
+  responsibilities: [
+    'All Personnel: Report suspected incidents within 1 hour to security@rotehuegels.com',
+    'Information Security Manager: Triages, classifies severity, leads response',
+    'CEO: Authorises external notifications (regulator, customers, press)',
+    'IT Administrator: Executes containment + recovery actions',
+  ],
+  procedure: [
+    { step: 1, action: 'Detect & report',        detail: 'Anyone who suspects a security incident reports to security@rotehuegels.com (or +91-… on-call) within 1 hour. Reports include: what happened, when noticed, what systems / data are involved, what immediate action was taken.' },
+    { step: 2, action: 'Triage & classify',      detail: 'ISM classifies severity within 1 hour of report. SEV1 — confirmed unauthorised access to CONFIDENTIAL+ data, ransomware, or production outage > 1 h. SEV2 — successful phishing on a non-privileged account, lost device with sensitive data, single-system compromise. SEV3 — failed login storm, suspicious access pattern, individual phishing report.' },
+    { step: 3, action: 'Contain',                detail: 'SEV1: convene incident bridge within 30 min of triage; revoke compromised credentials; isolate affected systems; preserve forensic evidence (logs, disk images). SEV2: same actions within 4 hours. SEV3: routine remediation within 1 working day.' },
+    { step: 4, action: 'Notify',                 detail: 'Internal: management + affected users immediately. Customers: when their data is affected, within contractual SLA (typically 72h). Regulator: per DPDP Act for personal-data breaches and CERT-In within 6 hours for reportable cyber incidents. CEO authorises every external notification.' },
+    { step: 5, action: 'Eradicate & recover',    detail: 'Remove the root cause (malware, malicious account, vulnerability). Restore from clean backup if needed (per SOP-ISMS Backup, when published). Validate recovery before re-opening access.' },
+    { step: 6, action: 'Evidence preservation',  detail: 'Logs, screenshots, disk images, email headers retained per evidence chain-of-custody. Stored in incident folder with restricted access. Used for root-cause analysis, regulator inquiry, and any law-enforcement need.' },
+    { step: 7, action: 'Learn & improve',        detail: 'Within 5 working days of closure, ISM produces an incident report: timeline, root cause, contributing factors, controls that worked / failed, corrective actions with owners + due dates. Findings drive risk-register updates and training refreshers.' },
+    { step: 8, action: 'Annual incident review', detail: 'Aggregate trends reviewed at the annual ISMS management review — incident count by category, MTTR, top control gaps. Used to prioritise the next year\'s control investment.' },
+  ],
+  relatedDocs: ['ISO/IEC 27001:2022 A.5.24-A.5.28', 'CERT-In Directions (April 2022)', 'DPDP Act 2023 §8', 'SOP-IT-002 (Audit Trail)', 'SOP-ISMS-001 (Information Security Policy)', 'Incident Report Template', 'Customer Breach Notification Template'],
+  kpis: ['Time-to-report (event → report): ≤ 1 hour', 'Time-to-triage (report → severity): ≤ 1 hour', 'SEV1 containment: ≤ 30 minutes from triage', 'Customer breach notification within contractual SLA: 100%', 'Post-incident report within 5 working days of closure: 100%'],
+};
+
 // ── EXPORT ────────────────────────────────────────────────────────────────────
 
 export const ALL_SOPS: SOP[] = [
@@ -1670,6 +1798,8 @@ export const ALL_SOPS: SOP[] = [
   NET_001, NET_002,
   // Settings (1)
   SET_001,
+  // Information Security (ISO 27001) (4)
+  ISMS_001, ISMS_002, ISMS_003, ISMS_004,
 ];
 
 export const DEPARTMENTS = [

@@ -53,6 +53,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     reorder_qty:    z.number().min(0).nullable().optional(),
     order_id:       z.string().uuid().optional().nullable(),
     notes:          z.string().optional().nullable(),
+    is_active:      z.boolean().optional(),
   }).safeParse(body);
 
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
@@ -64,12 +65,28 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+// Soft-delete by default — flagging is_active=false hides the item from
+// pickers while keeping its historical movements intact. ?hard=1 forces a
+// real delete (will only succeed when there are no FK references in
+// stock_movements / grn_items / etc).
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
-  const { error } = await supabaseAdmin.from('stock_items').delete().eq('id', id);
+  const url = new URL(req.url);
+  const hard = url.searchParams.get('hard') === '1';
+
+  if (hard) {
+    const { error } = await supabaseAdmin.from('stock_items').delete().eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, hard: true });
+  }
+
+  const { error } = await supabaseAdmin
+    .from('stock_items')
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, deactivated: true });
 }

@@ -11,16 +11,20 @@ async function requireAuth() {
   return user;
 }
 
-// GET — list all suppliers
-export async function GET() {
+// GET — list suppliers. Active-only by default; pass ?include_inactive=1 to
+// see deactivated suppliers (useful for the master list page when you want
+// to reactivate one).
+export async function GET(req: Request) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data, error } = await supabaseAdmin
-    .from('suppliers')
-    .select('*')
-    .order('legal_name');
+  const url = new URL(req.url);
+  const includeInactive = url.searchParams.get('include_inactive') === '1';
 
+  let q = supabaseAdmin.from('suppliers').select('*').order('legal_name');
+  if (!includeInactive) q = q.eq('is_active', true);
+
+  const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ suppliers: data });
 }

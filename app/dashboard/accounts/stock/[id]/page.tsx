@@ -2,8 +2,9 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Package, AlertTriangle } from 'lucide-react';
+import { Package, AlertTriangle, PowerOff } from 'lucide-react';
 import StockAdjustForm from './StockAdjustForm';
+import ActiveToggle from '@/components/ActiveToggle';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,11 +74,23 @@ export default async function StockDetailPage({ params }: { params: Promise<{ id
             <p className="text-xs text-zinc-500 font-mono">{item.item_code ?? '—'}{item.category ? ` · ${item.category}` : ''}</p>
           </div>
         </div>
-        {lowStock && (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-xs font-medium text-rose-300">
-            <AlertTriangle className="h-3 w-3" /> Below reorder level
-          </span>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {lowStock && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-xs font-medium text-rose-300">
+              <AlertTriangle className="h-3 w-3" /> Below reorder level
+            </span>
+          )}
+          {item.is_active === false && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-400">
+              <PowerOff className="h-3 w-3" /> Deactivated
+            </span>
+          )}
+          <ActiveToggle
+            endpoint={`/api/accounts/stock/${id}`}
+            isActive={item.is_active !== false}
+            entityLabel={item.item_name}
+          />
+        </div>
       </div>
 
       {/* Stat strip */}

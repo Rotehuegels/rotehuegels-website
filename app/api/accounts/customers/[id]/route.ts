@@ -32,6 +32,7 @@ const UpdateSchema = z.object({
   state:            z.string().optional(),
   state_code:       z.string().optional(),
   notes:            z.string().optional(),
+  is_active:        z.boolean().optional(),
 });
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -94,16 +95,28 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   return NextResponse.json({ success: true, id: data.id });
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+// Soft-delete by default — a customer referenced by orders/quotes/invoices
+// cannot be hard-deleted without breaking the audit trail. ?hard=1 forces a
+// real delete (only succeeds when there are no FK references).
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
 
+  const url = new URL(req.url);
+  const hard = url.searchParams.get('hard') === '1';
+
+  if (hard) {
+    const { error } = await supabaseAdmin.from('customers').delete().eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, hard: true });
+  }
+
   const { error } = await supabaseAdmin
     .from('customers')
-    .delete()
+    .update({ is_active: false, updated_at: new Date().toISOString() })
     .eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, deactivated: true });
 }

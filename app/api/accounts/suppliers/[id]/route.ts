@@ -25,6 +25,7 @@ const UpdateSupplierSchema = z.object({
   email:       z.string().email().optional().nullable(),
   phone:       z.string().optional().nullable(),
   notes:       z.string().optional().nullable(),
+  is_active:   z.boolean().optional(),
 });
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -65,12 +66,28 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+// Soft-delete: a supplier referenced by a PO/GRN/invoice cannot be hard-deleted
+// without breaking foreign keys. Flagging is_active=false hides it from pickers
+// while keeping the audit trail intact. Pass ?hard=1 to force a real delete
+// (will only succeed when there are no references).
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
-  const { error } = await supabaseAdmin.from('suppliers').delete().eq('id', id);
+  const url = new URL(req.url);
+  const hard = url.searchParams.get('hard') === '1';
+
+  if (hard) {
+    const { error } = await supabaseAdmin.from('suppliers').delete().eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, hard: true });
+  }
+
+  const { error } = await supabaseAdmin
+    .from('suppliers')
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, deactivated: true });
 }

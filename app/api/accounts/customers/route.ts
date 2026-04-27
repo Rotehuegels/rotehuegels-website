@@ -34,15 +34,21 @@ const CustomerSchema = z.object({
   notes:            z.string().optional(),
 });
 
-export async function GET() {
+// Active-only by default; pass ?include_inactive=1 to see deactivated customers.
+export async function GET(req: Request) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data, error } = await supabaseAdmin
-    .from('customers')
-    .select('id, customer_id, name, gstin, pan, billing_address, contact_person, email, phone, state, state_code, created_at')
-    .order('created_at', { ascending: false });
+  const url = new URL(req.url);
+  const includeInactive = url.searchParams.get('include_inactive') === '1';
 
+  let q = supabaseAdmin
+    .from('customers')
+    .select('id, customer_id, name, gstin, pan, billing_address, contact_person, email, phone, state, state_code, is_active, created_at')
+    .order('created_at', { ascending: false });
+  if (!includeInactive) q = q.eq('is_active', true);
+
+  const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ data });
 }

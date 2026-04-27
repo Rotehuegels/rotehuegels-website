@@ -1,7 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Building2, Hash, MapPin, BadgeCheck, BadgeX, Calendar, Mail, Phone, FileText, Pencil } from 'lucide-react';
+import { ArrowLeft, Building2, Hash, MapPin, BadgeCheck, BadgeX, Calendar, Mail, Phone, FileText, Pencil, PowerOff } from 'lucide-react';
+import ActiveToggle from '@/components/ActiveToggle';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,6 +59,16 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
               className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-zinc-600 transition-colors">
               <Pencil className="h-3.5 w-3.5" /> Edit
             </Link>
+            <ActiveToggle
+              endpoint={`/api/accounts/suppliers/${id}`}
+              isActive={supplier.is_active !== false}
+              entityLabel={supplier.legal_name}
+            />
+          {supplier.is_active === false && (
+            <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full border border-zinc-700 bg-zinc-800 text-zinc-400 shrink-0">
+              <PowerOff className="h-3.5 w-3.5" /> Deactivated
+            </span>
+          )}
           {supplier.gst_status && (
             <span className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${
               isActive

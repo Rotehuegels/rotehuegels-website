@@ -24,16 +24,22 @@ const StockSchema = z.object({
   notes: z.string().optional(),
 });
 
-// GET — list stock items
-export async function GET() {
+// GET — list stock items. Active-only by default; pass ?include_inactive=1
+// to include deactivated items (useful for re-activating).
+export async function GET(req: Request) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data, error } = await supabaseAdmin
+  const url = new URL(req.url);
+  const includeInactive = url.searchParams.get('include_inactive') === '1';
+
+  let q = supabaseAdmin
     .from('stock_items')
     .select('*, orders(order_no, client_name)')
     .order('item_name');
+  if (!includeInactive) q = q.eq('is_active', true);
 
+  const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ data: data ?? [] });
 }

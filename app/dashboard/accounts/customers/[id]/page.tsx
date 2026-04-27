@@ -2,7 +2,8 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Building2, Mail, Phone, MapPin, User, FileText, ArrowLeft, ReceiptText, Pencil } from 'lucide-react';
+import { Building2, Mail, Phone, MapPin, User, FileText, ArrowLeft, ReceiptText, Pencil, PowerOff } from 'lucide-react';
+import ActiveToggle from '@/components/ActiveToggle';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,9 +57,14 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           <Link href="/d/customers" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-3 transition-colors">
             <ArrowLeft className="h-3 w-3" /> Customers
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <span className="font-mono text-sm text-amber-400 font-bold">{customer.customer_id}</span>
             <h1 className="text-xl font-bold text-white">{customer.name}</h1>
+            {customer.is_active === false && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-zinc-400">
+                <PowerOff className="h-3 w-3" /> Deactivated
+              </span>
+            )}
           </div>
           {customer.state && (
             <p className="text-xs text-zinc-500 mt-1">
@@ -66,11 +72,16 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Link href={`/d/customers/${id}/edit`}
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm font-semibold text-zinc-300 hover:border-zinc-600 transition-colors flex items-center gap-2">
             <Pencil className="h-3.5 w-3.5" /> Edit
           </Link>
+          <ActiveToggle
+            endpoint={`/api/accounts/customers/${id}`}
+            isActive={customer.is_active !== false}
+            entityLabel={customer.name}
+          />
           <Link href={`/d/customers/${id}/statement`}
             className="rounded-xl border border-amber-600/50 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center gap-2">
             <ReceiptText className="h-3.5 w-3.5" /> Pending Bills

@@ -246,6 +246,20 @@ export default async function GRNDetailPage({ params }: { params: Promise<{ id: 
         )}
       </div>
 
+      {(grn.rejection_reason || grn.void_reason) && (
+        <div className={`${glass} p-4 border-red-500/30 bg-red-500/5`}>
+          <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1">
+            {grn.void_reason ? 'Void reason' : 'Rejection reason'}
+          </p>
+          <p className="text-sm text-zinc-200 whitespace-pre-wrap">
+            {grn.void_reason ?? grn.rejection_reason}
+          </p>
+          <p className="mt-2 text-xs text-zinc-500">
+            Stock receipts originally posted at GRN creation have been reversed in the ledger.
+          </p>
+        </div>
+      )}
+
       {/* Inspection + notes */}
       {(grn.inspection_notes || grn.notes) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

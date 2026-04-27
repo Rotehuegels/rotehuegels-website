@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, XCircle, PackageCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, PackageCheck, AlertCircle, Ban, Loader2 } from 'lucide-react';
 
-type Action = 'inspected' | 'accepted' | 'rejected' | 'partial';
+type Action = 'inspected' | 'accepted' | 'rejected' | 'partial' | 'voided';
 
 interface Props {
   grnId: string;
@@ -22,6 +22,7 @@ const ACTION_LABELS: Record<Action, string> = {
   accepted: 'Accept',
   rejected: 'Reject',
   partial: 'Mark Partial',
+  voided: 'Void GRN',
 };
 
 export default function GRNStatusActions({
@@ -37,7 +38,7 @@ export default function GRNStatusActions({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  if (currentStatus === 'accepted' || currentStatus === 'rejected' || currentStatus === 'partial') {
+  if (['accepted', 'rejected', 'partial', 'voided'].includes(currentStatus)) {
     return null;
   }
 
@@ -45,19 +46,24 @@ export default function GRNStatusActions({
   // any rejections, route them to "Partial" so the badge tells the truth.
   const acceptIsPartial = totalRejected > 0 || totalAccepted < totalOrdered;
   const primaryAccept: Action = acceptIsPartial ? 'partial' : 'accepted';
+  const canVoid = currentStatus === 'pending';
 
   async function submit() {
     if (!action) return;
     setSubmitting(true);
     setError('');
+
+    const trimmed = notes.trim();
+    const body: Record<string, unknown> = { status: action };
+    if (action === 'rejected') body.rejection_reason = trimmed;
+    else if (action === 'voided') body.void_reason = trimmed;
+    else body.inspection_notes = trimmed || null;
+
     try {
       const res = await fetch(`/api/accounts/grn/${grnId}`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          status: action,
-          inspection_notes: notes.trim() || null,
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -73,9 +79,11 @@ export default function GRNStatusActions({
     }
   }
 
+  const reasonRequired = action === 'rejected' || action === 'voided';
+
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         {currentStatus === 'pending' && (
           <button
             onClick={() => setAction('inspected')}
@@ -97,6 +105,15 @@ export default function GRNStatusActions({
         >
           <XCircle className="h-3.5 w-3.5" /> Reject
         </button>
+        {canVoid && (
+          <button
+            onClick={() => setAction('voided')}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-600 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
+            title="GRN entered in error — reverses any stock receipts and locks the doc"
+          >
+            <Ban className="h-3.5 w-3.5" /> Void
+          </button>
+        )}
       </div>
 
       {action && (
@@ -113,11 +130,13 @@ export default function GRNStatusActions({
               {action === 'inspected' && 'Confirm that you have physically inspected the goods.'}
               {action === 'accepted' && 'Mark this GRN as accepted. Stock has already been received against the line items.'}
               {action === 'partial' && `Accept with discrepancy: ${totalAccepted} of ${totalOrdered} accepted, ${totalRejected} rejected.`}
-              {action === 'rejected' && 'Reject this GRN. The line-item stock receipts already posted will need a separate reversal.'}
+              {action === 'rejected' && 'Reject this GRN. Any stock receipts posted at GRN creation will be automatically reversed.'}
+              {action === 'voided' && 'Void this GRN — only use this if it was entered in error (wrong PO, duplicate, etc.). Any stock receipts will be reversed.'}
             </p>
 
             <label className="block mt-4 text-xs font-medium text-zinc-400 uppercase tracking-wider">
-              Inspection notes {action !== 'rejected' && '(optional)'}
+              {action === 'rejected' ? 'Rejection reason' : action === 'voided' ? 'Void reason' : 'Inspection notes'}
+              {reasonRequired ? <span className="text-red-400"> *</span> : ' (optional)'}
             </label>
             <textarea
               value={notes}
@@ -126,6 +145,8 @@ export default function GRNStatusActions({
               placeholder={
                 action === 'rejected'
                   ? 'Why is this GRN being rejected?'
+                  : action === 'voided'
+                  ? 'Why is this GRN being voided?'
                   : 'Anything noteworthy about the inspection…'
               }
               className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-zinc-600 focus:outline-none"
@@ -144,7 +165,7 @@ export default function GRNStatusActions({
               </button>
               <button
                 onClick={submit}
-                disabled={submitting || (action === 'rejected' && !notes.trim())}
+                disabled={submitting || (reasonRequired && !notes.trim())}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}

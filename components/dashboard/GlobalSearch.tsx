@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { Search, X, Loader2 } from 'lucide-react';
+import { NAV_FLAT } from './Sidebar';
 
 interface SearchResult {
   type: string;
@@ -13,6 +14,7 @@ interface SearchResult {
 }
 
 const TYPE_COLORS: Record<string, string> = {
+  Page:     'bg-zinc-700 text-zinc-200',
   Order:    'bg-sky-500/15 text-sky-400',
   Customer: 'bg-emerald-500/15 text-emerald-400',
   Quote:    'bg-amber-500/15 text-amber-400',
@@ -20,6 +22,9 @@ const TYPE_COLORS: Record<string, string> = {
   Expense:  'bg-rose-500/15 text-rose-400',
   Employee: 'bg-orange-500/15 text-orange-400',
 };
+
+// Pages render first so they're keyboard-discoverable; data records follow.
+const TYPE_ORDER = ['Page', 'Order', 'Customer', 'Quote', 'Supplier', 'Expense', 'Employee'];
 
 function groupBy<T>(arr: T[], key: (item: T) => string): Record<string, T[]> {
   return arr.reduce<Record<string, T[]>>((acc, item) => {
@@ -66,25 +71,59 @@ export default function GlobalSearch() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
+  // Match query against menu labels. Runs synchronously — no API hop. Score
+  // 0 = label starts with query (best), 1 = label contains query (still a hit),
+  // 2 = group label contains query (weakest). Sorted, then capped.
+  const matchPages = useCallback((q: string): SearchResult[] => {
+    const needle = q.toLowerCase();
+    const scored: Array<{ score: number; r: SearchResult }> = [];
+    for (const link of NAV_FLAT) {
+      const label = link.label.toLowerCase();
+      const group = link.group?.toLowerCase() ?? '';
+      let score = -1;
+      if (label.startsWith(needle)) score = 0;
+      else if (label.includes(needle)) score = 1;
+      else if (group.includes(needle)) score = 2;
+      if (score < 0) continue;
+      scored.push({
+        score,
+        r: {
+          type: 'Page',
+          id: link.href,
+          label: link.label,
+          sublabel: link.group,
+          href: link.href,
+        },
+      });
+    }
+    scored.sort((a, b) => a.score - b.score || a.r.label.localeCompare(b.r.label));
+    return scored.slice(0, 8).map(x => x.r);
+  }, []);
+
   const search = useCallback(async (q: string) => {
     if (q.length < 2) {
       setResults([]);
       setLoading(false);
       return;
     }
+    // Show menu hits immediately so navigation feels instant; then merge data
+    // results when they arrive. If the server is down, the user still gets
+    // page navigation working.
+    const pageHits = matchPages(q);
+    setResults(pageHits);
     setLoading(true);
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
       if (res.ok) {
         const json = await res.json() as { results: SearchResult[] };
-        setResults(json.results ?? []);
+        setResults([...pageHits, ...(json.results ?? [])]);
       }
     } catch {
-      // silently ignore
+      // silently ignore — pageHits stay shown
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [matchPages]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const q = e.target.value;
@@ -107,7 +146,17 @@ export default function GlobalSearch() {
     setResults([]);
   }
 
-  const grouped = groupBy(results, r => r.type);
+  const grouped = useMemo(() => {
+    const g = groupBy(results, r => r.type);
+    // Render groups in our preferred order (Pages first), with any unknown
+    // types appended afterwards.
+    const ordered: Array<[string, SearchResult[]]> = [];
+    for (const t of TYPE_ORDER) if (g[t]?.length) ordered.push([t, g[t]]);
+    for (const [t, items] of Object.entries(g)) {
+      if (!TYPE_ORDER.includes(t)) ordered.push([t, items]);
+    }
+    return ordered;
+  }, [results]);
 
   return (
     <div ref={containerRef} className="relative w-full">
@@ -140,7 +189,7 @@ export default function GlobalSearch() {
             <p className="px-4 py-6 text-center text-sm text-zinc-600">No results for &ldquo;{query}&rdquo;</p>
           )}
 
-          {Object.entries(grouped).map(([type, items]) => (
+          {grouped.map(([type, items]) => (
             <div key={type}>
               <p className="sticky top-0 bg-zinc-950 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600 border-b border-zinc-800/60">
                 {type}

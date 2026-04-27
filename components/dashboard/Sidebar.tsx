@@ -193,6 +193,17 @@ function linkChildren(children: NavChild[]): NavLink[] {
   return children.filter((c): c is NavLink => c.type !== 'section');
 }
 
+// Flat list of every navigable page, with the group it sits under. Exported so
+// GlobalSearch can match user queries ("grn", "indents", "stock") against menu
+// labels and surface them as page-navigation results.
+export interface NavLinkFlat { label: string; href: string; group?: string }
+export const NAV_FLAT: NavLinkFlat[] = NAV.flatMap(item => {
+  if (!isGroup(item)) return [{ label: item.label, href: item.href }];
+  return linkChildren(item.children).map(c => ({
+    label: c.label, href: c.href, group: item.label,
+  }));
+});
+
 // ── NavGroup component ────────────────────────────────────────────────────────
 function GroupItem({ item, pathname }: { item: NavGroup; pathname: string }) {
   const links = linkChildren(item.children);

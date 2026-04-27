@@ -19,9 +19,11 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { type, entityId } = body as {
+  const { type, entityId, stage, upto } = body as {
     type: string;
     entityId: string;
+    stage?: number;
+    upto?: number;
   };
 
   if (!type || !entityId) {
@@ -34,7 +36,7 @@ export async function POST(req: Request) {
   try {
     switch (type) {
       case "order_confirmation":
-        await sendOrderConfirmation(entityId);
+        await sendOrderConfirmation(entityId, { stage, upto });
         break;
       case "payment_receipt":
         await sendPaymentReceipt(entityId);

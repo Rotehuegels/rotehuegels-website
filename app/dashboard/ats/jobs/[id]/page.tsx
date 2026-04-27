@@ -66,6 +66,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                 entityLabel={job.title}
                 deleteUrl={`/api/ats/jobs/${id}`}
                 redirectUrl="/d/jobs"
+                permission="hr.recruitment"
               />
             )}
           </div>

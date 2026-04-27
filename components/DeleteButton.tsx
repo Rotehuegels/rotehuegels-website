@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
+import { useHasPermission } from './auth/PermissionsProvider';
 
 interface DeleteButtonProps {
   entityName: string;
@@ -19,6 +20,9 @@ interface DeleteButtonProps {
   label?: string;
   /** Override the in-progress label. Defaults to "Deleting..." */
   busyLabel?: string;
+  /** Permission key required to see this button. e.g. "procurement.delete".
+   *  Admins always pass. Pass undefined to skip the gate (legacy behaviour). */
+  permission?: string;
 }
 
 export default function DeleteButton({
@@ -30,11 +34,16 @@ export default function DeleteButton({
   className,
   label = 'Delete',
   busyLabel = 'Deleting...',
+  permission,
 }: DeleteButtonProps) {
+  // All hooks must be called unconditionally before any early return.
+  const allowed = useHasPermission(permission);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
+
+  if (!allowed) return null;
 
   async function handleConfirm() {
     setDeleting(true);

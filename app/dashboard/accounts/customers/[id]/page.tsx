@@ -81,6 +81,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             endpoint={`/api/accounts/customers/${id}`}
             isActive={customer.is_active !== false}
             entityLabel={customer.name}
+            permission="sales.delete"
           />
           <Link href={`/d/customers/${id}/statement`}
             className="rounded-xl border border-amber-600/50 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center gap-2">

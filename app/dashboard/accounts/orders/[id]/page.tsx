@@ -119,6 +119,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 redirectUrl="/d/orders"
                 label="Cancel Order"
                 busyLabel="Cancelling..."
+                permission="sales.delete"
               />
             )}
           </div>

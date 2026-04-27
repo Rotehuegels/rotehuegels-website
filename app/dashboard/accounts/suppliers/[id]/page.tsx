@@ -63,6 +63,7 @@ export default async function SupplierDetailPage({ params }: { params: Promise<{
               endpoint={`/api/accounts/suppliers/${id}`}
               isActive={supplier.is_active !== false}
               entityLabel={supplier.legal_name}
+              permission="procurement.delete"
             />
           {supplier.is_active === false && (
             <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full border border-zinc-700 bg-zinc-800 text-zinc-400 shrink-0">

@@ -8,6 +8,7 @@ import MobileNav from '@/components/dashboard/MobileNav';
 import MobileBottomNav from '@/components/dashboard/MobileBottomNav';
 import InstallAppButton from '@/components/dashboard/InstallAppButton';
 import InactivityGuard from '@/components/dashboard/InactivityGuard';
+import { PermissionsProvider } from '@/components/auth/PermissionsProvider';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -39,6 +40,7 @@ export default async function DashboardLayout({
   }
 
   return (
+    <PermissionsProvider permissions={permissions} role={role ?? 'admin'}>
     <InactivityGuard>
       <div className="flex min-h-screen">
         {/* Desktop sidebar */}
@@ -64,5 +66,6 @@ export default async function DashboardLayout({
       {/* Mobile-only bottom nav: Home / Back / Menu / Settings */}
       <MobileBottomNav />
     </InactivityGuard>
+    </PermissionsProvider>
   );
 }

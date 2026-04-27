@@ -89,6 +89,7 @@ export default async function StockDetailPage({ params }: { params: Promise<{ id
             endpoint={`/api/accounts/stock/${id}`}
             isActive={item.is_active !== false}
             entityLabel={item.item_name}
+            permission="procurement.delete"
           />
         </div>
       </div>

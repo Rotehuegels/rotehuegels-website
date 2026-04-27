@@ -175,6 +175,7 @@ export default function ItemDetailPage() {
               entityLabel={`${form.sku_id} — ${form.name}`}
               deleteUrl={`/api/accounts/items/${id}`}
               redirectUrl="/d/catalog"
+              permission="sales.delete"
             />
           </div>
         </div>

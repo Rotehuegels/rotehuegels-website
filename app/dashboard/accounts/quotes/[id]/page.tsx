@@ -85,6 +85,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
               entityLabel={quote.quote_no}
               deleteUrl={`/api/accounts/quotes/${id}`}
               redirectUrl="/d/quotes"
+              permission="sales.delete"
             />
           )}
         </div>

@@ -79,6 +79,7 @@ export default async function IndentDetailPage({ params }: { params: Promise<{ i
             entityLabel={indent.indent_no}
             deleteUrl={`/api/indents/${indent.id}`}
             redirectUrl="/d/indents"
+            permission="procurement.delete"
           />
         )}
       </div>

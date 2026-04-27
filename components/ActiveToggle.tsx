@@ -3,19 +3,27 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Power, PowerOff, Loader2 } from 'lucide-react';
+import { useHasPermission } from './auth/PermissionsProvider';
 
 interface Props {
   endpoint: string;          // e.g. /api/accounts/suppliers/abc-123
   isActive: boolean;
   entityLabel: string;       // shown in confirm
   onChanged?: () => void;
+  /** Permission key required to see this toggle. e.g. "procurement.delete".
+   *  Admins always pass. Pass undefined to skip the gate. */
+  permission?: string;
 }
 
-export default function ActiveToggle({ endpoint, isActive, entityLabel, onChanged }: Props) {
+export default function ActiveToggle({ endpoint, isActive, entityLabel, onChanged, permission }: Props) {
+  // All hooks must be called unconditionally before any early return.
+  const allowed = useHasPermission(permission);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  if (!allowed) return null;
 
   async function toggle() {
     if (isActive) {

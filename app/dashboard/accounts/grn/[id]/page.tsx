@@ -6,6 +6,7 @@ import {
   FileText, Calendar, User, CheckCircle2, Clock, AlertCircle, XCircle, PackageCheck,
   Printer, Download,
 } from 'lucide-react';
+import GRNStatusActions from '@/components/GRNStatusActions';
 
 const glass = 'rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm';
 const fmt = (n: number) =>
@@ -90,6 +91,13 @@ export default async function GRNDetailPage({ params }: { params: Promise<{ id: 
           <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${cfg.cls}`}>
             <StatusIcon className="h-3.5 w-3.5" /> {cfg.label}
           </span>
+          <GRNStatusActions
+            grnId={id}
+            currentStatus={grn.status}
+            totalAccepted={totalAccepted}
+            totalOrdered={totalOrdered}
+            totalRejected={totalRejected}
+          />
         </div>
       </div>
 
